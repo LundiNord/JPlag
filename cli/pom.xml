@@ -34,6 +34,11 @@
             <artifactId>java</artifactId>
             <version>${revision}</version>
         </dependency>
+         <dependency>
+            <groupId>de.jplag</groupId>
+            <artifactId>java-cpg</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <dependency>
             <groupId>de.jplag</groupId>
             <artifactId>python-3</artifactId>
