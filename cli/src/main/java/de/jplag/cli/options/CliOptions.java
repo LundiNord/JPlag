@@ -58,7 +58,7 @@ public class CliOptions implements Runnable {
             "--mode"}, description = "The mode of JPlag. One of: ${COMPLETION-CANDIDATES} (default: ${DEFAULT_VALUE}). If VIEW is chosen, you can optionally specify a path to an existing report.")
     public JPlagMode mode = JPlagMode.AUTO;
 
-    @Option(names = {"--normalize"}, description = "Activate the normalization of tokens. Supported for languages: Java, C++.")
+    @Option(names = {"--normalize"}, description = "Activate the normalization of tokens. Supported for languages: Java, Java-CPG, C++.")
     public boolean normalize = false;
 
     @ArgGroup(heading = "%nAdvanced%n", exclusive = false)
