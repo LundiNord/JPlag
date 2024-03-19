@@ -64,6 +64,10 @@ public class SubmissionSet {
         invalidSubmissions = filterInvalidSubmissions();
     }
 
+    public long getTotalParsingTime() {
+        return submissions.stream().mapToLong(Submission::getParsingTime).sum();
+    }
+
     /**
      * @return true if the submission set has a basecode submission.
      */
