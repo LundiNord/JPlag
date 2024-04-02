@@ -61,7 +61,7 @@ public final class FileUtils {
      * exists, it is removed from the reader.
      * @param file The file to open for read
      * @return The reader, configured with the best matching charset
-     * @throws java.io.IOException If the file does not exist for is not readable
+     * @throws IOException If the file does not exist for is not readable
      */
     public static BufferedReader openFileReader(File file) throws IOException {
         return openFileReader(file, false);
@@ -85,7 +85,7 @@ public final class FileUtils {
      * Reads the contents of a file into a single string.
      * @param file The file to read
      * @return The files content as a string
-     * @throws java.io.IOException If an IO error occurs
+     * @throws IOException If an IO error occurs
      * @see FileUtils#openFileReader(File)
      */
     public static String readFileContent(File file) throws IOException {
@@ -112,7 +112,7 @@ public final class FileUtils {
      * are only interested in the content.
      * @param file The file to detect
      * @return The most probable charset
-     * @throws java.io.IOException If an IO error occurs
+     * @throws IOException If an IO error occurs
      */
     public static Charset detectCharset(File file) throws IOException {
         try (InputStream stream = new BufferedInputStream(new FileInputStream(file))) {
@@ -138,7 +138,6 @@ public final class FileUtils {
      * Detects the most probable charset over the whole set of files.
      * @param files The files to check
      * @return The most probable charset
-     * @throws de.jplag.ParsingException if any.
      */
     public static Charset detectCharsetFromMultiple(Collection<File> files) throws ParsingException {
         Map<String, List<Integer>> charsetValues = new HashMap<>();
@@ -202,7 +201,7 @@ public final class FileUtils {
      * Opens a file writer, using the default charset for JPlag.
      * @param file The file to write
      * @return The file writer, configured with the default charset
-     * @throws java.io.IOException If the file does not exist or is not writable
+     * @throws IOException If the file does not exist or is not writable
      */
     public static Writer openFileWriter(File file) throws IOException {
         return new BufferedWriter(new FileWriter(file, DEFAULT_OUTPUT_CHARSET));
@@ -212,7 +211,7 @@ public final class FileUtils {
      * Writes the given content into the given file using the default charset.
      * @param file The file
      * @param content The content
-     * @throws java.io.IOException If any error occurs
+     * @throws IOException If any error occurs
      */
     public static void write(File file, String content) throws IOException {
         Writer writer = openFileWriter(file);
