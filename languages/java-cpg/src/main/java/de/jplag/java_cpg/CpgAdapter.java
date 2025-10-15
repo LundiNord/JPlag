@@ -94,7 +94,7 @@ public class CpgAdapter {
     }
 
     /* package-private */ TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
-        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().guessCastExpressions(true).inferRecords(true)
+        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true)
                 .inferDfgForUnresolvedCalls(true).build();
 
         TranslationResult translationResult;
@@ -105,7 +105,7 @@ public class CpgAdapter {
 
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
                     ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
-                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
+                    AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
                     // EOG
                     DfgSortPass.class, CpgTransformationPass.class, TokenizationPass.class));
 

@@ -13,7 +13,7 @@ import de.fraunhofer.aisec.cpg.graph.types.Type
 import de.fraunhofer.aisec.cpg.graph.types.recordDeclaration
 import de.fraunhofer.aisec.cpg.passes.ComponentPass
 import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver
-import de.fraunhofer.aisec.cpg.passes.order.DependsOn
+import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
 import org.slf4j.LoggerFactory
 
 /**
@@ -79,8 +79,5 @@ class FixAstPass(ctx: TranslationContext) : ComponentPass(ctx) {
         ref.refersTo = match
         return true
     }
-
-
-
 
 }
