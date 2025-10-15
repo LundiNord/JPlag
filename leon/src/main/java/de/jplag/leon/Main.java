@@ -33,7 +33,7 @@ public class Main {
 
         try {
             JPlagResult result = JPlag.run(options);
-            File outDir = new File("leon/output");
+            File outDir = new File("leon/output.zip");
             //File outDir = new File(System.getProperty("user.home") + "/Downloads/");
             ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
             reportObjectFactory.createAndSaveReport(result);
