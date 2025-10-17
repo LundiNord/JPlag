@@ -3,6 +3,7 @@ package de.jplag.java_cpg.passes
 import de.fraunhofer.aisec.cpg.TranslationContext
 import de.fraunhofer.aisec.cpg.TranslationResult
 import de.fraunhofer.aisec.cpg.graph.Name
+import de.fraunhofer.aisec.cpg.graph.Node
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker
 import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
@@ -36,14 +37,42 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
     private val strategy = NodeOrderStrategy()
 
+//    override fun accept(translationResult: TranslationResult) {
+//        tokenList.clear()
+//        val listener = CpgNodeListener(consumer)
+//        val walker: SubgraphWalker.IterativeGraphWalker = SubgraphWalker.IterativeGraphWalker()
+//        walker.strategy = { strategy.getIterator(it) }
+//        walker.registerOnNodeVisit {node, _ -> listener.visit(node) }
+//        walker.registerOnNodeExit { listener.exit(it) }
+//        walker.iterate(translationResult)
+//        callback!!.accept(tokenList)
+//    }
+
+    /**
+     * Updated for the new CPG version (https://github.com/Fraunhofer-AISEC/cpg/pull/1571/files),
+     * the old version commented out above.
+     */
     override fun accept(translationResult: TranslationResult) {
         tokenList.clear()
         val listener = CpgNodeListener(consumer)
         val walker: SubgraphWalker.IterativeGraphWalker = SubgraphWalker.IterativeGraphWalker()
         walker.strategy = { strategy.getIterator(it) }
-        walker.registerOnNodeVisit { listener.visit(it) }
-        walker.registerOnNodeExit { listener.exit(it) }
+        val stack = java.util.ArrayDeque<Node>()
+        walker.registerOnNodeVisit { node, parent ->
+            // pop and emit exits until the top of the stack matches the parent
+            while (stack.isNotEmpty() && stack.peek() != parent) {
+                val exited = stack.pop()
+                listener.exit(exited)
+            }
+            listener.visit(node)
+            stack.push(node)
+        }
         walker.iterate(translationResult)
+        // flush remaining exits after traversal completes
+        while (stack.isNotEmpty()) {
+            val exited = stack.pop()
+            listener.exit(exited)
+        }
         callback!!.accept(tokenList)
     }
 
@@ -66,3 +95,4 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         val logger: Logger = LoggerFactory.getLogger(TokenizationPass::class.java)
     }
 }
+

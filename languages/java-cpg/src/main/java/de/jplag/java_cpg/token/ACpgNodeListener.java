@@ -277,9 +277,9 @@ public abstract class ACpgNodeListener extends VisitorExitor<Node> {
         // empty dummy implementation
     }
 
-    void exit(UsingDeclaration usingDeclaration) {
-        // empty dummy implementation
-    }
+//    void exit(UsingDeclaration usingDeclaration) {
+//        // empty dummy implementation
+//    }
 
     void exit(ValueDeclaration valueDeclaration) {
         // empty dummy implementation
@@ -553,9 +553,9 @@ public abstract class ACpgNodeListener extends VisitorExitor<Node> {
         // empty dummy implementation
     }
 
-    void visit(UsingDeclaration usingDeclaration) {
-        // empty dummy implementation
-    }
+//    void visit(UsingDeclaration usingDeclaration) {
+//        // empty dummy implementation
+//    }
 
     void visit(ValueDeclaration valueDeclaration) {
         // empty dummy implementation

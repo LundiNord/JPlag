@@ -1,10 +1,14 @@
 package de.jplag.java_cpg.passes;
 
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import de.fraunhofer.aisec.cpg.graph.Node;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,17 +46,52 @@ public class JTokenizationPass extends TranslationResultPass {
         super(ctx);
     }
 
-    @Override
-    public void accept(TranslationResult translationResult) {
+//    @Override
+//    public void accept(TranslationResult translationResult) {
+//        tokenList.clear();
+//        CpgNodeListener listener = new CpgNodeListener(consumer);
+//        SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
+//        walker.setStrategy(strategy::getIterator);
+//        //walker.registerOnNodeVisit(listener::visit);
+//        walker.registerOnNodeVisit((node, parent) -> {
+//            listener.visit(node);
+//            return Unit.INSTANCE;
+//        });
+//        walker.registerOnNodeExit(listener::exit);
+//        walker.iterate(translationResult);
+//        callback.accept(tokenList);
+//    }
+
+    /**
+     * Updated for the (<a href="https://github.com/Fraunhofer-AISEC/cpg/pull/1571/files">new CPG version</a>),
+     * the old version commented out above.
+     */
+    @Override public void accept(TranslationResult translationResult) {
         tokenList.clear();
         CpgNodeListener listener = new CpgNodeListener(consumer);
         SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
         walker.setStrategy(strategy::getIterator);
-        walker.registerOnNodeVisit(listener::visit);
-        walker.registerOnNodeExit(listener::exit);
+        ArrayDeque<Node> stack = new ArrayDeque<>();
+        walker.registerOnNodeVisit((node, parent) -> {
+            // pop and emit exits until the top of the stack matches the parent
+            while (!stack.isEmpty() && stack.peek() != parent) {
+                Node exited = stack.pop();
+                listener.exit(exited);
+            }
+            listener.visit(node);
+            stack.push(node);
+            return Unit.INSTANCE;
+        });
         walker.iterate(translationResult);
+        // flush remaining exits after traversal completes
+        while (!stack.isEmpty()) {
+            listener.exit(stack.pop());
+        }
         callback.accept(tokenList);
     }
+
+
+
 
     @Override
     public void cleanup() {
