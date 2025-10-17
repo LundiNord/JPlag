@@ -94,7 +94,7 @@ public class CpgAdapter {
     }
 
     /* package-private */ TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
-        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().guessCastExpressions(true).inferRecords(true)
+        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true)
                 .inferDfgForUnresolvedCalls(true).build();
 
         TranslationResult translationResult;
