@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.TranslationResult;
@@ -148,7 +149,10 @@ public class NodeOrderStrategy implements IStrategy<Node> {
         List<Node> nodes = new ArrayList<>(astChildren.size());
         SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
         walker.setStrategy(node -> Iterators.filter(strategy.getIterator(node), astChildren::contains));
-        walker.registerOnNodeVisit(nodes::add);
+        walker.registerOnNodeVisit((node, parent) -> {
+            nodes.add(node);
+            return Unit.INSTANCE;
+        });
         walker.iterate(entry);
         return nodes;
     }

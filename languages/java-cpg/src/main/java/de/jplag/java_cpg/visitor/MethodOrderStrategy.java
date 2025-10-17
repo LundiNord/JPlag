@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import kotlin.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -228,7 +229,10 @@ public class MethodOrderStrategy {
 
         index = 0;
         List<MethodDeclaration> newFunctions = new ArrayList<>();
-        walker.registerOnNodeVisit(node -> handleNode(node, callGraphIndex, newFunctions));
+        walker.registerOnNodeVisit((node, parent) -> {
+            handleNode(node, callGraphIndex, newFunctions);
+            return Unit.INSTANCE;
+        });
         while (index < callGraphIndex.size()) {
             MethodDeclaration next = callGraphIndex.get(index++);
             walker.iterate(next);

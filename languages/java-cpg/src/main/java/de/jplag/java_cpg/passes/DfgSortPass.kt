@@ -3,7 +3,6 @@ package de.jplag.java_cpg.passes
 import de.fraunhofer.aisec.cpg.TranslationContext
 import de.fraunhofer.aisec.cpg.graph.*
 import de.fraunhofer.aisec.cpg.graph.declarations.*
-import de.fraunhofer.aisec.cpg.graph.edge.Granularity
 import de.fraunhofer.aisec.cpg.graph.edge.Properties
 import de.fraunhofer.aisec.cpg.graph.statements.*
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*
@@ -148,7 +147,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 if (stmtBlock in predBlock.nextDFG) return@forEach
                 // write-read dependency
                 properties = mutableMapOf(Pair(Properties.NAME, name))
-                predBlock.addNextDFG(stmtBlock, properties as Granularity)
+                predBlock.addNextDFG(stmtBlock)
             } else {
                 // the name is used to filter these edges out later
                 properties = mutableMapOf(Pair(Properties.NAME, "loop$name"))
@@ -156,11 +155,11 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     edge.addProperties(properties)
                 } else {
                     // this edge shows that the value reaches the next iteration
-                    predBlock.addNextDFG(stmtBlock, properties as Granularity)
+                    predBlock.addNextDFG(stmtBlock)
                 }
                 // read-write dependency
                 properties = mutableMapOf(Pair(Properties.NAME, name))
-                stmtBlock.addNextDFG(predBlock, properties as Granularity)
+                stmtBlock.addNextDFG(predBlock)
             }
         }
     }
@@ -283,9 +282,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val walker = SubgraphWalker.IterativeGraphWalker()
         walker.strategy = Strategy::EOG_FORWARD
         var found = false
-        walker.registerOnNodeVisit {
-            if (it == b) found = true
-        }
+        walker.registerOnNodeVisit{
+            node, _ -> if (node == b) found = true }
         walker.iterate(a)
         return found
     }
@@ -523,7 +521,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                         for (j in i + 1 until essentialChildren.size) {
                             val properties: MutableMap<Properties, Any?> =
                                 mutableMapOf(Pair(Properties.NAME, "essentialsDependency"))
-                            essentialChildren[i].addNextDFG(essentialChildren[j], properties as Granularity)
+                            essentialChildren[i].addNextDFG(essentialChildren[j])
                         }
                     }
                 }

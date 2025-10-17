@@ -15,7 +15,7 @@ class PrintPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
     override fun accept(translationUnitDeclaration: TranslationUnitDeclaration) {
         val graphWalker = SubgraphWalker.IterativeGraphWalker()
-        graphWalker.registerOnNodeVisit { node: Node ->
+        graphWalker.registerOnNodeVisit { node: Node, _ ->
             var code = node.code
             if (Objects.isNull(code)) {
                 code = "~no code~"
