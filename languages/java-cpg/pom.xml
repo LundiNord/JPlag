@@ -10,7 +10,7 @@
     <artifactId>java-cpg</artifactId>
 
     <properties>
-        <cpg.version>8.3.0</cpg.version>
+        <cpg.version>9.0.0</cpg.version>
         <cpg.groupId>de.fraunhofer.aisec</cpg.groupId>
         <kotlin.version>1.9.0</kotlin.version>
     </properties>

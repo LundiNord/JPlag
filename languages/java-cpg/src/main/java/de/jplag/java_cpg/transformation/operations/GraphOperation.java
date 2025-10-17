@@ -2,7 +2,6 @@ package de.jplag.java_cpg.transformation.operations;
 
 import de.fraunhofer.aisec.cpg.TranslationContext;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.TransformationException;
 import de.jplag.java_cpg.transformation.matching.edges.AnyOfNEdge;
@@ -30,7 +29,7 @@ public interface GraphOperation {
     /**
      * If the target nodes of this {@link GraphOperation} is a {@link ParentNodePattern}, then this method creates a
      * concrete {@link GraphOperation} with the given {@link Node} and {@link IEdge} from the {@link WildcardMatch}.
-     * @param match The {@link WildcardMatch} containing the concrete {@link Node} and {@link PropertyEdge} for the wildcard
+     * @param match The {@link WildcardMatch} containing the concrete {@link Node} and {@link de.fraunhofer.aisec.cpg.graph.edges.Edge} for the wildcard
      * @return The instantiated {@link GraphOperation}
      */
     GraphOperation instantiateWildcard(Match match);

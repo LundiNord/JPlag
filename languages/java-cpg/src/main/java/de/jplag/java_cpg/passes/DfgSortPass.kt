@@ -3,7 +3,6 @@ package de.jplag.java_cpg.passes
 import de.fraunhofer.aisec.cpg.TranslationContext
 import de.fraunhofer.aisec.cpg.graph.*
 import de.fraunhofer.aisec.cpg.graph.declarations.*
-import de.fraunhofer.aisec.cpg.graph.edge.Properties
 import de.fraunhofer.aisec.cpg.graph.statements.*
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*
 import de.fraunhofer.aisec.cpg.graph.types.IncompleteType
@@ -11,6 +10,7 @@ import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker
 import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass
 import de.fraunhofer.aisec.cpg.passes.TranslationUnitPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
+import de.fraunhofer.aisec.cpg.persistence.properties
 import de.fraunhofer.aisec.cpg.processing.strategy.Strategy
 import de.jplag.java_cpg.token.CpgNodeListener
 import de.jplag.java_cpg.token.CpgTokenType
@@ -104,16 +104,13 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
          */
         extractTransitiveDependencies(relevantStatements, parentInfo)
 
-        // loop dependencies are only needed to determine relevant statements, but disturb the reordering
+        // loop dependencies are only needed to determine relevant statements but disturb the reordering
         relevantStatements.forEach {
             it.prevDFGEdges.removeIf { edge ->
-                relevantStatements.indexOf(edge.start) == -1 || edge.getProperty(
-                    Properties.NAME
-                ).toString().contains("loop")
+                relevantStatements.indexOf(edge.start) == -1 || edge.name.toString().contains("loop")
             }
             it.nextDFGEdges.removeIf { edge ->
-                relevantStatements.indexOf(edge.end) == -1 || edge.getProperty(Properties.NAME).toString()
-                    .contains("loop")
+                relevantStatements.indexOf(edge.end) == -1 || edge.name.toString().contains("loop")
             }
         }
 
@@ -137,7 +134,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val dfgPredecessor = edge.start
             val statement = edge.end
 
-            var properties: MutableMap<Properties, Any?>
+            //var properties: MutableMap<Properties, Any?>
             val (predBlock, stmtBlock, name) = getSiblingAncestors(dfgPredecessor, statement, depth, parent)
 
             // no self-dependencies
@@ -146,20 +143,23 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             if (stmtBlock is ReturnStatement || locationBefore(predBlock, stmtBlock)) {
                 if (stmtBlock in predBlock.nextDFG) return@forEach
                 // write-read dependency
-                properties = mutableMapOf(Pair(Properties.NAME, name))
-                predBlock.addNextDFG(stmtBlock)
+                //properties = mutableMapOf(Pair(Properties.NAME, name))
+                stmtBlock.name = Name(name)
+                predBlock.nextDFG.add(stmtBlock)
             } else {
                 // the name is used to filter these edges out later
-                properties = mutableMapOf(Pair(Properties.NAME, "loop$name"))
+                //properties = mutableMapOf(Pair(Properties.NAME, "loop$name"))
                 if (stmtBlock in predBlock.nextDFG) {
-                    edge.addProperties(properties)
+                    edge.name = "loop$name"
                 } else {
                     // this edge shows that the value reaches the next iteration
-                    predBlock.addNextDFG(stmtBlock)
+                    predBlock.name = Name(name)
+                    predBlock.nextDFG.add(stmtBlock)
                 }
                 // read-write dependency
-                properties = mutableMapOf(Pair(Properties.NAME, name))
-                stmtBlock.addNextDFG(predBlock)
+                //properties = mutableMapOf(Pair(Properties.NAME, name))
+                predBlock.name = Name(name)
+                stmtBlock.nextDFG.add(predBlock)
             }
         }
     }
@@ -210,7 +210,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
             dependentStatements
                 .forEach { dfgPredecessor ->
-                    dfgPredecessor.addNextDFG(statement)
+                    dfgPredecessor.nextDFG.add(statement)
                 }
         }
 
@@ -338,12 +338,13 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     ) {
         // save entry point to keep EOG graph intact at the end
         val entry = TransformationUtil.getEogBorders(parent.statements[0]).entries[0]
-        val eogPred = TransformationUtil.getEntryEdges(parent, entry, false)
-            .map { it.start }
+        val eogPred = TransformationUtil.getEntryEdges(parent, entry, false).map { it.start }
+
+
+
 
         val exit = TransformationUtil.getEogBorders(parent.statements.last()).exits[0]
-        val eogSucc = TransformationUtil.getExitEdges(parent, listOf(exit), false)
-            .map { it.end }
+        val eogSucc = TransformationUtil.getExitEdges(parent, listOf(exit), false).map { it.end }
 
         val worklist = mutableListOf<Statement>()
         val done = mutableListOf<Statement>()
@@ -400,7 +401,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         assert(done.size == relevantStatementsInThisBlock.size && done.containsAll(relevantStatementsInThisBlock))
 
         parent.statementEdges.clear()
-        done.forEach { parent.addStatement(it) }
+        done.forEach { parent.statements.add(it) }
 
         val newEntry = TransformationUtil.getEogBorders(parent.statements[0]).entries[0]
 
@@ -416,7 +417,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 val edge = it.nextEOGEdges.find { e -> e.end is DummyNeighbor }!!
                 DummyNeighbor.getInstance().prevEOGEdges.remove(edge)
                 edge.end = newEntry
-                newEntry.addPrevEOG(edge)
+                newEntry.prevEOGEdges.add(edge)
             }
 
         //rebuild EOG edges out of the block
@@ -430,7 +431,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 .forEach {
                     val edge = it.prevEOGEdges.find { e -> e.start is DummyNeighbor }!!
                     edge.start = newExit
-                    newExit.addNextEOG(edge)
+                    newExit.nextEOGEdges.add(edge)
                 }
         }
     }
@@ -519,9 +520,9 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     essentialNodes.add(node)
                     for (i in essentialChildren.indices) {
                         for (j in i + 1 until essentialChildren.size) {
-                            val properties: MutableMap<Properties, Any?> =
-                                mutableMapOf(Pair(Properties.NAME, "essentialsDependency"))
-                            essentialChildren[i].addNextDFG(essentialChildren[j])
+                            //val properties: MutableMap<Properties, Any?> = mutableMapOf(Pair(Properties.NAME, "essentialsDependency"))
+                            essentialChildren[j].name = Name("essentialsDependency")
+                            essentialChildren[i].nextDFG.add(essentialChildren[j])
                         }
                     }
                 }
@@ -897,8 +898,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val pair = Pair(node, declaration)
         val assignment = assignments.computeIfAbsent(pair) {
             val expr = AssignExpression()
-            expr.lhs = listOf(reference)
-            expr.rhs = listOf(node)
+           expr.lhs = mutableListOf(reference)
+           expr.rhs = mutableListOf(node)
             Assignment(it.first, it.second, expr)
         }
         state.registerAssignment(assignment, node)
@@ -960,12 +961,12 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val change = currentReferences
                 .filterNot { reference: Reference -> node in reference.prevDFG }
                 .map { reference ->
-                    node.addNextDFG(reference)
+                    node.nextDFG.add(reference)
                     true
                 }.any()
 
             if (node !in assignments) assignments.add(node)
-            currentAssignments.filter { node != it }.forEach { node.addNextDFG(it) }
+            currentAssignments.filter { node != it }.forEach { node.nextDFG.add(it) }
             currentAssignments.clear()
 
             // if it IS a declaration, then from this point on the variable is undefined yet
@@ -986,7 +987,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 if (reference in it.prevDFG) {
                     return false
                 }
-                reference.addNextDFG(it) // read-write dependency
+                reference.nextDFG.add(it) // read-write dependency
                 return true
             }.fold(false, Boolean::or)
         }

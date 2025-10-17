@@ -1,11 +1,11 @@
 package de.jplag.java_cpg.transformation.matching.edges;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
+import de.fraunhofer.aisec.cpg.graph.edges.Edge;
 import de.jplag.java_cpg.transformation.matching.pattern.GraphPattern;
 
 /**
- * This serves as an interface to wrap any kind of {@link PropertyEdge}.
+ * This serves as an interface to wrap any kind of {@link Edge}.
  * @param <T> the source node type
  * @param <R> the related node type
  */

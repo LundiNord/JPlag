@@ -1,10 +1,10 @@
 package de.jplag.java_cpg.transformation.matching.edges;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
+import de.fraunhofer.aisec.cpg.graph.edges.Edge;
 
 /**
- * A {@link CpgNthEdge} represents an individual {@link PropertyEdge} out of a {@link CpgMultiEdge}.
+ * A {@link CpgNthEdge} represents an individual {@link Edge} out of a {@link CpgMultiEdge}.
  * @param <T> source node type
  * @param <R> target node type
  */

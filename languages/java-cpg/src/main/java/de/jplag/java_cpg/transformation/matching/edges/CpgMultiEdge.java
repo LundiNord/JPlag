@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
+import de.fraunhofer.aisec.cpg.graph.edges.Edge;
 import de.fraunhofer.aisec.cpg.helpers.TriConsumer;
 import de.jplag.java_cpg.transformation.matching.pattern.NodePattern;
 
@@ -21,7 +21,7 @@ import de.jplag.java_cpg.transformation.matching.pattern.NodePattern;
  */
 public final class CpgMultiEdge<T extends Node, R extends Node> extends AEdge<T, R> {
     private final Function<T, List<R>> getter;
-    private final Function<T, List<PropertyEdge<R>>> getEdges;
+    private final Function<T, List<Edge<R>>> getEdges;
     private final TriConsumer<T, Integer, R> setter;
     private final Map<NodePattern<?>, AnyOfNEdge<T, R>> any1ofNEdges;
     private final ValueType valueType;
@@ -36,7 +36,7 @@ public final class CpgMultiEdge<T extends Node, R extends Node> extends AEdge<T,
      * @param category category of the edge
      */
     public CpgMultiEdge(Function<T, List<R>> getter, TriConsumer<T, Integer, R> setter, ValueType valueType,
-            Function<T, List<PropertyEdge<R>>> getEdges, EdgeCategory category) {
+            Function<T, List<Edge<R>>> getEdges, EdgeCategory category) {
         super(category);
         this.getter = getter;
         this.setter = setter;
@@ -54,7 +54,7 @@ public final class CpgMultiEdge<T extends Node, R extends Node> extends AEdge<T,
      * @param <R> The type of the related node
      * @return the new {@link CpgMultiEdge}
      */
-    public static <T extends Node, R extends Node> CpgMultiEdge<T, R> edgeValued(Function<T, List<PropertyEdge<R>>> getter) {
+    public static <T extends Node, R extends Node> CpgMultiEdge<T, R> edgeValued(Function<T, List<Edge<R>>> getter) {
         return edgeValued(getter, AST);
     }
 
@@ -66,8 +66,8 @@ public final class CpgMultiEdge<T extends Node, R extends Node> extends AEdge<T,
      * @param <R> The type of the related node
      * @return the new {@link CpgMultiEdge}
      */
-    public static <T extends Node, R extends Node> CpgMultiEdge<T, R> edgeValued(Function<T, List<PropertyEdge<R>>> getter, EdgeCategory category) {
-        Function<T, List<R>> getNodes = (T node) -> getter.apply(node).stream().map(PropertyEdge::getEnd).toList();
+    public static <T extends Node, R extends Node> CpgMultiEdge<T, R> edgeValued(Function<T, List<Edge<R>>> getter, EdgeCategory category) {
+        Function<T, List<R>> getNodes = (T node) -> getter.apply(node).stream().map(Edge::getEnd).toList();
         TriConsumer<T, Integer, R> setOne = (T node, Integer n, R value) -> getter.apply(node).get(n).setEnd(value);
         return new CpgMultiEdge<>(getNodes, setOne, ValueType.EDGE_VALUED, getter, category);
     }
@@ -154,7 +154,7 @@ public final class CpgMultiEdge<T extends Node, R extends Node> extends AEdge<T,
      * @param t the source node
      * @return the target edges
      */
-    public List<PropertyEdge<R>> getAllEdges(T t) {
+    public List<Edge<R>> getAllEdges(T t) {
         return getEdges.apply(t);
     }
 
@@ -167,7 +167,7 @@ public final class CpgMultiEdge<T extends Node, R extends Node> extends AEdge<T,
          */
         NODE_VALUED,
         /**
-         * An edge where the target can be accessed via {@link PropertyEdge}s.
+         * An edge where the target can be accessed via {@link Edge}s.
          */
         EDGE_VALUED,
         /**

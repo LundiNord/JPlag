@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import de.fraunhofer.aisec.cpg.graph.edges.flows.EvaluationOrder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
+import de.fraunhofer.aisec.cpg.graph.edges.Edge;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
@@ -100,7 +101,7 @@ public final class TransformationUtil {
      */
     public static Node disconnectFromSuccessor(Node node) {
         Node exit = getExit(node);
-        List<PropertyEdge<Node>> exitEdges = new ArrayList<>(getExitEdges(node, List.of(exit), true));
+        List<Edge<Node>> exitEdges = new ArrayList<>(getExitEdges(node, List.of(exit), true));
 
         exitEdges.removeIf(e -> Objects.equals(e.getEnd(), DUMMY));
         exitEdges.removeIf(e -> Objects.equals(e.getStart(), DUMMY));
@@ -110,17 +111,17 @@ public final class TransformationUtil {
 
         Node entry = exitEdges.getFirst().getEnd();
         exitEdges.forEach(e -> {
-            PropertyEdge<Node> dummyEdge = new PropertyEdge<>(e);
+            Edge<Node> dummyEdge = e.clone();
             DUMMY.saveOriginalTarget(e);
 
             int index = entry.getPrevEOGEdges().indexOf(e);
             e.setEnd(DUMMY);
-            DUMMY.addPrevEOG(e);
+            DUMMY.getPrevEOGEdges().add((EvaluationOrder) e);
 
             DUMMY.saveOriginalSource(dummyEdge);
             dummyEdge.setStart(DUMMY);
-            DUMMY.addNextEOG(dummyEdge);
-            entry.getPrevEOGEdges().set(index, dummyEdge);
+            DUMMY.getNextEOGEdges().add((EvaluationOrder) dummyEdge);
+            entry.getPrevEOGEdges().set(index, (EvaluationOrder) dummyEdge);
         });
         return entry;
     }
@@ -133,20 +134,20 @@ public final class TransformationUtil {
      */
     static void connectNewSuccessor(Node target, Node newSuccessor, boolean enforceEogConnection) {
         List<Node> exits = List.of(target);
-        List<PropertyEdge<Node>> exitEdges = getExitEdges(target, exits, false);
+        List<EvaluationOrder> exitEdges = getExitEdges(target, exits, false);
 
         if (Objects.isNull(newSuccessor) || target == DUMMY) {
             return;
         }
         if (target instanceof UnaryOperator unaryOperator && Objects.equals(unaryOperator.getOperatorCode(), "throw")) {
-            target.clearNextEOG();
+            target.getNextEOG().clear();
             return;
         }
 
         if (exitEdges.isEmpty()) {
             if (enforceEogConnection) {
-                PropertyEdge<Node> exitEdge = new PropertyEdge<>(target, DUMMY);
-                target.addNextEOG(exitEdge);
+                EvaluationOrder exitEdge = new EvaluationOrder(target, DUMMY, false, null);
+                target.getNextEOGEdges().add(exitEdge);
                 exitEdges = List.of(exitEdge);
             } else {
                 return;
@@ -164,7 +165,7 @@ public final class TransformationUtil {
         exitEdges.forEach(e -> {
             DUMMY.getPrevEOGEdges().remove(e);
             e.setEnd(entry);
-            entry.addPrevEOG(e);
+            entry.getPrevEOGEdges().add(e);
         });
 
     }
@@ -177,24 +178,24 @@ public final class TransformationUtil {
     public static List<Node> disconnectFromPredecessor(Node node) {
         Node entry = getEntry(node);
 
-        List<PropertyEdge<Node>> entryEdges = getEntryEdges(node, entry, true);
+        List<EvaluationOrder> entryEdges = getEntryEdges(node, entry, true);
         if (entryEdges.isEmpty())
             return List.of();
 
-        List<Node> predExits = entryEdges.stream().map(PropertyEdge::getStart).toList();
+        List<Node> predExits = entryEdges.stream().map(Edge::getStart).toList();
 
         entryEdges.stream().filter(e -> !Objects.equals(e.getStart(), DUMMY)).filter(e -> !Objects.equals(e.getEnd(), DUMMY)).forEach(e -> {
-            PropertyEdge<Node> dummyEdge = new PropertyEdge<>(e);
+            Edge<Node> dummyEdge = e.clone();
             DUMMY.saveOriginalSource(e);
 
             e.getStart().getNextEOGEdges().remove(e);
             e.setStart(DUMMY);
-            DUMMY.addNextEOG(e);
+            DUMMY.getNextEOGEdges().add((EvaluationOrder) e);
 
             DUMMY.saveOriginalTarget(dummyEdge);
             dummyEdge.setEnd(DUMMY);
-            DUMMY.addPrevEOG(dummyEdge);
-            dummyEdge.getStart().addNextEOG(dummyEdge);
+            DUMMY.getPrevEOGEdges().add((EvaluationOrder) dummyEdge);
+            dummyEdge.getStart().getNextEOGEdges().add((EvaluationOrder) dummyEdge);
         });
         return predExits;
     }
@@ -220,7 +221,7 @@ public final class TransformationUtil {
     static Node connectNewPredecessor(Node target, Node newPredecessor) {
         Node entry = getEntry(target);
         List<Node> exits = getEogBorders(newPredecessor).getExits();
-        List<PropertyEdge<Node>> exitEdges = getExitEdges(target, exits, true);
+        List<EvaluationOrder> exitEdges = getExitEdges(target, exits, true);
 
         assert exitEdges.stream().allMatch(e -> e.getEnd().equals(DUMMY));
         if (exitEdges.isEmpty())
@@ -234,7 +235,7 @@ public final class TransformationUtil {
         exitEdges.forEach(e -> {
             DUMMY.getPrevEOGEdges().remove(e);
             e.setEnd(entry);
-            entry.addPrevEOG(e);
+            entry.getPrevEOGEdges().add((EvaluationOrder) e);
         });
 
         return entry;
@@ -249,11 +250,15 @@ public final class TransformationUtil {
      * @return the entry edges
      */
     @NotNull
-    public static List<PropertyEdge<Node>> getEntryEdges(Node astParent, Node entry, boolean useDummies) {
-        List<PropertyEdge<Node>> currentEntryEdges = entry.getPrevEOGEdges().stream().filter(e -> !isAstChild(astParent, e.getStart())).toList();
-        List<PropertyEdge<Node>> disconnectedEdges = currentEntryEdges.stream().filter(e -> e.getStart().equals(DUMMY)).toList();
+    public static List<EvaluationOrder> getEntryEdges(Node astParent, Node entry, boolean useDummies) {
+        List<EvaluationOrder>
+            currentEntryEdges = entry.getPrevEOGEdges().stream().filter(e -> !isAstChild(astParent, e.getStart())).toList();
+        List<EvaluationOrder> disconnectedEdges = currentEntryEdges.stream().filter(e -> e.getStart().equals(DUMMY)).toList();
 
-        List<PropertyEdge<Node>> originalEntryEdges = DUMMY.getOriginalEdgeOfTarget(entry);
+        //List<Edge<Node>> originalEntryEdges = DUMMY.getOriginalEdgeOfTarget(entry);
+        List<EvaluationOrder> originalEntryEdges = DUMMY.getOriginalEdgeOfTarget(entry).stream()
+            .map(e -> (EvaluationOrder) e)
+            .toList();
 
         if (originalEntryEdges.isEmpty() || !useDummies) {
             // Node is still in its proper place
@@ -277,12 +282,15 @@ public final class TransformationUtil {
      * @return the exit edges
      */
     @NotNull
-    public static List<PropertyEdge<Node>> getExitEdges(Node astParent, List<Node> exits, boolean useDummies) {
-        List<PropertyEdge<Node>> currentExitEdges = exits.stream().flatMap(n -> n.getNextEOGEdges().stream())
+    public static List<EvaluationOrder> getExitEdges(Node astParent, List<Node> exits, boolean useDummies) {
+        List<EvaluationOrder> currentExitEdges = exits.stream().flatMap(n -> n.getNextEOGEdges().stream())
                 .filter(e -> !isAstChild(astParent, e.getEnd()) || (astParent instanceof Block && e.getEnd() == astParent)).toList();
-        List<PropertyEdge<Node>> disconnectedEdges = currentExitEdges.stream().filter(e -> e.getEnd().equals(DUMMY)).toList();
+        List<EvaluationOrder> disconnectedEdges = currentExitEdges.stream().filter(e -> e.getEnd().equals(DUMMY)).toList();
 
-        List<PropertyEdge<Node>> originalEdges = exits.stream().map(DUMMY::getOriginalEdgeOfSource).flatMap(List::stream).toList();
+        List<EvaluationOrder> originalEdges = exits.stream().map(DUMMY::getOriginalEdgeOfSource).flatMap(List::stream)
+            .map(e -> (EvaluationOrder) e)
+            .toList();
+
         if (originalEdges.isEmpty() || !useDummies) {
             // Node is still in its proper place
             return currentExitEdges;
@@ -342,7 +350,7 @@ public final class TransformationUtil {
         // The exit is likely to be a child node, not element itself
         List<Node> exits = getEogBorders(element).getExits();
         Node entry = getEntry(maybeSuccessor);
-        List<PropertyEdge<Node>> entryEdges = getEntryEdges(maybeSuccessor, entry, false);
+        List<EvaluationOrder> entryEdges = getEntryEdges(maybeSuccessor, entry, false);
 
         return entryEdges.stream().anyMatch(e -> exits.contains(e.getStart()));
     }
@@ -356,7 +364,7 @@ public final class TransformationUtil {
     public static boolean isEogSuccessor(Node exit, Node maybeSuccessor) {
         // Unlike isAstSuccessor, we check for edges from exit directly
         Node entry = getEntry(maybeSuccessor);
-        List<PropertyEdge<Node>> entryEdges = getEntryEdges(maybeSuccessor, entry, false);
+        List<EvaluationOrder> entryEdges = getEntryEdges(maybeSuccessor, entry, false);
 
         return entryEdges.stream().anyMatch(e -> exit == e.getStart());
     }
