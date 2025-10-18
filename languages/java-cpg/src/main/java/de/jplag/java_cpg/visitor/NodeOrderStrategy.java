@@ -11,7 +11,7 @@ import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.declarations.*;
-import de.fraunhofer.aisec.cpg.graph.scopes.BlockScope;
+import de.fraunhofer.aisec.cpg.graph.scopes.LocalScope;
 import de.fraunhofer.aisec.cpg.graph.scopes.LoopScope;
 import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
 import de.fraunhofer.aisec.cpg.graph.scopes.ValueDeclarationScope;
@@ -63,7 +63,7 @@ public class NodeOrderStrategy implements IStrategy<Node> {
             return walkForStatement(forStatement);
         } else if (node instanceof Block block) {
             return walkBlock(block);
-        } else if (node.getScope() instanceof BlockScope || node.getScope() instanceof LoopScope || node.getScope() instanceof TryScope
+        } else if (node.getScope() instanceof LocalScope || node.getScope() instanceof LoopScope || node.getScope() instanceof TryScope
                 || node.getScope() instanceof ValueDeclarationScope) {
             return Strategy.INSTANCE.EOG_FORWARD(node);
         } else {
