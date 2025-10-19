@@ -3,6 +3,7 @@ package de.jplag.java_cpg;
 import static de.jplag.java_cpg.transformation.TransformationRepository.*;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ import de.jplag.java_cpg.transformation.GraphTransformation;
 @MetaInfServices(de.jplag.Language.class)
 public class JavaCpgLanguage implements Language {
     private static final int DEFAULT_MINIMUM_TOKEN_MATCH = 9;
-    private static final String[] FILE_EXTENSIONS = {".java"};
+    private static final String[] FILE_EXTENSIONS = {".java"};      // ToDo: conflicts with java language module
     private static final String NAME = "Java Code Property Graph module";
     private static final String IDENTIFIER = "java-cpg";
     private final CpgAdapter cpgAdapter;
@@ -115,8 +116,8 @@ public class JavaCpgLanguage implements Language {
     }
 
     @Override
-    public String[] suffixes() {
-        return FILE_EXTENSIONS;
+    public List<String> fileExtensions() {
+        return Arrays.stream(FILE_EXTENSIONS).toList();
     }
 
     @Override

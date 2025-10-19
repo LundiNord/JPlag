@@ -344,6 +344,7 @@ public class Submission implements Comparable<Submission> {
                 fileTokenCount.put(file, 0);
             }
             for (Token token : this.tokenList) {
+                fileTokenCount.putIfAbsent(token.getFile(), 0);
                 fileTokenCount.put(token.getFile(), fileTokenCount.get(token.getFile()) + 1);
             }
         }

@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import kotlin.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +18,8 @@ import de.fraunhofer.aisec.cpg.graph.types.ParameterizedType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.fraunhofer.aisec.cpg.graph.types.UnknownType;
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
+
+import kotlin.Unit;
 
 /**
  * This class contains methods to put a call graph oriented order on methods.

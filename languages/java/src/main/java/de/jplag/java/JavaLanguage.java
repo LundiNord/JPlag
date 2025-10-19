@@ -21,7 +21,7 @@ public class JavaLanguage implements Language {
 
     @Override
     public List<String> fileExtensions() {
-        return List.of(".java");
+        return List.of(".java2");   // ToDo: changed temporarily to avoid conflict with java-cpg
     }
 
     @Override

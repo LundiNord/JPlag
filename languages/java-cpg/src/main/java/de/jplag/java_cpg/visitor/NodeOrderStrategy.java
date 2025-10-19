@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.TranslationResult;
@@ -24,6 +23,7 @@ import de.fraunhofer.aisec.cpg.sarif.Region;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 
 import com.google.common.collect.Iterators;
+import kotlin.Unit;
 
 /**
  * This class defines the order of visitation of the CPG {@link Node}s.

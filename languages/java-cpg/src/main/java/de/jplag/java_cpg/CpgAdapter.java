@@ -94,8 +94,7 @@ public class CpgAdapter {
     }
 
     /* package-private */ TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
-        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true)
-                .inferDfgForUnresolvedCalls(true).build();
+        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
 
         TranslationResult translationResult;
         TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
