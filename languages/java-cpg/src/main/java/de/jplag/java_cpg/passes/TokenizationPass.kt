@@ -9,6 +9,7 @@ import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
 import de.jplag.Token
 import de.jplag.TokenType
+import de.jplag.java_cpg.ai.AbstractInterpretation1
 import de.jplag.java_cpg.token.CpgNodeListener
 import de.jplag.java_cpg.token.CpgToken
 import de.jplag.java_cpg.token.CpgTokenConsumer
@@ -53,6 +54,9 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
      * the old version commented out above.
      */
     override fun accept(translationResult: TranslationResult) {
+
+        val translationResult = AbstractInterpretation1.translationResult(translationResult)
+
         tokenList.clear()
         val listener = CpgNodeListener(consumer)
         val walker: SubgraphWalker.IterativeGraphWalker = SubgraphWalker.IterativeGraphWalker()

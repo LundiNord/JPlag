@@ -46,6 +46,8 @@ public class CpgAdapter {
 
         translate(files);
 
+
+
         return tokenList;
     }
 
@@ -108,6 +110,13 @@ public class CpgAdapter {
                     FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
                     // EOG
                     DfgSortPass.class, CpgTransformationPass.class, TokenizationPass.class));
+
+//            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+//                ImportResolver.class, SymbolResolver.class, /*PrepareTransformationPass.class, FixAstPass.class,*/ DynamicInvokeResolver.class,
+//                FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
+//                // EOG
+//                DfgSortPass.class //CpgTransformationPass.class, TokenizationPass.class
+//            ));
 
             if (!reorderingEnabled)
                 passClasses.remove(DfgSortPass.class);
