@@ -16,6 +16,7 @@ import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
 import de.fraunhofer.aisec.cpg.graph.statements.Statement;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
+import de.fraunhofer.aisec.cpg.processing.strategy.Strategy;
 
 import java.util.List;
 import java.util.Set;
@@ -26,20 +27,41 @@ public class AbstractInterpretation1 {
         List<Component> componentList = translationResult.getComponents();
         List<TranslationUnitDeclaration> translationUnits = componentList.getFirst().getTranslationUnits();
 
-        translationUnits.stream().filter(x -> x.getName().toString().contains("Main.java")).forEach(this::graphWalker);
+        //translationUnits.stream().filter(x -> x.getName().toString().contains("Main.java")).forEach(this::graphWalker);
 
-//        for (TranslationUnitDeclaration translationUnit : translationUnits) {   //replace with stream
-//            if (!translationUnit.getName().toString().contains("Main.java")) {
-//                continue;
-//            }
+        for (TranslationUnitDeclaration translationUnit : translationUnits) {   //replace with stream
+            if (!translationUnit.getName().toString().contains("Main.java")) {
+                continue;
+            }
 //            graphWalker(translationUnit);
 //            List<Node> eog = translationUnit.getEogStarters();                  //
 //            List<Declaration> dec = translationUnit.getDeclarations();          //all declarations (also from imports)
 //            List<IncludeDeclaration> incl = translationUnit.getIncludes();      //imports
 //            List<NamespaceDeclaration> name = translationUnit.getNamespaces();  //edu.kit.informatik
 //            List<Statement> stat = translationUnit.getStatements();             //0
-//            System.out.println("Test");
-//        }
+
+
+            SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
+
+            //walker.setStrategy(Strategy.INSTANCE::AST_FORWARD);      // default, but explicit is fine
+            /*walker.strategy = { strategy.getIterator(it) }*/
+
+
+            walker.registerOnNodeVisit((node, parent) -> {
+                //System.out.println("Visited node: " + node.toString() + " parent: " + (parent != null ? parent.toString() : null));
+                System.out.println("Visited node: " + node.toString());
+                System.out.println("                        ");
+                return null;
+            });
+
+            for (Declaration declaration : translationUnit.getDeclarations()) {
+                if (declaration instanceof NamespaceDeclaration) {
+                    walker.iterate(declaration);
+                }
+            }
+            //walker.iterate(translationUnit);
+            System.out.println("Test");
+        }
         return translationResult;
     }
 

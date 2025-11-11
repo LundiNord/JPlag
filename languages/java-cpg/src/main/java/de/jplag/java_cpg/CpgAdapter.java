@@ -96,42 +96,79 @@ public class CpgAdapter {
         this.tokenList = tokenList;
     }
 
-    /* package-private */ TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
-        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true)
-                .inferDfgForUnresolvedCalls(true).build();
+//    TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
+//        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true)
+//                .inferDfgForUnresolvedCalls(true).build();
+//
+//        TranslationResult translationResult;
+//        TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
+//        try {
+//            TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
+//                    .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
+//
+////            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,   //ToDo: use JavaImportResolver?
+////                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
+////                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
+////                    // EOG
+////                    DfgSortPass.class, CpgTransformationPass.class, TokenizationPass.class));
+//
+//            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+//                JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+//                ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
+//                FilenameMapper.class,
+//                ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,    //FixMe: EOG seems broken
+//                DFGPass.class,
+//                ProgramDependenceGraphPass.class,
+//                StatisticsCollectionPass.class
+//            ));
+//
+////            for (Class<? extends Pass<?>> passClass : passClasses) {
+////                configBuilder.registerPass(getKClass(passClass));
+////            }
+//
+//            configBuilder.defaultPasses();
+//
+//            translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
+//
+//        } catch (InterruptedException e) {
+//            throw e;
+//        } catch (ExecutionException | ConfigurationException e) {
+//            throw new ParsingException(List.copyOf(files).getFirst(), e);
+//        }
+//        //ToDo
+//        AbstractInterpretation1 ai = new AbstractInterpretation1();
+//        /*translationResult =*/ ai.translationResult(translationResult);
+//        return translationResult;
+//    }
 
+
+
+    TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
+        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
-        TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
+
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
-                    .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
+                .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
 
-//            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,   //ToDo: use JavaImportResolver?
-//                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
-//                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
-//                    // EOG
-//                    DfgSortPass.class, CpgTransformationPass.class, TokenizationPass.class));
+//            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+//                JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+//                ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
+//                FilenameMapper.class,
+//                ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,    //FixMe: EOG seems broken
+//                DFGPass.class,
+//                ProgramDependenceGraphPass.class,
+//                StatisticsCollectionPass.class
+//            ));
 
-            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-                JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-                ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
-                FilenameMapper.class,
-                ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,    //FixMe: EOG seems broken
-                DFGPass.class,
-                ProgramDependenceGraphPass.class,
-                StatisticsCollectionPass.class
-            ));
-            if (!reorderingEnabled)
-                passClasses.remove(DfgSortPass.class);
+//            for (Class<? extends Pass<?>> passClass : passClasses) {
+//                configBuilder.registerPass(getKClass(passClass));
+//            }
 
-            for (Class<? extends Pass<?>> passClass : passClasses) {
-                configBuilder.registerPass(getKClass(passClass));
-            }
+            configBuilder.defaultPasses();
 
             translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
 
-        } catch (InterruptedException e) {
-            throw e;
         } catch (ExecutionException | ConfigurationException e) {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
