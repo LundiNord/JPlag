@@ -1,8 +1,6 @@
 package edu.kit.informatik;
 
-import edu.kit.informatik.ui.StartUserInterface;
-
-/** Main Klasse eines "Queens Farming" Spieles das über die Kommandozeile gespielt werden kann.
+/**
  * @author ujiqk
  * @version 1.0 */
 public final class Main {
@@ -13,16 +11,18 @@ public final class Main {
         throw new IllegalStateException();
     }
 
-    /** Startet das Spiel
-     * @param args Kommandozeilenparameter muss leer sein.
+    /**
+     * @param args Kommandozeilenparameter mit Wert von x.
      */
     public static void main(String[] args) {
+        int x = Integer.parseInt(args[0]);
+        x = Math.abs(x);
+        int y = 100;
 
-        if (args.length != 0) {
-            System.err.println(ERROR_ARGUMENTS_NOT_SUPPORTED);
-            return;
+        if (x+y < 100) {
+            System.out.print("1");
+        } else {
+            System.out.print("2");
         }
-        //Spiel starten
-        StartUserInterface ui1 = new StartUserInterface();
     }
 }
