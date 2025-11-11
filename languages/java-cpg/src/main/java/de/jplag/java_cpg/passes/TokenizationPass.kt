@@ -55,7 +55,8 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
      */
     override fun accept(translationResult: TranslationResult) {
 
-        val translationResult = AbstractInterpretation1.translationResult(translationResult)
+        //ToDo
+        //val translationResult = AbstractInterpretation1.translationResult(translationResult)
 
         tokenList.clear()
         val listener = CpgNodeListener(consumer)

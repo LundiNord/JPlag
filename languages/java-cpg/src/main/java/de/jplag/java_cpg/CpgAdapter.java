@@ -12,6 +12,7 @@ import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
 import de.fraunhofer.aisec.cpg.passes.*;
 import de.jplag.ParsingException;
 import de.jplag.Token;
+import de.jplag.java_cpg.ai.AbstractInterpretation1;
 import de.jplag.java_cpg.passes.*;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase;
@@ -105,19 +106,21 @@ public class CpgAdapter {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
 
+//            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,   //ToDo: use JavaImportResolver?
+//                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
+//                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
+//                    // EOG
+//                    DfgSortPass.class, CpgTransformationPass.class, TokenizationPass.class));
+
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
-                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
-                    // EOG
-                    DfgSortPass.class, CpgTransformationPass.class, TokenizationPass.class));
-
-//            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-//                ImportResolver.class, SymbolResolver.class, /*PrepareTransformationPass.class, FixAstPass.class,*/ DynamicInvokeResolver.class,
-//                FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
-//                // EOG
-//                DfgSortPass.class //CpgTransformationPass.class, TokenizationPass.class
-//            ));
-
+                JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+                ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
+                FilenameMapper.class,
+                ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
+                DFGPass.class,
+                ProgramDependenceGraphPass.class,
+                StatisticsCollectionPass.class
+            ));
             if (!reorderingEnabled)
                 passClasses.remove(DfgSortPass.class);
 
@@ -132,6 +135,9 @@ public class CpgAdapter {
         } catch (ExecutionException | ConfigurationException e) {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
+        //ToDo
+        AbstractInterpretation1 ai = new AbstractInterpretation1();
+        /*translationResult =*/ ai.translationResult(translationResult);
         return translationResult;
     }
 }

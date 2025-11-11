@@ -22,7 +22,9 @@ public class Main {
 
         Language language = new JavaCpgLanguage();
 
-        File submissionsRoot = new File("leon/submissions");
+        //File submissionsRoot = new File("leon/submissions");
+        File submissionsRoot = new File("leon/submissionsFolders");
+
         Set<File> submissionDirectories = Set.of(submissionsRoot);
 //        File baseCode = new File("leon/baseCode");
 

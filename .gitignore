@@ -3,6 +3,7 @@ target/
 .settings/
 .classpath
 .factorypath
+website/node_modules
 
 *.class
 
