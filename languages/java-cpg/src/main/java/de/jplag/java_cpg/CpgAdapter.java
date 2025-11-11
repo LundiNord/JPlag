@@ -116,7 +116,7 @@ public class CpgAdapter {
                 JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
                 ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
                 FilenameMapper.class,
-                ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
+                ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,    //FixMe: EOG seems broken
                 DFGPass.class,
                 ProgramDependenceGraphPass.class,
                 StatisticsCollectionPass.class
