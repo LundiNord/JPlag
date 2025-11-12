@@ -4,35 +4,20 @@ import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.IncludeDeclaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
-import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
-import de.fraunhofer.aisec.cpg.graph.edge.Dataflow;
-import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
-import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.declarations.*;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
 import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
 import de.fraunhofer.aisec.cpg.graph.types.StringType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
-import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
-import de.fraunhofer.aisec.cpg.processing.strategy.Strategy;
-import de.jplag.java_cpg.ai.variables.JavaArray;
-import de.jplag.java_cpg.ai.variables.JavaObject;
-import de.jplag.java_cpg.ai.variables.Value;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableStore;
+import de.jplag.java_cpg.ai.variables.values.JavaArray;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 
 import java.util.List;
-import java.util.Set;
 
 public class AbstractInterpretation1 {
 
@@ -50,7 +35,7 @@ public class AbstractInterpretation1 {
         return translationResult;
     }
 
-   private void runMain(TranslationUnitDeclaration tud) {
+    private void runMain(TranslationUnitDeclaration tud) {
         assert tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1;
         for (Declaration declaration : tud.getDeclarations()) {
             if (declaration instanceof NamespaceDeclaration) {
@@ -99,7 +84,7 @@ public class AbstractInterpretation1 {
             }
             case ObjectType ignored -> {
                 //ToDo: handle different object types
-                variables.addVariable(new Variable(name.toString(), (JavaObject) null));    //for now only null
+                variables.addVariable(new Variable(name.toString(), new JavaObject()));    //for now only null
             }
             default -> throw new IllegalStateException("Unknown type: " + type);
         }
@@ -158,8 +143,6 @@ public class AbstractInterpretation1 {
             }
 
 
-
-
             case VariableDeclaration vd -> {
                 Type type = vd.getType();
                 Name name = vd.getName();
@@ -168,10 +151,11 @@ public class AbstractInterpretation1 {
                 } else {
                     Value value = graphWalkerWithReturnValue(vd.getInitializer());
                     assert value.getType().checkEquals(type);
-                    variables.addVariable(Variable.createFromVar(name.toString(), value));
+                    variables.addVariable(new Variable(name.toString(), value));
                 }
                 //ToDo continue in eog
                 System.out.println("Test");
+                vd.getNextEOG();
             }
 
 
@@ -188,13 +172,13 @@ public class AbstractInterpretation1 {
                 if (name.getLocalName().equals("parseInt") && name.getParent().toString().equals("Integer")) {
                     List<Expression> expr = mce.getArguments();
                     assert expr.size() == 1;
-                    SubscriptExpression subExpr = (SubscriptExpression) expr.getFirst();
+                    SubscriptExpression subExpr = (SubscriptExpression) expr.getFirst();    //FixMe: what if not array access
                     Expression array = subExpr.getArrayExpression();
-                    Name arrayName =  array.getName();
+                    Name arrayName = array.getName();
                     int index = subExpr.getArgumentIndex();
                     Variable var = variables.getVariable(arrayName.getLocalName());
-                    //ToDo
-                    return new Value(4);
+                    JavaArray javaArray = (JavaArray) var.getValue();
+                    return javaArray.arrayAccess(index).parseInt();
                 }
 
                 System.out.println("Test");
