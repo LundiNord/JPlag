@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai;
 
 import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.graph.Component;
+import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
 import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
@@ -11,70 +12,103 @@ import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
 import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
 import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
 import de.fraunhofer.aisec.cpg.graph.edge.Dataflow;
 import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
 import de.fraunhofer.aisec.cpg.graph.statements.Statement;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
+import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
+import de.fraunhofer.aisec.cpg.graph.types.StringType;
+import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
 import de.fraunhofer.aisec.cpg.processing.strategy.Strategy;
+import de.jplag.java_cpg.ai.variables.JavaArray;
+import de.jplag.java_cpg.ai.variables.JavaObject;
+import de.jplag.java_cpg.ai.variables.Value;
+import de.jplag.java_cpg.ai.variables.Variable;
+import de.jplag.java_cpg.ai.variables.VariableStore;
 
 import java.util.List;
 import java.util.Set;
 
 public class AbstractInterpretation1 {
 
+    private final VariableStore variables;
+
+    public AbstractInterpretation1() {
+        variables = new VariableStore();
+    }
+
     public TranslationResult translationResult(TranslationResult translationResult) {
         List<Component> componentList = translationResult.getComponents();
         List<TranslationUnitDeclaration> translationUnits = componentList.getFirst().getTranslationUnits();
+        translationUnits.stream().filter(x -> x.getName().toString().contains("Main.java")).forEach(this::runMain);
 
-        //translationUnits.stream().filter(x -> x.getName().toString().contains("Main.java")).forEach(this::graphWalker);
-
-        for (TranslationUnitDeclaration translationUnit : translationUnits) {   //replace with stream
-            if (!translationUnit.getName().toString().contains("Main.java")) {
-                continue;
-            }
-//            graphWalker(translationUnit);
-//            List<Node> eog = translationUnit.getEogStarters();                  //
-//            List<Declaration> dec = translationUnit.getDeclarations();          //all declarations (also from imports)
-//            List<IncludeDeclaration> incl = translationUnit.getIncludes();      //imports
-//            List<NamespaceDeclaration> name = translationUnit.getNamespaces();  //edu.kit.informatik
-//            List<Statement> stat = translationUnit.getStatements();             //0
-
-
-            SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
-
-            //walker.setStrategy(Strategy.INSTANCE::AST_FORWARD);      // default, but explicit is fine
-            /*walker.strategy = { strategy.getIterator(it) }*/
-
-
-            walker.registerOnNodeVisit((node, parent) -> {
-                //System.out.println("Visited node: " + node.toString() + " parent: " + (parent != null ? parent.toString() : null));
-                System.out.println("Visited node: " + node.toString());
-                System.out.println("                        ");
-                return null;
-            });
-
-            for (Declaration declaration : translationUnit.getDeclarations()) {
-                if (declaration instanceof NamespaceDeclaration) {
-                    walker.iterate(declaration);
-                }
-            }
-            //walker.iterate(translationUnit);
-            System.out.println("Test");
-        }
         return translationResult;
     }
 
-    void graphWalker(Node node) {
+   private void runMain(TranslationUnitDeclaration tud) {
+        assert tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1;
+        for (Declaration declaration : tud.getDeclarations()) {
+            if (declaration instanceof NamespaceDeclaration) {
+                RecordDeclaration mainClas = (RecordDeclaration) ((NamespaceDeclaration) declaration).getDeclarations().getFirst();
+                for (FieldDeclaration fd : mainClas.getFields()) {
+                    Type type = fd.getType();
+                    Name name = fd.getName();
+                    if (fd.getInitializer() == null) {      //no initial value
+                        addVariable(type, name, null);
+                    } else {
+                        String value = fd.getInitializer().getCode();   //FixMe hacky way please fix me - only works for string constants
+                        addVariable(type, name, value);
+                    }
+                    System.out.println("Test");
+                }
+                for (MethodDeclaration md : mainClas.getMethods()) {
+                    if (md.getName().getLocalName().equals("main")) {
+                        //Run main method
+                        List<Node> eog = md.getNextEOG();
+                        assert eog.size() == 1;
+                        variables.newScope();
+                        variables.addVariable(new Variable("args", new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
+                        graphWalker(eog.getFirst());
+                        System.out.println("Test");
+                    }
+                }
+                System.out.println("Test");
+            }
+            //ignore include declaration for now
+        }
+    }
 
+    //FixMe
+    private void addVariable(Type type, Name name, String code) {
+        assert name != null;
+        assert type != null;
+        switch (type) {
+            case StringType ignored -> {
+                String value = code;
+                if (value != null && value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+                    value = value.substring(1, value.length() - 1);
+                } else {
+                    value = null;
+                }
+                variables.addVariable(new Variable(name.toString(), value));
+            }
+            case ObjectType ignored -> {
+                //ToDo: handle different object types
+                variables.addVariable(new Variable(name.toString(), (JavaObject) null));    //for now only null
+            }
+            default -> throw new IllegalStateException("Unknown type: " + type);
+        }
+    }
+
+    void graphWalker(Node node) {
         switch (node) {
             case TranslationUnitDeclaration tud -> {
-                List<Declaration> declarations = tud.getDeclarations();
-//                Set<Node> dfg = tud.getNextDFG();
-//                List<Dataflow> dfgE = tud.getNextDFGEdges();
-//                List<Node> eog = tud.getNextEOG();
-//                List<PropertyEdge<Node>> eogE = tud.getNextEOGEdges();
-                for (Declaration declaration : declarations) {
+                for (Declaration declaration : tud.getDeclarations()) {
                     if (declaration instanceof NamespaceDeclaration) {
                         graphWalker(declaration);
                     }
@@ -88,19 +122,26 @@ public class AbstractInterpretation1 {
                 }
                 System.out.println("Test");
             }
-            case RecordDeclaration rd -> {
-                //List<Declaration> declarations = rd.getDeclarations();
-                List<Node> eog = rd.getEogStarters();
+            case RecordDeclaration rd -> {  //Class
+                //first fields
+
+                //then constructor
+                for (Declaration declaration : rd.getConstructors()) {  //ToDo: order?
+                    graphWalker(declaration);
+                }
+
+                //ToDo
                 for (Declaration declaration : rd.getDeclarations()) {  //ToDo: order?
                     graphWalker(declaration);
                 }
                 System.out.println("Test");
             }
+
+
             case FieldDeclaration fd -> {
                 FieldDeclaration def = fd.getDefinition();
                 Expression expr = fd.getInitializer();
                 //ToDo
-                //ToDo: implement scoped variable store?
                 System.out.println("Test");
             }
             case ConstructorDeclaration cd -> {
@@ -115,11 +156,52 @@ public class AbstractInterpretation1 {
                 //ToDo
                 System.out.println("Test");
             }
-            default -> System.out.println("Error: other node: " + node.getClass());
+
+
+
+
+            case VariableDeclaration vd -> {
+                Type type = vd.getType();
+                Name name = vd.getName();
+                if (vd.getInitializer() == null) {      //no initial value
+                    addVariable(type, name, null);
+                } else {
+                    Value value = graphWalkerWithReturnValue(vd.getInitializer());
+                    assert value.getType().checkEquals(type);
+                    variables.addVariable(Variable.createFromVar(name.toString(), value));
+                }
+                //ToDo continue in eog
+                System.out.println("Test");
+            }
+
+
+            default -> throw new IllegalStateException("Unknown node: " + node);
         }
+    }
 
 
+    Value graphWalkerWithReturnValue(Node node) {
+        switch (node) {
+            case MemberCallExpression mce -> {
+                //special cases like Math.abs, Integer.parseInt, etc.
+                Name name = mce.getName();
+                if (name.getLocalName().equals("parseInt") && name.getParent().toString().equals("Integer")) {
+                    List<Expression> expr = mce.getArguments();
+                    assert expr.size() == 1;
+                    SubscriptExpression subExpr = (SubscriptExpression) expr.getFirst();
+                    Expression array = subExpr.getArrayExpression();
+                    Name arrayName =  array.getName();
+                    int index = subExpr.getArgumentIndex();
+                    Variable var = variables.getVariable(arrayName.getLocalName());
+                    //ToDo
+                    return new Value(4);
+                }
 
+                System.out.println("Test");
+            }
+            default -> throw new IllegalStateException("Unknown node: " + node);
+        }
+        return null;
     }
 
 }

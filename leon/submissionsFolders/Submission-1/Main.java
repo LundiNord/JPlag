@@ -6,6 +6,7 @@ package edu.kit.informatik;
 public final class Main {
 
     private static final String ERROR_ARGUMENTS_NOT_SUPPORTED = "Error: Commandline arguments not supported";
+    private static final String ERROR_ARGUMENTS_NOT_SUPPORTED2;
 
     private Main() {
         throw new IllegalStateException();
