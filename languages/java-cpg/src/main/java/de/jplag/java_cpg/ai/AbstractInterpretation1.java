@@ -5,17 +5,18 @@ import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.declarations.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.types.IntegerType;
 import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
 import de.fraunhofer.aisec.cpg.graph.types.StringType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableStore;
+import de.jplag.java_cpg.ai.variables.objects.Math;
 import de.jplag.java_cpg.ai.variables.values.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import kotlin.Pair;
 
 import java.util.List;
 
@@ -83,6 +84,10 @@ public class AbstractInterpretation1 {
                 variables.addVariable(new Variable(name.toString(), value));
             }
             case ObjectType ignored -> {
+                if (name.getParent() == null && name.getLocalName().equals("Math")) {   //special case java.lang.Math
+                    variables.addVariable(new Variable(name.toString(), new Math()));   //ToDo: what if Math class present?
+                    break;
+                }
                 //ToDo: handle different object types
                 variables.addVariable(new Variable(name.toString(), new JavaObject()));    //for now only null
             }
@@ -114,7 +119,6 @@ public class AbstractInterpretation1 {
                 for (Declaration declaration : rd.getConstructors()) {  //ToDo: order?
                     graphWalker(declaration);
                 }
-
                 //ToDo
                 for (Declaration declaration : rd.getDeclarations()) {  //ToDo: order?
                     graphWalker(declaration);
@@ -146,46 +150,106 @@ public class AbstractInterpretation1 {
             case VariableDeclaration vd -> {
                 Type type = vd.getType();
                 Name name = vd.getName();
+                Node nextEOG;
                 if (vd.getInitializer() == null) {      //no initial value
                     addVariable(type, name, null);
+                    nextEOG = null; //ToDo
                 } else {
-                    Value value = graphWalkerWithReturnValue(vd.getInitializer());
-                    assert value.getType().checkEquals(type);
-                    variables.addVariable(new Variable(name.toString(), value));
+                    Pair<Value, Node> result = graphWalkerWithReturnValue(vd.getInitializer()); //ToDo: maybe dont use initializer but its nextEOG
+                    assert result.component1().getType().checkEquals(type);
+                    variables.addVariable(new Variable(name.toString(), result.component1()));
+                    nextEOG = result.component2();
                 }
-                //ToDo continue in eog
-                System.out.println("Test");
-                vd.getNextEOG();
+                graphWalker(nextEOG);
             }
-
-
+            case Reference ref -> {
+                Name name = ref.getName();
+                assert ref.getNextEOG().size() == 1;
+                Pair<Value, Node> result = graphWalkerWithReturnValue(ref.getNextEOG().getFirst());
+                variables.addVariable(new Variable(name.toString(), result.component1()));
+                graphWalker(result.component2());
+            }
             default -> throw new IllegalStateException("Unknown node: " + node);
         }
     }
 
 
-    Value graphWalkerWithReturnValue(Node node) {
+    Pair<Value, Node> graphWalkerWithReturnValue(Node node) {
         switch (node) {
             case MemberCallExpression mce -> {
                 //special cases like Math.abs, Integer.parseInt, etc.
                 Name name = mce.getName();
-                if (name.getLocalName().equals("parseInt") && name.getParent().toString().equals("Integer")) {
+                if (name.getLocalName().equals("parseInt") && name.getParent().toString().equals("Integer")) {  //ToDo: generalize?
                     List<Expression> expr = mce.getArguments();
                     assert expr.size() == 1;
                     SubscriptExpression subExpr = (SubscriptExpression) expr.getFirst();    //FixMe: what if not array access
                     Expression array = subExpr.getArrayExpression();
                     Name arrayName = array.getName();
                     int index = subExpr.getArgumentIndex();
-                    Variable var = variables.getVariable(arrayName.getLocalName());
-                    JavaArray javaArray = (JavaArray) var.getValue();
-                    return javaArray.arrayAccess(index).parseInt();
+                    Variable variable = variables.getVariable(arrayName.getLocalName());
+                    JavaArray javaArray = (JavaArray) variable.getValue();
+                    assert subExpr.getNextEOG().size() == 1;
+                    assert subExpr.getNextEOG().getFirst().getNextEOG().size() == 1;
+                    assert subExpr.getNextEOG().getFirst().getNextEOG().getFirst().getNextEOG().size() == 1;
+                    return new Pair<>(javaArray.arrayAccess(index).parseInt(), subExpr.getNextEOG().getFirst().getNextEOG().getFirst().getNextEOG().getFirst());
                 }
 
                 System.out.println("Test");
             }
+            case Literal lit -> {
+                Object x = lit.getValue();
+                assert x != null;
+                assert lit.getNextEOG().size() == 1;
+                assert lit.getNextEOG().getFirst().getNextEOG().size() == 1;
+                Node next = lit.getNextEOG().getFirst().getNextEOG().getFirst();
+                switch (lit.getType()) {
+                    case IntegerType ignored -> {
+                        int value = (Integer) x;
+                        return new Pair<>(new de.jplag.java_cpg.ai.variables.values.IntValue(value), next);
+                    }
+                    default -> throw new IllegalStateException("Unknown literal type: " + lit.getType().getName());
+                }
+            }
+            case MemberExpression me -> {
+                Name name = me.getName();
+                assert me.getNextEOG().size() == 1;
+                Node nextEOG = me.getNextEOG().getFirst();
+                if (nextEOG instanceof Reference) {     //function call with Parameter
+                    Name paramName = nextEOG.getName();
+                    Variable paramVar = variables.getVariable(paramName.getLocalName());
+                    assert name.getParent() != null;
+                    Variable classVar = variables.getVariable(name.getParent().getLocalName());
+                    JavaObject javaObject = (JavaObject) classVar.getValue();
+                    Value result = javaObject.callMethod(name.getLocalName(), List.of(paramVar.getValue()));
+                    assert nextEOG.getNextEOG().size() == 1;
+                    assert nextEOG.getNextEOG().getFirst().getNextEOG().size() == 1;
+                    assert nextEOG.getNextEOG().getFirst().getNextEOG().getFirst().getNextEOG().size() == 1;
+                    nextEOG = nextEOG.getNextEOG().getFirst().getNextEOG().getFirst().getNextEOG().getFirst();
+                    return new Pair<>(result, nextEOG);
+                }
+
+                throw new IllegalStateException("Unknown method call expression: " + name);
+            }
+            case Reference ref -> {
+                Name name = ref.getName();
+                assert ref.getNextEOG().size() == 1;
+                Node nextEOG = ref.getNextEOG().getFirst();
+                if (nextEOG instanceof MemberExpression) {
+                    return graphWalkerWithReturnValue(nextEOG);
+                }
+                System.out.println("Test");
+            }
+
             default -> throw new IllegalStateException("Unknown node: " + node);
         }
         return null;
     }
 
 }
+
+
+
+
+
+
+
