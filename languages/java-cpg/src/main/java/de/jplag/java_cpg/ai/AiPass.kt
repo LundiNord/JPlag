@@ -18,7 +18,12 @@ class AiPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     var abstractInterpretation: AbstractInterpretation = AbstractInterpretation()
 
     override fun accept(translationUnitDeclaration: TranslationUnitDeclaration) {
-        abstractInterpretation.runMain(translationUnitDeclaration)
+        runCatching {
+            abstractInterpretation.runMain(translationUnitDeclaration)
+        }.onFailure { t ->
+            log.error("AI pass failed for translation unit: ${translationUnitDeclaration.name}", t)
+            throw t
+        }
         println("Test")
     }
 

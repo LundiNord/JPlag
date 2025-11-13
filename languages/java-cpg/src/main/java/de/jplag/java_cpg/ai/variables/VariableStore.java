@@ -17,10 +17,12 @@ public class VariableStore {
 
     /**
      * Returns the variable with the given name or null if it does not exist in any scope.
+     *
      * @param name
      * @return
      */
     public Variable getVariable(String name) {
+        assert name != null;
         for (int i = currentScopeIndex; i >= 0; i--) {
             Variable variable = scopes.get(i).getVariable(name);
             if (variable != null) {

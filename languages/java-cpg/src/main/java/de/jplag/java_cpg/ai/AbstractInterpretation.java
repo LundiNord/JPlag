@@ -5,6 +5,7 @@ import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.declarations.*;
 import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
 import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
 import de.fraunhofer.aisec.cpg.graph.types.StringType;
@@ -44,8 +45,8 @@ public class AbstractInterpretation {
                         String value = fd.getInitializer().getCode();   //FixMe hacky way please fix me - only works for string constants
                         addVariable(type, name, value);
                     }
-                    System.out.println("Test");
                 }
+                variables.addVariable(new Variable("System", new de.jplag.java_cpg.ai.variables.objects.System()));
                 assert mainClas.getMethods().stream().map(MethodDeclaration::getName)
                         .filter(x -> x.getLocalName().equals("main")).count() == 1;
                 for (MethodDeclaration md : mainClas.getMethods()) {
@@ -83,7 +84,7 @@ public class AbstractInterpretation {
                     variables.addVariable(new Variable(name.toString(), new Math()));   //ToDo: what if Math class present?
                     break;
                 }
-                if (name.getParent() == null && name.getLocalName().equals("Integer")) {   //special case java.lang.Math
+                if (name.getParent() == null && name.getLocalName().equals("Integer")) {
                     variables.addVariable(new Variable(name.toString(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
                     break;
                 }
@@ -144,7 +145,7 @@ public class AbstractInterpretation {
             case MemberCallExpression mce -> {  //adds its value to the value stack
                 assert nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression;
                 Name memberName = (nodeStack.get(nodeStack.size() - 2)).getName();
-                assert memberName.getParent() != null;
+                assert memberName.getParent() != null;              //ToDo refactor to use variable store
                 JavaObject javaObject = (JavaObject) variables.getVariable(memberName.getParent().getLocalName()).getValue();   //for now only one parameter
                 assert !valueStack.isEmpty();
                 Value result = javaObject.callMethod(memberName.getLocalName(), List.of(valueStack.getLast()));
@@ -185,8 +186,9 @@ public class AbstractInterpretation {
                 String operator = bop.getOperatorCode();
                 assert operator != null;
                 Value result = valueStack.get(valueStack.size() - 2).binaryOperation(operator, valueStack.getLast());
+                assert nodeStack.size() >= 2;
                 nodeStack.removeLast();
-                //nodeStack.removeLast();   //ToDo: only sometimes
+                nodeStack.removeLast();
                 nodeStack.add(bop);
                 valueStack.removeLast();
                 valueStack.removeLast();
@@ -197,19 +199,37 @@ public class AbstractInterpretation {
             case IfStatement ifStmt -> {
                 assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
-                if (condition.getInformation()) {
-                    if (condition.getValue()) {
-                        nextNode = ifStmt.getThenStatement();   //Block
-                    } else {
-                        nextNode = ifStmt.getElseStatement();
-                    }
-                } else {
-                    
-                }
-
-
-                assert nextEOG.size() > 1;
-                nextNode = nextEOG.getFirst();  //ToDo
+                valueStack.removeLast();
+//                if (condition.getInformation()) {
+//                    if (condition.getValue()) {
+//                        nextNode = ifStmt.getThenStatement();   //Block
+//                    } else {
+//                        nextNode = ifStmt.getElseStatement();
+//                    }
+//                }
+                nodeStack.removeLast();     //removes itself
+                assert nextEOG.size() == 2;
+                //then statement
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                //else statement            //FixMe: dont override values
+                variables.newScope();
+                graphWalker(nextEOG.getLast());
+                //
+                assert nodeStack.getLast() == nodeStack.get(nodeStack.size() - 2);
+                nextNode = nodeStack.getLast();
+            }
+            case Block b -> {
+                //assert block is exited
+                variables.removeScope();
+                assert nextEOG.size() == 1;
+                nodeStack.add(nextEOG.getFirst());
+                return;
+            }
+            case ReturnStatement ret -> {
+                //ToDo handle return values
+                variables.removeScope();
+                return;
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
