@@ -5,7 +5,7 @@ import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
 import de.fraunhofer.aisec.cpg.passes.*;
 import de.jplag.ParsingException;
 import de.jplag.Token;
-import de.jplag.java_cpg.ai.AbstractInterpretation1;
+import de.jplag.java_cpg.ai.AiPass;
 import de.jplag.java_cpg.passes.AstTransformationPass;
 import de.jplag.java_cpg.passes.CpgTransformationPass;
 import de.jplag.java_cpg.passes.PrepareTransformationPass;
@@ -38,7 +38,8 @@ public class CpgAdapter {
         addTransformations(transformations);
     }
 
-    /* package-private */ List<Token> adapt(Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
+    /* package-private */ List<Token> adapt(Set<File> files, boolean normalize)
+            throws ParsingException, InterruptedException {
         assert !files.isEmpty();
         tokenList = null;
         if (!normalize) {
@@ -98,25 +99,26 @@ public class CpgAdapter {
     }
 
     TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
-        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
+        InferenceConfiguration inferenceConfiguration =
+                InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
 
         try {
-            TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
-                    .sourceLocations(files.toArray(new File[]{})).registerLanguage(new JavaLanguage());
+            TranslationConfiguration.Builder configBuilder =
+                    new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
+                            .sourceLocations(files.toArray(new File[]{})).registerLanguage(new JavaLanguage());
 
-            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-                    JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-                    ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
-                    FilenameMapper.class,
-                    ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
-                    DFGPass.class,
-                    ProgramDependenceGraphPass.class,
-//                    AiPass.class,
-                    StatisticsCollectionPass.class
-//                    AiPass.class,
-//                    Ai2Pass.class
-            ));
+            List<Class<? extends Pass<?>>> passClasses =
+                    new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+                            JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
+                            FilenameMapper.class,
+                            ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
+                            DFGPass.class,
+                            ProgramDependenceGraphPass.class,
+                            StatisticsCollectionPass.class,
+                            AiPass.class
+                    ));
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }
@@ -127,10 +129,10 @@ public class CpgAdapter {
         } catch (ExecutionException | ConfigurationException e) {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
-        //ToDo
-        AbstractInterpretation1 ai = new AbstractInterpretation1();
-        /*translationResult =*/
-        ai.translationResult(translationResult);
+//        //ToDo
+//        AbstractInterpretation1 ai = new AbstractInterpretation1();
+//        /*translationResult =*/
+//        ai.translationResult(translationResult);
         return translationResult;
     }
 }

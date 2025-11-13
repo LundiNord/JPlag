@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Anonymous typed value.
@@ -23,5 +24,10 @@ public abstract class Value {
     public IntValue parseInt() {
         throw new UnsupportedOperationException("Cannot parse " + getType() + " to int");
     }
+
+    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+    }
+
 
 }

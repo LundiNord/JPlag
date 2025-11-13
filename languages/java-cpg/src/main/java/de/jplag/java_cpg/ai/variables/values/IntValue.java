@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import org.jetbrains.annotations.NotNull;
 
 public class IntValue extends Value {
 
@@ -26,6 +27,41 @@ public class IntValue extends Value {
             return new IntValue(Math.abs(value));
         }
         return new IntValue();
+    }
+
+    /**
+     * @return whether exact information is available
+     */
+    public boolean getInformation() {
+        return information;
+    }
+
+    public int getValue() {
+        assert information;
+        return value;
+    }
+
+    @Override
+    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        assert other instanceof IntValue;
+        switch (operator) {
+            case "+" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new IntValue(this.value + ((IntValue) other).getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "<" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new BooleanValue(this.value < ((IntValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default ->
+                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        }
     }
 
 }

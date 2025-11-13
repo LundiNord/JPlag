@@ -4,7 +4,6 @@ import de.jplag.JPlag;
 import de.jplag.JPlagResult;
 import de.jplag.Language;
 import de.jplag.exceptions.ExitException;
-import de.jplag.java.JavaLanguage;
 import de.jplag.java_cpg.JavaCpgLanguage;
 import de.jplag.options.JPlagOptions;
 import de.jplag.reporting.reportobject.ReportObjectFactory;
@@ -19,20 +18,11 @@ import java.util.Set;
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, JPlag Leon!");
-
         Language language = new JavaCpgLanguage();
-
         //File submissionsRoot = new File("leon/submissions");
         File submissionsRoot = new File("leon/submissionsFolders");
-
         Set<File> submissionDirectories = Set.of(submissionsRoot);
-//        File baseCode = new File("leon/baseCode");
-
         JPlagOptions options = new JPlagOptions(language, submissionDirectories, Set.of());
-//        if (baseCode.exists()) {
-//            options = options.withBaseCodeSubmissionDirectory(baseCode);
-//        }
-
         try {
             JPlagResult result = JPlag.run(options);
             File outDir = new File("leon/output.zip");

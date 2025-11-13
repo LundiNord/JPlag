@@ -13,9 +13,8 @@ public class JavaArray extends Value {
         super(Type.ARRAY);
         this.innerType = innerType;
     }
-
-    public Value arrayAccess(int index) {
-        assert index >= 0;
+    
+    public Value arrayAccess(IntValue index) {
         //if no information, return an unknown value of the inner type
         switch (innerType) {
             case INT:

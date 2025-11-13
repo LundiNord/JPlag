@@ -13,8 +13,7 @@ public class JavaObject extends Value {
     public Value callMethod(String methodName, List<Value> paramVars) {
         //ToDo
 
-
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
 }
