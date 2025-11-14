@@ -1,0 +1,31 @@
+package de.jplag.java_cpg.ai.variables.objects;
+
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+public class PrintStream extends JavaObject {
+
+    private static final String PATH = "java.io";
+    private static final String NAME = "PrintStream";
+
+    public PrintStream() {
+        super();
+    }
+
+    @Override
+    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+        switch (methodName) {
+            case "printl", "print" -> {
+                assert paramVars.size() == 1;
+                //do nothing
+                return new VoidValue();
+            }
+            default -> throw new UnsupportedOperationException(methodName);
+        }
+    }
+
+}

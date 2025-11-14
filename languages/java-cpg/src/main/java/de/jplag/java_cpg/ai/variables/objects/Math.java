@@ -10,8 +10,8 @@ import java.util.List;
 
 public class Math extends JavaObject {
 
-    private String PATH = "java.lang";
-    private String NAME = "Math";
+    private static final String PATH = "java.lang";
+    private static final String NAME = "Math";
 
     public Math() {
         super();

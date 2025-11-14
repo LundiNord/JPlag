@@ -17,6 +17,9 @@ public final class Main {
      * @param args Kommandozeilenparameter mit Wert von x.
      */
     public static void main(String[] args) {
+
+        System.out.print("1");
+
         int x = Integer.parseInt(args[0]);
         int z = 500;
         x = Math.abs(x);

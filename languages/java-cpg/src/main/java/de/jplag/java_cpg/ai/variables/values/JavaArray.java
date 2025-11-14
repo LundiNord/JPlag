@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import org.jetbrains.annotations.NotNull;
 
 public class JavaArray extends Value {
 
@@ -13,7 +14,18 @@ public class JavaArray extends Value {
         super(Type.ARRAY);
         this.innerType = innerType;
     }
-    
+
+    @Override
+    public Value copy() {
+        return new JavaArray(innerType);
+    }
+
+    @Override
+    public void merge(@NotNull Value other) {
+        assert other instanceof JavaArray;
+        assert this.innerType.equals(((JavaArray) other).innerType);
+    }
+
     public Value arrayAccess(IntValue index) {
         //if no information, return an unknown value of the inner type
         switch (innerType) {

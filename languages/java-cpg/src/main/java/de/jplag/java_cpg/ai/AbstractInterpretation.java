@@ -21,9 +21,9 @@ import java.util.List;
 
 public class AbstractInterpretation {
 
-    private final VariableStore variables;      //Scoped variable store
     private final ArrayList<Node> nodeStack;    //Stack for EOG traversal
     private final ArrayList<Value> valueStack;  //Stack for values during EOG traversal
+    private VariableStore variables;      //Scoped variable store
 
     public AbstractInterpretation() {
         variables = new VariableStore();
@@ -74,10 +74,10 @@ public class AbstractInterpretation {
                 String value = code;
                 if (value != null && value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
                     value = value.substring(1, value.length() - 1);
+                    variables.addVariable(new Variable(name.toString(), value));
                 } else {
-                    value = null;
+                    variables.addVariable(new Variable(name.toString(), new StringValue()));
                 }
-                variables.addVariable(new Variable(name.toString(), value));
             }
             case ObjectType ignored -> {
                 if (name.getParent() == null && name.getLocalName().equals("Math")) {   //special case java.lang.Math
@@ -113,9 +113,22 @@ public class AbstractInterpretation {
             }
             case MemberExpression me -> {
                 assert nodeStack.getLast() instanceof Reference;
-                nodeStack.removeLast();
-                valueStack.removeLast();    //remove object reference
-                nodeStack.add(me);
+                if (me.getRefersTo() instanceof FieldDeclaration) {
+                    valueStack.removeLast();    //remove object reference
+                    nodeStack.removeLast();
+                    //like Reference
+                    nodeStack.add(me);
+                    assert me.getName().getParent() != null;
+                    JavaObject javaObject = (JavaObject) variables.getVariable(me.getName().getParent().getLocalName()).getValue();
+                    Value result = javaObject.accessField(me.getName().getLocalName());
+                    valueStack.add(result);
+                } else if (me.getRefersTo() instanceof MethodDeclaration) {
+                    nodeStack.removeLast();
+                    nodeStack.add(me);
+                    assert nextEOG.getFirst() instanceof MemberCallExpression;
+                } else {
+                    throw new IllegalStateException("Unexpected value: " + me.getRefersTo());
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -146,10 +159,12 @@ public class AbstractInterpretation {
                 assert nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression;
                 Name memberName = (nodeStack.get(nodeStack.size() - 2)).getName();
                 assert memberName.getParent() != null;              //ToDo refactor to use variable store
-                JavaObject javaObject = (JavaObject) variables.getVariable(memberName.getParent().getLocalName()).getValue();   //for now only one parameter
+                //JavaObject javaObject = (JavaObject) variables.getVariable(memberName.getParent().getLocalName()).getValue();   //for now only one parameter
+                JavaObject javaObject = (JavaObject) valueStack.get(valueStack.size() - 2);
                 assert !valueStack.isEmpty();
                 Value result = javaObject.callMethod(memberName.getLocalName(), List.of(valueStack.getLast()));
-                valueStack.removeLast();
+                valueStack.removeLast();    //remove parameter
+                valueStack.removeLast();    //remove object reference
                 valueStack.add(result);
                 nodeStack.removeLast();
                 nodeStack.removeLast();
@@ -200,23 +215,31 @@ public class AbstractInterpretation {
                 assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
-//                if (condition.getInformation()) {
-//                    if (condition.getValue()) {
-//                        nextNode = ifStmt.getThenStatement();   //Block
-//                    } else {
-//                        nextNode = ifStmt.getElseStatement();
-//                    }
-//                }
+                boolean runThenBranch = true;
+                boolean runElseBranch = true;
+                if (condition.getInformation()) {   //ToDo: complete
+                    if (condition.getValue()) {
+                        runElseBranch = false;
+                    } else {
+                        runThenBranch = false;
+                    }
+                }
                 nodeStack.removeLast();     //removes itself
                 assert nextEOG.size() == 2;
+                VariableStore thenVariables = new VariableStore(variables);
+                VariableStore elseVariables = new VariableStore(variables);
                 //then statement
+                variables = thenVariables;
                 variables.newScope();
                 graphWalker(nextEOG.getFirst());
-                //else statement            //FixMe: dont override values
+                //else statement
+                variables = elseVariables;
                 variables.newScope();
                 graphWalker(nextEOG.getLast());
-                //
+                //merge branches
+                variables.merge(thenVariables);
                 assert nodeStack.getLast() == nodeStack.get(nodeStack.size() - 2);
+                nodeStack.removeLast();
                 nextNode = nodeStack.getLast();
             }
             case Block b -> {

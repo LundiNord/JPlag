@@ -22,6 +22,12 @@ public class IntValue extends Value {
         information = true;
     }
 
+    private IntValue(int value, boolean information) {
+        super(Type.INT);
+        this.value = value;
+        this.information = information;
+    }
+
     public IntValue abs() {
         if (information) {
             return new IntValue(Math.abs(value));
@@ -68,6 +74,22 @@ public class IntValue extends Value {
             }
             default ->
                     throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        }
+    }
+
+    @Override
+    public Value copy() {
+        return new IntValue(value, information);
+    }
+
+    @Override
+    public void merge(@NotNull Value other) {
+        assert other instanceof IntValue;
+        IntValue otherInt = (IntValue) other;
+        if (this.information && otherInt.information && this.value == otherInt.value) {
+            //keep information
+        } else {
+            this.information = false;
         }
     }
 

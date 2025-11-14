@@ -4,6 +4,7 @@ import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IntValue;
 import de.jplag.java_cpg.ai.variables.values.StringValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A variable is a named value.
@@ -41,6 +42,16 @@ public class Variable {
         this.value = new BooleanValue(value);
     }
 
+    /**
+     * Copy constructor
+     *
+     * @param variable
+     */
+    public Variable(@NotNull Variable variable) {
+        this.name = variable.name;
+        this.value = variable.value.copy();
+    }
+
     public String getName() {
         return name;
     }
@@ -54,4 +65,8 @@ public class Variable {
         this.value = value;
     }
 
+    public void merge(@NotNull Variable value) {
+        assert value.name.equals(this.name);
+        this.value.merge(value.value);
+    }
 }

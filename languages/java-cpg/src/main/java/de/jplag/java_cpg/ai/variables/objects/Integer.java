@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Integer extends JavaObject {
 
-    private String PATH = "java.lang";
-    private String NAME = "Integer";
+    private static final String PATH = "java.lang";
+    private static final String NAME = "Integer";
 
     public Integer() {
         super();

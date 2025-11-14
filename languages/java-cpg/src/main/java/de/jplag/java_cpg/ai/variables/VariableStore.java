@@ -7,6 +7,23 @@ public class VariableStore {
     private final ArrayList<Scope> scopes = new ArrayList<>();
     private int currentScopeIndex = 0;
 
+    private VariableStore(ArrayList<Scope> scopes, int currentScopeIndex) {
+        this.scopes.addAll(scopes);
+        this.currentScopeIndex = currentScopeIndex;
+    }
+
+    /**
+     * Copy constructor
+     *
+     * @param variableStore
+     */
+    public VariableStore(VariableStore variableStore) {
+        this.currentScopeIndex = variableStore.currentScopeIndex;
+        for (Scope p : variableStore.scopes) {
+            this.scopes.add(new Scope(p));
+        }
+    }
+
     public VariableStore() {
         scopes.add(new Scope());
     }
@@ -38,11 +55,20 @@ public class VariableStore {
     }
 
     public void removeScope() {
+        assert currentScopeIndex > 0;
         if (currentScopeIndex > 0) {
             scopes.remove(currentScopeIndex);
             currentScopeIndex--;
         }
     }
 
+    public void merge(VariableStore other) {
+        assert this.currentScopeIndex == other.currentScopeIndex;
+        for (int i = 0; i <= currentScopeIndex; i++) {
+            Scope thisScope = this.scopes.get(i);
+            Scope otherScope = other.scopes.get(i);
+            thisScope.merge(otherScope);
+        }
+    }
 
 }

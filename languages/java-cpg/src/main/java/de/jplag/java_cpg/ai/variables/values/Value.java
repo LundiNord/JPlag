@@ -29,5 +29,8 @@ public abstract class Value {
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }
 
+    public abstract Value copy();
+
+    public abstract void merge(@NotNull Value other);
 
 }

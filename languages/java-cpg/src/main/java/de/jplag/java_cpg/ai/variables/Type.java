@@ -6,7 +6,8 @@ public enum Type {
     BOOLEAN,
     OBJECT,
     ARRAY,
-    LIST;
+    LIST,
+    VOID;
 
     public boolean checkEquals(de.fraunhofer.aisec.cpg.graph.types.Type cpgOther) {
         return switch (this) {
