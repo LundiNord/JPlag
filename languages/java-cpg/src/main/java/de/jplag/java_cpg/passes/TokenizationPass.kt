@@ -9,6 +9,7 @@ import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
 import de.jplag.Token
 import de.jplag.TokenType
+import de.jplag.java_cpg.ai.AiPass
 import de.jplag.java_cpg.token.CpgNodeListener
 import de.jplag.java_cpg.token.CpgToken
 import de.jplag.java_cpg.token.CpgTokenConsumer
@@ -21,7 +22,8 @@ import java.util.function.Consumer
 /**
  * This pass tokenizes the [TranslationResult].
  */
-@DependsOn(CpgTransformationPass::class)
+//@DependsOn(CpgTransformationPass::class)
+@DependsOn(AiPass::class)
 class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
     private val tokenList = ArrayList<Token>()

@@ -6,9 +6,7 @@ import de.fraunhofer.aisec.cpg.passes.*;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.ai.AiPass;
-import de.jplag.java_cpg.passes.AstTransformationPass;
-import de.jplag.java_cpg.passes.CpgTransformationPass;
-import de.jplag.java_cpg.passes.PrepareTransformationPass;
+import de.jplag.java_cpg.passes.*;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase;
 import kotlin.jvm.JvmClassMappingKt;
@@ -108,31 +106,34 @@ public class CpgAdapter {
                     new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                             .sourceLocations(files.toArray(new File[]{})).registerLanguage(new JavaLanguage());
 
-            List<Class<? extends Pass<?>>> passClasses =
-                    new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-                            JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
-                            FilenameMapper.class,
-                            ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
-                            DFGPass.class,
-                            ProgramDependenceGraphPass.class,
-                            StatisticsCollectionPass.class,
-                            AiPass.class
-                    ));
+//            List<Class<? extends Pass<?>>> passClasses =
+//                    new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+//                            JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+//                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
+//                            FilenameMapper.class,
+//                            ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
+//                            DFGPass.class,
+//                            ProgramDependenceGraphPass.class,
+//                            StatisticsCollectionPass.class,
+//                            AiPass.class
+//                    ));
+
+            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
+                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,
+                    DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
+
+            if (!reorderingEnabled)
+                passClasses.remove(DfgSortPass.class);
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }
-
-            //configBuilder.defaultPasses();
 
             translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
         } catch (ExecutionException | ConfigurationException e) {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
-//        //ToDo
-//        AbstractInterpretation1 ai = new AbstractInterpretation1();
-//        /*translationResult =*/
-//        ai.translationResult(translationResult);
         return translationResult;
     }
+
 }

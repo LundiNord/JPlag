@@ -6,6 +6,7 @@ import de.fraunhofer.aisec.cpg.graph.declarations.*;
 import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.SwitchStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
 import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
 import de.fraunhofer.aisec.cpg.graph.types.StringType;
@@ -123,9 +124,16 @@ public class AbstractInterpretation {
                     Value result = javaObject.accessField(me.getName().getLocalName());
                     valueStack.add(result);
                 } else if (me.getRefersTo() instanceof MethodDeclaration) {
+                    if (me.getResolutionHelper() != null) {     //this seems to indicate arguments
+                        nodeStack.removeLast();
+                        nodeStack.add(me);
+                    } else {
+                        nodeStack.removeLast();
+
+                    }
+
                     nodeStack.removeLast();
                     nodeStack.add(me);
-                    assert nextEOG.getFirst() instanceof MemberCallExpression;
                 } else {
                     throw new IllegalStateException("Unexpected value: " + me.getRefersTo());
                 }
@@ -241,6 +249,9 @@ public class AbstractInterpretation {
                 assert nodeStack.getLast() == nodeStack.get(nodeStack.size() - 2);
                 nodeStack.removeLast();
                 nextNode = nodeStack.getLast();
+            }
+            case SwitchStatement sw -> {
+                throw new IllegalStateException("Not implemented yet");
             }
             case Block b -> {
                 //assert block is exited
