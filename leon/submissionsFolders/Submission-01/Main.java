@@ -23,12 +23,11 @@ public final class Main {
      */
     public static void main(String[] args) {
 
-        //int x = Math.abs(5);
-
         if (args.length != 0) {
-            System.err.println(ERROR_ARGUMENTS_NOT_SUPPORTED);
+            //System.err.println(ERROR_ARGUMENTS_NOT_SUPPORTED);
             return;
         }
+
         //Spiel starten
         StartUserInterface ui1 = new StartUserInterface();
     }

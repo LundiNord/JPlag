@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.objects;
 
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import org.jetbrains.annotations.NotNull;
 
 public class System extends JavaObject {
 
@@ -20,9 +21,9 @@ public class System extends JavaObject {
 //    }
 
     @Override
-    public Value accessField(String fieldName) {
+    public Value accessField(@NotNull String fieldName) {
         switch (fieldName) {
-            case "out" -> {
+            case "out", "err" -> {
                 return new PrintStream();
             }
             default ->

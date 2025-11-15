@@ -3,7 +3,14 @@ package de.jplag.java_cpg.ai.variables.values;
 import de.jplag.java_cpg.ai.variables.Type;
 import org.jetbrains.annotations.NotNull;
 
-public class JavaArray extends Value {
+/**
+ * A Java Array.
+ * Java arrays are objects.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
+public class JavaArray extends JavaObject {
 
     private final Type innerType;
 
@@ -15,8 +22,13 @@ public class JavaArray extends Value {
         this.innerType = innerType;
     }
 
+    public JavaArray() {
+        super(Type.ARRAY);
+        this.innerType = null;
+    }
+
     @Override
-    public Value copy() {
+    public JavaArray copy() {
         return new JavaArray(innerType);
     }
 
@@ -39,6 +51,17 @@ public class JavaArray extends Value {
                 return new JavaObject();
             default:
                 throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
+        }
+    }
+
+    @Override
+    public Value accessField(@NotNull String fieldName) {
+        switch (fieldName) {
+            case "length" -> {
+                return new IntValue();
+            }
+            default ->
+                    throw new UnsupportedOperationException("Field " + fieldName + " is not supported for JavaArray");
         }
     }
 }

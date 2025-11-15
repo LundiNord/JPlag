@@ -19,7 +19,7 @@ public class PrintStream extends JavaObject {
     @Override
     public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
         switch (methodName) {
-            case "printl", "print" -> {
+            case "println", "print" -> {
                 assert paramVars.size() == 1;
                 //do nothing
                 return new VoidValue();

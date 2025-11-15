@@ -72,6 +72,13 @@ public class IntValue extends Value {
                     return new IntValue();
                 }
             }
+            case "!=" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new BooleanValue(this.value != ((IntValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             default ->
                     throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }

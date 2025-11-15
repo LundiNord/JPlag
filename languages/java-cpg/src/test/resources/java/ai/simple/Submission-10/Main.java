@@ -25,23 +25,13 @@ public final class Main {
         x = Math.abs(x);
         int y = 100;
 
-//        if (x + y < 100) {
-//            //System.out.print("1");
-//            z = z + 100;
-//        } else {
-//            //System.out.print("2");
-//            z = z - 100;
-//        }
-
-        switch (x + y < 100) {
-            case 0:
-                z = z + 100;
-                break;
-            default:
-                z = z - 100;
-                break;
+        if (x + y < 100) {
+            //System.out.print("1");
+            z = z + 100;
+        } else {
+            //System.out.print("2");
+            z = z - 100;
         }
-
 
     }
 }

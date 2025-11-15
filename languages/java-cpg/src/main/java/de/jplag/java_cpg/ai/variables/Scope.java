@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-class Scope {
+public class Scope {
 
     private final HashMap<String, Variable> variables = new HashMap<>();
 
@@ -22,7 +22,7 @@ class Scope {
         }
     }
 
-    protected Scope() {
+    public Scope() {
         //empty
     }
 

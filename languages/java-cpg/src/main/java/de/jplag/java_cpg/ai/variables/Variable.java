@@ -1,9 +1,6 @@
 package de.jplag.java_cpg.ai.variables;
 
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
-import de.jplag.java_cpg.ai.variables.values.IntValue;
-import de.jplag.java_cpg.ai.variables.values.StringValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.*;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -40,6 +37,19 @@ public class Variable {
         assert name != null;
         this.name = name;
         this.value = new BooleanValue(value);
+    }
+
+    public Variable(String name, Type type) {
+        assert name != null;
+        this.name = name;
+        switch (type) {
+            case INT -> this.value = new IntValue();
+            case BOOLEAN -> this.value = new BooleanValue();
+            case STRING -> this.value = new StringValue();
+            case OBJECT -> this.value = new JavaObject();
+            case ARRAY -> this.value = new JavaArray();
+            default -> throw new IllegalArgumentException("Unsupported type for variable initialization: " + type);
+        }
     }
 
     /**

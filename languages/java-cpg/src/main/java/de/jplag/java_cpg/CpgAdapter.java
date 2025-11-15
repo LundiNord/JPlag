@@ -119,8 +119,12 @@ public class CpgAdapter {
 //                    ));
 
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+                    JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
                     ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
-                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,
+                    FilenameMapper.class,
+                    ReplaceCallCastPass.class,
+                    AstTransformationPass.class, EvaluationOrderGraphPass.class,
+                    ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
                     DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
 
             if (!reorderingEnabled)
