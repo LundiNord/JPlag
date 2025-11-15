@@ -22,6 +22,7 @@ public class AbstractInterpretation {
     private final ArrayList<Node> nodeStack;    //Stack for EOG traversal
     private final ArrayList<Value> valueStack;  //Stack for values during EOG traversal
     private VariableStore variables;      //Scoped variable store
+    private JavaObject object;
 
     public AbstractInterpretation() {
         variables = new VariableStore();
@@ -50,6 +51,7 @@ public class AbstractInterpretation {
                 variables.addVariable(new Variable("System", new de.jplag.java_cpg.ai.variables.objects.System()));
                 variables.addVariable(new Variable("Math", new de.jplag.java_cpg.ai.variables.objects.Math()));
                 variables.addVariable(new Variable("Integer", new de.jplag.java_cpg.ai.variables.objects.Integer()));
+                this.object = mainClassVar;
                 assert mainClas.getMethods().stream().map(MethodDeclaration::getName)
                         .filter(x -> x.getLocalName().equals("main")).count() == 1;
                 for (MethodDeclaration md : mainClas.getMethods()) {
@@ -86,6 +88,7 @@ public class AbstractInterpretation {
         variables.addVariable(new Variable("System", new de.jplag.java_cpg.ai.variables.objects.System()));
         variables.addVariable(new Variable("Math", new de.jplag.java_cpg.ai.variables.objects.Math()));
         variables.addVariable(new Variable("Integer", new de.jplag.java_cpg.ai.variables.objects.Integer()));
+        this.object = objectInstance;
 
         //Run constructor method
         ConstructorDeclaration constr = rd.getConstructors().getFirst();    //ToDo
@@ -116,7 +119,7 @@ public class AbstractInterpretation {
             }
             case MemberExpression me -> {
                 assert nodeStack.getLast() instanceof Reference;
-                if (me.getRefersTo() instanceof FieldDeclaration) {
+                if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
                     assert valueStack.getLast() instanceof JavaObject;
                     assert nodeStack.getLast() instanceof Reference;
                     nodeStack.removeLast();
@@ -137,8 +140,21 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case Reference ref -> {     //adds its value to the value stack
+                if (ref.getName().getLocalName().equals("this")) {
+                    valueStack.add(this.object);
+                } else {
+                    Variable variable = variables.getVariable(ref.getName().toString());
+                    if (variable != null) {
+                        valueStack.add(variables.getVariable(ref.getName().toString()).getValue());
+                    } else {    //unknown reference
+                        Declaration x = ref.getRefersTo();
+                        assert x instanceof EnumDeclaration;    //ToDo for now
+                        JavaObject enumObject = createEnum((EnumDeclaration) x);
+                        valueStack.add(enumObject);
+                        variables.addVariable(new Variable(ref.getName().toString(), enumObject));
+                    }
+                }
                 nodeStack.add(ref);
-                valueStack.add(variables.getVariable(ref.getName().toString()).getValue());
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -190,7 +206,9 @@ public class AbstractInterpretation {
             case AssignExpression ae -> {
                 assert valueStack.size() >= 2;
                 assert nodeStack.get(nodeStack.size() - 2) instanceof Reference;
+                //ToDo use full names?
                 Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
+
                 variable.setValue(valueStack.getLast());
                 nodeStack.removeLast();
                 nodeStack.removeLast();
@@ -322,6 +340,16 @@ public class AbstractInterpretation {
             }
             default -> throw new IllegalStateException("Unexpected value: " + value);
         }
+    }
+
+    private JavaObject createEnum(EnumDeclaration enumDeclaration) {
+        JavaObject enumObject = new JavaObject();
+        int i = 0;
+        for (EnumConstantDeclaration ec : enumDeclaration.getEntries()) {
+            enumObject.setField(new Variable(ec.getName().getLocalName(), new IntValue(i)));
+            i++;
+        }
+        return enumObject;
     }
 
 }

@@ -9,10 +9,16 @@ import java.util.List;
 
 public class JavaObject extends Value {
 
-    private final Scope fields = new Scope();
+    private final Scope fields;
+
+    private JavaObject(Scope fields) {
+        super(Type.OBJECT);
+        this.fields = fields;
+    }
 
     public JavaObject() {
         super(Type.OBJECT);
+        this.fields = new Scope();
     }
 
     /**
@@ -22,6 +28,7 @@ public class JavaObject extends Value {
      */
     protected JavaObject(Type type) {
         super(type);
+        this.fields = new Scope();
     }
 
     public Value callMethod(String methodName, List<Value> paramVars) {
@@ -31,7 +38,11 @@ public class JavaObject extends Value {
 
     public Value accessField(String fieldName) {
         assert fieldName != null;
-        return fields.getVariable(fieldName).getValue();
+        Variable result = fields.getVariable(fieldName);
+        if (result == null) {
+            return new VoidValue();
+        }
+        return result.getValue();
     }
 
     public void setField(Variable field) {
@@ -40,7 +51,7 @@ public class JavaObject extends Value {
 
     @Override
     public JavaObject copy() {
-        return new JavaObject();
+        return new JavaObject(new Scope(this.fields));
     }
 
     @Override

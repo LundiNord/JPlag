@@ -5,10 +5,13 @@ import edu.kit.informatik.logik.QueensFarming;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-/** Klasse die den Start eines "Queens Farming" Spiels auf der Kommandozeile implementiert.
+/**
+ * Klasse die den Start eines "Queens Farming" Spiels auf der Kommandozeile implementiert.
  * Alle zum Start wichtigen Parameter werden eingelesen und danach das Spiel gestartet.
+ *
  * @author ujiqk
- * @version 1.0 */
+ * @version 1.0
+ */
 public class StartUserInterface {
     private static final String PLAYER_QUESTION = "How many players?";
     private static final String NAME_QUESTION = "Enter the name of player ";
@@ -17,17 +20,17 @@ public class StartUserInterface {
     private static final String SEED_QUESTION = "Please enter the seed used to shuffle the tiles:";
     private static final String COLON = ":";
     private static final String PIXEL_ART = """
-                                   _.-^-._    .--.   \s
-                                .-'   _   '-. |__|   \s
-                               /     |_|     \\|  |   \s
-                              /               \\  |   \s
-                             /|     _____     |\\ |   \s
-                              |    |==|==|    |  |   \s
-          |---|---|---|---|---|    |--|--|    |  |   \s
-          |---|---|---|---|---|    |==|==|    |  |   \s
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        ^^^^^^^^^^^^^^^ QUEENS FARMING ^^^^^^^^^^^^^^^
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^""";
+                                       _.-^-._    .--.   \s
+                                    .-'   _   '-. |__|   \s
+                                   /     |_|     \\|  |   \s
+                                  /               \\  |   \s
+                                 /|     _____     |\\ |   \s
+                                  |    |==|==|    |  |   \s
+              |---|---|---|---|---|    |--|--|    |  |   \s
+              |---|---|---|---|---|    |==|==|    |  |   \s
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^^^^^^^^^^^^^ QUEENS FARMING ^^^^^^^^^^^^^^^
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^""";
     private static final String ERROR_ILLEGAL_NUMBER_OF_PLAYERS = "Error: Illegal number of players";
     private static final String ERROR_ILLEGAL_PLAYER_NAME = "Error: Illegal player name";
     private static final String ERROR_ILLEGAL_GOLD_AMOUNT = "Error: Illegal amount of gold";
@@ -41,7 +44,8 @@ public class StartUserInterface {
     private int seed;
     private String[] playerNames;
 
-    /** Konstruktor, liest Eingabe ein und übergibt sie gesammelt an das Spiel User Interface
+    /**
+     * Konstruktor, liest Eingabe ein und übergibt sie gesammelt an das Spiel User Interface
      * eingelesene Eingaben: Spieleranzahl, Namen, Startgold, Gold um zu gewinnen, Seed zum Mischeln
      */
     public StartUserInterface() {
@@ -73,8 +77,10 @@ public class StartUserInterface {
         //Ende des Programms
     }
 
-    /** Liest eine Benutzereingabe ein und parst sie je nach aktuellem Eingabestatus.
+    /**
+     * Liest eine Benutzereingabe ein und parst sie je nach aktuellem Eingabestatus.
      * Ist die Eingabe erfolgreich wird in den nächsten Eingabestatus gesprungen.
+     *
      * @param input Die Benutzereingabe, ungefiltert
      * @return True: wenn die Eingabe komplett fertig ist
      */
@@ -101,8 +107,7 @@ public class StartUserInterface {
                 //Speichern und in den nächsten state wechseln
                 state = InputState.READY;
                 return true;            //das Einlesen ist fertig
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.err.println(ERROR_SEED);
             }
         }
@@ -112,8 +117,7 @@ public class StartUserInterface {
     private InputState readWinGold(String input) {
         try {
             winGold = parseNumberGreaterOne(input);
-        }
-        catch (NumberFormatException | ParseException e) {
+        } catch (NumberFormatException | ParseException e) {
             System.err.println(ERROR_ILLEGAL_GOLD_AMOUNT);
             return state;
         }
@@ -124,8 +128,7 @@ public class StartUserInterface {
     private InputState readStartGold(String input) {
         try {
             startGold = parsePositiveNumber(input);
-        }
-        catch (NumberFormatException | ParseException e) {
+        } catch (NumberFormatException | ParseException e) {
             System.err.println(ERROR_ILLEGAL_GOLD_AMOUNT);
             return state;
         }
@@ -137,16 +140,14 @@ public class StartUserInterface {
         try {
             playerNames[playerNames.length - playerCount] = parseNames(input);
             playerCount--;              //Player count als Zählvariable
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             System.err.println(ERROR_ILLEGAL_PLAYER_NAME);
             return state;               //Nicht nochmal fragen
         }
         if (playerCount <= 0) {
             System.out.println(START_GOLD_QUESTION);
             return InputState.START_GOLD;       //zum nächsten Wechseln
-        }
-        else {
+        } else {
             System.out.println(NAME_QUESTION + (playerNames.length - playerCount + 1) + COLON);
         }
         return state;
@@ -155,8 +156,7 @@ public class StartUserInterface {
     private InputState readPlayerCount(String input) {
         try {
             playerCount = parseNumberGreaterOne(input);
-        }
-        catch (NumberFormatException | ParseException e) {
+        } catch (NumberFormatException | ParseException e) {
             System.err.println(ERROR_ILLEGAL_NUMBER_OF_PLAYERS);
             return state;
         }
@@ -168,15 +168,14 @@ public class StartUserInterface {
     private String parseNames(String input) throws ParseException {
         if (Pattern.matches("[a-zA-Z]+", input)) {
             return input;
-        }
-        else {
+        } else {
             throw new ParseException();
         }
     }
 
     private int parseNumberGreaterOne(String input) throws NumberFormatException, ParseException {
         int number = Integer.parseInt(input);
-        if (number < 1 ) {
+        if (number < 1) {
             throw new ParseException();      //Ist das schön?
         }
         return number;
@@ -184,7 +183,7 @@ public class StartUserInterface {
 
     private int parsePositiveNumber(String input) throws NumberFormatException, ParseException {
         int number = Integer.parseInt(input);
-        if (number < 0 ) {
+        if (number < 0) {
             throw new ParseException();      //Ist das schön?
         }
         return number;

@@ -14,7 +14,7 @@ public class Scope {
      *
      * @param scope
      */
-    protected Scope(@NotNull Scope scope) {
+    public Scope(@NotNull Scope scope) {
         for (Map.Entry<String, Variable> entry : scope.variables.entrySet()) {
             String clonedKey = entry.getKey();
             Variable clonedValue = new Variable(entry.getValue());
