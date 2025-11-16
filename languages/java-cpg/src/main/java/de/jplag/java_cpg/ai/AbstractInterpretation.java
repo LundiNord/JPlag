@@ -10,6 +10,7 @@ import de.fraunhofer.aisec.cpg.graph.statements.SwitchStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
+import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.*;
 import org.jetbrains.annotations.NotNull;
@@ -40,17 +41,17 @@ public class AbstractInterpretation {
                     Type type = fd.getType();
                     Name name = fd.getName();
                     if (fd.getInitializer() == null) {      //no initial value
-                        mainClassVar.setField(new Variable(name.getLocalName(), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));
+                        mainClassVar.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));
                     } else {
                         assert ((Literal<?>) fd.getInitializer()).getValue() != null;
                         Value value = valueResolver(((Literal<?>) fd.getInitializer()).getValue());
-                        mainClassVar.setField(new Variable(name.getLocalName(), value));
+                        mainClassVar.setField(new Variable(new VariableName(name.toString()), value));
                     }
                 }
-                variables.addVariable(new Variable("Main", mainClassVar));
-                variables.addVariable(new Variable("System", new de.jplag.java_cpg.ai.variables.objects.System()));
-                variables.addVariable(new Variable("Math", new de.jplag.java_cpg.ai.variables.objects.Math()));
-                variables.addVariable(new Variable("Integer", new de.jplag.java_cpg.ai.variables.objects.Integer()));
+                variables.addVariable(new Variable(new VariableName("Main"), mainClassVar));
+                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
+                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
+                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
                 this.object = mainClassVar;
                 assert mainClas.getMethods().stream().map(MethodDeclaration::getName)
                         .filter(x -> x.getLocalName().equals("main")).count() == 1;
@@ -60,7 +61,7 @@ public class AbstractInterpretation {
                         List<Node> eog = md.getNextEOG();
                         assert eog.size() == 1;
                         variables.newScope();
-                        variables.addVariable(new Variable("args", new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
+                        variables.addVariable(new Variable(new VariableName("args"), new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
                         graphWalker(eog.getFirst());
                     }
                 }
@@ -77,17 +78,17 @@ public class AbstractInterpretation {
             Type type = fd.getType();
             Name name = fd.getName();
             if (fd.getInitializer() == null) {      //no initial value
-                objectInstance.setField(new Variable(name.getLocalName(), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));  //ToDo array inner type lost here
+                objectInstance.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));  //ToDo array inner type lost here
             } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
                 assert ((Literal<?>) fd.getInitializer()).getValue() != null;
                 Value value = valueResolver(((Literal<?>) fd.getInitializer()).getValue());
-                objectInstance.setField(new Variable(name.getLocalName(), value));
+                objectInstance.setField(new Variable(new VariableName(name.toString()), value));
             }
         }
-        variables.addVariable(new Variable(rd.getName().getLocalName(), objectInstance));
-        variables.addVariable(new Variable("System", new de.jplag.java_cpg.ai.variables.objects.System()));
-        variables.addVariable(new Variable("Math", new de.jplag.java_cpg.ai.variables.objects.Math()));
-        variables.addVariable(new Variable("Integer", new de.jplag.java_cpg.ai.variables.objects.Integer()));
+        variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
         this.object = objectInstance;
 
         //Run constructor method
@@ -95,7 +96,7 @@ public class AbstractInterpretation {
         List<Node> eog = constr.getNextEOG();
         assert eog.size() == 1;
         variables.newScope();
-        variables.addVariable(new Variable("args", new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
+        variables.addVariable(new Variable(new VariableName("args"), new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
         graphWalker(eog.getFirst());
 
         System.out.println("Test");
@@ -143,15 +144,15 @@ public class AbstractInterpretation {
                 if (ref.getName().getLocalName().equals("this")) {
                     valueStack.add(this.object);
                 } else {
-                    Variable variable = variables.getVariable(ref.getName().toString());
+                    Variable variable = variables.getVariable(new VariableName(ref.getName().toString()));
                     if (variable != null) {
-                        valueStack.add(variables.getVariable(ref.getName().toString()).getValue());
+                        valueStack.add(variables.getVariable(new VariableName(ref.getName().toString())).getValue());
                     } else {    //unknown reference
                         Declaration x = ref.getRefersTo();
                         assert x instanceof EnumDeclaration;    //ToDo for now
                         JavaObject enumObject = createEnum((EnumDeclaration) x);
                         valueStack.add(enumObject);
-                        variables.addVariable(new Variable(ref.getName().toString(), enumObject));
+                        variables.addVariable(new Variable(new VariableName(ref.getName().toString()), enumObject));
                     }
                 }
                 nodeStack.add(ref);
@@ -325,7 +326,7 @@ public class AbstractInterpretation {
     }
 
     private Value refResolver(@NotNull Reference ref) {
-        String varName = ref.getName().toString();
+        VariableName varName = new VariableName(ref.getName().toString());
         Variable variable = variables.getVariable(varName);
         return variable.getValue();
     }
@@ -346,7 +347,7 @@ public class AbstractInterpretation {
         JavaObject enumObject = new JavaObject();
         int i = 0;
         for (EnumConstantDeclaration ec : enumDeclaration.getEntries()) {
-            enumObject.setField(new Variable(ec.getName().getLocalName(), new IntValue(i)));
+            enumObject.setField(new Variable(new VariableName(ec.getName().toString()), new IntValue(i)));
             i++;
         }
         return enumObject;

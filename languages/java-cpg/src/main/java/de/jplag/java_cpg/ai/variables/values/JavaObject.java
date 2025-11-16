@@ -3,6 +3,7 @@ package de.jplag.java_cpg.ai.variables.values;
 import de.jplag.java_cpg.ai.variables.Scope;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
+import de.jplag.java_cpg.ai.variables.VariableName;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class JavaObject extends Value {
 
     public Value accessField(String fieldName) {
         assert fieldName != null;
-        Variable result = fields.getVariable(fieldName);
+        Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
             return new VoidValue();
         }

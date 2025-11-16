@@ -11,35 +11,35 @@ import org.jetbrains.annotations.NotNull;
  */
 public class Variable {
 
-    private final String name;
+    private final VariableName name;
     private Value value;
 
-    public Variable(String name, Value value) {
+    public Variable(VariableName name, Value value) {
         assert value != null;
         assert name != null;
         this.name = name;
         this.value = value;
     }
 
-    public Variable(String name, String value) {
+    public Variable(VariableName name, String value) {
         assert name != null;
         this.name = name;
         this.value = new StringValue(value);
     }
 
-    public Variable(String name, int value) {
+    public Variable(VariableName name, int value) {
         assert name != null;
         this.name = name;
         this.value = new IntValue(value);
     }
 
-    public Variable(String name, boolean value) {
+    public Variable(VariableName name, boolean value) {
         assert name != null;
         this.name = name;
         this.value = new BooleanValue(value);
     }
 
-    public Variable(String name, Type type) {
+    public Variable(VariableName name, Type type) {
         assert name != null;
         this.name = name;
         switch (type) {
@@ -62,7 +62,14 @@ public class Variable {
         this.value = variable.value.copy();
     }
 
-    public String getName() {
+    public Variable(String string, Value value) {
+        assert string != null;
+        assert value != null;
+        this.name = new VariableName(string);
+        this.value = value;
+    }
+
+    public VariableName getName() {
         return name;
     }
 

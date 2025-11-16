@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class Scope {
 
-    private final HashMap<String, Variable> variables = new HashMap<>();
+    private final HashMap<VariableName, Variable> variables = new HashMap<>();
 
     /**
      * Copy constructor
@@ -15,8 +15,8 @@ public class Scope {
      * @param scope
      */
     public Scope(@NotNull Scope scope) {
-        for (Map.Entry<String, Variable> entry : scope.variables.entrySet()) {
-            String clonedKey = entry.getKey();
+        for (Map.Entry<VariableName, Variable> entry : scope.variables.entrySet()) {
+            VariableName clonedKey = entry.getKey();
             Variable clonedValue = new Variable(entry.getValue());
             this.variables.put(clonedKey, clonedValue);
         }
@@ -41,13 +41,13 @@ public class Scope {
      * @param name
      * @return
      */
-    public Variable getVariable(String name) {
+    public Variable getVariable(VariableName name) {
         return variables.get(name);
     }
 
     public void merge(Scope otherScope) {
         //assert: both scopes contain the same variables with potentially different values
-        for (Map.Entry<String, Variable> entry : otherScope.variables.entrySet()) {
+        for (Map.Entry<VariableName, Variable> entry : otherScope.variables.entrySet()) {
             assert this.variables.containsKey(entry.getKey());
             this.variables.get(entry.getKey()).merge(entry.getValue());
         }

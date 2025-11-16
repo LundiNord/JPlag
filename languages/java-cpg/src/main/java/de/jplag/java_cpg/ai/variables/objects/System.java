@@ -1,7 +1,9 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 public class System extends JavaObject {
@@ -19,6 +21,11 @@ public class System extends JavaObject {
 //            default -> throw new UnsupportedOperationException(methodName);
 //        }
 //    }
+
+    @Pure
+    public static VariableName getName() {
+        return new VariableName(PATH + "." + NAME);
+    }
 
     @Override
     public Value accessField(@NotNull String fieldName) {

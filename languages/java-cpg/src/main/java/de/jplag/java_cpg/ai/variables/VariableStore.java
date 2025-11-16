@@ -38,7 +38,7 @@ public class VariableStore {
      * @param name
      * @return
      */
-    public Variable getVariable(String name) {
+    public Variable getVariable(VariableName name) {
         assert name != null;
         for (int i = currentScopeIndex; i >= 0; i--) {
             Variable variable = scopes.get(i).getVariable(name);
@@ -47,6 +47,10 @@ public class VariableStore {
             }
         }
         return null;
+    }
+
+    public Variable getVariable(String name) {
+        return getVariable(new VariableName(name));
     }
 
     public void newScope() {
