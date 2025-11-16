@@ -41,4 +41,9 @@ public class System extends JavaObject {
         }
     }
 
+    @Override
+    public JavaObject copy() {
+        return new System();
+    }
+
 }

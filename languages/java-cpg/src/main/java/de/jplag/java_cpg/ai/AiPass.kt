@@ -10,27 +10,11 @@ import de.jplag.java_cpg.passes.CpgTransformationPass
 /**
  * Abstract Interpretation Pass
  */
-//@DependsOn(DynamicInvokeResolver::class)
-//@DependsOn(ProgramDependenceGraphPass::class)
 @DependsOn(CpgTransformationPass::class)
-//class AiPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     //passes have to be in kotlin!
 
     var abstractInterpretation: AbstractInterpretation = AbstractInterpretation()
-
-//    /**
-//     * Accepts a [TranslationUnitDeclaration] and runs the abstract interpretation on it.
-//     */
-//    override fun accept(translationUnitDeclaration: TranslationUnitDeclaration) {
-//        runCatching {
-//            abstractInterpretation.runMain(translationUnitDeclaration)
-//        }.onFailure { t ->
-//            log.error("AI pass failed for translation unit: ${translationUnitDeclaration.name}", t)
-//            throw t
-//        }
-//        println("Test")
-//    }
 
     /**
      * Empty cleanup method.

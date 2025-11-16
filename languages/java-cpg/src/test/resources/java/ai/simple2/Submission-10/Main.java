@@ -20,7 +20,7 @@ public final class Main {
      */
     public static void main(String[] args) {
 
-        System.out.print("1");
+        //System.out.print("1");
 
         int x = Integer.parseInt(args[0]);
         int z = 500;
@@ -28,10 +28,10 @@ public final class Main {
         int y = 100;
 
         if (x + y < 100) {
-            System.out.print("2");
+            //System.out.print("1");
             z = z + 100;
         } else {
-            System.out.print("3");
+            //System.out.print("2");
             z = z - 100;
         }
 

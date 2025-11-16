@@ -36,8 +36,7 @@ public class CpgAdapter {
         addTransformations(transformations);
     }
 
-    /* package-private */ List<Token> adapt(Set<File> files, boolean normalize)
-            throws ParsingException, InterruptedException {
+    List<Token> adapt(Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
         assert !files.isEmpty();
         tokenList = null;
         if (!normalize) {
@@ -92,10 +91,6 @@ public class CpgAdapter {
         this.reorderingEnabled = enabled;
     }
 
-    private void setTokenList(List<Token> tokenList) {
-        this.tokenList = tokenList;
-    }
-
     TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
@@ -106,23 +101,10 @@ public class CpgAdapter {
                     new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                             .sourceLocations(files.toArray(new File[]{})).registerLanguage(new JavaLanguage());
 
-//            List<Class<? extends Pass<?>>> passClasses =
-//                    new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-//                            JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-//                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
-//                            FilenameMapper.class,
-//                            ReplaceCallCastPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
-//                            DFGPass.class,
-//                            ProgramDependenceGraphPass.class,
-//                            StatisticsCollectionPass.class,
-//                            AiPass.class
-//                    ));
-
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
                     JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
                     ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
-                    FilenameMapper.class,
-                    ReplaceCallCastPass.class,
+                    FilenameMapper.class, ReplaceCallCastPass.class,
                     AstTransformationPass.class, EvaluationOrderGraphPass.class,
                     ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
                     DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));

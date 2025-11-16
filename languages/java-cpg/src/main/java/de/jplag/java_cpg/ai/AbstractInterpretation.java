@@ -179,8 +179,7 @@ public class AbstractInterpretation {
                 assert nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression;
                 Name memberName = (nodeStack.get(nodeStack.size() - 2)).getName();
                 assert memberName.getParent() != null;              //ToDo refactor to use variable store
-                //JavaObject javaObject = (JavaObject) variables.getVariable(memberName.getParent().getLocalName()).getValue();   //for now only one parameter
-                JavaObject javaObject = (JavaObject) valueStack.get(valueStack.size() - 2);
+                JavaObject javaObject = (JavaObject) valueStack.get(valueStack.size() - 2);         //for now only one parameter
                 assert !valueStack.isEmpty();
                 Value result = javaObject.callMethod(memberName.getLocalName(), List.of(valueStack.getLast()));
                 valueStack.removeLast();    //remove parameter
@@ -285,8 +284,6 @@ public class AbstractInterpretation {
                 //merge branches
                 if (runThenBranch && runElseBranch && ifStmt.getThenStatement() != null && ifStmt.getElseStatement() != null) {
                     variables.merge(thenVariables);
-                    assert nodeStack.getLast() == nodeStack.get(nodeStack.size() - 2);
-                    nodeStack.removeLast();
                 } else if (ifStmt.getThenStatement() != null || ifStmt.getElseStatement() != null) {  //if one branch is not existent, merge with variables before if
                     variables.merge(beforeIfVariables);
                     if (ifStmt.getThenStatement() != null) {
@@ -302,6 +299,10 @@ public class AbstractInterpretation {
                 }
             }
             case SwitchStatement sw -> {
+                assert !valueStack.isEmpty();
+                int branches = nextEOG.size();
+
+
                 throw new IllegalStateException("Not implemented yet");
             }
             case Block b -> {
@@ -402,6 +403,22 @@ public class AbstractInterpretation {
             i++;
         }
         return enumObject;
+    }
+
+    protected VariableStore getVariables() {
+        return variables;
+    }
+
+    protected ArrayList<Node> getNodeStack() {
+        return nodeStack;
+    }
+
+    protected ArrayList<Value> getValueStack() {
+        return valueStack;
+    }
+
+    protected JavaObject getObject() {
+        return object;
     }
 
 }

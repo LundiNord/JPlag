@@ -24,11 +24,13 @@ public final class Main {
     public static void main(String[] args) {
 
         int x = 1;
-        while (x < 5) {
-            x++;
+        switch (x + x < 100) {
+            case true:
+                x++;
+                break;
+            default:
+                x--;
         }
-
-        x = x + 10;
 
         if (args.length != 0) {
             //System.err.println(ERROR_ARGUMENTS_NOT_SUPPORTED);

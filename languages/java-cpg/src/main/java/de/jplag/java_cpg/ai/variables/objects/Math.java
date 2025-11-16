@@ -40,4 +40,9 @@ public class Math extends JavaObject {
         return x.abs();
     }
 
+    @Override
+    public JavaObject copy() {
+        return new Math();
+    }
+
 }

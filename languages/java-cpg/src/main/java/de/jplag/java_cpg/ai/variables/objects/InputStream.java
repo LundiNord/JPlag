@@ -26,4 +26,10 @@ public class InputStream extends JavaObject {
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
+
+    @Override
+    public JavaObject copy() {
+        return new InputStream();
+    }
+
 }

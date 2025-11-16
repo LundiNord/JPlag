@@ -33,4 +33,9 @@ public class PrintStream extends JavaObject {
         }
     }
 
+    @Override
+    public JavaObject copy() {
+        return new PrintStream();
+    }
+
 }

@@ -38,4 +38,9 @@ public class Integer extends JavaObject {
         }
     }
 
+    @Override
+    public JavaObject copy() {
+        return new Integer();
+    }
+
 }

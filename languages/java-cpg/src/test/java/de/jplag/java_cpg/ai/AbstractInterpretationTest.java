@@ -1,32 +1,106 @@
 package de.jplag.java_cpg.ai;
 
+import de.fraunhofer.aisec.cpg.*;
+import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
+import de.fraunhofer.aisec.cpg.graph.Component;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.passes.*;
+import de.jplag.ParsingException;
+import de.jplag.java_cpg.ai.variables.VariableStore;
+import de.jplag.java_cpg.ai.variables.values.IntValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.passes.*;
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KClass;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class AbstractInterpretationTest {
 
+    private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
+        InferenceConfiguration inferenceConfiguration =
+                InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
+        TranslationResult translationResult;
+        try {
+            TranslationConfiguration.Builder configBuilder =
+                    new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
+                            .sourceLocations(files.toArray(new File[]{})).registerLanguage(new JavaLanguage());
+            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+                    JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
+                    FilenameMapper.class, ReplaceCallCastPass.class,
+                    AstTransformationPass.class, EvaluationOrderGraphPass.class,
+                    ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
+                    DfgSortPass.class, CpgTransformationPass.class));
+            for (Class<? extends Pass<?>> passClass : passClasses) {
+                configBuilder.registerPass(getKClass(passClass));
+            }
+            translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
+        } catch (ExecutionException | ConfigurationException e) {
+            throw new ParsingException(List.copyOf(files).getFirst(), e);
+        }
+        return translationResult;
+    }
+
+    @NotNull
+    private <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
+        return JvmClassMappingKt.getKotlinClass(javaPassClass);
+    }
+
     @Test
-    void runMain() {
-        setup();
-    }
-
-
-    void setup() {
+    void testSimple() throws ParsingException, InterruptedException {
         ClassLoader classLoader = getClass().getClassLoader();
-        File submissionsRoot = new File(classLoader.getResource("java/ai/simple").getFile());
+        File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource("java/ai/simple")).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
+        TranslationResult result = translate(submissionDirectories);
+        AbstractInterpretation interpretation = new AbstractInterpretation();
+
+        Component comp = result.getComponents().getFirst();
+        for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
+            Assertions.assertNotNull(translationUnit.getName().getParent());
+            if (translationUnit.getName().getParent().getLocalName().endsWith("Main")) {
+                interpretation.runMain(translationUnit);
+            }
+        }
+
+        VariableStore variableStore = interpretation.getVariables();
+        JavaObject main = (JavaObject) variableStore.getVariable("Main").getValue();
+        assertFalse(((IntValue) main.accessField("result")).getInformation());
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
     }
 
     @Test
-    void testSimple() {
+    void testSimple2() throws ParsingException, InterruptedException {
         ClassLoader classLoader = getClass().getClassLoader();
-        File submissionsRoot = new File(classLoader.getResource("java/ai/simple").getFile());
+        File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource("java/ai/simple2")).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
+        TranslationResult result = translate(submissionDirectories);
+        AbstractInterpretation interpretation = new AbstractInterpretation();
 
+        Component comp = result.getComponents().getFirst();
+        for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
+            Assertions.assertNotNull(translationUnit.getName().getParent());
+            if (translationUnit.getName().getParent().getLocalName().endsWith("Main")) {
+                interpretation.runMain(translationUnit);
+            }
+        }
 
+        assert interpretation.getValueStack().isEmpty();
+        VariableStore variableStore = interpretation.getVariables();
+        JavaObject main = (JavaObject) variableStore.getVariable("Main").getValue();
+        assertFalse(((IntValue) main.accessField("result")).getInformation());
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
     }
-
 
 }
