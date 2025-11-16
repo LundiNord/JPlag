@@ -25,7 +25,7 @@ public final class Main {
 
 
         if (args.length != 0) {
-            //System.err.println(ERROR_ARGUMENTS_NOT_SUPPORTED);
+            System.err.println(ERROR_ARGUMENTS_NOT_SUPPORTED);
             return;
         }
 

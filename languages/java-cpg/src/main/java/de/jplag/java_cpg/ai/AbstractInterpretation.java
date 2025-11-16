@@ -176,7 +176,7 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case MemberCallExpression mce -> {  //adds its value to the value stack
-                assert nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression;
+                assert nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression; //ToDo what if no argument?
                 Name memberName = (nodeStack.get(nodeStack.size() - 2)).getName();
                 assert memberName.getParent() != null;              //ToDo refactor to use variable store
                 JavaObject javaObject = (JavaObject) valueStack.get(valueStack.size() - 2);         //for now only one parameter
@@ -324,7 +324,6 @@ public class AbstractInterpretation {
             }
             case NewExpression ne -> {
                 Declaration classNode = ((ConstructExpression) nodeStack.getLast()).getInstantiates();
-                assert classNode != null;
                 List<Value> arguments = new ArrayList<>();
                 if (!((ConstructExpression) nodeStack.getLast()).getArguments().isEmpty()) {
                     for (int i = 0; i < ((ConstructExpression) nodeStack.getLast()).getArguments().size(); i++) {
@@ -336,8 +335,10 @@ public class AbstractInterpretation {
                 JavaObject newObject = new JavaObject();
                 valueStack.add(newObject);
                 //run constructor
-                AbstractInterpretation classAi = new AbstractInterpretation();
-                classAi.runClass((RecordDeclaration) classNode, newObject, arguments);
+                if (classNode != null) {
+                    AbstractInterpretation classAi = new AbstractInterpretation();
+                    classAi.runClass((RecordDeclaration) classNode, newObject, arguments);
+                }
                 //
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();

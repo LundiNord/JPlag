@@ -1,3 +1,4 @@
+// Java
 package de.jplag.java_cpg.ai;
 
 import de.fraunhofer.aisec.cpg.*;
@@ -36,7 +37,8 @@ class AbstractInterpretationTest {
             TranslationConfiguration.Builder configBuilder =
                     new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                             .sourceLocations(files.toArray(new File[]{})).registerLanguage(new JavaLanguage());
-            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
+            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(
+                    TypeResolver.class, TypeHierarchyResolver.class,
                     JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
                     ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
                     FilenameMapper.class, ReplaceCallCastPass.class,
@@ -58,10 +60,11 @@ class AbstractInterpretationTest {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
     }
 
-    @Test
-    void testSimple() throws ParsingException, InterruptedException {
+    @NotNull
+    private AbstractInterpretation interpretFromResource(String resourceDir)
+            throws ParsingException, InterruptedException {
         ClassLoader classLoader = getClass().getClassLoader();
-        File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource("java/ai/simple")).getFile());
+        File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
         TranslationResult result = translate(submissionDirectories);
         AbstractInterpretation interpretation = new AbstractInterpretation();
@@ -73,34 +76,53 @@ class AbstractInterpretationTest {
                 interpretation.runMain(translationUnit);
             }
         }
+        return interpretation;
+    }
 
+    private JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
         VariableStore variableStore = interpretation.getVariables();
-        JavaObject main = (JavaObject) variableStore.getVariable("Main").getValue();
+        return (JavaObject) variableStore.getVariable("Main").getValue();
+    }
+
+    @Test
+    void testSimple() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
+        JavaObject main = getMainObject(interpretation);
         assertFalse(((IntValue) main.accessField("result")).getInformation());
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
     }
 
     @Test
     void testSimple2() throws ParsingException, InterruptedException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource("java/ai/simple2")).getFile());
-        Set<File> submissionDirectories = Set.of(submissionsRoot);
-        TranslationResult result = translate(submissionDirectories);
-        AbstractInterpretation interpretation = new AbstractInterpretation();
-
-        Component comp = result.getComponents().getFirst();
-        for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
-            Assertions.assertNotNull(translationUnit.getName().getParent());
-            if (translationUnit.getName().getParent().getLocalName().endsWith("Main")) {
-                interpretation.runMain(translationUnit);
-            }
-        }
-
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
         assert interpretation.getValueStack().isEmpty();
-        VariableStore variableStore = interpretation.getVariables();
-        JavaObject main = (JavaObject) variableStore.getVariable("Main").getValue();
+        JavaObject main = getMainObject(interpretation);
         assertFalse(((IntValue) main.accessField("result")).getInformation());
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
+    }
+
+    @Test
+    void testSwitch() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
+        assert interpretation.getValueStack().isEmpty();
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(true);
+    }
+
+    @Test
+    void testLoop() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
+        assert interpretation.getValueStack().isEmpty();
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(true);
+    }
+
+    @Test
+    void testNewClass() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
+        assert interpretation.getValueStack().isEmpty();
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(true);
     }
 
 }
