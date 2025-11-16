@@ -9,6 +9,7 @@ public enum Type {
     OBJECT,
     ARRAY,
     LIST,
+    NULL,
     VOID;
 
     public static Type fromCpgType(@NotNull de.fraunhofer.aisec.cpg.graph.types.Type cpgType) {

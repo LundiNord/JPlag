@@ -29,6 +29,10 @@ public abstract class Value {
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }
 
+    public Value unaryOperation(@NotNull String operator) {
+        throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+    }
+
     public abstract Value copy();
 
     public abstract void merge(@NotNull Value other);

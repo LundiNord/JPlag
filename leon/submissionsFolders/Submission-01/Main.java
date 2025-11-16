@@ -23,6 +23,13 @@ public final class Main {
      */
     public static void main(String[] args) {
 
+        int x = 1;
+        while (x < 5) {
+            x++;
+        }
+
+        x = x + 10;
+
         if (args.length != 0) {
             //System.err.println(ERROR_ARGUMENTS_NOT_SUPPORTED);
             return;

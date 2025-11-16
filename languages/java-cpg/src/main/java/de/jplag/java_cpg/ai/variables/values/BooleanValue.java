@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 public class BooleanValue extends Value {
@@ -52,4 +53,21 @@ public class BooleanValue extends Value {
             this.information = false;
         }
     }
+
+    @Pure
+    @Override
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            case "!" -> {
+                if (information) {
+                    return new BooleanValue(!value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default ->
+                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+        }
+    }
+
 }

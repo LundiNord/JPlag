@@ -46,6 +46,12 @@ public class JavaObject extends Value {
         return result.getValue();
     }
 
+    public void changeField(String fieldName, Value value) {
+        assert fieldName != null;
+        Variable variable = fields.getVariable(new VariableName(fieldName));
+        variable.setValue(value);
+    }
+
     public void setField(Variable field) {
         this.fields.addVariable(field);
     }

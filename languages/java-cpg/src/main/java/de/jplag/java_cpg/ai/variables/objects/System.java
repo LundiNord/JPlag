@@ -33,6 +33,9 @@ public class System extends JavaObject {
             case "out", "err" -> {
                 return new PrintStream();
             }
+            case "in" -> {
+                return new InputStream();
+            }
             default ->
                     throw new UnsupportedOperationException("Field " + fieldName + " is not supported in " + PATH + "." + NAME);
         }

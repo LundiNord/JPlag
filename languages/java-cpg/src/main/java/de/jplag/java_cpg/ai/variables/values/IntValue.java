@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
 public class IntValue extends Value {
@@ -81,6 +82,23 @@ public class IntValue extends Value {
             }
             default ->
                     throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        }
+    }
+
+    @Override
+    @Impure
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            case "++" -> {
+                if (information) {
+                    this.value += 1;
+                    return new IntValue(this.value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default ->
+                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 

@@ -39,6 +39,7 @@ public class VariableStore {
      * @return
      */
     public Variable getVariable(VariableName name) {
+        //ToDo need to find vars in vars?
         assert name != null;
         for (int i = currentScopeIndex; i >= 0; i--) {
             Variable variable = scopes.get(i).getVariable(name);
