@@ -17,6 +17,17 @@ public abstract class Value {
         this.type = type;
     }
 
+    public static Value valueFactory(Type type) {
+        return switch (type) {
+            case INT -> new IntValue();
+            case STRING -> new StringValue();
+            case BOOLEAN -> new BooleanValue();
+            case OBJECT -> new JavaObject();
+            case VOID -> new VoidValue();
+            default -> throw new IllegalArgumentException("Unsupported type: " + type);
+        };
+    }
+
     public Type getType() {
         return type;
     }
@@ -36,5 +47,4 @@ public abstract class Value {
     public abstract Value copy();
 
     public abstract void merge(@NotNull Value other);
-
 }

@@ -34,7 +34,7 @@ public class JavaObject extends Value {
 
     public Value callMethod(String methodName, List<Value> paramVars) {
         //ToDo
-        throw new UnsupportedOperationException("Not yet implemented");
+        return null; //method isn't known
     }
 
     public Value accessField(String fieldName) {

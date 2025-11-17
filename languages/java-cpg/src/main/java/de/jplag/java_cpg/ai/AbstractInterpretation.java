@@ -175,17 +175,28 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case MemberCallExpression mce -> {  //adds its value to the value stack
-                assert nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression; //ToDo what if no argument?
-                Name memberName = (nodeStack.get(nodeStack.size() - 2)).getName();
-                assert memberName.getParent() != null;              //ToDo refactor to use variable store
-                JavaObject javaObject = (JavaObject) valueStack.get(valueStack.size() - 2);         //for now only one parameter
-                assert !valueStack.isEmpty();
-                Value result = javaObject.callMethod(memberName.getLocalName(), List.of(valueStack.getLast()));
-                valueStack.removeLast();    //remove parameter
+            case MemberCallExpression mce -> {//adds its value to the value stack
+                Value result;
+                if (mce.getArguments().isEmpty()) {
+                    assert nodeStack.getLast() instanceof MemberExpression;
+                    Name memberName = (nodeStack.getLast()).getName();
+                    JavaObject javaObject = (JavaObject) valueStack.getLast();
+                    result = javaObject.callMethod(memberName.getLocalName(), null);
+                } else {    //ToDo what if more than one argument
+                    assert nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression;
+                    Name memberName = (nodeStack.get(nodeStack.size() - 2)).getName();
+                    assert memberName.getParent() != null;              //ToDo refactor to use variable store?
+                    JavaObject javaObject = (JavaObject) valueStack.get(valueStack.size() - 2);         //for now only one parameter
+                    assert !valueStack.isEmpty();
+                    result = javaObject.callMethod(memberName.getLocalName(), List.of(valueStack.getLast()));
+                    valueStack.removeLast();    //remove parameter
+                    nodeStack.removeLast();
+                }
                 valueStack.removeLast();    //remove object reference
+                if (result == null) {
+                    result = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType()));
+                }
                 valueStack.add(result);
-                nodeStack.removeLast();
                 nodeStack.removeLast();
                 nodeStack.add(mce);
                 assert nextEOG.size() == 1;
@@ -193,8 +204,14 @@ public class AbstractInterpretation {
             }
             case DeclarationStatement ds -> {
                 assert !valueStack.isEmpty();
-                assert nodeStack.get(nodeStack.size() - 2) instanceof VariableDeclaration;
-                Variable variable = new Variable((nodeStack.get(nodeStack.size() - 2)).getName().toString(), valueStack.getLast());
+                Variable variable;
+                if (nodeStack.get(nodeStack.size() - 2) instanceof VariableDeclaration) {
+                    variable = new Variable((nodeStack.get(nodeStack.size() - 2)).getName().toString(), valueStack.getLast());
+                } else if (nodeStack.get(nodeStack.size() - 3) instanceof VariableDeclaration) {    //if new expression
+                    variable = new Variable((nodeStack.get(nodeStack.size() - 3)).getName().toString(), valueStack.getLast());
+                } else {
+                    throw new IllegalStateException("Unexpected value: " + nodeStack.get(nodeStack.size() - 2).getClass());
+                }
                 variables.addVariable(variable);
                 nodeStack.removeLast();
                 nodeStack.removeLast();
@@ -340,6 +357,7 @@ public class AbstractInterpretation {
                     classAi.runClass((RecordDeclaration) classNode, newObject, arguments);
                 }
                 //
+                nodeStack.add(ne);
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }

@@ -10,6 +10,7 @@ import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.IntValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.passes.*;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
@@ -24,10 +25,58 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AbstractInterpretationTest {
+
+    @Test
+        //very simple test with only main function
+    void testSimple() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((IntValue) main.accessField("result")).getInformation());
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
+    }
+
+    @Test
+        //test with main function calling another function
+    void testSimple2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
+        assert interpretation.getValueStack().isEmpty();
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((IntValue) main.accessField("result")).getInformation());
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
+    }
+
+    @Test
+        //simple loop
+    void testSwitch() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
+        assert interpretation.getValueStack().isEmpty();
+        JavaObject main = getMainObject(interpretation);
+        fail();
+    }
+
+    @Test
+        //simplest loop
+    void testLoop() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
+        assert interpretation.getValueStack().isEmpty();
+        JavaObject main = getMainObject(interpretation);
+        fail();
+    }
+
+    @Test
+        //nondeterministic test!
+        // test creating a new class instance
+    void testNewClass() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
+        assertEquals(1, interpretation.getValueStack().size());
+        assertInstanceOf(VoidValue.class, interpretation.getValueStack().getFirst());
+        assertEquals(1, interpretation.getNodeStack().size());
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
 
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
@@ -60,9 +109,13 @@ class AbstractInterpretationTest {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
     }
 
+    private JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
+        VariableStore variableStore = interpretation.getVariables();
+        return (JavaObject) variableStore.getVariable("Main").getValue();
+    }
+
     @NotNull
-    private AbstractInterpretation interpretFromResource(String resourceDir)
-            throws ParsingException, InterruptedException {
+    private AbstractInterpretation interpretFromResource(String resourceDir) throws ParsingException, InterruptedException {
         ClassLoader classLoader = getClass().getClassLoader();
         File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
@@ -77,52 +130,6 @@ class AbstractInterpretationTest {
             }
         }
         return interpretation;
-    }
-
-    private JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
-        VariableStore variableStore = interpretation.getVariables();
-        return (JavaObject) variableStore.getVariable("Main").getValue();
-    }
-
-    @Test
-    void testSimple() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
-    }
-
-    @Test
-    void testSimple2() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
-        assert interpretation.getValueStack().isEmpty();
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
-    }
-
-    @Test
-    void testSwitch() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
-        assert interpretation.getValueStack().isEmpty();
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(true);
-    }
-
-    @Test
-    void testLoop() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
-        assert interpretation.getValueStack().isEmpty();
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(true);
-    }
-
-    @Test
-    void testNewClass() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
-        assert interpretation.getValueStack().isEmpty();
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(true);
     }
 
 }
