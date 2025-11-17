@@ -9,3 +9,7 @@
 ## Edge Cases to Test
 
 - [x] if without else
+
+## Long Term
+
+- [ ] explicitly carry types everywhere

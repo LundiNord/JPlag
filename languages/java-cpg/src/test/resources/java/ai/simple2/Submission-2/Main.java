@@ -20,12 +20,14 @@ public final class Main {
      */
     public static void main(String[] args) {
 
-        //System.out.print("1");
-
         int x = Integer.parseInt(args[0]);
+        int y = 100;
+        result2 = compute(x, y);
+
+        System.out.print("1");
+        int y = 100;
         int z = 500;
         x = Math.abs(x);
-        int y = 100;
 
         if (x + y < 100) {
             //System.out.print("1");
@@ -36,6 +38,10 @@ public final class Main {
         }
 
         result = z;
-        result2 = y;
     }
+
+    private int compute(int x, int y) {
+        return x + y;
+    }
+
 }

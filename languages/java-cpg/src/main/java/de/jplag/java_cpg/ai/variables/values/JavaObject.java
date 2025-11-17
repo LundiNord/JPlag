@@ -1,5 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import de.jplag.java_cpg.ai.AbstractInterpretation;
 import de.jplag.java_cpg.ai.variables.Scope;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
@@ -11,6 +12,7 @@ import java.util.List;
 public class JavaObject extends Value {
 
     private final Scope fields;
+    private AbstractInterpretation abstractInterpretation;  //the abstract interpretation engine for this object
 
     private JavaObject(Scope fields) {
         super(Type.OBJECT);
@@ -32,10 +34,24 @@ public class JavaObject extends Value {
         this.fields = new Scope();
     }
 
-    public Value callMethod(String methodName, List<Value> paramVars) {
-        //ToDo
-        return null; //method isn't known
+    public AbstractInterpretation getAbstractInterpretation() {
+        return abstractInterpretation;
     }
+
+    public void setAbstractInterpretation(AbstractInterpretation abstractInterpretation) {
+        this.abstractInterpretation = abstractInterpretation;
+    }
+
+    /**
+     *
+     * @param methodName
+     * @param paramVars
+     * @return null if the method is not known.
+     */
+    public Value callMethod(String methodName, List<Value> paramVars) {
+        return abstractInterpretation.runMethod(methodName, paramVars);
+    }
+
 
     public Value accessField(String fieldName) {
         assert fieldName != null;

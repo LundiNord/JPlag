@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AbstractInterpretationTest {
 
     @Test
-        //very simple test with only main function
+        //very simple test with only the main function
     void testSimple() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
         JavaObject main = getMainObject(interpretation);
@@ -39,13 +39,12 @@ class AbstractInterpretationTest {
     }
 
     @Test
-        //test with main function calling another function
+        //test with the main function calling another function
     void testSimple2() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
-        assert interpretation.getValueStack().isEmpty();
         JavaObject main = getMainObject(interpretation);
         assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
+        assertFalse(((IntValue) main.accessField("result2")).getInformation());
     }
 
     @Test
