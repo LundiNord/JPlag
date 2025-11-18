@@ -86,4 +86,12 @@ public class Variable {
         assert value.name.equals(this.name);
         this.value.merge(value.value);
     }
+
+    /**
+     * Delete all conetent information in this variable.
+     */
+    public void setToUnknown() {
+        value.setToUnknown();
+    }
+
 }

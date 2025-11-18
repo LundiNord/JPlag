@@ -80,6 +80,12 @@ public class JavaObject extends Value {
     @Override
     public void merge(@NotNull Value other) {
         assert other instanceof JavaObject;
+        this.fields.merge(((JavaObject) other).fields);
+    }
+
+    @Override
+    public void setToUnknown() {
+        fields.setEverythingUnknown();
     }
 
 }

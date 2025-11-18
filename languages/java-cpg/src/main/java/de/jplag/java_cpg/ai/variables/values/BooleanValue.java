@@ -38,6 +38,22 @@ public class BooleanValue extends Value {
         return value;
     }
 
+    @Pure
+    @Override
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            case "!" -> {
+                if (information) {
+                    return new BooleanValue(!value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default ->
+                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+        }
+    }
+
     @Override
     public Value copy() {
         return new BooleanValue(value, information);
@@ -54,20 +70,9 @@ public class BooleanValue extends Value {
         }
     }
 
-    @Pure
     @Override
-    public Value unaryOperation(@NotNull String operator) {
-        switch (operator) {
-            case "!" -> {
-                if (information) {
-                    return new BooleanValue(!value);
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            default ->
-                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
-        }
+    public void setToUnknown() {
+        this.information = false;
     }
 
 }

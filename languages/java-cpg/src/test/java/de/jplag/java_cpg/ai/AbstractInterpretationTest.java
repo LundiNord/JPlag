@@ -29,8 +29,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AbstractInterpretationTest {
 
+    /**
+     * a simple test with the main function only
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
     @Test
-        //very simple test with only the main function
     void testSimple() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
         JavaObject main = getMainObject(interpretation);
@@ -38,8 +43,13 @@ class AbstractInterpretationTest {
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
     }
 
+    /**
+     * a simple test with the main function calling another function
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
     @Test
-        //test with the main function calling another function
     void testSimple2() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
         JavaObject main = getMainObject(interpretation);
@@ -47,8 +57,13 @@ class AbstractInterpretationTest {
         assertFalse(((IntValue) main.accessField("result2")).getInformation());
     }
 
+    /**
+     * simple loop
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
     @Test
-        //simple loop
     void testSwitch() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
         assert interpretation.getValueStack().isEmpty();
@@ -56,18 +71,26 @@ class AbstractInterpretationTest {
         fail();
     }
 
+
+    /**
+     * simplest loop test
+     */
     @Test
-        //simplest loop
     void testLoop() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
-        assert interpretation.getValueStack().isEmpty();
         JavaObject main = getMainObject(interpretation);
-        fail();
+        assertFalse(((IntValue) main.accessField("result")).getInformation());
+        assertFalse(((IntValue) main.accessField("result2")).getInformation());
     }
 
+    /**
+     * nondeterministic test!
+     * test creating a new class instance
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
     @Test
-        //nondeterministic test!
-        // test creating a new class instance
     void testNewClass() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
         assertEquals(1, interpretation.getValueStack().size());

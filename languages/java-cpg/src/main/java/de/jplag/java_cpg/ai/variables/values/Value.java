@@ -47,4 +47,9 @@ public abstract class Value {
     public abstract Value copy();
 
     public abstract void merge(@NotNull Value other);
+
+    /**
+     * Delete all information in this value.
+     */
+    public abstract void setToUnknown();
 }

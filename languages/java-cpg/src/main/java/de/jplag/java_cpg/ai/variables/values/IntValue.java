@@ -118,4 +118,9 @@ public class IntValue extends Value {
         }
     }
 
+    @Override
+    public void setToUnknown() {
+        this.information = false;
+    }
+
 }

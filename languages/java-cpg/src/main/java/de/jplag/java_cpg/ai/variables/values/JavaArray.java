@@ -27,17 +27,6 @@ public class JavaArray extends JavaObject {
         this.innerType = null;
     }
 
-    @Override
-    public JavaArray copy() {
-        return new JavaArray(innerType);
-    }
-
-    @Override
-    public void merge(@NotNull Value other) {
-        assert other instanceof JavaArray;
-        assert this.innerType.equals(((JavaArray) other).innerType);
-    }
-
     public Value arrayAccess(IntValue index) {
         //if no information, return an unknown value of the inner type
         switch (innerType) {
@@ -63,5 +52,21 @@ public class JavaArray extends JavaObject {
             default ->
                     throw new UnsupportedOperationException("Field " + fieldName + " is not supported for JavaArray");
         }
+    }
+
+    @Override
+    public JavaArray copy() {
+        return new JavaArray(innerType);
+    }
+
+    @Override
+    public void merge(@NotNull Value other) {
+        assert other instanceof JavaArray;
+        assert this.innerType.equals(((JavaArray) other).innerType);
+    }
+
+    @Override
+    public void setToUnknown() {
+        //do nothing
     }
 }

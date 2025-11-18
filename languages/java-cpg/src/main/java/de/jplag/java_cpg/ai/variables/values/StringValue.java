@@ -53,4 +53,10 @@ public class StringValue extends Value {
         }
     }
 
+    @Override
+    public void setToUnknown() {
+        this.information = false;
+        this.value = null;
+    }
+
 }

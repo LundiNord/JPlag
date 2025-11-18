@@ -344,12 +344,17 @@ public class AbstractInterpretation {
             case Block b -> {
                 //assert block is exited
                 variables.removeScope();
-                assert nextEOG.size() == 1;
-                nodeStack.add(nextEOG.getFirst());
-                return null;
+                if (nextEOG.size() == 1) {          //end of if
+                    nodeStack.add(nextEOG.getFirst());
+                    return null;
+                } else if (nextEOG.isEmpty()) {     //in end of while loop
+                    return null;
+                } else {
+                    assert false;
+                    return null;
+                }
             }
             case ReturnStatement ret -> {
-                //ToDo handle return values
                 variables.removeScope();
                 Value result;
                 if (valueStack.isEmpty()) {
@@ -402,8 +407,8 @@ public class AbstractInterpretation {
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     //merge if the loop has been run
-                    //for now set all changed variables to unknown
-                    //ToDo
+                    //for now set all variables to unknown
+                    variables.setEverythingUnknown();
                     System.out.println(valueStack.getLast());
                 } else {
                     //Dead code detected, loop never runs

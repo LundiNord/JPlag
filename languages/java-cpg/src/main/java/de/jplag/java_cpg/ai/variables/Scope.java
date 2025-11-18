@@ -52,4 +52,14 @@ public class Scope {
             this.variables.get(entry.getKey()).merge(entry.getValue());
         }
     }
+
+    /**
+     * Sets all variables to completely unknown.
+     */
+    public void setEverythingUnknown() {
+        for (Variable variable : variables.values()) {
+            variable.setToUnknown();
+        }
+    }
+
 }

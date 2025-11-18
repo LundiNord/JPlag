@@ -3,7 +3,7 @@
 - [x] if with condition information
 - [ ] switch statements
 - [ ] track object types
-- [ ] loop ai
+- [x] loop ai
 - [ ] exceptions
 
 ## Edge Cases to Test
@@ -12,4 +12,4 @@
 
 ## Long Term
 
-- [ ] explicitly carry types everywhere
+- [ ] explicitly carry object types everywhere

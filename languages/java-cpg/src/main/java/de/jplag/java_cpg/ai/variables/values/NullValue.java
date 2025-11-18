@@ -18,5 +18,10 @@ public class NullValue extends Value {
     public void merge(@NotNull Value other) {
         //do nothing
     }
-    
+
+    @Override
+    public void setToUnknown() {
+        //do nothing
+    }
+
 }

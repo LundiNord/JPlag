@@ -1,5 +1,7 @@
 package de.jplag.java_cpg.ai.variables;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
 public class VariableStore {
@@ -17,7 +19,7 @@ public class VariableStore {
      *
      * @param variableStore
      */
-    public VariableStore(VariableStore variableStore) {
+    public VariableStore(@NotNull VariableStore variableStore) {
         this.currentScopeIndex = variableStore.currentScopeIndex;
         for (Scope p : variableStore.scopes) {
             this.scopes.add(new Scope(p));
@@ -39,7 +41,6 @@ public class VariableStore {
      * @return
      */
     public Variable getVariable(VariableName name) {
-        //ToDo need to find vars in vars?
         assert name != null;
         for (int i = currentScopeIndex; i >= 0; i--) {
             Variable variable = scopes.get(i).getVariable(name);
@@ -60,19 +61,28 @@ public class VariableStore {
     }
 
     public void removeScope() {
-        assert currentScopeIndex > 0;
         if (currentScopeIndex > 0) {
             scopes.remove(currentScopeIndex);
             currentScopeIndex--;
         }
+        assert currentScopeIndex >= 0;
     }
 
-    public void merge(VariableStore other) {
+    public void merge(@NotNull VariableStore other) {
         assert this.currentScopeIndex == other.currentScopeIndex;
         for (int i = 0; i <= currentScopeIndex; i++) {
             Scope thisScope = this.scopes.get(i);
             Scope otherScope = other.scopes.get(i);
             thisScope.merge(otherScope);
+        }
+    }
+
+    /**
+     * Sets all variables in all scopes to completely unknown.
+     */
+    public void setEverythingUnknown() {
+        for (Scope scope : scopes) {
+            scope.setEverythingUnknown();
         }
     }
 
