@@ -1,9 +1,5 @@
 package de.jplag.java_cpg.transformation.matching;
 
-import static de.jplag.java_cpg.transformation.Role.*;
-import static de.jplag.java_cpg.transformation.matching.edges.Edges.*;
-import static de.jplag.java_cpg.transformation.matching.pattern.PatternUtil.*;
-
 import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.fraunhofer.aisec.cpg.graph.declarations.ParameterDeclaration;
@@ -19,16 +15,22 @@ import de.jplag.java_cpg.transformation.matching.pattern.GraphPattern;
 import de.jplag.java_cpg.transformation.matching.pattern.GraphPatternBuilder;
 import de.jplag.java_cpg.transformation.matching.pattern.PatternUtil;
 
+import static de.jplag.java_cpg.transformation.Role.*;
+import static de.jplag.java_cpg.transformation.matching.edges.Edges.*;
+import static de.jplag.java_cpg.transformation.matching.pattern.PatternUtil.*;
+
 /**
  * This class is used to collect sub-patterns that may appear repetitively, or used in tests.
  */
 public final class PatternRepository {
 
     private PatternRepository() {
-        /* should not be instantiated */}
+        /* should not be instantiated */
+    }
 
     /**
      * Creates a {@link GraphPatternBuilder} for an {@link IfStatement} with an else statement.
+     *
      * @return the graph pattern builder
      */
     public static GraphPatternBuilder ifElseWithNegatedCondition() {
@@ -48,6 +50,7 @@ public final class PatternRepository {
 
     /**
      * Creates a {@link GraphPatternBuilder} for a setter method
+     *
      * @return the {@link GraphPatternBuilder}
      */
     public static GraphPatternBuilder setterMethod() {
@@ -60,7 +63,8 @@ public final class PatternRepository {
                                 related1ToN(RECORD_DECLARATION__FIELDS, FieldDeclaration.class, FIELD_DECLARATION,
                                         related(VALUE_DECLARATION__TYPE, ObjectType.class, FIELD_TYPE)),
                                 relatedExisting1ToN(RECORD_DECLARATION__METHODS, MethodDeclaration.class, METHOD_DECLARATION)),
-                        related(VALUE_DECLARATION__TYPE, FunctionType.class, METHOD_TYPE, property(nElements(FUNCTION_TYPE__PARAMETERS, 1)),
+                        related(VALUE_DECLARATION__TYPE, FunctionType.class, METHOD_TYPE,
+                                property(nElements(FUNCTION_TYPE__PARAMETERS, 1)),
                                 relatedExisting(nthElement(FUNCTION_TYPE__PARAMETERS, 0), ObjectType.class, FIELD_TYPE),
                                 property(nElements(FUNCTION_TYPE__RETURN_TYPES, 1)),
                                 related(nthElement(FUNCTION_TYPE__RETURN_TYPES, 0), IncompleteType.class, VOID_TYPE,
@@ -68,7 +72,8 @@ public final class PatternRepository {
                         property(notEmpty(METHOD_DECLARATION__PARAMETERS)),
                         related(nthElement(METHOD_DECLARATION__PARAMETERS, 0), ParameterDeclaration.class, PARAMETER_DECLARATION),
                         property(MethodDeclaration::hasBody),
-                        related(METHOD_DECLARATION__BODY, Block.class, METHOD_BODY, property(nElements(BLOCK__STATEMENTS, 2)),
+                        related(METHOD_DECLARATION__BODY, Block.class, METHOD_BODY,
+                                property(nElements(BLOCK__STATEMENTS, 2)),
                                 related(nthElement(BLOCK__STATEMENTS, 0), AssignExpression.class, ASSIGN_EXPRESSION,
                                         related(ASSIGN_EXPRESSION__LHS, Reference.class, FIELD_REFERENCE),
 

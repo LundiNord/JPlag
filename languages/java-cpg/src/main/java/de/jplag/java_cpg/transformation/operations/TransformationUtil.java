@@ -1,19 +1,18 @@
 package de.jplag.java_cpg.transformation.operations;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
 import de.jplag.java_cpg.transformation.GraphTransformation;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This class is a collection of auxiliary methods related to {@link GraphTransformation}s.
@@ -29,6 +28,7 @@ public final class TransformationUtil {
 
     /**
      * Gets the {@link SubgraphWalker.Border} of the given node's sub-AST that links to outer nodes via EOG edges.
+     *
      * @param astRoot the root of the sub-AST
      * @return the EOG {@link SubgraphWalker.Border} of the AST
      */
@@ -72,7 +72,8 @@ public final class TransformationUtil {
 
     /**
      * Checks if the given {@link Node} {@code maybeChild} is contained in the sub-AST with root {@code astRoot}.
-     * @param astRoot the root of the sub-AST
+     *
+     * @param astRoot    the root of the sub-AST
      * @param maybeChild the node to check
      * @return true if {@code maybeChild} is contained in the sub-AST rooted at {@code astRoot}
      */
@@ -95,6 +96,7 @@ public final class TransformationUtil {
 
     /**
      * Disconnects the given {@link Node} from its EOG successor.
+     *
      * @param node the node
      * @return the EOG successor
      */
@@ -127,8 +129,9 @@ public final class TransformationUtil {
 
     /**
      * Connects the EOG exit edges of the given target {@link Node} to the entries of the newSuccessor {@link Node}.
-     * @param target the node to be connected
-     * @param newSuccessor the node to be connected to
+     *
+     * @param target               the node to be connected
+     * @param newSuccessor         the node to be connected to
      * @param enforceEogConnection if true, the two nodes will be connected even if target has no exit edges.
      */
     static void connectNewSuccessor(Node target, Node newSuccessor, boolean enforceEogConnection) {
@@ -171,6 +174,7 @@ public final class TransformationUtil {
 
     /**
      * Disconnects the given {@link Node} from its EOG predecessor.
+     *
      * @param node the node
      * @return the EOG predecessor
      */
@@ -201,6 +205,7 @@ public final class TransformationUtil {
 
     /**
      * Gets the first EOG entry {@link Node} of the given {@link Node}.
+     *
      * @param node the node
      * @return the EOG entry node
      */
@@ -210,6 +215,7 @@ public final class TransformationUtil {
 
     /**
      * Gets the first EOG exit {@link Node} of the given {@link Node}.
+     *
      * @param node the node
      * @return the EOG entry node
      */
@@ -242,10 +248,11 @@ public final class TransformationUtil {
 
     /**
      * Gets the EOG entry edges to the AST subtree represented by astParent, that connect to the given entry node.
-     * @param astParent the root of the AST subtree
-     * @param entry the EOG entry to the astParent
+     *
+     * @param astParent  the root of the AST subtree
+     * @param entry      the EOG entry to the astParent
      * @param useDummies if true, the returned edges may not be the current entries to the astParent, but instead earlier
-     * entry edges to the astParent that have been disconnected and saved for use later.
+     *                   entry edges to the astParent that have been disconnected and saved for use later.
      * @return the entry edges
      */
     @NotNull
@@ -270,10 +277,11 @@ public final class TransformationUtil {
 
     /**
      * Gets the EOG exit edges to the AST subtree represented by astParent, that connect to the given entry node.
-     * @param astParent the root of the AST subtree
-     * @param exits the EOG exit nodes of the astParent
+     *
+     * @param astParent  the root of the AST subtree
+     * @param exits      the EOG exit nodes of the astParent
      * @param useDummies if true, the returned edges may not be the current exits of the astParent, but instead earlier exit
-     * edges of the astParent that have been disconnected and saved for use later.
+     *                   edges of the astParent that have been disconnected and saved for use later.
      * @return the exit edges
      */
     @NotNull
@@ -299,7 +307,8 @@ public final class TransformationUtil {
 
     /**
      * Inserts the given {@link Node} before the given newSuccessor {@link Node} in the EOG graph.
-     * @param target the node
+     *
+     * @param target       the node
      * @param newSuccessor the new successor node
      */
     public static void insertBefore(Node target, Node newSuccessor) {
@@ -316,7 +325,8 @@ public final class TransformationUtil {
 
     /**
      * Inserts the given {@link Node} after the given newSuccessor {@link Node} in the EOG graph.
-     * @param target the node
+     *
+     * @param target         the node
      * @param newPredecessor the new predecessor node
      */
     public static void insertAfter(Node target, Node newPredecessor) {
@@ -333,7 +343,8 @@ public final class TransformationUtil {
 
     /**
      * Returns true if the {@code maybeSuccessor} {@link Node} is the AST neighbor following the {@code element} node.
-     * @param element a {@link Node} object
+     *
+     * @param element        a {@link Node} object
      * @param maybeSuccessor the potential successor {@link Node}
      * @return true if {@code maybeSuccessor} is an AST successor of {@code element}
      */
@@ -349,7 +360,8 @@ public final class TransformationUtil {
 
     /**
      * Returns true if the {@code maybeSuccessor} {@link Node} is the EOG successor of the {@code element} node.
-     * @param exit a {@link Node} object
+     *
+     * @param exit           a {@link Node} object
      * @param maybeSuccessor the potential successor {@link Node}
      * @return true if {@code maybeSuccessor} is the EOG successor of {@code element}
      */
@@ -360,4 +372,5 @@ public final class TransformationUtil {
 
         return entryEdges.stream().anyMatch(e -> exit == e.getStart());
     }
+
 }

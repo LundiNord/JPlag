@@ -306,34 +306,37 @@ public class AbstractInterpretation {
                         runThenBranch = false;
                         //Dead code detected
                     }
+                    if (ifStmt.getThenStatement() == null) {
+                        runThenBranch = false;
+                    } else if (ifStmt.getElseStatement() == null) {
+                        runElseBranch = false;
+                    }
                 }
-                nodeStack.removeLast();     //removes itself
+                nodeStack.removeLast();     //remove condition
                 assert nextEOG.size() == 2;
-                VariableStore beforeIfVariables = new VariableStore(variables);
                 VariableStore thenVariables = new VariableStore(variables);
                 VariableStore elseVariables = new VariableStore(variables);
                 //then statement
-                if (runThenBranch && ifStmt.getThenStatement() != null) {
+                if (runThenBranch) {
                     variables = thenVariables;
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                 }
                 //else statement
-                if (runElseBranch && ifStmt.getElseStatement() != null) {
+                if (runElseBranch) {
                     variables = elseVariables;
                     variables.newScope();
                     graphWalker(nextEOG.getLast());
                 }
                 //merge branches
-                if (runThenBranch && runElseBranch && ifStmt.getThenStatement() != null && ifStmt.getElseStatement() != null) {
+                if (runThenBranch && runElseBranch) {
                     variables.merge(thenVariables);
-                } else if (ifStmt.getThenStatement() != null || ifStmt.getElseStatement() != null) {  //if one branch is not existent, merge with variables before if
-                    variables.merge(beforeIfVariables);
-                    if (ifStmt.getThenStatement() != null) {
-                        nodeStack.add(nextEOG.getLast());
-                    } else {
-                        nodeStack.add(nextEOG.getLast());
-                    }
+                } else if (runElseBranch) {
+                    //nothing
+                } else if (runThenBranch) {
+                    //nothing
+                } else {
+                    nodeStack.add(nextEOG.getLast());
                 }
                 nextNode = nodeStack.getLast();
                 nodeStack.removeLast();

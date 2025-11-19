@@ -114,6 +114,20 @@ class AbstractInterpretationTest {
         assertNotNull(main);
     }
 
+    /**
+     * test if withouth else
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testIf() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
+
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
