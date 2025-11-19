@@ -37,6 +37,24 @@ public class StringValue extends Value {
     }
 
     @Override
+    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        if (operator.equals("+") && other instanceof INumberValue inumbervalue) {
+            if (information && inumbervalue.getInformation()) {
+                return new StringValue(this.value + inumbervalue.getValue());
+            } else {
+                return new StringValue();
+            }
+        } else if (operator.equals("+") && other instanceof StringValue stringvalue) {
+            if (information && stringvalue.getInformation()) {
+                return new StringValue(this.value + stringvalue.getValue());
+            } else {
+                return new StringValue();
+            }
+        }
+        throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+    }
+
+    @Override
     public Value copy() {
         return new StringValue(value, information);
     }
@@ -57,6 +75,15 @@ public class StringValue extends Value {
     public void setToUnknown() {
         this.information = false;
         this.value = null;
+    }
+
+    private boolean getInformation() {
+        return information;
+    }
+
+    private String getValue() {
+        assert information;
+        return value;
     }
 
 }

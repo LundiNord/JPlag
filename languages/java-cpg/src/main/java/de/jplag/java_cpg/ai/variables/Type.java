@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public enum Type {
     INT,
+    FLOAT,
     STRING,
     BOOLEAN,
     OBJECT,
@@ -23,6 +24,8 @@ public enum Type {
             return OBJECT;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.PointerType.class) {
             return ARRAY;   //in java pointer types are used only for arrays
+        } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.FloatingPointType.class) {
+            return FLOAT;
         } else {
             throw new IllegalArgumentException("Unsupported CPG type: " + cpgType);
         }

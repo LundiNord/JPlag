@@ -48,6 +48,7 @@ public class Variable {
             case STRING -> this.value = new StringValue();
             case OBJECT -> this.value = new JavaObject();
             case ARRAY -> this.value = new JavaArray();
+            case FLOAT -> this.value = new FloatValue();
             default -> throw new IllegalArgumentException("Unsupported type for variable initialization: " + type);
         }
     }

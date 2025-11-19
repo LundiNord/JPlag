@@ -4,7 +4,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
-public class IntValue extends Value {
+public class IntValue extends Value implements INumberValue {
 
     private int value;
     private boolean information;    //whether exact information is available
@@ -23,12 +23,19 @@ public class IntValue extends Value {
         information = true;
     }
 
+    public IntValue(double value) {
+        super(Type.INT);
+        this.value = (int) value;
+        information = true;
+    }
+
     private IntValue(int value, boolean information) {
         super(Type.INT);
         this.value = value;
         this.information = information;
     }
 
+    @Deprecated //replaced by unaryOperation?
     public IntValue abs() {
         if (information) {
             return new IntValue(Math.abs(value));
@@ -43,7 +50,7 @@ public class IntValue extends Value {
         return information;
     }
 
-    public int getValue() {
+    public double getValue() {
         assert information;
         return value;
     }

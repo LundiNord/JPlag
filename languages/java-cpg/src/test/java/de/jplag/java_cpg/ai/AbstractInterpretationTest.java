@@ -44,7 +44,7 @@ class AbstractInterpretationTest {
     }
 
     /**
-     * a simple test with the main function calling another function
+     * a simple test with the main function calling another function.
      *
      * @throws ParsingException
      * @throws InterruptedException
@@ -55,6 +55,21 @@ class AbstractInterpretationTest {
         JavaObject main = getMainObject(interpretation);
         assertFalse(((IntValue) main.accessField("result")).getInformation());
         assertFalse(((IntValue) main.accessField("result2")).getInformation());
+    }
+
+    /**
+     * a slightly more complex test with the main function calling other functions.
+     * with for loop and throw exception.
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testSimple3() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple3");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((IntValue) main.accessField("result")).getValue());
+        assertEquals(2, ((IntValue) main.accessField("result2")).getValue());
     }
 
     /**
@@ -71,7 +86,6 @@ class AbstractInterpretationTest {
         fail();
     }
 
-
     /**
      * simplest loop test
      */
@@ -84,7 +98,7 @@ class AbstractInterpretationTest {
     }
 
     /**
-     * nondeterministic test!
+     * nondeterministic test! (completes sometimes in debug mode)
      * test creating a new class instance
      *
      * @throws ParsingException
