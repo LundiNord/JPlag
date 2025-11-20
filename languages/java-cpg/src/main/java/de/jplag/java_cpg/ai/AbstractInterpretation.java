@@ -306,11 +306,11 @@ public class AbstractInterpretation {
                         runThenBranch = false;
                         //Dead code detected
                     }
-                    if (ifStmt.getThenStatement() == null) {
-                        runThenBranch = false;
-                    } else if (ifStmt.getElseStatement() == null) {
-                        runElseBranch = false;
-                    }
+                }
+                if (ifStmt.getThenStatement() == null) {
+                    runThenBranch = false;
+                } else if (ifStmt.getElseStatement() == null) {
+                    runElseBranch = false;
                 }
                 nodeStack.removeLast();     //remove condition
                 assert nextEOG.size() == 2;
@@ -321,12 +321,18 @@ public class AbstractInterpretation {
                     variables = thenVariables;
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
+                    if (nodeStack.getLast() == null) {
+                        nodeStack.add(nextEOG.getLast());
+                    }
                 }
                 //else statement
                 if (runElseBranch) {
                     variables = elseVariables;
                     variables.newScope();
                     graphWalker(nextEOG.getLast());
+                    if (nodeStack.getLast() == null) {
+                        nodeStack.add(nextEOG.getFirst());
+                    }
                 }
                 //merge branches
                 if (runThenBranch && runElseBranch) {
@@ -357,7 +363,8 @@ public class AbstractInterpretation {
                 if (nextEOG.size() == 1) {          //end of if
                     nodeStack.add(nextEOG.getFirst());
                     return null;
-                } else if (nextEOG.isEmpty()) {     //in end of while loop
+                } else if (nextEOG.isEmpty()) {     //at the end of a while loop or after throw statement
+                    nodeStack.add(null);
                     return null;
                 } else {
                     assert false;

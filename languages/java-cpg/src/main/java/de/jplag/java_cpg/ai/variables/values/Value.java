@@ -41,7 +41,13 @@ public abstract class Value {
     }
 
     public Value unaryOperation(@NotNull String operator) {
-        throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+        switch (operator) {
+            case "throw" -> {
+                return new VoidValue();
+            }
+            default ->
+                    throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+        }
     }
 
     public abstract Value copy();

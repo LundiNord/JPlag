@@ -4,7 +4,7 @@
 - [ ] switch statements
 - [ ] track object types
 - [x] loop ai
-- [ ] exceptions
+- [x] exceptions
 - [ ] hash maps, ...
 - [ ] think about copy of bound JavaObject
 - [ ] ConditionalExpression (a ? b : c)
