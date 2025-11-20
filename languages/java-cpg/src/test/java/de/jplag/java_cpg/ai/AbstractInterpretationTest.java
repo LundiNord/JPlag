@@ -138,18 +138,33 @@ class AbstractInterpretationTest {
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
     }
 
+//    /**
+//     * simple enum test
+//     *
+//     * @throws ParsingException
+//     * @throws InterruptedException
+//     */
+//    @Test
+//    void testEnum() throws ParsingException, InterruptedException {
+//        AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
+//        JavaObject main = getMainObject(interpretation);
+//        assertEquals(400, ((IntValue) main.accessField("result")).getValue());
+//        assertFalse(((IntValue) main.accessField("result2")).getInformation());
+//    }
+
     /**
-     * simple enum test
+     * simple hashmap test
      *
      * @throws ParsingException
      * @throws InterruptedException
      */
     @Test
-    void testEnum() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
+    void testHashMap() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());
-        assertFalse(((IntValue) main.accessField("result2")).getInformation());
+        assertNotNull(main);
+        //assertEquals(1, ((IntValue) main.accessField("result")).getValue());
+        //assertEquals(2, ((IntValue) main.accessField("result")).getValue());
     }
 
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {

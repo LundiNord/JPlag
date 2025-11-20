@@ -49,9 +49,25 @@ public class AbstractInterpretation {
                         newVar.setInitialValue();
                         mainClassVar.setField(newVar);
                     } else {
-                        assert ((Literal<?>) fd.getInitializer()).getValue() != null;
-                        Value value = valueResolver(((Literal<?>) fd.getInitializer()).getValue());
-                        mainClassVar.setField(new Variable(new VariableName(name.toString()), value));
+                        if (fd.getInitializer() instanceof Literal<?> literal) {
+                            Value value = valueResolver(literal.getValue());
+                            mainClassVar.setField(new Variable(new VariableName(name.toString()), value));
+                        } else if (fd.getInitializer() instanceof NewExpression newExpression) {
+                            JavaObject newObject;
+                            switch ((newExpression.getInitializer()).getType().getName().toString()) {
+                                case "java.util.HashMap", "java.util.Map" ->
+                                        newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+                                default -> newObject = new JavaObject();
+                            }
+                            Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
+                            if (classNode != null) {    //run constructor
+                                AbstractInterpretation classAi = new AbstractInterpretation();
+                                classAi.runClass((RecordDeclaration) classNode, newObject, List.of());
+                            }
+                            mainClassVar.setField(new Variable(new VariableName(name.toString()), newObject));
+                        } else {
+                            throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
+                        }
                     }
                 }
                 mainClassVar.setAbstractInterpretation(this);
@@ -95,9 +111,25 @@ public class AbstractInterpretation {
                 objectInstance.setField(newVar);
                 //objectInstance.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));  //ToDo array inner type lost here
             } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
-                assert ((Literal<?>) fd.getInitializer()).getValue() != null;
-                Value value = valueResolver(((Literal<?>) fd.getInitializer()).getValue());
-                objectInstance.setField(new Variable(new VariableName(name.toString()), value));
+                if (fd.getInitializer() instanceof Literal<?> literal) {
+                    Value value = valueResolver(literal.getValue());
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), value));
+                } else if (fd.getInitializer() instanceof NewExpression newExpression) {
+                    JavaObject newObject;
+                    switch ((newExpression.getInitializer()).getType().getName().toString()) {
+                        case "java.util.HashMap", "java.util.Map" ->
+                                newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+                        default -> newObject = new JavaObject();
+                    }
+                    Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
+                    if (classNode != null) {    //run constructor
+                        AbstractInterpretation classAi = new AbstractInterpretation();
+                        classAi.runClass((RecordDeclaration) classNode, newObject, List.of());
+                    }
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
+                } else {
+                    throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
+                }
             }
         }
         objectInstance.setAbstractInterpretation(this);
@@ -407,9 +439,14 @@ public class AbstractInterpretation {
                     }
                 }
                 Collections.reverse(arguments);
-                nodeStack.removeLast();
-                JavaObject newObject = new JavaObject();
+                JavaObject newObject;
+                switch (((ConstructExpression) nodeStack.getLast()).getType().getName().toString()) {
+                    case "java.util.HashMap", "java.util.Map" ->
+                            newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+                    default -> newObject = new JavaObject();
+                }
                 valueStack.add(newObject);
+                nodeStack.removeLast();
                 //run constructor
                 if (classNode != null) {
                     AbstractInterpretation classAi = new AbstractInterpretation();
