@@ -1,4 +1,3 @@
-// Java
 package de.jplag.java_cpg.ai;
 
 import de.fraunhofer.aisec.cpg.*;
@@ -10,7 +9,6 @@ import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.IntValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.passes.*;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AbstractInterpretationTest {
+class DeadCodeDetectionTest {
 
     /**
      * a simple test with the main function only
@@ -190,11 +188,10 @@ class AbstractInterpretationTest {
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(
                     TypeResolver.class, TypeHierarchyResolver.class,
                     JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
+                    ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
                     FilenameMapper.class, ReplaceCallCastPass.class,
-                    AstTransformationPass.class, EvaluationOrderGraphPass.class,
-                    ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
-                    DfgSortPass.class, CpgTransformationPass.class));
+                    EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
+                    ProgramDependenceGraphPass.class, DFGPass.class));
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }

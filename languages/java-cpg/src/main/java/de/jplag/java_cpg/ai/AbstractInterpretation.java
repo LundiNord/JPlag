@@ -616,9 +616,13 @@ public class AbstractInterpretation {
             return null;
         }
         variables.newScope();
-        assert md.getParameters().size() == paramVars.size();
-        for (int i = 0; i < paramVars.size(); i++) {
-            variables.addVariable(new Variable(new VariableName(md.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
+        if (paramVars != null) {
+            assert md.getParameters().size() == paramVars.size();
+            for (int i = 0; i < paramVars.size(); i++) {
+                variables.addVariable(new Variable(new VariableName(md.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
+            }
+        } else {
+            assert md.getParameters().isEmpty();
         }
         assert md.getNextEOG().size() == 1;
         Value result = graphWalker(md.getNextEOG().getFirst());
