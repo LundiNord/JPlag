@@ -49,10 +49,12 @@ public class JavaObject extends Value {
      * @return null if the method is not known.
      */
     public Value callMethod(String methodName, List<Value> paramVars) {
+        if (abstractInterpretation == null) {
+            return new VoidValue();
+        }
         return abstractInterpretation.runMethod(methodName, paramVars);
     }
-
-
+    
     public Value accessField(String fieldName) {
         assert fieldName != null;
         Variable result = fields.getVariable(new VariableName(fieldName));
@@ -86,6 +88,11 @@ public class JavaObject extends Value {
     @Override
     public void setToUnknown() {
         fields.setEverythingUnknown();
+    }
+
+    @Override
+    public void setInitialValue() {
+        //nothing
     }
 
 }

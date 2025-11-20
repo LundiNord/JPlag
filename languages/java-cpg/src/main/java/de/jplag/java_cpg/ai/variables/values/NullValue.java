@@ -24,4 +24,9 @@ public class NullValue extends Value {
         //do nothing
     }
 
+    @Override
+    public void setInitialValue() {
+        //do nothing
+    }
+
 }

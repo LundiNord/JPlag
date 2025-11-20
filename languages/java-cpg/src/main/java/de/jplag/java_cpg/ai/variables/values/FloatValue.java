@@ -146,4 +146,10 @@ public class FloatValue extends Value implements INumberValue {
         this.information = false;
     }
 
+    @Override
+    public void setInitialValue() {
+        value = 0.0;
+        information = true;
+    }
+
 }

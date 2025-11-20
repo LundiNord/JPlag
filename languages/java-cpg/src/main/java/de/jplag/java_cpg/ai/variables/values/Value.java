@@ -58,4 +58,7 @@ public abstract class Value {
      * Delete all information in this value.
      */
     public abstract void setToUnknown();
+
+    public abstract void setInitialValue();
+    
 }

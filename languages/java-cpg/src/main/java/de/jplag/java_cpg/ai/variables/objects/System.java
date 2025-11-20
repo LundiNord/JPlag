@@ -15,13 +15,6 @@ public class System extends JavaObject {
         super();
     }
 
-//    @Override
-//    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
-//        switch (methodName) {
-//            default -> throw new UnsupportedOperationException(methodName);
-//        }
-//    }
-
     @Pure
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);

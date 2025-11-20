@@ -95,4 +95,8 @@ public class Variable {
         value.setToUnknown();
     }
 
+    public void setInitialValue() {
+        value.setInitialValue();
+    }
+    
 }

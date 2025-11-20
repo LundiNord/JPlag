@@ -63,7 +63,7 @@ public class StringValue extends Value {
     public void merge(@NotNull Value other) {
         assert other instanceof StringValue;
         StringValue otherString = (StringValue) other;
-        if (this.information && otherString.information && this.value.equals(otherString.value)) {
+        if (this.information && otherString.information && java.util.Objects.equals(this.value, otherString.value)) {
             //keep value
         } else {
             this.information = false;
@@ -75,6 +75,12 @@ public class StringValue extends Value {
     public void setToUnknown() {
         this.information = false;
         this.value = null;
+    }
+
+    @Override
+    public void setInitialValue() {
+        information = true;
+        value = null;
     }
 
     private boolean getInformation() {

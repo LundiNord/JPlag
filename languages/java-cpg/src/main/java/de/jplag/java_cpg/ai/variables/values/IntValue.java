@@ -130,4 +130,10 @@ public class IntValue extends Value implements INumberValue {
         this.information = false;
     }
 
+    @Override
+    public void setInitialValue() {
+        value = 0;
+        information = true;
+    }
+
 }

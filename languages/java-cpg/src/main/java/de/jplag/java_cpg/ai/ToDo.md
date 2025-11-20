@@ -2,13 +2,14 @@
 
 - [x] if with condition information
 - [ ] switch statements
-- [ ] track object types
 - [x] loop ai
 - [x] exceptions
 - [ ] hash maps, ...
 - [ ] think about copy of bound JavaObject
 - [ ] ConditionalExpression (a ? b : c)
 - [ ] Array assign
+- [ ] Enums
+- [ ] Streams?
 
 ## Edge Cases to Test
 

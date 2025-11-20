@@ -45,7 +45,9 @@ public class AbstractInterpretation {
                     Type type = fd.getType();
                     Name name = fd.getName();
                     if (fd.getInitializer() == null) {      //no initial value
-                        mainClassVar.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));
+                        Variable newVar = new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type));
+                        newVar.setInitialValue();
+                        mainClassVar.setField(newVar);
                     } else {
                         assert ((Literal<?>) fd.getInitializer()).getValue() != null;
                         Value value = valueResolver(((Literal<?>) fd.getInitializer()).getValue());
@@ -88,7 +90,10 @@ public class AbstractInterpretation {
             Type type = fd.getType();
             Name name = fd.getName();
             if (fd.getInitializer() == null) {      //no initial value
-                objectInstance.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));  //ToDo array inner type lost here
+                Variable newVar = new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type));
+                newVar.setInitialValue();
+                objectInstance.setField(newVar);
+                //objectInstance.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));  //ToDo array inner type lost here
             } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
                 assert ((Literal<?>) fd.getInitializer()).getValue() != null;
                 Value value = valueResolver(((Literal<?>) fd.getInitializer()).getValue());
@@ -167,13 +172,13 @@ public class AbstractInterpretation {
                     if (variable != null) {
                         valueStack.add(variables.getVariable(new VariableName(ref.getName().toString())).getValue());
                     } else if (object.accessField(ref.getName().toString()) != null) { //sometimes cpg does not insert "this".
-                        valueStack.add(object.accessField(ref.getName().toString()));
+                        Value value = object.accessField(ref.getName().toString());
+                        if (value.getType() == de.jplag.java_cpg.ai.variables.Type.VOID) {  //value isn't known
+                            value = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(ref.getType()));
+                        }
+                        valueStack.add(value);
                     } else {    //unknown reference
-                        Declaration x = ref.getRefersTo();
-                        assert x instanceof EnumDeclaration;    //ToDo for now
-                        JavaObject enumObject = createEnum((EnumDeclaration) x);
-                        valueStack.add(enumObject);
-                        variables.addVariable(new Variable(new VariableName(ref.getName().toString()), enumObject));
+                        assert false;
                     }
                 }
                 nodeStack.add(ref);
@@ -338,9 +343,13 @@ public class AbstractInterpretation {
                 if (runThenBranch && runElseBranch) {
                     variables.merge(thenVariables);
                 } else if (runElseBranch) {
-                    //nothing
+                    if (!condition.getInformation()) {
+                        variables.merge(thenVariables);
+                    }
                 } else if (runThenBranch) {
-                    //nothing
+                    if (!condition.getInformation()) {
+                        variables.merge(elseVariables);
+                    }
                 } else {
                     nodeStack.add(nextEOG.getLast());
                 }
@@ -380,6 +389,7 @@ public class AbstractInterpretation {
                     result = valueStack.getLast();
                     valueStack.removeLast();
                 }
+                nodeStack.add(null);
                 return result;
             }
             case ConstructExpression ce -> {
@@ -449,7 +459,7 @@ public class AbstractInterpretation {
                 } else {
                     //Dead code detected, loop never runs
                 }
-                //continue with next node after for
+                //continue with the next node after for
                 nextNode = nextEOG.getLast();
             }
             case InitializerListExpression ile -> {

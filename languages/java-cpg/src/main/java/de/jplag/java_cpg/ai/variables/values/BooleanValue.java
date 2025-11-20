@@ -75,4 +75,10 @@ public class BooleanValue extends Value {
         this.information = false;
     }
 
+    @Override
+    public void setInitialValue() {
+        value = false;
+        information = true;
+    }
+
 }

@@ -24,8 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AbstractInterpretationTest {
 
@@ -73,7 +72,7 @@ class AbstractInterpretationTest {
     }
 
     /**
-     * simple loop
+     * simple switch test
      *
      * @throws ParsingException
      * @throws InterruptedException
@@ -104,15 +103,12 @@ class AbstractInterpretationTest {
      * @throws ParsingException
      * @throws InterruptedException
      */
-//    @Test
-//    void testNewClass() throws ParsingException, InterruptedException {
-//        AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
-//        assertEquals(1, interpretation.getValueStack().size());
-//        assertInstanceOf(VoidValue.class, interpretation.getValueStack().getFirst());
-//        assertEquals(1, interpretation.getNodeStack().size());
-//        JavaObject main = getMainObject(interpretation);
-//        assertNotNull(main);
-//    }
+    @Test
+    void testNewClass() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
 
     /**
      * test if without else
@@ -140,6 +136,20 @@ class AbstractInterpretationTest {
         JavaObject main = getMainObject(interpretation);
         assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simple enum test
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testEnum() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((IntValue) main.accessField("result")).getValue());
+        assertFalse(((IntValue) main.accessField("result2")).getInformation());
     }
 
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {

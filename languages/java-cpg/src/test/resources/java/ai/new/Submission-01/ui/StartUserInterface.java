@@ -1,7 +1,6 @@
 package edu.kit.informatik.ui;
 
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 /**
  * Klasse die den Start eines "Queens Farming" Spiels auf der Kommandozeile implementiert.
@@ -73,118 +72,6 @@ public class StartUserInterface {
 //        }
         inputScanner.close();
         //Ende des Programms
-    }
-
-    /**
-     * Liest eine Benutzereingabe ein und parst sie je nach aktuellem Eingabestatus.
-     * Ist die Eingabe erfolgreich wird in den nächsten Eingabestatus gesprungen.
-     *
-     * @param input Die Benutzereingabe, ungefiltert
-     * @return True: wenn die Eingabe komplett fertig ist
-     */
-    private boolean gameInitUi(String input) {
-        if (state == InputState.PLAYER_COUNT) {      //Einlesen der Spielerzahl
-            state = readPlayerCount(input);
-        }
-        //Einlesen der Namen
-        else if (state == InputState.PLAYER_NAMES) {
-            state = readPlayerNames(input);
-        }
-        //Einlesen des Startgoldes
-        else if (state == InputState.START_GOLD) {
-            state = readStartGold(input);
-        }
-        //Einlesen des Gewinngoldes
-        else if (state == InputState.WIN_GOLD) {
-            state = readWinGold(input);
-        }
-        //Einlesen des Seeds
-        else if (state == InputState.SHUFFLE) {
-            try {
-                seed = Integer.parseInt(input);
-                //Speichern und in den nächsten state wechseln
-                state = InputState.READY;
-                return true;            //das Einlesen ist fertig
-            } catch (NumberFormatException e) {
-                System.err.println(ERROR_SEED);
-            }
-        }
-        return false;
-    }
-
-    private InputState readWinGold(String input) {
-        try {
-            winGold = parseNumberGreaterOne(input);
-        } catch (NumberFormatException | ParseException e) {
-            System.err.println(ERROR_ILLEGAL_GOLD_AMOUNT);
-            return state;
-        }
-        System.out.println(SEED_QUESTION);      //zum nächsten Wechseln
-        return InputState.SHUFFLE;
-    }
-
-    private InputState readStartGold(String input) {
-        try {
-            startGold = parsePositiveNumber(input);
-        } catch (NumberFormatException | ParseException e) {
-            System.err.println(ERROR_ILLEGAL_GOLD_AMOUNT);
-            return state;
-        }
-        System.out.println(WIN_GOLD_QUESTION);
-        return InputState.WIN_GOLD;
-    }
-
-    private InputState readPlayerNames(String input) {
-        try {
-            playerNames[playerNames.length - playerCount] = parseNames(input);
-            playerCount--;              //Player count als Zählvariable
-        } catch (ParseException e) {
-            System.err.println(ERROR_ILLEGAL_PLAYER_NAME);
-            return state;               //Nicht nochmal fragen
-        }
-        if (playerCount <= 0) {
-            System.out.println(START_GOLD_QUESTION);
-            return InputState.START_GOLD;       //zum nächsten Wechseln
-        } else {
-            System.out.println(NAME_QUESTION + (playerNames.length - playerCount + 1) + COLON);
-        }
-        return state;
-    }
-
-    private InputState readPlayerCount(String input) {
-        try {
-            playerCount = parseNumberGreaterOne(input);
-        } catch (NumberFormatException | ParseException e) {
-            System.err.println(ERROR_ILLEGAL_NUMBER_OF_PLAYERS);
-            return state;
-        }
-        playerNames = new String[playerCount];
-        System.out.println(NAME_QUESTION + 1 + COLON);      //Erste Frage nach Spieleranzahl
-        return InputState.PLAYER_NAMES;
-    }
-
-    private String parseNames(String input) throws ParseException {
-        if (Pattern.matches("[a-zA-Z]+", input)) {
-            return input;
-        } else {
-            throw new ParseException();
-        }
-    }
-
-    private int parseNumberGreaterOne(String input) throws NumberFormatException, ParseException {
-        int number = Integer.parseInt(input);
-        if (number < 1) {
-            throw new ParseException();      //Ist das schön?
-        }
-        return number;
-    }
-
-    private int parsePositiveNumber(String input) throws NumberFormatException, ParseException {
-        int number = Integer.parseInt(input);
-        if (number < 0) {
-            throw new ParseException();      //Ist das schön?
-        }
-        return number;
     }
 
 }
