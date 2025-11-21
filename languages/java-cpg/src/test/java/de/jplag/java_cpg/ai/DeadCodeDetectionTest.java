@@ -24,6 +24,12 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test that only use the CPg library.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 class DeadCodeDetectionTest {
 
     /**
@@ -175,6 +181,20 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
+    }
+
+    /**
+     * simple break statement test
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testBreak() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/break");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        //ToDo
     }
 
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {

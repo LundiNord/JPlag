@@ -57,6 +57,8 @@ public class AbstractInterpretation {
                             switch ((newExpression.getInitializer()).getType().getName().toString()) {
                                 case "java.util.HashMap", "java.util.Map" ->
                                         newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+                                case "java.util.Scanner" ->
+                                        newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
                                 default -> newObject = new JavaObject();
                             }
                             Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
@@ -76,6 +78,7 @@ public class AbstractInterpretation {
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
+                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
                 this.object = mainClassVar;
                 assert mainClas.getMethods().stream().map(MethodDeclaration::getName)
                         .filter(x -> x.getLocalName().equals("main")).count() == 1;
@@ -119,6 +122,7 @@ public class AbstractInterpretation {
                     switch ((newExpression.getInitializer()).getType().getName().toString()) {
                         case "java.util.HashMap", "java.util.Map" ->
                                 newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+                        case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
                         default -> newObject = new JavaObject();
                     }
                     Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
@@ -127,6 +131,17 @@ public class AbstractInterpretation {
                         classAi.runClass((RecordDeclaration) classNode, newObject, List.of());
                     }
                     objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
+                } else if (fd.getInitializer() instanceof InitializerListExpression initializerList) {
+
+                    List<Value> arguments = new ArrayList<>();
+                    for (int i = 0; i < initializerList.getInitializers().size(); i++) {
+
+                    }
+                    assert arguments.stream().map(Value::getType).distinct().count() == 1;
+                    JavaArray list = new JavaArray(arguments);
+
+
+                    System.out.println("test");
                 } else {
                     throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
                 }
@@ -138,6 +153,7 @@ public class AbstractInterpretation {
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
         this.object = objectInstance;
         for (MethodDeclaration md : rd.getMethods()) {
             methods.put(md.getName().getLocalName(), md);
@@ -330,7 +346,10 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case IfStatement ifStmt -> {
-                assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
+                assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;    //FixMe what if void value
+                if (!(valueStack.getLast() instanceof BooleanValue)) {
+                    System.out.println(valueStack.getLast());
+                }
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 boolean runThenBranch = true;
@@ -443,6 +462,7 @@ public class AbstractInterpretation {
                 switch (((ConstructExpression) nodeStack.getLast()).getType().getName().toString()) {
                     case "java.util.HashMap", "java.util.Map" ->
                             newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+                    case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
                     default -> newObject = new JavaObject();
                 }
                 valueStack.add(newObject);
@@ -542,6 +562,12 @@ public class AbstractInterpretation {
                 //ToDo
                 nextNode = nextEOG.getLast();
             }
+            case BreakStatement bs -> {
+                variables.removeScope();
+                assert nextEOG.size() == 1;
+                nodeStack.add(nextEOG.getFirst());
+                return null;
+            }
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
         return graphWalker(nextNode);
@@ -624,8 +650,13 @@ public class AbstractInterpretation {
         } else {
             assert md.getParameters().isEmpty();
         }
-        assert md.getNextEOG().size() == 1;
-        Value result = graphWalker(md.getNextEOG().getFirst());
+        Value result;
+        assert md.getNextEOG().size() <= 1;
+        if (md.getNextEOG().size() == 1) {
+            result = graphWalker(md.getNextEOG().getFirst());
+        } else {
+            result = new VoidValue();
+        }
         this.nodeStack = oldNodeStack;      //restore stack
         this.valueStack = oldValueStack;
         return result;

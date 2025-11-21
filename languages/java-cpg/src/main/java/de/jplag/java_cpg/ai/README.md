@@ -6,6 +6,10 @@ For debug, please run with `-ea` JVM flag.
 
 Maven: `mvn clean package`
 
+## Supported language features
+
+## Explicitly not supported language features
+
 ## Usage Example
 
 ```java
