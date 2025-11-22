@@ -132,16 +132,14 @@ public class AbstractInterpretation {
                     }
                     objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
                 } else if (fd.getInitializer() instanceof InitializerListExpression initializerList) {
-
                     List<Value> arguments = new ArrayList<>();
-                    for (int i = 0; i < initializerList.getInitializers().size(); i++) {
-
+                    for (Expression init : initializerList.getInitializers()) {
+                        //ToDo handle nested initializer lists
                     }
-                    assert arguments.stream().map(Value::getType).distinct().count() == 1;
-                    JavaArray list = new JavaArray(arguments);
-
-
-                    System.out.println("test");
+                    //assert arguments.stream().map(Value::getType).distinct().count() == 1;
+                    //JavaArray list = new JavaArray(arguments);
+                    JavaArray list = new JavaArray();
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), list));
                 } else {
                     throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
                 }
@@ -601,6 +599,7 @@ public class AbstractInterpretation {
         }
     }
 
+    @Deprecated
     private JavaObject createEnum(EnumDeclaration enumDeclaration) {
         JavaObject enumObject = new JavaObject();
         int i = 0;

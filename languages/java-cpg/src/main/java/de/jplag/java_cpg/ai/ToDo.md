@@ -10,7 +10,8 @@
 - [ ] Array assign
 - [ ] Enums
 - [ ] Streams?
-- [ ] Import System]
+- [ ] Import System
+- [ ] Array Init in Method fields
 
 ## Edge Cases to Test
 
