@@ -94,6 +94,34 @@ public class IntValue extends Value implements INumberValue {
                     return new BooleanValue();
                 }
             }
+            case "*" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new IntValue(this.value * ((IntValue) other).getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "/" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new IntValue(this.value / ((IntValue) other).getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "<=" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new BooleanValue(this.value <= ((IntValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case ">=" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new BooleanValue(this.value >= ((IntValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             default ->
                     throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
@@ -108,7 +136,15 @@ public class IntValue extends Value implements INumberValue {
                     this.value += 1;
                     return new IntValue(this.value);
                 } else {
-                    return new BooleanValue();
+                    return new IntValue();
+                }
+            }
+            case "--" -> {
+                if (information) {
+                    this.value -= 1;
+                    return new IntValue(this.value);
+                } else {
+                    return new IntValue();
                 }
             }
             default ->

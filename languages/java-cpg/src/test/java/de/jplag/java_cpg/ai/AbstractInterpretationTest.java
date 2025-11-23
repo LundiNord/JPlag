@@ -179,6 +179,51 @@ class AbstractInterpretationTest {
         assertNotNull(main);
     }
 
+    /**
+     * simple try/catch test
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testTryCatch() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/try");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
+        assertEquals(101, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * a simple try /catch test with throw inside called method
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testTryCatch2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/try2");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertEquals(250, ((IntValue) main.accessField("result")).getValue());  //z
+        assertEquals(200, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simple try/catch test with nothing thrown
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testTryCatch3() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/try3");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
+        assertEquals(200, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
+
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();

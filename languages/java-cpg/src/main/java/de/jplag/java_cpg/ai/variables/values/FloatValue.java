@@ -51,6 +51,9 @@ public class FloatValue extends Value implements INumberValue {
 
     @Override
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        if (other instanceof VoidValue) {
+            return new VoidValue();
+        }
         assert other instanceof FloatValue || other instanceof IntValue;
         switch (operator) {
             case "+" -> {

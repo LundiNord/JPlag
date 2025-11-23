@@ -38,6 +38,9 @@ public class StringValue extends Value {
 
     @Override
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        if (other instanceof VoidValue) {
+            return new VoidValue();
+        }
         if (operator.equals("+") && other instanceof INumberValue inumbervalue) {
             if (information && inumbervalue.getInformation()) {
                 return new StringValue(this.value + inumbervalue.getValue());

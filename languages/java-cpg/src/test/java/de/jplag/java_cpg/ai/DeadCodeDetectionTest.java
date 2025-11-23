@@ -136,7 +136,7 @@ class DeadCodeDetectionTest {
      */
     @Test
     void testException() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/exeption");
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/exception");
         JavaObject main = getMainObject(interpretation);
         assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
@@ -213,7 +213,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple try/catch test with throw inside called method
+     * a simple try /catch test with throw inside called method
      *
      * @throws ParsingException
      * @throws InterruptedException

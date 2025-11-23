@@ -4,15 +4,16 @@
 - [ ] switch statements
 - [x] loop ai
 - [x] exceptions
-- [ ] hash maps, ...
+- [x] hash maps, ...
 - [ ] think about copy of bound JavaObject
 - [ ] ConditionalExpression (a ? b : c)
 - [ ] Array assign
 - [ ] Enums
 - [ ] Streams?
-- [ ] Import System
+- [ ] Import System?
 - [ ] Array Init in Method fields
-- [ ] try/catch/finally
+- [x] try/catch
+- [ ] finally
 
 ## Edge Cases to Test
 

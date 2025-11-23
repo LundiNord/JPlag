@@ -40,6 +40,12 @@ public class JavaArray extends JavaObject {
         this.innerType = null;
     }
 
+    public JavaArray(IntValue length) {
+        super(Type.ARRAY);
+        this.innerType = null;  //maybe update later
+        //ToDo: length
+    }
+
     public Value arrayAccess(IntValue index) {
         if (values != null && index.getInformation()) {
             int idx = (int) index.getValue();
@@ -48,6 +54,9 @@ public class JavaArray extends JavaObject {
             }
         }
         //if no information, return an unknown value of the inner type
+        if (innerType == null) {
+            return new VoidValue();
+        }
         return switch (innerType) {
             case INT -> new IntValue();
             case BOOLEAN -> new BooleanValue();

@@ -14,9 +14,10 @@ public class JavaObject extends Value {
     private final Scope fields;
     private AbstractInterpretation abstractInterpretation;  //the abstract interpretation engine for this object
 
-    private JavaObject(Scope fields) {
+    private JavaObject(Scope fields, AbstractInterpretation abstractInterpretation) {
         super(Type.OBJECT);
         this.fields = fields;
+        this.abstractInterpretation = abstractInterpretation;
     }
 
     public JavaObject() {
@@ -54,7 +55,7 @@ public class JavaObject extends Value {
         }
         return abstractInterpretation.runMethod(methodName, paramVars);
     }
-    
+
     public Value accessField(String fieldName) {
         assert fieldName != null;
         Variable result = fields.getVariable(new VariableName(fieldName));
@@ -76,13 +77,14 @@ public class JavaObject extends Value {
 
     @Override
     public JavaObject copy() {
-        return new JavaObject(new Scope(this.fields));
+        return new JavaObject(new Scope(this.fields), this.abstractInterpretation);
     }
 
     @Override
     public void merge(@NotNull Value other) {
         assert other instanceof JavaObject;
         this.fields.merge(((JavaObject) other).fields);
+        assert java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation);
     }
 
     @Override

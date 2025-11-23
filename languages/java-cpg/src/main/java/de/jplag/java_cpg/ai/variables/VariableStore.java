@@ -1,5 +1,7 @@
 package de.jplag.java_cpg.ai.variables;
 
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ public class VariableStore {
 
     private final ArrayList<Scope> scopes = new ArrayList<>();
     private int currentScopeIndex = 0;
+    private VariableName thisObject;
 
     private VariableStore(ArrayList<Scope> scopes, int currentScopeIndex) {
         this.scopes.addAll(scopes);
@@ -24,6 +27,7 @@ public class VariableStore {
         for (Scope p : variableStore.scopes) {
             this.scopes.add(new Scope(p));
         }
+        thisObject = variableStore.thisObject;
     }
 
     public VariableStore() {
@@ -32,6 +36,25 @@ public class VariableStore {
 
     public void addVariable(Variable variable) {
         scopes.get(currentScopeIndex).addVariable(variable);
+    }
+
+    public void setThisName(VariableName thisName) {
+        this.thisObject = thisName;
+    }
+
+    public JavaObject getThisObject() {
+        if (thisObject == null) {
+            return null;
+        }
+        Variable variable = getVariable(thisObject);
+        if (variable == null) {
+            return null;
+        }
+        Value value = variable.getValue();
+        if (value instanceof JavaObject javaObject) {
+            return javaObject;
+        }
+        return null;
     }
 
     /**

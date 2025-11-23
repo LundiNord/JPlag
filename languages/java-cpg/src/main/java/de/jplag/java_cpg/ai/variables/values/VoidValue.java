@@ -22,6 +22,14 @@ public class VoidValue extends Value {
             case "==" -> {
                 return new BooleanValue();
             }
+            case "-" -> {
+                if (other instanceof IntValue) {
+                    return new IntValue();
+                } else if (other instanceof FloatValue) {
+                    return new FloatValue();
+                }
+                return new VoidValue();
+            }
             default ->
                     throw new UnsupportedOperationException("Operator " + operator + " not supported for VoidValue.");
         }
