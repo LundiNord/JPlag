@@ -12,6 +12,7 @@
 - [ ] Streams?
 - [ ] Import System
 - [ ] Array Init in Method fields
+- [ ] try/catch/finally
 
 ## Edge Cases to Test
 

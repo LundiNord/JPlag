@@ -3,6 +3,7 @@ package de.jplag.java_cpg.ai;
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.declarations.*;
+import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
 import de.fraunhofer.aisec.cpg.graph.statements.*;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
 import de.fraunhofer.aisec.cpg.graph.types.PointerType;
@@ -192,6 +193,9 @@ public class AbstractInterpretation {
             }
             case MemberExpression me -> {
                 if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
+                    if (!(valueStack.getLast() instanceof JavaObject)) {
+                        System.out.println("Debug");
+                    }
                     assert valueStack.getLast() instanceof JavaObject;
                     nodeStack.removeLast();
                     //like Reference
@@ -391,22 +395,27 @@ public class AbstractInterpretation {
                 //merge branches
                 if (runThenBranch && runElseBranch) {
                     variables.merge(thenVariables);
-                } else if (runElseBranch) {
-                    if (!condition.getInformation()) {
-                        variables.merge(thenVariables);
-                    }
                 } else if (runThenBranch) {
                     if (!condition.getInformation()) {
                         variables.merge(elseVariables);
+                        nodeStack.add(nextEOG.getLast());
+                    } else {   //only then branch is run
+                        //
                     }
-                } else {
+                } else if (runElseBranch) {
+                    if (!condition.getInformation()) {
+                        variables.merge(thenVariables);
+                    } else {    //only else branch is run
+                        //
+                    }
+                } else {    //no branch is run
                     nodeStack.add(nextEOG.getLast());
                 }
                 nextNode = nodeStack.getLast();
-                nodeStack.removeLast();
                 if (nodeStack.size() >= 2 && nodeStack.getLast() == nodeStack.get(nodeStack.size() - 2)) {
                     nodeStack.removeLast();
                 }
+                nodeStack.removeLast();
             }
             case SwitchStatement sw -> {
                 assert !valueStack.isEmpty();
@@ -416,17 +425,22 @@ public class AbstractInterpretation {
                 throw new IllegalStateException("Not implemented yet");
             }
             case Block b -> {
-                //assert block is exited
-                variables.removeScope();
-                if (nextEOG.size() == 1) {          //end of if
-                    nodeStack.add(nextEOG.getFirst());
-                    return null;
-                } else if (nextEOG.isEmpty()) {     //at the end of a while loop or after throw statement
-                    nodeStack.add(null);
-                    return null;
+                if (b.getScope() instanceof TryScope) {
+                    assert nextEOG.size() == 1;
+                    nextNode = nextEOG.getFirst();
                 } else {
-                    assert false;
-                    return null;
+                    //assert block is exited
+                    variables.removeScope();
+                    if (nextEOG.size() == 1) {          //end of if
+                        nodeStack.add(nextEOG.getFirst());
+                        return null;
+                    } else if (nextEOG.isEmpty()) {     //at the end of a while loop or after throw statement
+                        nodeStack.add(null);
+                        return null;
+                    } else {
+                        assert false;
+                        return null;
+                    }
                 }
             }
             case ReturnStatement ret -> {
@@ -565,6 +579,16 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nodeStack.add(nextEOG.getFirst());
                 return null;
+            }
+            case CatchClause cc -> {
+                //nothing for now
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
+            case TryStatement ts -> {
+                //ignore for now
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
