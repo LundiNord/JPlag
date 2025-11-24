@@ -150,6 +150,14 @@ public class IntValue extends Value implements INumberValue {
                     return new IntValue();
                 }
             }
+            case "-" -> {
+                if (information) {
+                    this.value = -this.value;
+                    return new IntValue(this.value);
+                } else {
+                    return new IntValue();
+                }
+            }
             default ->
                     throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }

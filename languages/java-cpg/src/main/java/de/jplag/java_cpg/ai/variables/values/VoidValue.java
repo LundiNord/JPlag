@@ -19,7 +19,7 @@ public class VoidValue extends Value {
     @Override
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
         switch (operator) {
-            case "==" -> {
+            case "==", ">", "<", ">=", "<=" -> {
                 return new BooleanValue();
             }
             case "-" -> {
@@ -29,6 +29,14 @@ public class VoidValue extends Value {
                     return new FloatValue();
                 }
                 return new VoidValue();
+            }
+            case "+" -> {
+                return switch (other) {
+                    case IntValue ignored -> new IntValue();
+                    case FloatValue ignored -> new FloatValue();
+                    case StringValue ignored -> new StringValue();
+                    default -> new VoidValue();
+                };
             }
             default ->
                     throw new UnsupportedOperationException("Operator " + operator + " not supported for VoidValue.");

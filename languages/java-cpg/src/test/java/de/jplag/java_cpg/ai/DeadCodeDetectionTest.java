@@ -117,6 +117,17 @@ class DeadCodeDetectionTest {
     }
 
     /**
+     * simplest for each loop test
+     */
+    @Test
+    void testForEach() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/forEach");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((IntValue) main.accessField("result")).getInformation());  //z
+        assertFalse(((IntValue) main.accessField("result2")).getInformation());  //y
+    }
+
+    /**
      * nondeterministic test! (completes sometimes in debug mode)
      * test creating a new class instance
      *

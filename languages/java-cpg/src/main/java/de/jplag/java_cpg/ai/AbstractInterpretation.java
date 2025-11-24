@@ -103,6 +103,18 @@ public class AbstractInterpretation {
 
     private void runClass(@NotNull RecordDeclaration rd, JavaObject objectInstance, List<Value> constructorArgs) {
         assert !rd.getConstructors().isEmpty();
+        objectInstance.setAbstractInterpretation(this);
+        variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
+        variables.setThisName(new VariableName(rd.getName().toString()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
+        this.object = objectInstance;
+        for (MethodDeclaration md : rd.getMethods()) {
+            methods.put(md.getName().getLocalName(), md);
+        }
         for (FieldDeclaration fd : rd.getFields()) {
             Type type = fd.getType();
             Name name = fd.getName();
@@ -138,22 +150,36 @@ public class AbstractInterpretation {
                     //JavaArray list = new JavaArray(arguments);
                     JavaArray list = new JavaArray();
                     objectInstance.setField(new Variable(new VariableName(name.toString()), list));
+                } else if (fd.getInitializer() instanceof MemberCallExpression mce) {
+                    Value result;
+                    if (mce.getArguments().isEmpty()) {     //no arguments
+
+                        Name memberName = mce.getCallee().getName();
+                        JavaObject javaObject = (JavaObject) variables.getVariable(mce.getName().getParent().toString()).getValue();
+                        result = javaObject.callMethod(memberName.getLocalName(), null);
+                    } else {
+                        assert false;   //ToDo
+                        List<Value> argumentList = new ArrayList<>();
+                        for (int i = 0; i < mce.getArguments().size(); i++) {
+                            argumentList.add(valueStack.getLast());
+                            nodeStack.removeLast();
+                            valueStack.removeLast();
+                        }
+                        Collections.reverse(argumentList);
+                        Name memberName = mce.getCallee().getName();
+                        assert memberName.getParent() != null;
+                        assert !valueStack.isEmpty();
+                        JavaObject javaObject = (JavaObject) valueStack.getLast();         //for now only one parameter
+                        result = javaObject.callMethod(memberName.getLocalName(), argumentList);
+                    }
+                    if (result == null) {       //if method reference isn't known
+                        result = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType()));
+                    }
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
                 } else {
                     throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
                 }
             }
-        }
-        objectInstance.setAbstractInterpretation(this);
-        variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
-        variables.setThisName(new VariableName(rd.getName().toString()));
-        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
-        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
-        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
-        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
-        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
-        this.object = objectInstance;
-        for (MethodDeclaration md : rd.getMethods()) {
-            methods.put(md.getName().getLocalName(), md);
         }
         //Run constructor method
         ConstructorDeclaration constr = rd.getConstructors().getFirst();    //ToDo what if multiple constructors?
@@ -213,7 +239,17 @@ public class AbstractInterpretation {
                     nodeStack.removeLast();
                     nodeStack.add(me);
                 } else {
-                    throw new IllegalStateException("Unexpected value: " + me.getRefersTo());
+                    //unknown
+                    //look at last item on value stack
+                    Value value = valueStack.getLast();
+                    if (value instanceof VoidValue) {
+                        valueStack.removeLast();    //remove object reference
+                        valueStack.add(new JavaObject());
+                    } else {
+                        throw new IllegalStateException("Unexpected value: " + value);
+                    }
+                    nodeStack.removeLast();
+                    nodeStack.add(me);
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
@@ -240,7 +276,8 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case SubscriptExpression se -> {    //adds its value to the value stack
-                assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference || nodeStack.getLast() instanceof BinaryOperator;
+                assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
+                        || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression;
                 assert !valueStack.isEmpty();
                 IntValue indexLiteral = (IntValue) valueStack.getLast();
                 valueStack.removeLast();    //remove index value
@@ -263,6 +300,10 @@ public class AbstractInterpretation {
                 if (mce.getArguments().isEmpty()) {     //no arguments
                     assert nodeStack.getLast() instanceof MemberExpression;
                     Name memberName = (nodeStack.getLast()).getName();
+                    if (valueStack.getLast() instanceof VoidValue) {
+                        valueStack.removeLast();
+                        valueStack.add(new JavaObject());
+                    }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
                     result = javaObject.callMethod(memberName.getLocalName(), null);
                 } else {
@@ -298,6 +339,9 @@ public class AbstractInterpretation {
                 nodeStack.removeLast();
                 nodeStack.removeLast();
                 valueStack.removeLast();
+                if (nextEOG.getFirst() instanceof ForEachStatement) {
+                    valueStack.add(variable.getValue());
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -360,10 +404,11 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case IfStatement ifStmt -> {
-                assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;    //FixMe what if void value
-                if (!(valueStack.getLast() instanceof BooleanValue)) {
-                    System.out.println("Debug");
+                if (valueStack.getLast() instanceof VoidValue) {
+                    valueStack.removeLast();
+                    valueStack.add(new BooleanValue());
                 }
+                assert valueStack.getLast() instanceof BooleanValue;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 boolean runThenBranch = true;
@@ -584,6 +629,26 @@ public class AbstractInterpretation {
                 //continue with the next node after for
                 nextNode = nextEOG.getLast();
             }
+            case ForEachStatement fes -> {
+                assert nextEOG.size() == 2;
+                assert !valueStack.isEmpty();
+                JavaArray collection = (JavaArray) valueStack.getLast();
+                valueStack.removeLast();
+                IntValue length = (IntValue) collection.accessField("length");
+                if (length.getInformation() && (length.getValue() == 0)) {
+                    //Dead code detected, loop never runs
+                } else {
+                    variables.newScope();
+                    graphWalker(nextEOG.getFirst());
+                    variables.removeScope();
+                    //merge if the loop has been run
+                    //for now set all variables to unknown
+                    variables.setEverythingUnknown();
+                    object.setToUnknown();
+                }
+                //continue with the next node after for each
+                nextNode = nextEOG.getLast();
+            }
             case InitializerListExpression ile -> {
                 assert !ile.getInitializers().isEmpty();
                 assert valueStack.size() >= ile.getInitializers().size();
@@ -604,7 +669,12 @@ public class AbstractInterpretation {
             case NewArrayExpression nae -> {
                 //either dimension or initializer is present
                 if (nae.getDimensions() != null) {
-                    IntValue dimension = (IntValue) valueStack.getLast();
+                    IntValue dimension;
+                    if (valueStack.getLast() instanceof VoidValue) {
+                        dimension = new IntValue();
+                    } else {
+                        dimension = (IntValue) valueStack.getLast();
+                    }
                     valueStack.removeLast();
                     valueStack.add(new JavaArray(dimension));
                 } else if (nae.getInitializer() != null) {

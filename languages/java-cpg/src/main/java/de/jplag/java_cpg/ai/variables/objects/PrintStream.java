@@ -17,6 +17,7 @@ public class PrintStream extends JavaObject {
         super();
     }
 
+    @NotNull
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -25,7 +26,6 @@ public class PrintStream extends JavaObject {
     public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "println", "print" -> {
-                assert paramVars.size() == 1;
                 //do nothing
                 return new VoidValue();
             }
