@@ -15,12 +15,16 @@ public final class Main {
         int z = 500;
         int y = 100;
 
-        switch (x + x < 100) {
-            case true:
+        switch (x + x) {
+            case 100 -> {
                 z++;
-                break;
-            default:
+            }
+            case 200 -> {
+                z += 2;
+            }
+            default -> {
                 z--;
+            }
         }
 
         result = z;

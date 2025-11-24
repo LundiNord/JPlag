@@ -14,10 +14,7 @@ import de.jplag.java_cpg.ai.variables.values.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class AbstractInterpretation {
 
@@ -168,6 +165,7 @@ public class AbstractInterpretation {
                 variables.addVariable(new Variable(new VariableName(constr.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
             }
             graphWalker(eog.getFirst());
+            variables.removeScope();
         } else if (eog.isEmpty()) { //empty constructor
             return;
         } else {
@@ -390,6 +388,7 @@ public class AbstractInterpretation {
                     this.object = variables.getThisObject();
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
+                    variables.removeScope();
                     if (nodeStack.getLast() == null) {
                         nodeStack.add(nextEOG.getLast());
                     }
@@ -400,6 +399,7 @@ public class AbstractInterpretation {
                     this.object = variables.getThisObject();
                     variables.newScope();
                     graphWalker(nextEOG.getLast());
+                    variables.removeScope();
                     if (nodeStack.getLast() == null) {
                         nodeStack.add(nextEOG.getFirst());
                     }
@@ -408,6 +408,7 @@ public class AbstractInterpretation {
                 if (runThenBranch && runElseBranch) {
                     variables.merge(thenVariables);
                 } else if (runThenBranch) {
+                    variables = thenVariables;
                     if (!condition.getInformation()) {
                         variables.merge(elseVariables);
                         nodeStack.add(nextEOG.getLast());
@@ -415,6 +416,7 @@ public class AbstractInterpretation {
                         //
                     }
                 } else if (runElseBranch) {
+                    variables = elseVariables;
                     if (!condition.getInformation()) {
                         variables.merge(thenVariables);
                     } else {    //only else branch is run
@@ -423,18 +425,49 @@ public class AbstractInterpretation {
                 } else {    //no branch is run
                     nodeStack.add(nextEOG.getLast());
                 }
+                this.object = variables.getThisObject(); // Update object reference
                 nextNode = nodeStack.getLast();
-                if (nodeStack.size() >= 2 && nodeStack.getLast() == nodeStack.get(nodeStack.size() - 2)) {
-                    nodeStack.removeLast();
-                }
-                nodeStack.removeLast();
             }
             case SwitchStatement sw -> {
                 assert !valueStack.isEmpty();
                 int branches = nextEOG.size();
-
-
-                throw new IllegalStateException("Not implemented yet");
+                VariableStore originalVariables = new VariableStore(variables);
+                VariableStore result = null;
+                Value switchValue = valueStack.getLast();
+                //valueStack.removeLast();
+                nodeStack.removeLast();
+                for (Node branch : nextEOG) {
+                    variables = new VariableStore(originalVariables);
+                    this.object = variables.getThisObject();
+                    variables.newScope();
+                    graphWalker(branch);
+                    variables.removeScope();
+                    if (result == null) {
+                        result = variables;
+                    } else {
+                        result.merge(variables);
+                    }
+                }
+                variables = result;
+                this.object = variables.getThisObject();
+                nextNode = nodeStack.getLast();
+                if (nextNode instanceof Block block) {  //scopes switch statements have extra block
+                    assert block.getNextEOG().size() == 1;
+                    nextNode = block.getNextEOG().getFirst();
+                }
+            }
+            case CaseStatement cs -> {
+                Value caseValue = valueStack.getLast();
+                Value switchValue = valueStack.getLast();
+                if (!Objects.equals(caseValue, switchValue)) {
+                    return null;
+                }
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
+            case DefaultStatement ds -> {
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
             }
             case Block b -> {
                 if (b.getScope() instanceof TryScope) {
@@ -442,7 +475,6 @@ public class AbstractInterpretation {
                     nextNode = nextEOG.getFirst();
                 } else {
                     //assert block is exited
-                    variables.removeScope();
                     if (nextEOG.size() == 1) {          //end of if
                         nodeStack.add(nextEOG.getFirst());
                         return null;
@@ -456,7 +488,6 @@ public class AbstractInterpretation {
                 }
             }
             case ReturnStatement ret -> {
-                variables.removeScope();
                 Value result;
                 if (valueStack.isEmpty()) {
                     result = new VoidValue();
@@ -512,6 +543,7 @@ public class AbstractInterpretation {
                     //run body if the condition is true or unknown
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
+                    variables.removeScope();
                     //merge if the loop has been run
                     //for now set all variables to unknown
                     variables.setEverythingUnknown();
@@ -533,6 +565,7 @@ public class AbstractInterpretation {
                     //run body if the condition is true or unknown
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
+                    variables.removeScope();
                     //merge if the loop has been run
                     //for now set all variables to unknown
                     variables.setEverythingUnknown();
@@ -584,7 +617,6 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getLast();
             }
             case BreakStatement bs -> {
-                variables.removeScope();
                 assert nextEOG.size() == 1;
                 nodeStack.add(nextEOG.getFirst());
                 return null;

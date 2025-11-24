@@ -76,13 +76,32 @@ public class JavaObject extends Value {
     }
 
     @Override
+    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        //assert other instanceof JavaObject;
+        switch (operator) {
+            case "==" -> {
+                if (this.equals(other)) {
+                    return new BooleanValue(true);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default ->
+                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        }
+    }
+
+    @Override
     public JavaObject copy() {
         return new JavaObject(new Scope(this.fields), this.abstractInterpretation);
     }
 
     @Override
     public void merge(@NotNull Value other) {
-        assert other instanceof JavaObject;
+        if (!(other instanceof JavaObject)) {   //cannot merge different types
+            setToUnknown();
+            return;
+        }
         this.fields.merge(((JavaObject) other).fields);
         assert java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation);
     }

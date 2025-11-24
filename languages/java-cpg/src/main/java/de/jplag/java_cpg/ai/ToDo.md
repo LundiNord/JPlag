@@ -1,7 +1,7 @@
 # ToDos
 
 - [x] if with condition information
-- [ ] switch statements
+- [x] switch statements
 - [x] loop ai
 - [x] exceptions
 - [x] hash maps, ...

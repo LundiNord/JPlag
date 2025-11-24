@@ -77,13 +77,29 @@ class AbstractInterpretationTest {
      * @throws ParsingException
      * @throws InterruptedException
      */
-//    @Test
-//    void testSwitch() throws ParsingException, InterruptedException {
-//        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
-//        assert interpretation.getValueStack().isEmpty();
-//        JavaObject main = getMainObject(interpretation);
-//        fail();
-//    }
+    @Test
+    void testSwitch() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertFalse(((IntValue) main.accessField("result")).getInformation());          //z
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simple switch test
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testSwitch2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch2");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertFalse(((IntValue) main.accessField("result")).getInformation());          //z
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
 
     /**
      * simplest loop test

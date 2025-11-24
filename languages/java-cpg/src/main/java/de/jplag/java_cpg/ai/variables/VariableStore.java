@@ -92,8 +92,17 @@ public class VariableStore {
     }
 
     public void merge(@NotNull VariableStore other) {
-        assert this.currentScopeIndex == other.currentScopeIndex;
-        for (int i = 0; i <= currentScopeIndex; i++) {
+        // In complex control-flow, the scope depth can differ.
+        int targetIndex = Math.min(this.currentScopeIndex, other.currentScopeIndex);
+        if (this.currentScopeIndex > targetIndex) {
+            // remove scopes from the end until we match the target index
+            for (int i = this.currentScopeIndex; i > targetIndex; i--) {
+                // scopes are always appended at the end; safe to remove by index
+                scopes.remove(i);
+            }
+            this.currentScopeIndex = targetIndex;
+        }
+        for (int i = 0; i <= targetIndex; i++) {
             Scope thisScope = this.scopes.get(i);
             Scope otherScope = other.scopes.get(i);
             thisScope.merge(otherScope);

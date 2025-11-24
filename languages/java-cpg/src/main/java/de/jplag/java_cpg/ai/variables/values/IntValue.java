@@ -57,6 +57,9 @@ public class IntValue extends Value implements INumberValue {
 
     @Override
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        if (!(other instanceof INumberValue)) {
+            other = new IntValue();
+        }
         assert other instanceof IntValue;
         switch (operator) {
             case "+" -> {
