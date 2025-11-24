@@ -19,6 +19,8 @@
 
 - [x] if without else
 - [ ] for loop with break/continue
+- [ ] switch with literal returns
+- [x] nested loops
 
 ## Long Term
 

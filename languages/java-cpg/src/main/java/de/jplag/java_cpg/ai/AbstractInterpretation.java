@@ -313,9 +313,13 @@ public class AbstractInterpretation {
                 } else {
                     Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
                     if (variable == null || nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression) { //class access
-                        assert nodeStack.get(nodeStack.size() - 2).getName().getParent() != null;
-                        VariableName className = new VariableName(nodeStack.get(nodeStack.size() - 2).getName().getParent().toString());
-                        JavaObject classVal = (JavaObject) variables.getVariable(className).getValue();
+                        JavaObject classVal;
+                        if (nodeStack.get(nodeStack.size() - 2).getName().getParent() == null) {    //this class
+                            classVal = variables.getThisObject();
+                        } else {
+                            VariableName className = new VariableName(nodeStack.get(nodeStack.size() - 2).getName().getParent().toString());
+                            classVal = (JavaObject) variables.getVariable(className).getValue();
+                        }
                         classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
                     } else {
                         variable.setValue(valueStack.getLast());
@@ -433,8 +437,6 @@ public class AbstractInterpretation {
                 int branches = nextEOG.size();
                 VariableStore originalVariables = new VariableStore(variables);
                 VariableStore result = null;
-                Value switchValue = valueStack.getLast();
-                //valueStack.removeLast();
                 nodeStack.removeLast();
                 for (Node branch : nextEOG) {
                     variables = new VariableStore(originalVariables);
@@ -451,9 +453,12 @@ public class AbstractInterpretation {
                 variables = result;
                 this.object = variables.getThisObject();
                 nextNode = nodeStack.getLast();
-                if (nextNode instanceof Block block) {  //scopes switch statements have extra block
+                if (nextNode instanceof Block block) {  //scoped switch statements have an extra block
                     assert block.getNextEOG().size() == 1;
                     nextNode = block.getNextEOG().getFirst();
+                }
+                if (nextNode == null) {
+                    return new VoidValue(); //ToDo: funktion return (CropArea:31)
                 }
             }
             case CaseStatement cs -> {
@@ -506,22 +511,25 @@ public class AbstractInterpretation {
             case NewExpression ne -> {
                 Declaration classNode = ((ConstructExpression) nodeStack.getLast()).getInstantiates();
                 List<Value> arguments = new ArrayList<>();
-                if (!((ConstructExpression) nodeStack.getLast()).getArguments().isEmpty()) {
-                    for (int i = 0; i < ((ConstructExpression) nodeStack.getLast()).getArguments().size(); i++) {
+                ConstructExpression ce = (ConstructExpression) nodeStack.getLast();
+                nodeStack.removeLast(); //remove ConstructExpression
+                if (!ce.getArguments().isEmpty()) {
+                    int size = ce.getArguments().size();
+                    for (int i = 0; i < size; i++) {
                         arguments.add(valueStack.getLast());
                         valueStack.removeLast();
+                        nodeStack.removeLast();
                     }
                 }
                 Collections.reverse(arguments);
                 JavaObject newObject;
-                switch (((ConstructExpression) nodeStack.getLast()).getType().getName().toString()) {
+                switch (ce.getType().getName().toString()) {
                     case "java.util.HashMap", "java.util.Map" ->
                             newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
                     case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
                     default -> newObject = new JavaObject();
                 }
                 valueStack.add(newObject);
-                nodeStack.removeLast();
                 //run constructor
                 if (classNode != null) {
                     AbstractInterpretation classAi = new AbstractInterpretation();
@@ -632,6 +640,9 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);
+        }
+        if (nextNode == null) {
+            System.out.println("Debug");
         }
         return graphWalker(nextNode);
     }
