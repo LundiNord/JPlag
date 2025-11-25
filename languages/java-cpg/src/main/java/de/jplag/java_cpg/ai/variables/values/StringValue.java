@@ -38,21 +38,21 @@ public class StringValue extends JavaObject {
     }
 
     @Override
-    @Deprecated
-    public IntValue parseInt() {
-        if (!information) {
-            return new IntValue();
-        }
-        return new IntValue(Integer.parseInt(value));
-    }
-
-    @Override
     public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 if (information) {
                     return new IntValue(value.length());
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "parseInt" -> {
+                assert paramVars.size() == 1;
+                StringValue str = (StringValue) paramVars.getFirst();
+                if (str.getInformation()) {
+                    return new IntValue(Integer.parseInt(str.getValue()));
                 } else {
                     return new IntValue();
                 }

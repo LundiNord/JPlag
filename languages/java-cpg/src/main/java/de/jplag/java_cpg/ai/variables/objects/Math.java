@@ -24,7 +24,6 @@ public class Math extends JavaObject {
 
     @Override
     public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
-        assert methodName != null;
         switch (methodName) {
             case "abs" -> {
                 assert paramVars.size() == 1;
@@ -42,7 +41,7 @@ public class Math extends JavaObject {
 
     @Pure
     private IntValue abs(@NotNull IntValue x) {
-        return x.abs();
+        return (IntValue) x.unaryOperation("abs");
     }
 
 }

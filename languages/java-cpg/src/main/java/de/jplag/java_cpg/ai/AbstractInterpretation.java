@@ -11,6 +11,7 @@ import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.*;
+import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,55 +39,18 @@ public class AbstractInterpretation {
         methods = new HashMap<>();
     }
 
-    @Deprecated //ToDo unite with runClass method
+    /**
+     * Starts the abstract interpretation by running the main method.
+     *
+     * @param tud TranslationUnitDeclaration graph node representing the whole program.
+     */
     public void runMain(@NotNull TranslationUnitDeclaration tud) {
         assert tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1;
         for (Declaration declaration : tud.getDeclarations()) {
             if (declaration instanceof NamespaceDeclaration) {
                 RecordDeclaration mainClas = (RecordDeclaration) ((NamespaceDeclaration) declaration).getDeclarations().getFirst();
                 JavaObject mainClassVar = new JavaObject();
-                for (FieldDeclaration fd : mainClas.getFields()) {
-                    Type type = fd.getType();
-                    Name name = fd.getName();
-                    if (fd.getInitializer() == null) {      //no initial value
-                        Variable newVar = new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type));
-                        newVar.setInitialValue();
-                        mainClassVar.setField(newVar);
-                    } else {
-                        if (fd.getInitializer() instanceof Literal<?> literal) {
-                            Value value = valueResolver(literal.getValue());
-                            mainClassVar.setField(new Variable(new VariableName(name.toString()), value));
-                        } else if (fd.getInitializer() instanceof NewExpression newExpression) {
-                            JavaObject newObject;
-                            switch ((newExpression.getInitializer()).getType().getName().toString()) {
-                                case "java.util.HashMap", "java.util.Map" ->
-                                        newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
-                                case "java.util.Scanner" ->
-                                        newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
-                                case "java.util.ArrayList", "java.util.List" -> newObject = new JavaArray();
-                                default -> newObject = new JavaObject();
-                            }
-                            Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
-                            if (classNode != null) {    //run constructor
-                                AbstractInterpretation classAi = new AbstractInterpretation();
-                                classAi.runClass((RecordDeclaration) classNode, newObject, List.of());
-                            }
-                            mainClassVar.setField(new Variable(new VariableName(name.toString()), newObject));
-                        } else {
-                            throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
-                        }
-                    }
-                }
-                mainClassVar.setAbstractInterpretation(this);
-                variables.addVariable(new Variable(new VariableName("Main"), mainClassVar));
-                variables.setThisName(new VariableName("Main"));
-                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
-                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
-                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
-                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.String.getName(), new de.jplag.java_cpg.ai.variables.objects.String()));
-                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
-                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
-                this.object = mainClassVar;
+                setupClass(mainClas, mainClassVar);
                 assert mainClas.getMethods().stream().map(MethodDeclaration::getName)
                         .filter(x -> x.getLocalName().equals("main")).count() == 1;
                 for (MethodDeclaration md : mainClas.getMethods()) {
@@ -118,6 +82,34 @@ public class AbstractInterpretation {
      * @param constructorArgs the arguments for the constructor.
      */
     private void runClass(@NotNull RecordDeclaration rd, @NotNull JavaObject objectInstance, List<Value> constructorArgs) {
+        setupClass(rd, objectInstance);
+        //Run constructor method
+        ConstructorDeclaration constr = rd.getConstructors().getFirst();    //ToDo what if multiple constructors?
+        List<Node> eog = constr.getNextEOG();
+        if (eog.size() == 1) {
+            variables.newScope();
+            assert constr.getParameters().size() == constructorArgs.size();
+            for (int i = 0; i < constructorArgs.size(); i++) {
+                variables.addVariable(new Variable(new VariableName(constr.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
+            }
+            graphWalker(eog.getFirst());
+            variables.removeScope();
+        } else if (eog.isEmpty()) { //empty constructor
+            return;
+        } else {
+            throw new IllegalStateException("Unexpected value: " + eog.size());
+        }
+    }
+
+    /**
+     * Sets up the abstract interpretation for the given class.
+     * Adds fields and methods to the object instance.
+     *
+     * @param rd             RecordDeclaration node representing the class.
+     * @param objectInstance the object instance that should represent the class.
+     */
+    @Impure
+    private void setupClass(@NotNull RecordDeclaration rd, @NotNull JavaObject objectInstance) {
         assert !rd.getConstructors().isEmpty();
         objectInstance.setAbstractInterpretation(this);
         variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
@@ -199,23 +191,6 @@ public class AbstractInterpretation {
                 }
             }
         }
-        //Run constructor method
-        ConstructorDeclaration constr = rd.getConstructors().getFirst();    //ToDo what if multiple constructors?
-        List<Node> eog = constr.getNextEOG();
-        if (eog.size() == 1) {
-            variables.newScope();
-            assert constr.getParameters().size() == constructorArgs.size();
-            for (int i = 0; i < constructorArgs.size(); i++) {
-                variables.addVariable(new Variable(new VariableName(constr.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
-            }
-            graphWalker(eog.getFirst());
-            variables.removeScope();
-        } else if (eog.isEmpty()) { //empty constructor
-            return;
-        } else {
-            throw new IllegalStateException("Unexpected value: " + eog.size());
-        }
-        System.out.println("Test");
     }
 
     /**

@@ -39,11 +39,6 @@ public abstract class Value {
         return type;
     }
 
-    @Deprecated
-    public IntValue parseInt() {
-        throw new UnsupportedOperationException("Cannot parse " + getType() + " to int");
-    }
-
     /**
      * Performs a binary operation between this value and another value.
      *

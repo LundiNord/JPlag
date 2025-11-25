@@ -35,14 +35,6 @@ public class IntValue extends Value implements INumberValue {
         this.information = information;
     }
 
-    @Deprecated //replaced by unaryOperation?
-    public IntValue abs() {
-        if (information) {
-            return new IntValue(Math.abs(value));
-        }
-        return new IntValue();
-    }
-
     /**
      * @return whether exact information is available
      */
@@ -161,6 +153,13 @@ public class IntValue extends Value implements INumberValue {
                 if (information) {
                     this.value = -this.value;
                     return new IntValue(this.value);
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "abs" -> {
+                if (information) {
+                    return new IntValue(Math.abs(this.value));
                 } else {
                     return new IntValue();
                 }

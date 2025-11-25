@@ -29,7 +29,7 @@ public class Integer extends JavaObject {
                 Value value = paramVars.getFirst();
                 switch (value) {
                     case StringValue str -> {
-                        return str.parseInt();
+                        return str.callMethod("parseInt", paramVars);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
