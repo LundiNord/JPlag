@@ -269,6 +269,21 @@ class DeadCodeDetectionTest {
         assertEquals(200, ((IntValue) main.accessField("result2")).getValue()); //y
     }
 
+//    /**
+//     * simple stream test
+//     *
+//     * @throws ParsingException
+//     * @throws InterruptedException
+//     */
+//    @Test
+//    void testStream() throws ParsingException, InterruptedException {
+//        AbstractInterpretation interpretation = interpretFromResource("java/ai/stream");
+//        JavaObject main = getMainObject(interpretation);
+//        assertNotNull(main);
+//        assertFalse(((IntValue) main.accessField("result")).getInformation());          //z
+//        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
+//    }
+
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();

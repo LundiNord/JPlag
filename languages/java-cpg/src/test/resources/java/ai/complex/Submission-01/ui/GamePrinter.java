@@ -4,24 +4,17 @@ import edu.kit.informatik.logik.Market;
 import edu.kit.informatik.logik.Possessions;
 import edu.kit.informatik.logik.QueensFarming;
 import edu.kit.informatik.logik.Vegetable;
-import edu.kit.informatik.logik.tiles.Board;
-import edu.kit.informatik.logik.tiles.Coordinates;
-import edu.kit.informatik.logik.tiles.CropArea;
-import edu.kit.informatik.logik.tiles.Tile;
-import edu.kit.informatik.logik.tiles.TileType;
+import edu.kit.informatik.logik.tiles.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
-/** Kann aktuelle Spielzustände eines "Queens Farming" Spiels auf der Kommandozeile ausgeben.
+/**
+ * Kann aktuelle Spielzustände eines "Queens Farming" Spiels auf der Kommandozeile ausgeben.
+ *
  * @author ujiqk
- * @version 1.0 */
+ * @version 1.0
+ */
 public class GamePrinter {
 
     private static final String SHOW_BARN = "Barn";
@@ -53,15 +46,19 @@ public class GamePrinter {
     private static final String BREAK = System.lineSeparator();
     private final QueensFarming game;
 
-    /** Konstruktor, um die Zustandsausgabe zu initialisieren.
+    /**
+     * Konstruktor, um die Zustandsausgabe zu initialisieren.
+     *
      * @param game Das Spiel von dem die Daten kommen
      */
     public GamePrinter(QueensFarming game) {
         this.game = game;
     }
 
-    /** Druckt den Zustand einer Scheune, des Markts oder des Spielfelds.
+    /**
+     * Druckt den Zustand einer Scheune, des Markts oder des Spielfelds.
      * Scheune und Spielfeld sind vom Spieler, der gerade dran ist.
+     *
      * @param input Die Eingabe des Benutzers. Ist sie falsch passiert nichts.
      */
     public void show(String input) {
@@ -123,7 +120,7 @@ public class GamePrinter {
         //sortiert in alphabetischer Reihenfolge
         Set<Map.Entry<Vegetable, Integer>> entries = possessions.barnContent().entrySet();
         Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(
-            Comparator.comparing((Map.Entry<Vegetable, Integer>::getKey)));
+                Comparator.comparing((Map.Entry<Vegetable, Integer>::getKey)));
         sortedEntries.addAll(entries);
         //Durch die HasMap durchgehen und kleinstes finden
         for (Map.Entry<Vegetable, Integer> entry : sortedEntries) {
@@ -183,7 +180,8 @@ public class GamePrinter {
             values.add(String.format(CARROTS, " ", biggestNumber));
         }
         values.add(String.format(GOLD, " ", biggestNumber));
-        return values.stream().map(String::length).max(Integer::compareTo).get();
+        //return values.stream().map(String::length).max(Integer::compareTo).get();
+        return values.size();
     }
 
     private void printBoard(Board board) {
@@ -195,7 +193,7 @@ public class GamePrinter {
             String row3 = "";
             for (int x = board.getMaxNegativeX(); x <= board.getMaxPositiveX(); x++) {
                 //Zeilenweise durch das Spielfeld gehen
-                String[] rows = boardRowToString(new String[] {row1, row2, row3}, x, y , board);
+                String[] rows = boardRowToString(new String[]{row1, row2, row3}, x, y, board);
                 row1 = rows[0];
                 row2 = rows[1];
                 row3 = rows[2];
@@ -205,16 +203,14 @@ public class GamePrinter {
                 row1 += SPACER;
                 row2 += SPACER;
                 row3 += SPACER;
-            }
-            else {
+            } else {
                 row1 += " ";
                 row2 += " ";
                 row3 += " ";
             }
             if (y == 0) {       //Keine leere Zeile
                 output = row1 + BREAK + row2 + BREAK + row3 + output;
-            }
-            else {
+            } else {
                 output = row1 + BREAK + row2 + BREAK + row3 + BREAK + output;
             }
         }
@@ -233,8 +229,7 @@ public class GamePrinter {
                 row1 += SPACER;
                 row2 += SPACER;
                 row3 += SPACER;
-            }
-            else {
+            } else {
                 row1 += " ";
                 row2 += " ";
                 row3 += " ";
@@ -242,14 +237,13 @@ public class GamePrinter {
             row1 += MAP_EMPTY_ROW;
             row2 += MAP_EMPTY_ROW;
             row3 += MAP_EMPTY_ROW;
-        }
-        else {      //tile != null
-            String[] rows = tileToString(new String[] {row1, row2, row3}, tile);
+        } else {      //tile != null
+            String[] rows = tileToString(new String[]{row1, row2, row3}, tile);
             row1 = rows[0];
             row2 = rows[1];
             row3 = rows[2];
         }
-        return new String[] {row1, row2, row3};
+        return new String[]{row1, row2, row3};
     }
 
     private String[] tileToString(String[] row, Tile tile) {
@@ -286,8 +280,7 @@ public class GamePrinter {
         if (tile.getType() == TileType.BARN) {      //Barn extra
             row1 += MAP_EMPTY_ROW;
             row3 += MAP_EMPTY_ROW;
-        }
-        else {                                    //Alles andere: Pflanzentyp
+        } else {                                    //Alles andere: Pflanzentyp
             CropArea cropTile = (CropArea) tile;
             //Mittlere Zeile Gemüsetyp
             if (cropTile.getPlantType() == null) {
@@ -314,7 +307,7 @@ public class GamePrinter {
             //Letzte Zeile: belegt/Kapazität
             row3 += String.format(AMOUNT_CAPACITY, cropTile.getAmount(), cropTile.getCapacity());
         }
-        return new String[] {row1, row2, row3};
+        return new String[]{row1, row2, row3};
     }
 
     private void printMarket(Market market) {

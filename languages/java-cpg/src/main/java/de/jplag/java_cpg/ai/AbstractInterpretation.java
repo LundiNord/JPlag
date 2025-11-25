@@ -56,6 +56,7 @@ public class AbstractInterpretation {
                                         newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
                                 case "java.util.Scanner" ->
                                         newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
+                                case "java.util.ArrayList", "java.util.List" -> newObject = new JavaArray();
                                 default -> newObject = new JavaObject();
                             }
                             Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
@@ -135,6 +136,7 @@ public class AbstractInterpretation {
                         case "java.util.HashMap", "java.util.Map" ->
                                 newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
                         case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
+                        case "java.util.ArrayList", "java.util.List" -> newObject = new JavaArray();
                         default -> newObject = new JavaObject();
                     }
                     Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
@@ -580,6 +582,7 @@ public class AbstractInterpretation {
                     case "java.util.HashMap", "java.util.Map" ->
                             newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
                     case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
+                    case "java.util.ArrayList", "java.util.List" -> newObject = new JavaArray();
                     default -> newObject = new JavaObject();
                 }
                 valueStack.add(newObject);

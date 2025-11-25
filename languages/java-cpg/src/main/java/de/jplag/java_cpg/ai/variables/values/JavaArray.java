@@ -75,6 +75,18 @@ public class JavaArray extends JavaObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return new StringValue();
             }
+            case "add" -> {
+                assert paramVars.size() == 1;
+                if (values != null) {
+                    assert paramVars.getFirst().getType().equals(innerType);
+                    values.add(paramVars.getFirst());
+                }
+                return new VoidValue();
+            }
+            case "stream" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return this;
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
