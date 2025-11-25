@@ -161,9 +161,10 @@ public class GameUI {
             playerFinished = true;
         } else if (Pattern.matches("show (barn|market|board)", input)) {
             gamePrinter.show(input);
-        } else if (Pattern.matches("sell( mushroom| carrot| tomato | salad)?( mushroom| carrot| tomato| salad)*", input)
-            || Pattern.matches("sell all", input)) {
-            sell(input);
+        }
+//        else if (Pattern.matches("sell( mushroom| carrot| tomato | salad)?( mushroom| carrot| tomato| salad)*", input)
+//            || Pattern.matches("sell all", input)) {
+//            sell(input);
         } else if (Pattern.matches("buy ((vegetable (mushroom|carrot|tomato|salad))|(land -?\\d* \\d*))", input)) {
             buy(input);
         } else if (Pattern.matches("harvest -?\\d* \\d* ([1-9]\\d*)", input)) {

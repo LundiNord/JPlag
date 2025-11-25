@@ -14,6 +14,7 @@
 - [ ] Array Init in Method fields
 - [x] try/catch
 - [ ] finally
+- [ ] TreeSet
 
 ## Edge Cases to Test
 
@@ -21,6 +22,9 @@
 - [ ] for loop with break/continue
 - [ ] switch with literal returns
 - [x] nested loops
+- [ ] Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(Comparator.comparing((Map.Entry<Vegetable,
+  Integer>::getKey)));]
+- if with || in condition
 
 ## Long Term
 

@@ -44,6 +44,17 @@ public class VoidValue extends Value {
     }
 
     @Override
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            case "!" -> {
+                return new BooleanValue();
+            }
+            default ->
+                    throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+        }
+    }
+
+    @Override
     public Value copy() {
         return new VoidValue();
     }

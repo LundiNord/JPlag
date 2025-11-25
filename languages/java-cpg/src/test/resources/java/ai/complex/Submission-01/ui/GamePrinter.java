@@ -119,8 +119,9 @@ public class GamePrinter {
         //HashMap ist nicht sortiert → mit TreeSet alphabetisch sortieren,
         //sortiert in alphabetischer Reihenfolge
         Set<Map.Entry<Vegetable, Integer>> entries = possessions.barnContent().entrySet();
-        Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(
-                Comparator.comparing((Map.Entry<Vegetable, Integer>::getKey)));
+//        Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(
+//                Comparator.comparing((Map.Entry<Vegetable, Integer>::getKey)));
+        Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>();
         sortedEntries.addAll(entries);
         //Durch die HasMap durchgehen und kleinstes finden
         for (Map.Entry<Vegetable, Integer> entry : sortedEntries) {

@@ -339,6 +339,9 @@ public class AbstractInterpretation {
                 valueStack.add(result);
                 nodeStack.removeLast();
                 nodeStack.add(mce);
+                if (nextEOG.size() != 1) {
+                    System.out.println("Debug");
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -647,10 +650,9 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     valueStack.add(new JavaArray());
                 }
-                JavaArray collection = (JavaArray) valueStack.getLast();
+                JavaObject collection = (JavaObject) valueStack.getLast();
                 valueStack.removeLast();
-                IntValue length = (IntValue) collection.accessField("length");
-                if (length.getInformation() && (length.getValue() == 0)) {
+                if (collection.accessField("length") instanceof IntValue length && length.getInformation() && (length.getValue() == 0)) {
                     //Dead code detected, loop never runs
                 } else {
                     variables.newScope();
