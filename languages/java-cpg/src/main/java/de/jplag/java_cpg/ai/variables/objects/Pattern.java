@@ -10,8 +10,8 @@ import java.util.List;
 
 public class Pattern extends JavaObject {
 
-    private static final String PATH = "java.util.regex";
-    private static final String NAME = "Pattern";
+    private static final java.lang.String PATH = "java.util.regex";
+    private static final java.lang.String NAME = "Pattern";
 
     public Pattern() {
         super();
@@ -22,7 +22,7 @@ public class Pattern extends JavaObject {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "matches" -> {
                 assert paramVars.size() == 2;

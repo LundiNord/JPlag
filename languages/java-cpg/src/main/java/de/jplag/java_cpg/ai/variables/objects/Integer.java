@@ -10,8 +10,8 @@ import java.util.List;
 
 public class Integer extends JavaObject {
 
-    private static final String PATH = "java.lang";
-    private static final String NAME = "Integer";
+    private static final java.lang.String PATH = "java.lang";
+    private static final java.lang.String NAME = "Integer";
 
     public Integer() {
         super();
@@ -22,7 +22,7 @@ public class Integer extends JavaObject {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "parseInt" -> {
                 assert paramVars.size() == 1;

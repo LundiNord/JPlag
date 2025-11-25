@@ -10,8 +10,8 @@ import java.util.List;
 
 public class Arrays extends JavaObject {
 
-    private static final String PATH = "java.util";
-    private static final String NAME = "Arrays";
+    private static final java.lang.String PATH = "java.util";
+    private static final java.lang.String NAME = "Arrays";
 
     public Arrays() {
         super();
@@ -22,7 +22,7 @@ public class Arrays extends JavaObject {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars.size() == 1;

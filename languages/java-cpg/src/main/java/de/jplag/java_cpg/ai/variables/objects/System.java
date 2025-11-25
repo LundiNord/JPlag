@@ -11,8 +11,8 @@ import java.util.List;
 
 public class System extends JavaObject {
 
-    private static final String PATH = "java.lang";
-    private static final String NAME = "System";
+    private static final java.lang.String PATH = "java.lang";
+    private static final java.lang.String NAME = "System";
 
     public System() {
         super();
@@ -24,7 +24,7 @@ public class System extends JavaObject {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "lineSeparator" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -36,7 +36,7 @@ public class System extends JavaObject {
     }
 
     @Override
-    public Value accessField(@NotNull String fieldName) {
+    public Value accessField(@NotNull java.lang.String fieldName) {
         switch (fieldName) {
             case "out", "err" -> {
                 return new PrintStream();

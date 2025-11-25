@@ -9,11 +9,11 @@ import java.util.List;
 
 public class HashMap extends JavaObject {
 
-    private static final String PATH = "java.util";
-    private static final String NAME = "HashMap";
+    private static final java.lang.String PATH = "java.util";
+    private static final java.lang.String NAME = "HashMap";
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "put" -> {
                 assert paramVars.size() == 2;
@@ -26,8 +26,7 @@ public class HashMap extends JavaObject {
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
-
-
+    
     @Override
     public JavaObject copy() {
         return new HashMap();

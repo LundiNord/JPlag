@@ -19,7 +19,7 @@ public class VoidValue extends Value {
     @Override
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
         switch (operator) {
-            case "==", ">", "<", ">=", "<=" -> {
+            case "==", ">", "<", ">=", "<=", "!=" -> {
                 return new BooleanValue();
             }
             case "-" -> {

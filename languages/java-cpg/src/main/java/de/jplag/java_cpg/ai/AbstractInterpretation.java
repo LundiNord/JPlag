@@ -75,6 +75,7 @@ public class AbstractInterpretation {
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
+                variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.String.getName(), new de.jplag.java_cpg.ai.variables.objects.String()));
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
                 variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
                 this.object = mainClassVar;
@@ -109,6 +110,7 @@ public class AbstractInterpretation {
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.String.getName(), new de.jplag.java_cpg.ai.variables.objects.String()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
         this.object = objectInstance;
@@ -307,6 +309,9 @@ public class AbstractInterpretation {
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
                     result = javaObject.callMethod(memberName.getLocalName(), null);
                 } else {
+                    if (!(nodeStack.get(nodeStack.size() - mce.getArguments().size() - 1) instanceof MemberExpression)) {
+                        System.out.println("Debug");
+                    }
                     assert nodeStack.get(nodeStack.size() - mce.getArguments().size() - 1) instanceof MemberExpression;     //first arguments
                     List<Value> argumentList = new ArrayList<>();
                     for (int i = 0; i < mce.getArguments().size(); i++) {
@@ -319,6 +324,9 @@ public class AbstractInterpretation {
                     Name memberName = (nodeStack.getLast()).getName();
                     assert memberName.getParent() != null;
                     assert !valueStack.isEmpty();
+                    if (!(valueStack.getLast() instanceof JavaObject)) {
+                        System.out.println("Debug");
+                    }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();         //for now only one parameter
                     result = javaObject.callMethod(memberName.getLocalName(), argumentList);
                 }
@@ -632,6 +640,10 @@ public class AbstractInterpretation {
             case ForEachStatement fes -> {
                 assert nextEOG.size() == 2;
                 assert !valueStack.isEmpty();
+                if (valueStack.getLast() instanceof VoidValue) {
+                    valueStack.removeLast();
+                    valueStack.add(new JavaArray());
+                }
                 JavaArray collection = (JavaArray) valueStack.getLast();
                 valueStack.removeLast();
                 IntValue length = (IntValue) collection.accessField("length");

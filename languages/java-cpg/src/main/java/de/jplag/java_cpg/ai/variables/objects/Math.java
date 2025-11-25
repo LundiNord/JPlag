@@ -11,8 +11,8 @@ import java.util.List;
 
 public class Math extends JavaObject {
 
-    private static final String PATH = "java.lang";
-    private static final String NAME = "Math";
+    private static final java.lang.String PATH = "java.lang";
+    private static final java.lang.String NAME = "Math";
 
     public Math() {
         super();
@@ -23,7 +23,7 @@ public class Math extends JavaObject {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         assert methodName != null;
         switch (methodName) {
             case "abs" -> {
@@ -35,14 +35,14 @@ public class Math extends JavaObject {
         }
     }
 
-    @Pure
-    private IntValue abs(@NotNull IntValue x) {
-        return x.abs();
-    }
-
     @Override
     public JavaObject copy() {
         return new Math();
+    }
+
+    @Pure
+    private IntValue abs(@NotNull IntValue x) {
+        return x.abs();
     }
 
 }

@@ -10,15 +10,15 @@ import java.util.List;
 
 public class Scanner extends JavaObject {
 
-    private static final String PATH = "java.util";
-    private static final String NAME = "Scanner";
+    private static final java.lang.String PATH = "java.util";
+    private static final java.lang.String NAME = "Scanner";
 
     public Scanner() {
         super();
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "nextLine" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -33,7 +33,7 @@ public class Scanner extends JavaObject {
     }
 
     @Override
-    public Value accessField(@NotNull String fieldName) {
+    public Value accessField(@NotNull java.lang.String fieldName) {
         switch (fieldName) {
             default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported in Scanner.");
         }

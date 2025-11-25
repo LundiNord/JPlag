@@ -9,8 +9,8 @@ import java.util.List;
 
 public class InputStream extends JavaObject {
 
-    private static final String PATH = "java.io";
-    private static final String NAME = "InputStream";
+    private static final java.lang.String PATH = "java.io";
+    private static final java.lang.String NAME = "InputStream";
 
     public InputStream() {
         super();
@@ -21,7 +21,7 @@ public class InputStream extends JavaObject {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
             default -> throw new UnsupportedOperationException(methodName);
         }
