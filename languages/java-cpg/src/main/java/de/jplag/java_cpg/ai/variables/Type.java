@@ -2,6 +2,12 @@ package de.jplag.java_cpg.ai.variables;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Enumeration of supported variable types.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public enum Type {
     INT,
     FLOAT,
@@ -13,6 +19,10 @@ public enum Type {
     NULL,
     VOID;
 
+    /**
+     * @param cpgType CPG type to convert.
+     * @return the corresponding Type enum.
+     */
     public static Type fromCpgType(@NotNull de.fraunhofer.aisec.cpg.graph.types.Type cpgType) {
         if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IntegerType.class) {
             return INT;

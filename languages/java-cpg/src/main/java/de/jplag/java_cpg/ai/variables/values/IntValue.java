@@ -76,6 +76,13 @@ public class IntValue extends Value implements INumberValue {
                     return new BooleanValue();
                 }
             }
+            case ">" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new BooleanValue(this.value > ((IntValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             case "-" -> {
                 if (information && ((IntValue) other).getInformation()) {
                     return new IntValue(this.value - ((IntValue) other).getValue());

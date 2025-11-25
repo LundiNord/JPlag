@@ -4,6 +4,12 @@ import de.jplag.java_cpg.ai.variables.Type;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Boolean value representation with a possible lack of information.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class BooleanValue extends Value {
 
     private boolean value;
@@ -36,6 +42,25 @@ public class BooleanValue extends Value {
     public boolean getValue() {
         assert information;
         return value;
+    }
+
+    @Override
+    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        if (other instanceof VoidValue) {
+            return new VoidValue();
+        }
+        BooleanValue otherBool = (BooleanValue) other;
+        switch (operator) {
+            case "||" -> {
+                if (this.getInformation() && otherBool.getInformation()) {
+                    return new BooleanValue(this.getValue() || otherBool.getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default ->
+                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        }
     }
 
     @Pure

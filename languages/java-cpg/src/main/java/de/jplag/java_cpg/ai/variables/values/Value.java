@@ -17,7 +17,14 @@ public abstract class Value {
         this.type = type;
     }
 
-    public static Value valueFactory(Type type) {
+    /**
+     * Constructs a Value instance based on the provided type.
+     *
+     * @param type the type of the value.
+     * @return a Value instance corresponding to the specified type.
+     */
+    @NotNull
+    public static Value valueFactory(@NotNull Type type) {
         return switch (type) {
             case INT -> new IntValue();
             case STRING -> new StringValue();
@@ -32,14 +39,28 @@ public abstract class Value {
         return type;
     }
 
+    @Deprecated
     public IntValue parseInt() {
         throw new UnsupportedOperationException("Cannot parse " + getType() + " to int");
     }
 
+    /**
+     * Performs a binary operation between this value and another value.
+     *
+     * @param operator the operator.
+     * @param other    the other value.
+     * @return the result value. VoidValue if the operation does not return a value.
+     */
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }
 
+    /**
+     * Performs a unary operation on this value.
+     *
+     * @param operator the operator.
+     * @return the result value. VoidValue if the operation does not return a value.
+     */
     public Value unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "throw" -> {
@@ -50,8 +71,20 @@ public abstract class Value {
         }
     }
 
+    /**
+     * Creates and returns a deep copy of this value.
+     *
+     * @return a deep copy of this value.
+     */
     public abstract Value copy();
 
+    /**
+     * Merges the information of another instance of the same value into this one.
+     * Types should be the same.
+     * For example, when a value has different content in different branches of an if statement.
+     *
+     * @param other other value.
+     */
     public abstract void merge(@NotNull Value other);
 
     /**
@@ -59,6 +92,9 @@ public abstract class Value {
      */
     public abstract void setToUnknown();
 
+    /**
+     * Resets all information about this value except its type.
+     */
     public abstract void setInitialValue();
-    
+
 }

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A Java Array.
+ * A Java Array representation.
  * Java arrays are objects.
  * Lists are modeled as Java arrays.
  *
@@ -28,7 +28,7 @@ public class JavaArray extends JavaObject {
         this.innerType = innerType;
     }
 
-    public JavaArray(List<Value> values) {
+    public JavaArray(@NotNull List<Value> values) {
         super(Type.ARRAY);
         assert values.stream().map(Value::getType).distinct().count() == 1;
         this.innerType = values.getFirst().getType();
@@ -46,6 +46,12 @@ public class JavaArray extends JavaObject {
         //ToDo: length
     }
 
+    /**
+     * Access an element of the array.
+     *
+     * @param index the index to access, does not have to contain information.
+     * @return the superset of possible values at the given indexes.
+     */
     public Value arrayAccess(IntValue index) {
         if (values != null && index.getInformation()) {
             int idx = (int) index.getValue();

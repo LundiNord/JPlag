@@ -5,14 +5,21 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A scope containing variables.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class Scope {
 
     private final HashMap<VariableName, Variable> variables = new HashMap<>();
 
     /**
-     * Copy constructor
+     * Copy constructor.
+     * Performs a deep copy of the variables.
      *
-     * @param scope
+     * @param scope the scope to copy.
      */
     public Scope(@NotNull Scope scope) {
         for (Map.Entry<VariableName, Variable> entry : scope.variables.entrySet()) {
@@ -29,7 +36,7 @@ public class Scope {
     /**
      * Overwrites or adds a variable in this scope.
      *
-     * @param variable
+     * @param variable the variable to add.
      */
     public void addVariable(Variable variable) {
         variables.put(variable.getName(), variable);
@@ -38,13 +45,19 @@ public class Scope {
     /**
      * Gets a variable by its name or null if it does not exist in this scope.
      *
-     * @param name
-     * @return
+     * @param name the name of the variable.
+     * @return the variable or null if it does not exist in this scope.
      */
     public Variable getVariable(VariableName name) {
         return variables.get(name);
     }
 
+    /**
+     * Merges the information of another instance of the same scope into this one.
+     * The same variables with potentially different values must exist in both scopes.
+     *
+     * @param otherScope the other scope to merge into this one.
+     */
     public void merge(Scope otherScope) {
         //assert: both scopes contain the same variables with potentially different values
         for (Map.Entry<VariableName, Variable> entry : otherScope.variables.entrySet()) {

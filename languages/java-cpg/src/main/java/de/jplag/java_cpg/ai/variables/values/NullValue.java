@@ -3,6 +3,12 @@ package de.jplag.java_cpg.ai.variables.values;
 import de.jplag.java_cpg.ai.variables.Type;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Represents the Java null value.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class NullValue extends Value {
 
     public NullValue() {

@@ -15,6 +15,7 @@
 - [x] try/catch
 - [ ] finally
 - [ ] TreeSet
+- [ ] Comments/Javadocs
 
 ## Edge Cases to Test
 
@@ -24,7 +25,7 @@
 - [x] nested loops
 - [ ] Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(Comparator.comparing((Map.Entry<Vegetable,
   Integer>::getKey)));]
-- if with || in condition
+- [x] if with || in condition
 
 ## Long Term
 

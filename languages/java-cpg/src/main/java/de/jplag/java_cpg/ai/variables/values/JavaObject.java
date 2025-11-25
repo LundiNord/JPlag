@@ -9,6 +9,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * A Java object in the abstract interpretation.
+ * All big data types are also objects (arrays, collections, maps, etc.).
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class JavaObject extends Value {
 
     private final Scope fields;
@@ -28,7 +35,7 @@ public class JavaObject extends Value {
     /**
      * Internal constructor for special classes like arrays.
      *
-     * @param type
+     * @param type the type of the object.
      */
     protected JavaObject(Type type) {
         super(type);
@@ -39,14 +46,19 @@ public class JavaObject extends Value {
         return abstractInterpretation;
     }
 
+    /**
+     * Sets the abstract interpretation engine for this object.
+     * If you call methods on this object, this engine will be used for execution.
+     *
+     * @param abstractInterpretation the abstract interpretation engine or null.
+     */
     public void setAbstractInterpretation(AbstractInterpretation abstractInterpretation) {
         this.abstractInterpretation = abstractInterpretation;
     }
 
     /**
-     *
-     * @param methodName
-     * @param paramVars
+     * @param methodName the name of the method to call.
+     * @param paramVars  the parameters to pass to the method.
      * @return null if the method is not known.
      */
     public Value callMethod(String methodName, List<Value> paramVars) {
@@ -77,7 +89,6 @@ public class JavaObject extends Value {
 
     @Override
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
-        //assert other instanceof JavaObject;
         switch (operator) {
             case "==" -> {
                 if (this.equals(other)) {

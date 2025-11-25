@@ -16,6 +16,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * Abstract Interpretation engine for Java programs.
+ * This class is the interface between the CPG Graph and the Abstract Interpretation Data Structures.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class AbstractInterpretation {
 
     private final HashMap<String, MethodDeclaration> methods;    //the methods available for the class
@@ -103,7 +110,14 @@ public class AbstractInterpretation {
         }
     }
 
-    private void runClass(@NotNull RecordDeclaration rd, JavaObject objectInstance, List<Value> constructorArgs) {
+    /**
+     * Sets up the abstract interpretation for the given class and runs its constructor.
+     *
+     * @param rd              RecordDeclaration node representing the class.
+     * @param objectInstance  the object instance that should represent the class.
+     * @param constructorArgs the arguments for the constructor.
+     */
+    private void runClass(@NotNull RecordDeclaration rd, @NotNull JavaObject objectInstance, List<Value> constructorArgs) {
         assert !rd.getConstructors().isEmpty();
         objectInstance.setAbstractInterpretation(this);
         variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
@@ -204,6 +218,14 @@ public class AbstractInterpretation {
         System.out.println("Test");
     }
 
+    /**
+     * Graph walker for EOG traversal.
+     * Walks the EOG starting from the given node until the current block ends.
+     * If present, returns the value produced by the return statement.
+     *
+     * @param node the starting graph node.
+     * @return the value resulting from the traversal, or null if no value is produced.
+     */
     @Nullable
     private Value graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
@@ -388,6 +410,16 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
+            case ShortCircuitOperator scop -> {
+                assert scop.getPrevEOG().size() == 2;
+                BooleanValue value1 = (BooleanValue) valueStack.get(valueStack.size() - 2);
+                BooleanValue value2 = (BooleanValue) valueStack.getLast();
+                valueStack.removeLast();
+                valueStack.removeLast();
+                valueStack.add(value1.binaryOperation("||", value2));
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
             case BinaryOperator bop -> {
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 //assert valueStack.get(valueStack.size() - 2).getType() == valueStack.getLast().getType();
@@ -401,7 +433,7 @@ public class AbstractInterpretation {
                 valueStack.removeLast();
                 valueStack.removeLast();
                 valueStack.add(result);
-                assert nextEOG.size() == 1;
+                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
             case UnaryOperator uop -> {
@@ -790,11 +822,12 @@ public class AbstractInterpretation {
     }
 
     /**
+     * Runs a method in this abstract interpretation engine context with the given name and parameters.
      *
-     * @param name
+     * @param name the name of the method to run.
      * @return null if the method is not known.
      */
-    public Value runMethod(String name, List<Value> paramVars) {
+    public Value runMethod(@NotNull String name, List<Value> paramVars) {
         ArrayList<Node> oldNodeStack = this.nodeStack;      //Save stack
         ArrayList<Value> oldValueStack = this.valueStack;
         this.nodeStack = new ArrayList<>();

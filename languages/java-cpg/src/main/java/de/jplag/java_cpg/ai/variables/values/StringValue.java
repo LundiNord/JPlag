@@ -5,6 +5,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * String representation.
+ * Strings are objects with added functionality.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class StringValue extends JavaObject {
 
     private boolean information;
@@ -31,6 +38,7 @@ public class StringValue extends JavaObject {
     }
 
     @Override
+    @Deprecated
     public IntValue parseInt() {
         if (!information) {
             return new IntValue();
@@ -38,7 +46,8 @@ public class StringValue extends JavaObject {
         return new IntValue(Integer.parseInt(value));
     }
 
-    public Value callMethod(String methodName, List<Value> paramVars) {
+    @Override
+    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -52,6 +61,7 @@ public class StringValue extends JavaObject {
         }
     }
 
+    @Override
     public Value accessField(String fieldName) {
         throw new UnsupportedOperationException("Access field not supported in StringValue");
     }

@@ -4,6 +4,9 @@ import de.jplag.java_cpg.ai.variables.Type;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Represents a floating point value with optional exact information.
+ */
 public class FloatValue extends Value implements INumberValue {
 
     private double value;
@@ -38,12 +41,15 @@ public class FloatValue extends Value implements INumberValue {
     }
 
     /**
-     * @return whether exact information is available
+     * @return whether exact information is available.
      */
     public boolean getInformation() {
         return information;
     }
 
+    /**
+     * @return the value. Only call if information is true.
+     */
     public double getValue() {
         assert information;
         return value;

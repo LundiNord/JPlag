@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test that only use the CPg library.
+ * Test that only use the CPG library.
  *
  * @author ujiqk
  * @version 1.0
@@ -150,6 +150,20 @@ class DeadCodeDetectionTest {
     @Test
     void testIf() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * test if with || in condition
+     *
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testIfOr() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/ifOr");
         JavaObject main = getMainObject(interpretation);
         assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y

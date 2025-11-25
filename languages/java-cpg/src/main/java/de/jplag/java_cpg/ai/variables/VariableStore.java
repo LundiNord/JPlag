@@ -6,6 +6,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
+/**
+ * Stores variables in different scopes.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class VariableStore {
 
     private final ArrayList<Scope> scopes = new ArrayList<>();
@@ -18,9 +24,10 @@ public class VariableStore {
     }
 
     /**
-     * Copy constructor
+     * Copy constructor.
+     * Performs deep copy down the values.
      *
-     * @param variableStore
+     * @param variableStore the variable store to copy.
      */
     public VariableStore(@NotNull VariableStore variableStore) {
         this.currentScopeIndex = variableStore.currentScopeIndex;
@@ -38,10 +45,16 @@ public class VariableStore {
         scopes.get(currentScopeIndex).addVariable(variable);
     }
 
+    /**
+     * @param thisName the name of the {@link JavaObject} this variable store is associated with.
+     */
     public void setThisName(VariableName thisName) {
         this.thisObject = thisName;
     }
 
+    /**
+     * @return the {@link JavaObject} this variable store is associated with, or null if not set.
+     */
     public JavaObject getThisObject() {
         if (thisObject == null) {
             return null;
@@ -58,10 +71,8 @@ public class VariableStore {
     }
 
     /**
-     * Returns the variable with the given name or null if it does not exist in any scope.
-     *
-     * @param name
-     * @return
+     * @param name the name of the variable to retrieve.
+     * @return the variable with the given name or null if it does not exist.
      */
     public Variable getVariable(VariableName name) {
         assert name != null;
@@ -74,6 +85,10 @@ public class VariableStore {
         return null;
     }
 
+    /**
+     * @param name the name of the variable to retrieve.
+     * @return the variable with the given name or null if it does not exist.
+     */
     public Variable getVariable(String name) {
         return getVariable(new VariableName(name));
     }
@@ -91,6 +106,13 @@ public class VariableStore {
         assert currentScopeIndex >= 0;
     }
 
+    /**
+     * Merges the information from another variable store into this one.
+     * Used for merging variable states after control-flow joins.
+     * Merges scopes up to the minimum scope depth of both stores.
+     *
+     * @param other the other variable store to merge.
+     */
     public void merge(@NotNull VariableStore other) {
         // In complex control-flow, the scope depth can differ.
         int targetIndex = Math.min(this.currentScopeIndex, other.currentScopeIndex);

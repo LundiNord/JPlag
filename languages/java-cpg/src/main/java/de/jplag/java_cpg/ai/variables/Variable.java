@@ -39,8 +39,7 @@ public class Variable {
         this.value = new BooleanValue(value);
     }
 
-    public Variable(VariableName name, Type type) {
-        assert name != null;
+    public Variable(@NotNull VariableName name, @NotNull Type type) {
         this.name = name;
         switch (type) {
             case INT -> this.value = new IntValue();
@@ -54,9 +53,9 @@ public class Variable {
     }
 
     /**
-     * Copy constructor
+     * Copy constructor.
      *
-     * @param variable
+     * @param variable the variable to deep copy.
      */
     public Variable(@NotNull Variable variable) {
         this.name = variable.name;
@@ -83,20 +82,31 @@ public class Variable {
         this.value = value;
     }
 
+    /**
+     * Merge content from another variable into this variable.
+     * The provided variable must have the same name as this variable.
+     * The actual merge behavior is delegated to the underlying {@link Value} implementation.
+     *
+     * @param value the variable whose content will be merged into this one; must have the same name.
+     * @throws AssertionError if the names differ (when assertions are enabled).
+     */
     public void merge(@NotNull Variable value) {
         assert value.name.equals(this.name);
         this.value.merge(value.value);
     }
 
     /**
-     * Delete all conetent information in this variable.
+     * Delete all content information in this variable.
      */
     public void setToUnknown() {
         value.setToUnknown();
     }
 
+    /**
+     * Reset all information in this variable expect type and name.
+     */
     public void setInitialValue() {
         value.setInitialValue();
     }
-    
+
 }
