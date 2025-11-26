@@ -39,3 +39,8 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     }
 
 }
+
+enum class IntAiType {
+    INTERVALS,
+    DEFAULT,
+}

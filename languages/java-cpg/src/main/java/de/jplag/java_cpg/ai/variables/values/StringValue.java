@@ -43,18 +43,18 @@ public class StringValue extends JavaObject {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 if (information) {
-                    return new IntValue(value.length());
+                    return Value.valueFactory(value.length());
                 } else {
-                    return new IntValue();
+                    return Value.valueFactory(Type.INT);
                 }
             }
             case "parseInt" -> {
                 assert paramVars.size() == 1;
                 StringValue str = (StringValue) paramVars.getFirst();
                 if (str.getInformation()) {
-                    return new IntValue(Integer.parseInt(str.getValue()));
+                    return Value.valueFactory(Integer.parseInt(str.getValue()));
                 } else {
-                    return new IntValue();
+                    return Value.valueFactory(Type.INT);
                 }
             }
             default -> throw new UnsupportedOperationException(methodName);

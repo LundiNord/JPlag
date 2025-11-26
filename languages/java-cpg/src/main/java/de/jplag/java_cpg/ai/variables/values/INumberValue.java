@@ -8,8 +8,14 @@ package de.jplag.java_cpg.ai.variables.values;
  */
 public interface INumberValue {
 
+    /**
+     * @return if exact information is available.
+     */
     boolean getInformation();
 
+    /**
+     * @return the exact value. Only valid if getInformation() returns true.
+     */
     double getValue();
 
 }

@@ -40,7 +40,7 @@ public class JavaArray extends JavaObject {
         this.innerType = null;
     }
 
-    public JavaArray(IntValue length) {
+    public JavaArray(INumberValue length) {
         super(Type.ARRAY);
         this.innerType = null;  //maybe update later
         //ToDo: length
@@ -52,7 +52,7 @@ public class JavaArray extends JavaObject {
      * @param index the index to access, does not have to contain information.
      * @return the superset of possible values at the given indexes.
      */
-    public Value arrayAccess(IntValue index) {
+    public Value arrayAccess(INumberValue index) {
         if (values != null && index.getInformation()) {
             int idx = (int) index.getValue();
             if (idx >= 0 && idx < values.size()) {

@@ -7,12 +7,14 @@ import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
 import de.fraunhofer.aisec.cpg.passes.*;
 import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.VariableStore;
-import de.jplag.java_cpg.ai.variables.values.IntValue;
+import de.jplag.java_cpg.ai.variables.values.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -32,284 +34,30 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class DeadCodeDetectionTest {
 
-    /**
-     * a simple test with the main function only
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testSimple() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
+    public static JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
+        VariableStore variableStore = interpretation.getVariables();
+        return (JavaObject) variableStore.getVariable("Main").getValue();
     }
 
-    /**
-     * a simple test with the main function calling another function.
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testSimple2() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertFalse(((IntValue) main.accessField("result2")).getInformation());
+    @NotNull
+    public static AbstractInterpretation interpretFromResource(String resourceDir) throws ParsingException, InterruptedException {
+        ClassLoader classLoader = DeadCodeDetectionTest.class.getClassLoader();
+        File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
+        Set<File> submissionDirectories = Set.of(submissionsRoot);
+        TranslationResult result = translate(submissionDirectories);
+        AbstractInterpretation interpretation = new AbstractInterpretation();
+
+        Component comp = result.getComponents().getFirst();
+        for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
+            Assertions.assertNotNull(translationUnit.getName().getParent());
+            if (translationUnit.getName().getParent().getLocalName().endsWith("Main")) {
+                interpretation.runMain(translationUnit);
+            }
+        }
+        return interpretation;
     }
 
-    /**
-     * a slightly more complex test with the main function calling other functions.
-     * with for loop and throw exception.
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testSimple3() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple3");
-        JavaObject main = getMainObject(interpretation);
-        assertEquals(1, ((IntValue) main.accessField("result")).getValue());
-        assertEquals(2, ((IntValue) main.accessField("result2")).getValue());
-    }
-
-    /**
-     * simple switch test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testSwitch() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());          //z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-    /**
-     * simple switch test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testSwitch2() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch2");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());          //z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-    /**
-     * simplest loop test
-     */
-    @Test
-    void testLoop() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertFalse(((IntValue) main.accessField("result2")).getInformation());
-    }
-
-    /**
-     * simplest for each loop test
-     */
-    @Test
-    void testForEach() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/forEach");
-        JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());  //z
-        assertFalse(((IntValue) main.accessField("result2")).getInformation());  //y
-    }
-
-    /**
-     * nondeterministic test! (completes sometimes in debug mode)
-     * test creating a new class instance
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testNewClass() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-    }
-
-    /**
-     * test if without else
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testIf() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
-        JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-    /**
-     * test if with || in condition
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testIfOr() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/ifOr");
-        JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-    /**
-     * test undetermined exception throw
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testException() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/exception");
-        JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-//    /**
-//     * simple enum test
-//     *
-//     * @throws ParsingException
-//     * @throws InterruptedException
-//     */
-//    @Test
-//    void testEnum() throws ParsingException, InterruptedException {
-//        AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
-//        JavaObject main = getMainObject(interpretation);
-//        assertEquals(400, ((IntValue) main.accessField("result")).getValue());
-//        assertFalse(((IntValue) main.accessField("result2")).getInformation());
-//    }
-
-    /**
-     * simple hashmap test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testHashMap() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-        //assertEquals(1, ((IntValue) main.accessField("result")).getValue());
-        //assertEquals(2, ((IntValue) main.accessField("result")).getValue());
-    }
-
-    /**
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testQueensFarming() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-    }
-
-    /**
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testQueensFarming2() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/complex2");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-    }
-
-    /**
-     * simple break statement test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testBreak() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/break");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-        //ToDo
-    }
-
-    /**
-     * simple try/catch test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testTryCatch() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/try");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
-        assertEquals(101, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-    /**
-     * a simple try /catch test with throw inside called method
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testTryCatch2() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/try2");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-        assertEquals(250, ((IntValue) main.accessField("result")).getValue());  //z
-        assertEquals(200, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-    /**
-     * simple try/catch test with nothing thrown
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
-    @Test
-    void testTryCatch3() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/try3");
-        JavaObject main = getMainObject(interpretation);
-        assertNotNull(main);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  //z
-        assertEquals(200, ((IntValue) main.accessField("result2")).getValue()); //y
-    }
-
-//    /**
-//     * simple stream test
-//     *
-//     * @throws ParsingException
-//     * @throws InterruptedException
-//     */
-//    @Test
-//    void testStream() throws ParsingException, InterruptedException {
-//        AbstractInterpretation interpretation = interpretFromResource("java/ai/stream");
-//        JavaObject main = getMainObject(interpretation);
-//        assertNotNull(main);
-//        assertFalse(((IntValue) main.accessField("result")).getInformation());          //z
-//        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
-//    }
-
-    private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
+    private static TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
@@ -335,31 +83,238 @@ class DeadCodeDetectionTest {
     }
 
     @NotNull
-    private <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
+    private static <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
     }
 
-    private JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
-        VariableStore variableStore = interpretation.getVariables();
-        return (JavaObject) variableStore.getVariable("Main").getValue();
+    /**
+     * a simple test with the main function only
+     */
+    @Test
+    void testSimple() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue());
     }
 
-    @NotNull
-    private AbstractInterpretation interpretFromResource(String resourceDir) throws ParsingException, InterruptedException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
-        Set<File> submissionDirectories = Set.of(submissionsRoot);
-        TranslationResult result = translate(submissionDirectories);
-        AbstractInterpretation interpretation = new AbstractInterpretation();
+    /**
+     * a simple test with the main function calling another function.
+     */
+    @Test
+    void testSimple2() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+    }
 
-        Component comp = result.getComponents().getFirst();
-        for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
-            Assertions.assertNotNull(translationUnit.getName().getParent());
-            if (translationUnit.getName().getParent().getLocalName().endsWith("Main")) {
-                interpretation.runMain(translationUnit);
-            }
-        }
-        return interpretation;
+    /**
+     * a slightly more complex test with the main function calling other functions.
+     * with for loop and throw exception.
+     */
+    @Test
+    void testSimple3() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple3");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+        assertEquals(2, ((INumberValue) main.accessField("result2")).getValue());
+    }
+
+    /**
+     * simple switch test
+     */
+    @Test
+    void testSwitch() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simple switch test
+     */
+    @Test
+    void testSwitch2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/switch2");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simplest loop test
+     */
+    @Test
+    void testLoop() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+    }
+
+    /**
+     * simplest for each loop test
+     */
+    @Test
+    void testForEach() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/forEach");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());  //z
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());  //y
+    }
+
+    /**
+     * nondeterministic test! (completes sometimes in debug mode)
+     * test creating a new class instance
+     */
+    @Test
+    void testNewClass() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/new");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
+
+    /**
+     * test if without else
+     */
+    @Test
+    void testIf() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * test if with || in condition
+     */
+    @Test
+    void testIfOr() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/ifOr");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * test undetermined exception throw
+     */
+    @Test
+    void testException() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/exception");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simple enum test
+     */
+    @Test
+    @Disabled
+    void testEnum() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+    }
+
+    /**
+     * simple hashmap test
+     */
+    @Test
+    void testHashMap() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        //assertEquals(1, ((IntValue) main.accessField("result")).getValue());
+        //assertEquals(2, ((IntValue) main.accessField("result")).getValue());
+    }
+
+    /**
+     * Test the programming course final project: QueensFarming
+     */
+    @Test
+    void testQueensFarming() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
+
+    /**
+     * Test another programming course final project.
+     */
+    @Test
+    void testQueensFarming2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/complex2");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
+
+    /**
+     * simple break statement test
+     */
+    @Test
+    void testBreak() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/break");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        //ToDo
+    }
+
+    /**
+     * simple try/catch test
+     */
+    @Test
+    void testTryCatch() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/try");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(101, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * a simple try /catch test with throw inside called method
+     */
+    @Test
+    void testTryCatch2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/try2");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertEquals(250, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simple try/catch test with nothing thrown
+     */
+    @Test
+    void testTryCatch3() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/try3");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * simple stream test
+     */
+    @Test
+    @Disabled
+    void testStream() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/stream");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
     }
 
 }

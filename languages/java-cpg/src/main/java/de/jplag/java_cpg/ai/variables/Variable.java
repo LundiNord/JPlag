@@ -1,6 +1,6 @@
 package de.jplag.java_cpg.ai.variables;
 
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,35 +21,16 @@ public class Variable {
         this.value = value;
     }
 
-    public Variable(VariableName name, String value) {
-        assert name != null;
-        this.name = name;
-        this.value = new StringValue(value);
-    }
-
-    public Variable(VariableName name, int value) {
-        assert name != null;
-        this.name = name;
-        this.value = new IntValue(value);
-    }
-
-    public Variable(VariableName name, boolean value) {
-        assert name != null;
-        this.name = name;
-        this.value = new BooleanValue(value);
+    public Variable(String string, Value value) {
+        assert string != null;
+        assert value != null;
+        this.name = new VariableName(string);
+        this.value = value;
     }
 
     public Variable(@NotNull VariableName name, @NotNull Type type) {
         this.name = name;
-        switch (type) {
-            case INT -> this.value = new IntValue();
-            case BOOLEAN -> this.value = new BooleanValue();
-            case STRING -> this.value = new StringValue();
-            case OBJECT -> this.value = new JavaObject();
-            case ARRAY -> this.value = new JavaArray();
-            case FLOAT -> this.value = new FloatValue();
-            default -> throw new IllegalArgumentException("Unsupported type for variable initialization: " + type);
-        }
+        this.value = Value.valueFactory(type);
     }
 
     /**
@@ -60,13 +41,6 @@ public class Variable {
     public Variable(@NotNull Variable variable) {
         this.name = variable.name;
         this.value = variable.value.copy();
-    }
-
-    public Variable(String string, Value value) {
-        assert string != null;
-        assert value != null;
-        this.name = new VariableName(string);
-        this.value = value;
     }
 
     public VariableName getName() {

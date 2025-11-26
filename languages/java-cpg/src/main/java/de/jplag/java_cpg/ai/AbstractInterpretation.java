@@ -133,7 +133,7 @@ public class AbstractInterpretation {
                 //objectInstance.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));  //ToDo array inner type lost here
             } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
                 if (fd.getInitializer() instanceof Literal<?> literal) {
-                    Value value = valueResolver(literal.getValue());
+                    Value value = Value.valueFactory(literal.getValue());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
                 } else if (fd.getInitializer() instanceof NewExpression newExpression) {
                     JavaObject newObject;
@@ -212,7 +212,7 @@ public class AbstractInterpretation {
             }
             case Literal<?> l -> {  //adds its value to the value stack
                 nodeStack.add(l);
-                valueStack.add(valueResolver(l.getValue()));
+                valueStack.add(Value.valueFactory(l.getValue()));
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -279,7 +279,7 @@ public class AbstractInterpretation {
                 assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
                         || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression;
                 assert !valueStack.isEmpty();
-                IntValue indexLiteral = (IntValue) valueStack.getLast();
+                INumberValue indexLiteral = (INumberValue) valueStack.getLast();
                 valueStack.removeLast();    //remove index value
                 assert indexLiteral != null;
                 Value ref = valueStack.getLast();
@@ -741,34 +741,6 @@ public class AbstractInterpretation {
     }
 
     @Deprecated
-    private Value refResolver(@NotNull Reference ref) {
-        VariableName varName = new VariableName(ref.getName().toString());
-        Variable variable = variables.getVariable(varName);
-        return variable.getValue();
-    }
-
-    private Value valueResolver(Object value) {
-        if (value == null) {
-            return new NullValue();
-        }
-        switch (value) {
-            case String s -> {
-                return new StringValue(s);
-            }
-            case Integer i -> {
-                return new IntValue(i);
-            }
-            case Boolean b -> {
-                return new BooleanValue(b);
-            }
-            case Double d -> {
-                return new FloatValue(d);
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + value);
-        }
-    }
-
-    @Deprecated
     private JavaObject createEnum(EnumDeclaration enumDeclaration) {
         JavaObject enumObject = new JavaObject();
         int i = 0;
@@ -781,18 +753,6 @@ public class AbstractInterpretation {
 
     protected VariableStore getVariables() {
         return variables;
-    }
-
-    protected ArrayList<Node> getNodeStack() {
-        return nodeStack;
-    }
-
-    protected ArrayList<Value> getValueStack() {
-        return valueStack;
-    }
-
-    protected JavaObject getObject() {
-        return object;
     }
 
     /**

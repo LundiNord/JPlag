@@ -1,10 +1,9 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import de.jplag.java_cpg.ai.variables.VariableName;
-import de.jplag.java_cpg.ai.variables.values.IntValue;
+import de.jplag.java_cpg.ai.variables.values.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -27,8 +26,8 @@ public class Math extends JavaObject {
         switch (methodName) {
             case "abs" -> {
                 assert paramVars.size() == 1;
-                assert paramVars.getFirst() instanceof IntValue;
-                return abs((IntValue) paramVars.getFirst());
+                assert paramVars.getFirst() instanceof INumberValue;
+                return paramVars.getFirst().unaryOperation("abs");
             }
             default -> throw new UnsupportedOperationException(methodName);
         }
@@ -37,11 +36,6 @@ public class Math extends JavaObject {
     @Override
     public JavaObject copy() {
         return new Math();
-    }
-
-    @Pure
-    private IntValue abs(@NotNull IntValue x) {
-        return (IntValue) x.unaryOperation("abs");
     }
 
 }
