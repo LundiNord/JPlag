@@ -68,7 +68,6 @@ public class AbstractInterpretation {
                         graphWalker(eog.getFirst());
                     }
                 }
-                System.out.println("Test");
             }
             //ignore include declaration for now
         }

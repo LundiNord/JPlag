@@ -1,4 +1,3 @@
-// Java
 package de.jplag.java_cpg.ai;
 
 import de.fraunhofer.aisec.cpg.*;
@@ -195,13 +194,23 @@ class AbstractInterpretationTest {
     }
 
     /**
-     *
      * @throws ParsingException
      * @throws InterruptedException
      */
     @Test
     void testQueensFarming() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
+
+    /**
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testQueensFarming2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/complex2");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
     }

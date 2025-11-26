@@ -15,7 +15,7 @@
 - [x] try/catch
 - [ ] finally
 - [ ] TreeSet
-- [ ] Comments/Javadocs
+- [x] Comments/Javadocs
 
 ## Edge Cases to Test
 

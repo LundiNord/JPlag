@@ -225,6 +225,17 @@ class DeadCodeDetectionTest {
     }
 
     /**
+     * @throws ParsingException
+     * @throws InterruptedException
+     */
+    @Test
+    void testQueensFarming2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/complex2");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
+
+    /**
      * simple break statement test
      *
      * @throws ParsingException
