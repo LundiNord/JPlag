@@ -64,7 +64,7 @@ public class JavaArray extends JavaObject {
             return new VoidValue();
         }
         return switch (innerType) {
-            case INT -> new IntValue();
+            case INT -> Value.valueFactory(Type.INT);
             case BOOLEAN -> new BooleanValue();
             case STRING -> new StringValue();
             case OBJECT -> new JavaObject();
@@ -96,9 +96,9 @@ public class JavaArray extends JavaObject {
             case "size" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 if (values != null) {
-                    return new IntValue(values.size());
+                    return Value.valueFactory(values.size());
                 }
-                return new IntValue();
+                return Value.valueFactory(Type.INT);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }
@@ -109,9 +109,9 @@ public class JavaArray extends JavaObject {
         switch (fieldName) {
             case "length" -> {
                 if (values != null) {
-                    return new IntValue(values.size());
+                    return Value.valueFactory(values.size());
                 }
-                return new IntValue();
+                return Value.valueFactory(Type.INT);
             }
             default ->
                     throw new UnsupportedOperationException("Field " + fieldName + " is not supported for JavaArray");

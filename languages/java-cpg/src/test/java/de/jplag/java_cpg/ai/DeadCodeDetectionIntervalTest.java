@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DeadCodeDetectionIntervalTest {
 
@@ -34,8 +33,44 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+    }
+
+    /**
+     * a slightly more complex test with the main function calling other functions.
+     * with for loop and throw exception.
+     */
+    @Test
+    void testSimple3() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.INTERVALS);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple3");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+        assertEquals(2, ((INumberValue) main.accessField("result2")).getValue());
+    }
+
+    /**
+     * test if without else
+     */
+    @Test
+    void testIf() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.INTERVALS);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * Test the programming course final project: QueensFarming
+     */
+    @Test
+    void testQueensFarming() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.INTERVALS);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
     }
 
 }

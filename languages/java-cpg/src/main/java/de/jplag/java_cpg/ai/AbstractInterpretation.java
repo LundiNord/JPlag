@@ -279,6 +279,10 @@ public class AbstractInterpretation {
                 assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
                         || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression;
                 assert !valueStack.isEmpty();
+                if ((valueStack.getLast() instanceof VoidValue)) {
+                    valueStack.removeLast();
+                    valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT));
+                }
                 INumberValue indexLiteral = (INumberValue) valueStack.getLast();
                 valueStack.removeLast();    //remove index value
                 assert indexLiteral != null;
@@ -692,11 +696,11 @@ public class AbstractInterpretation {
             case NewArrayExpression nae -> {
                 //either dimension or initializer is present
                 if (nae.getDimensions() != null) {
-                    IntValue dimension;
+                    INumberValue dimension;
                     if (valueStack.getLast() instanceof VoidValue) {
-                        dimension = new IntValue();
+                        dimension = (INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT);
                     } else {
-                        dimension = (IntValue) valueStack.getLast();
+                        dimension = (INumberValue) valueStack.getLast();
                     }
                     valueStack.removeLast();
                     valueStack.add(new JavaArray(dimension));

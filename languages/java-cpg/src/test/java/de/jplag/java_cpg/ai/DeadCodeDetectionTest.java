@@ -242,6 +242,7 @@ class DeadCodeDetectionTest {
      */
     @Test
     void testQueensFarming() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
@@ -252,6 +253,7 @@ class DeadCodeDetectionTest {
      */
     @Test
     void testQueensFarming2() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex2");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);

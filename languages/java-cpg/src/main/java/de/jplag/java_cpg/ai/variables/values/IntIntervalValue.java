@@ -88,7 +88,11 @@ public class IntIntervalValue extends Value implements INumberValue {       //Fi
                 }
             }
             case "-" -> {
-                return new IntIntervalValue(lowerBound - otherValue.lowerBound, upperBound - otherValue.upperBound);
+                long loSum = (long) lowerBound - (long) otherValue.lowerBound;
+                long hiSum = (long) upperBound - (long) otherValue.upperBound;
+                int lo = loSum > MAX_VALUE ? MAX_VALUE : (loSum < MIN_VALUE ? MIN_VALUE : (int) loSum);
+                int hi = hiSum > MAX_VALUE ? MAX_VALUE : (hiSum < MIN_VALUE ? MIN_VALUE : (int) hiSum);
+                return new IntIntervalValue(lo, hi);
             }
             case "!=" -> {  //ToDo
                 if (lowerBound != otherValue.lowerBound && upperBound != otherValue.upperBound) {
@@ -109,10 +113,29 @@ public class IntIntervalValue extends Value implements INumberValue {       //Fi
                 }
             }
             case "*" -> {
-                return new IntIntervalValue(lowerBound * otherValue.lowerBound, upperBound * otherValue.upperBound);
+                long p1 = (long) lowerBound * otherValue.lowerBound;
+                long p2 = (long) lowerBound * otherValue.upperBound;
+                long p3 = (long) upperBound * otherValue.lowerBound;
+                long p4 = (long) upperBound * otherValue.upperBound;
+                long loLong = Math.min(Math.min(p1, p2), Math.min(p3, p4));
+                long hiLong = Math.max(Math.max(p1, p2), Math.max(p3, p4));
+                int lo = loLong > MAX_VALUE ? MAX_VALUE : (loLong < MIN_VALUE ? MIN_VALUE : (int) loLong);
+                int hi = hiLong > MAX_VALUE ? MAX_VALUE : (hiLong < MIN_VALUE ? MIN_VALUE : (int) hiLong);
+                return new IntIntervalValue(lo, hi);
             }
             case "/" -> {
-                return new IntIntervalValue(lowerBound / otherValue.upperBound, upperBound / otherValue.lowerBound);
+                if (otherValue.lowerBound <= 0 && otherValue.upperBound >= 0) {
+                    return new IntIntervalValue(MIN_VALUE, MAX_VALUE);
+                }
+                long p1 = (long) lowerBound / (long) otherValue.lowerBound;
+                long p2 = (long) lowerBound / (long) otherValue.upperBound;
+                long p3 = (long) upperBound / (long) otherValue.lowerBound;
+                long p4 = (long) upperBound / (long) otherValue.upperBound;
+                long loLong = Math.min(Math.min(p1, p2), Math.min(p3, p4));
+                long hiLong = Math.max(Math.max(p1, p2), Math.max(p3, p4));
+                int lo = loLong > MAX_VALUE ? MAX_VALUE : (loLong < MIN_VALUE ? MIN_VALUE : (int) loLong);
+                int hi = hiLong > MAX_VALUE ? MAX_VALUE : (hiLong < MIN_VALUE ? MIN_VALUE : (int) hiLong);
+                return new IntIntervalValue(lo, hi);
             }
             case "<=" -> {  //ToDo
                 if (lowerBound <= otherValue.lowerBound && upperBound <= otherValue.upperBound) {
