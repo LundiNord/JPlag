@@ -152,6 +152,7 @@ class DeadCodeDetectionTest {
      */
     @Test
     void testLoop() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());

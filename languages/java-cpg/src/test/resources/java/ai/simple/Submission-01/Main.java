@@ -1,5 +1,3 @@
-package edu.kit.informatik;
-
 /**
  * @author ujiqk
  * @version 1.0
@@ -7,9 +5,8 @@ package edu.kit.informatik;
 public final class Main {
 
     private static final String ERROR_ARGUMENTS_NOT_SUPPORTED = "Error: Commandline arguments not supported";
-    private static final String ERROR_ARGUMENTS_NOT_SUPPORTED2;
-    private int result;
-    private int result2;
+    private static int result;
+    private static int result2;
 
     private Main() {
         throw new IllegalStateException();
@@ -38,5 +35,5 @@ public final class Main {
         result = z;
         result2 = y;
     }
-    
+
 }

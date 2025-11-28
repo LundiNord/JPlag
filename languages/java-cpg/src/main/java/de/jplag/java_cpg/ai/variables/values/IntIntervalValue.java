@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * @author ujiqk
  * @version 1.0
  */
-public class IntIntervalValue extends Value implements INumberValue {       //FixMe: Overflows
+public class IntIntervalValue extends Value implements INumberValue {
 
     public static final int MAX_VALUE = Integer.MAX_VALUE;
     public static final int MIN_VALUE = Integer.MIN_VALUE;
@@ -70,18 +70,36 @@ public class IntIntervalValue extends Value implements INumberValue {       //Fi
                 return new IntIntervalValue(lo, hi);
             }
             case "<" -> {
-                if (lowerBound < otherValue.lowerBound && upperBound < otherValue.upperBound) {
+                if (upperBound < otherValue.lowerBound) {
                     return new BooleanValue(true);
-                } else if (lowerBound >= otherValue.upperBound && upperBound >= otherValue.lowerBound) {
+                } else if (lowerBound >= otherValue.upperBound) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">" -> {
-                if (lowerBound > otherValue.lowerBound && upperBound > otherValue.upperBound) {
+                if (lowerBound > otherValue.upperBound) {
                     return new BooleanValue(true);
-                } else if (lowerBound <= otherValue.upperBound && upperBound <= otherValue.lowerBound) {
+                } else if (upperBound <= otherValue.lowerBound) {
+                    return new BooleanValue(false);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case "<=" -> {
+                if (upperBound <= otherValue.lowerBound) {
+                    return new BooleanValue(true);
+                } else if (lowerBound > otherValue.upperBound) {
+                    return new BooleanValue(false);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case ">=" -> {
+                if (lowerBound >= otherValue.upperBound) {
+                    return new BooleanValue(true);
+                } else if (upperBound < otherValue.lowerBound) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
@@ -94,24 +112,25 @@ public class IntIntervalValue extends Value implements INumberValue {       //Fi
                 int hi = hiSum > MAX_VALUE ? MAX_VALUE : (hiSum < MIN_VALUE ? MIN_VALUE : (int) hiSum);
                 return new IntIntervalValue(lo, hi);
             }
-            case "!=" -> {  //ToDo
-                if (lowerBound != otherValue.lowerBound && upperBound != otherValue.upperBound) {
-                    return new BooleanValue(true);
-                } else if (lowerBound == otherValue.lowerBound && upperBound == otherValue.upperBound) {
-                    return new BooleanValue(false);
-                } else {
-                    return new BooleanValue();
-                }
-            }
             case "==" -> {
-                if (lowerBound == otherValue.lowerBound && upperBound == otherValue.upperBound) {
+                if (lowerBound == upperBound && otherValue.lowerBound == otherValue.upperBound && lowerBound == otherValue.lowerBound) {
                     return new BooleanValue(true);
-                } else if (lowerBound != otherValue.upperBound && upperBound != otherValue.lowerBound) {
+                } else if (upperBound < otherValue.lowerBound || lowerBound > otherValue.upperBound) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
                 }
             }
+            case "!=" -> {
+                if (upperBound < otherValue.lowerBound || lowerBound > otherValue.upperBound) {
+                    return new BooleanValue(true);
+                } else if (lowerBound == upperBound && otherValue.lowerBound == otherValue.upperBound && lowerBound == otherValue.lowerBound) {
+                    return new BooleanValue(false);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+
             case "*" -> {
                 long p1 = (long) lowerBound * otherValue.lowerBound;
                 long p2 = (long) lowerBound * otherValue.upperBound;
@@ -127,33 +146,19 @@ public class IntIntervalValue extends Value implements INumberValue {       //Fi
                 if (otherValue.lowerBound <= 0 && otherValue.upperBound >= 0) {
                     return new IntIntervalValue(MIN_VALUE, MAX_VALUE);
                 }
-                long p1 = (long) lowerBound / (long) otherValue.lowerBound;
-                long p2 = (long) lowerBound / (long) otherValue.upperBound;
-                long p3 = (long) upperBound / (long) otherValue.lowerBound;
-                long p4 = (long) upperBound / (long) otherValue.upperBound;
+                long p1 = (lowerBound == MIN_VALUE && otherValue.lowerBound == -1)
+                        ? (long) MAX_VALUE : (long) lowerBound / (long) otherValue.lowerBound;
+                long p2 = (lowerBound == MIN_VALUE && otherValue.upperBound == -1)
+                        ? (long) MAX_VALUE : (long) lowerBound / (long) otherValue.upperBound;
+                long p3 = (upperBound == MIN_VALUE && otherValue.lowerBound == -1)
+                        ? (long) MAX_VALUE : (long) upperBound / (long) otherValue.lowerBound;
+                long p4 = (upperBound == MIN_VALUE && otherValue.upperBound == -1)
+                        ? (long) MAX_VALUE : (long) upperBound / (long) otherValue.upperBound;
                 long loLong = Math.min(Math.min(p1, p2), Math.min(p3, p4));
                 long hiLong = Math.max(Math.max(p1, p2), Math.max(p3, p4));
                 int lo = loLong > MAX_VALUE ? MAX_VALUE : (loLong < MIN_VALUE ? MIN_VALUE : (int) loLong);
                 int hi = hiLong > MAX_VALUE ? MAX_VALUE : (hiLong < MIN_VALUE ? MIN_VALUE : (int) hiLong);
                 return new IntIntervalValue(lo, hi);
-            }
-            case "<=" -> {  //ToDo
-                if (lowerBound <= otherValue.lowerBound && upperBound <= otherValue.upperBound) {
-                    return new BooleanValue(true);
-                } else if (lowerBound > otherValue.upperBound && upperBound > otherValue.lowerBound) {
-                    return new BooleanValue(false);
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case ">=" -> {  //ToDo
-                if (lowerBound >= otherValue.lowerBound && upperBound >= otherValue.upperBound) {
-                    return new BooleanValue(true);
-                } else if (lowerBound < otherValue.upperBound && upperBound < otherValue.lowerBound) {
-                    return new BooleanValue(false);
-                } else {
-                    return new BooleanValue();
-                }
             }
             default ->
                     throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
@@ -165,17 +170,23 @@ public class IntIntervalValue extends Value implements INumberValue {       //Fi
     public Value unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "++" -> {
-                lowerBound++;
-                upperBound++;
+                long newLower = (long) lowerBound + 1;
+                long newUpper = (long) upperBound + 1;
+                lowerBound = newLower > MAX_VALUE ? MAX_VALUE : (int) newLower;
+                upperBound = newUpper > MAX_VALUE ? MAX_VALUE : (int) newUpper;
                 return this.copy();
             }
             case "--" -> {
-                lowerBound--;
-                upperBound--;
+                long newLower = (long) lowerBound - 1;
+                long newUpper = (long) upperBound - 1;
+                lowerBound = newLower < MIN_VALUE ? MIN_VALUE : (int) newLower;
+                upperBound = newUpper < MIN_VALUE ? MIN_VALUE : (int) newUpper;
                 return this.copy();
             }
             case "-" -> {
-                return new IntIntervalValue(-lowerBound, -upperBound);
+                int newLower = (upperBound == Integer.MIN_VALUE) ? Integer.MAX_VALUE : -upperBound;
+                int newUpper = (lowerBound == Integer.MIN_VALUE) ? Integer.MAX_VALUE : -lowerBound;
+                return new IntIntervalValue(newLower, newUpper);
             }
             case "abs" -> {
                 if (upperBound < 0) {
