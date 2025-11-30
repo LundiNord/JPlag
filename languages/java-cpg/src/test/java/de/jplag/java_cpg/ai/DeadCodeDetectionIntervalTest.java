@@ -81,8 +81,9 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); //z
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+        assertFalse(((INumberValue) main.accessField("result3")).getInformation());
     }
 
 }

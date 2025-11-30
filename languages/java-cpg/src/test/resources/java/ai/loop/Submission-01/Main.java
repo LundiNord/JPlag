@@ -1,3 +1,5 @@
+package edu.kit.informatik;
+
 public final class Main {
 
     private static int result;

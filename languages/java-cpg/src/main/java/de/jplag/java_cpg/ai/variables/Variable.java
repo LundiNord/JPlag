@@ -3,6 +3,9 @@ package de.jplag.java_cpg.ai.variables;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A variable is a named value.
  *
@@ -13,6 +16,7 @@ public class Variable {
 
     private final VariableName name;
     private Value value;
+    private List<ChangeRecorder> changeRecorders = new ArrayList<>();
 
     public Variable(VariableName name, Value value) {
         assert value != null;
@@ -41,6 +45,7 @@ public class Variable {
     public Variable(@NotNull Variable variable) {
         this.name = variable.name;
         this.value = variable.value.copy();
+        this.changeRecorders = variable.changeRecorders;    //no deep copy
     }
 
     public VariableName getName() {
@@ -48,12 +53,18 @@ public class Variable {
     }
 
     public Value getValue() {
+        for (ChangeRecorder changeRecorder : changeRecorders) { //ToDo: only when changed after?
+            changeRecorder.recordChange(this);
+        }
         return value;
     }
 
     public void setValue(Value value) {
         assert value != null;
         this.value = value;
+        for (ChangeRecorder changeRecorder : changeRecorders) {
+            changeRecorder.recordChange(this);
+        }
     }
 
     /**
@@ -65,6 +76,7 @@ public class Variable {
      * @throws AssertionError if the names differ (when assertions are enabled).
      */
     public void merge(@NotNull Variable value) {
+        assert this.changeRecorders == value.changeRecorders;
         assert value.name.equals(this.name);
         this.value.merge(value.value);
     }
@@ -74,6 +86,9 @@ public class Variable {
      */
     public void setToUnknown() {
         value.setToUnknown();
+        for (ChangeRecorder changeRecorder : changeRecorders) {
+            changeRecorder.recordChange(this);
+        }
     }
 
     /**
@@ -81,6 +96,18 @@ public class Variable {
      */
     public void setInitialValue() {
         value.setInitialValue();
+        for (ChangeRecorder changeRecorder : changeRecorders) {
+            changeRecorder.recordChange(this);
+        }
+    }
+
+    public void addChangeRecorder(ChangeRecorder changeRecorder) {
+        this.changeRecorders.add(changeRecorder);
+    }
+
+    public ChangeRecorder removeLastChangeRecorder() {
+        assert !this.changeRecorders.isEmpty();
+        return this.changeRecorders.removeLast();
     }
 
 }

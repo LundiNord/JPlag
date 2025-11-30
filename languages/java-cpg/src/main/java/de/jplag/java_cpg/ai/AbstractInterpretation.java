@@ -47,7 +47,7 @@ public class AbstractInterpretation {
     public void runMain(@NotNull TranslationUnitDeclaration tud) {
         assert tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1;
         for (Declaration declaration : tud.getDeclarations()) {
-            if (declaration instanceof NamespaceDeclaration) {
+            if (declaration instanceof NamespaceDeclaration) {      //ToDo: what if not in package
                 RecordDeclaration mainClas = (RecordDeclaration) ((NamespaceDeclaration) declaration).getDeclarations().getFirst();
                 JavaObject mainClassVar = new JavaObject();
                 setupClass(mainClas, mainClassVar);
@@ -618,13 +618,15 @@ public class AbstractInterpretation {
                 nodeStack.removeLast();
                 if (!condition.getInformation() || condition.getValue()) {
                     //run body if the condition is true or unknown
+                    variables.recordChanges();
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
+                    Set<Variable> changedVariables = variables.stopRecordingChanges();
                     //merge if the loop has been run
-                    //for now set all variables to unknown
-                    variables.setEverythingUnknown();
-                    object.setToUnknown();
+                    for (Variable variable : changedVariables) {
+                        variable.setToUnknown();
+                    }
                 } else {
                     //Dead code detected, loop never runs
                 }

@@ -2,7 +2,9 @@ package de.jplag.java_cpg.ai.variables;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,6 +75,22 @@ public class Scope {
         for (Variable variable : variables.values()) {
             variable.setToUnknown();
         }
+    }
+
+    public void addChangeRecorder(ChangeRecorder changeRecorder) {
+        for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {
+            entry.getValue().addChangeRecorder(changeRecorder);
+        }
+    }
+
+    public ChangeRecorder removeLastChangeRecorder() {
+        List<ChangeRecorder> recorders = new ArrayList<>();
+        for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {
+            recorders.add(entry.getValue().removeLastChangeRecorder());
+        }
+        ChangeRecorder first = recorders.getFirst();
+        assert recorders.stream().allMatch(r -> r == first);
+        return first;
     }
 
 }

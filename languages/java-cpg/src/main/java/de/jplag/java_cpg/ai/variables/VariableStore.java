@@ -5,6 +5,8 @@ import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Stores variables in different scopes.
@@ -140,4 +142,21 @@ public class VariableStore {
         }
     }
 
+    public void recordChanges() {
+        ChangeRecorder changeRecorder = new ChangeRecorder();
+        for (Scope scope : scopes) {
+            scope.addChangeRecorder(changeRecorder);
+        }
+    }
+
+    public Set<Variable> stopRecordingChanges() {
+        List<ChangeRecorder> recorders = new ArrayList<>();
+        for (Scope scope : scopes) {
+            recorders.add(scope.removeLastChangeRecorder());
+        }
+        ChangeRecorder first = recorders.getFirst();
+        assert recorders.stream().allMatch(r -> r == first);
+        return first.getChangedVariables();
+    }
+    
 }

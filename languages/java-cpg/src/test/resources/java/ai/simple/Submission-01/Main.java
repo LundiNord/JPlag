@@ -1,3 +1,5 @@
+package edu.kit.informatik;
+
 /**
  * @author ujiqk
  * @version 1.0
