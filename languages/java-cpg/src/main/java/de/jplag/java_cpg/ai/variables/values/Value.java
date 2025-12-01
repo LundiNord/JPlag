@@ -66,6 +66,7 @@ public abstract class Value {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue();
             case DEFAULT -> new IntValue();
+            case SET -> new IntSetValue();
         };
     }
 
@@ -73,6 +74,7 @@ public abstract class Value {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue(number);
             case DEFAULT -> new IntValue(number);
+            case SET -> new IntSetValue(number);
         };
     }
 

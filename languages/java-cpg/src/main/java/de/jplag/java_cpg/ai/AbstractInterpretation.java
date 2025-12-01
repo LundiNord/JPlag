@@ -642,13 +642,15 @@ public class AbstractInterpretation {
                 nodeStack.removeLast();
                 if (!condition.getInformation() || condition.getValue()) {
                     //run body if the condition is true or unknown
+                    variables.recordChanges();
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
+                    Set<Variable> changedVariables = variables.stopRecordingChanges();
                     //merge if the loop has been run
-                    //for now set all variables to unknown
-                    variables.setEverythingUnknown();
-                    object.setToUnknown();
+                    for (Variable variable : changedVariables) {
+                        variable.setToUnknown();
+                    }
                 } else {
                     //Dead code detected, loop never runs
                 }
@@ -664,16 +666,18 @@ public class AbstractInterpretation {
                 }
                 JavaObject collection = (JavaObject) valueStack.getLast();
                 valueStack.removeLast();
-                if (collection.accessField("length") instanceof IntValue length && length.getInformation() && (length.getValue() == 0)) {
+                if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
                     //Dead code detected, loop never runs
                 } else {
+                    variables.recordChanges();
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
+                    Set<Variable> changedVariables = variables.stopRecordingChanges();
                     //merge if the loop has been run
-                    //for now set all variables to unknown
-                    variables.setEverythingUnknown();
-                    object.setToUnknown();
+                    for (Variable variable : changedVariables) {
+                        variable.setToUnknown();
+                    }
                 }
                 //continue with the next node after for each
                 nextNode = nextEOG.getLast();

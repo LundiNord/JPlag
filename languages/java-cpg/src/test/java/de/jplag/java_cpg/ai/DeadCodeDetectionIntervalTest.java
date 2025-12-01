@@ -25,6 +25,15 @@ class DeadCodeDetectionIntervalTest {
         assertEquals(100, ((INumberValue) main.accessField("result2")).getValue());
     }
 
+    @Test
+    void testSimpleSetInterval() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.SET);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue());
+    }
+
     /**
      * a simple test with the main function calling another function.
      */
@@ -80,6 +89,19 @@ class DeadCodeDetectionIntervalTest {
     void testLoop() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); //z
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+        assertFalse(((INumberValue) main.accessField("result3")).getInformation());
+    }
+
+    /**
+     * simplest test of nested loop
+     */
+    @Test
+    void testLoop2x() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.INTERVALS);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/loopx2");
         JavaObject main = getMainObject(interpretation);
         assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); //z
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
