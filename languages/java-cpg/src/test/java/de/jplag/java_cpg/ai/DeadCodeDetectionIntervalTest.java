@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai;
 
 import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.values.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.IntSetValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import org.junit.jupiter.api.Test;
@@ -113,10 +114,33 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.SET);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/interval");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(10, ((INumberValue) main.accessField("result")).getValue());   //actual: 0
-        assertEquals(160, ((INumberValue) main.accessField("result2")).getValue());
-        //assertFalse(((INumberValue) main.accessField("result")).getInformation());
-        assertTrue(true);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertEquals(110, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
+        assertEquals(210, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
+        assertEquals(161, ((INumberValue) main.accessField("result2")).getValue());
+        assertFalse(((INumberValue) main.accessField("result3")).getInformation());
+        assertEquals(150, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound());
+        assertEquals(450, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound());
+        assertFalse(((INumberValue) main.accessField("result4")).getInformation());
+        assertEquals(501, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound());
+        assertEquals(2501, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound());
+    }
+
+    @Test
+    void testMultipleInterval() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.SET);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/intervalMulti");
+        JavaObject main = getMainObject(interpretation);
+//        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+//        assertEquals(110, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
+//        assertEquals(210, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
+//        assertEquals(161, ((INumberValue) main.accessField("result2")).getValue());
+//        assertFalse(((INumberValue) main.accessField("result3")).getInformation());
+//        assertEquals(150, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound());
+//        assertEquals(450, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound());
+//        assertFalse(((INumberValue) main.accessField("result4")).getInformation());
+//        assertEquals(501, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound());
+//        assertEquals(2501, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound());
     }
 
 }

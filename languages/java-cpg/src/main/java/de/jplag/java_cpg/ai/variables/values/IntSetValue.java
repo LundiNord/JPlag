@@ -6,6 +6,7 @@ import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
@@ -293,6 +294,13 @@ public class IntSetValue extends Value implements INumberValue {
             }
         }
         this.values = newValues;
+    }
+
+    /**
+     * Only for testing purposes.
+     */
+    public SortedSet<IntInterval> getIntervals() {
+        return values;
     }
 
 }

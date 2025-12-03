@@ -152,7 +152,7 @@ public final class Main {
         }
 
         // Final result computation
-        result = result + quotient;
+        result = result + quotient;     //[110, 210]
         result2 = result2 + multiplied;
         result3 = result3 + scaled;
         result4 = result4 + offset;
