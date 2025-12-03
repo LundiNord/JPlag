@@ -47,13 +47,34 @@ public class BooleanValue extends Value {
     @Override
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
         if (other instanceof VoidValue) {
-            return new VoidValue();
+            return new BooleanValue();
         }
         BooleanValue otherBool = (BooleanValue) other;
         switch (operator) {
             case "||" -> {
                 if (this.getInformation() && otherBool.getInformation()) {
                     return new BooleanValue(this.getValue() || otherBool.getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case "&&" -> {
+                if (this.getInformation() && otherBool.getInformation()) {
+                    return new BooleanValue(this.getValue() && otherBool.getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case "==" -> {
+                if (this.getInformation() && otherBool.getInformation()) {
+                    return new BooleanValue(this.getValue() == otherBool.getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case "!=" -> {
+                if (this.getInformation() && otherBool.getInformation()) {
+                    return new BooleanValue(this.getValue() != otherBool.getValue());
                 } else {
                     return new BooleanValue();
                 }

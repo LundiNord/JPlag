@@ -27,6 +27,8 @@
 - [ ] Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(Comparator.comparing((Map.Entry<Vegetable,
   Integer>::getKey)));]
 - [x] if with || in condition
+- [x] if with && in condition
+- [x] if with else-if
 
 ## Long Term
 

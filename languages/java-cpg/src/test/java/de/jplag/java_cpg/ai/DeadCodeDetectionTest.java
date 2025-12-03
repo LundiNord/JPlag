@@ -241,6 +241,17 @@ class DeadCodeDetectionTest {
     }
 
     /**
+     * test if with && and || in condition
+     */
+    @Test
+    void testIfAnd() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/ifAnd");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
      * test undetermined exception throw
      */
     @Test

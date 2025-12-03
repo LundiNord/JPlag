@@ -396,8 +396,14 @@ public class AbstractInterpretation {
                 BooleanValue value2 = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 valueStack.removeLast();
-                valueStack.add(value1.binaryOperation("||", value2));
-                assert nextEOG.size() == 1;
+                if (Objects.equals(scop.getOperatorCode(), "||")) {
+                    valueStack.add(value1.binaryOperation("||", value2));
+                } else if (Objects.equals(scop.getOperatorCode(), "&&")) {
+                    valueStack.add(value1.binaryOperation("&&", value2));
+                } else {
+                    throw new UnsupportedOperationException(scop.getOperatorCode() + " is not supported in ShortCircuitOperator");
+                }
+                assert nextEOG.size() == 1 || nextEOG.size() == 2;
                 nextNode = nextEOG.getFirst();
             }
             case BinaryOperator bop -> {
@@ -469,7 +475,7 @@ public class AbstractInterpretation {
                 }
                 //else statement
                 if (runElseBranch) {
-                    if (ifStmt.getElseStatement() instanceof IfStatement ifElse) {  //this loop is an loop with if else
+                    if (ifStmt.getElseStatement() instanceof IfStatement) {  //this loop is a loop with if else
                         ifElseCounter++;
                     }
                     variables = elseVariables;
