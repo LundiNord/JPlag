@@ -118,6 +118,17 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
+    public BooleanValue notEqual(IntInterval other) {
+        if (upperBound < other.lowerBound || lowerBound > other.upperBound) {
+            return new BooleanValue(true);
+        } else if (lowerBound == upperBound && other.lowerBound == other.upperBound && lowerBound == other.lowerBound) {
+            return new BooleanValue(false);
+        } else {
+            return new BooleanValue();
+        }
+    }
+
+    @Pure
     public BooleanValue smaller(IntInterval other) {
         if (upperBound < other.lowerBound) {
             return new BooleanValue(true);
@@ -129,10 +140,32 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
+    public BooleanValue smallerEqual(IntInterval other) {
+        if (upperBound <= other.lowerBound) {
+            return new BooleanValue(true);
+        } else if (lowerBound > other.upperBound) {
+            return new BooleanValue(false);
+        } else {
+            return new BooleanValue();
+        }
+    }
+
+    @Pure
     public BooleanValue bigger(IntInterval other) {
         if (lowerBound > other.upperBound) {
             return new BooleanValue(true);
         } else if (upperBound <= other.lowerBound) {
+            return new BooleanValue(false);
+        } else {
+            return new BooleanValue();
+        }
+    }
+
+    @Pure
+    public BooleanValue biggerEqual(IntInterval other) {
+        if (upperBound <= other.lowerBound) {
+            return new BooleanValue(true);
+        } else if (lowerBound > other.upperBound) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -193,6 +226,15 @@ public class IntInterval implements Comparable<Object> {
         } else {
             throw new IllegalArgumentException("Cannot compare IntInterval with " + o.getClass());
         }
+    }
+
+    @Impure
+    public void merge(@NotNull IntInterval other) {
+        int smallerLowerBound = Math.min(this.lowerBound, other.lowerBound);
+        int largerUpperBound = Math.max(this.upperBound, other.upperBound);
+        assert smallerLowerBound <= largerUpperBound;
+        this.lowerBound = smallerLowerBound;
+        this.upperBound = largerUpperBound;
     }
 
     public int getLowerBound() {
