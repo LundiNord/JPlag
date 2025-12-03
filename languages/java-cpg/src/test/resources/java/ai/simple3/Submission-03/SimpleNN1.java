@@ -1,5 +1,8 @@
 package ai;
 
+/**
+ * @author GitHub Copilot (Claude Sonnet 4.5)
+ */
 public class SimpleNN1 {
 
     private final double[][] w1;

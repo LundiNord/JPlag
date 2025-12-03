@@ -10,8 +10,8 @@ public class IntInterval implements Comparable<Object> {
     public static final int MAX_VALUE = Integer.MAX_VALUE;
     public static final int MIN_VALUE = Integer.MIN_VALUE;
 
-    private int lowerBound;
-    private int upperBound;
+    private int lowerBound; //inclusive
+    private int upperBound; //inclusive
 
     public IntInterval() {
         this.lowerBound = MIN_VALUE;

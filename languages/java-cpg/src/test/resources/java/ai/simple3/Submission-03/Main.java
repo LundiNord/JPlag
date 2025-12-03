@@ -2,6 +2,9 @@ package ai;
 
 import java.util.Arrays;
 
+/**
+ * @author GitHub Copilot (Claude Sonnet 4.5)
+ */
 public class Main {
 
     int result2;
@@ -27,5 +30,5 @@ public class Main {
 
         result2 = 2;
     }
-    
+
 }

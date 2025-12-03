@@ -31,6 +31,7 @@ public class AbstractInterpretation {
     private ArrayList<Value> valueStack;  //Stack for values during EOG traversal
     private VariableStore variables;      //Scoped variable store
     private JavaObject object;          //the java object this ai engine does ai for
+    private int ifElseCounter = 0;
 
     public AbstractInterpretation() {
         variables = new VariableStore();
@@ -66,6 +67,7 @@ public class AbstractInterpretation {
                         variables.newScope();
                         variables.addVariable(new Variable(new VariableName("args"), new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
                         graphWalker(eog.getFirst());
+                        variables.removeScope();
                     }
                 }
             }
@@ -458,18 +460,21 @@ public class AbstractInterpretation {
                 if (runThenBranch) {
                     variables = thenVariables;
                     this.object = variables.getThisObject();
-                    variables.newScope();
+                    variables.newScope();   //2
                     graphWalker(nextEOG.getFirst());
-                    variables.removeScope();
+                    variables.removeScope();    //3
                     if (nodeStack.getLast() == null) {
                         nodeStack.add(nextEOG.getLast());
                     }
                 }
                 //else statement
                 if (runElseBranch) {
+                    if (ifStmt.getElseStatement() instanceof IfStatement ifElse) {  //this loop is an loop with if else
+                        ifElseCounter++;
+                    }
                     variables = elseVariables;
                     this.object = variables.getThisObject();
-                    variables.newScope();
+                    variables.newScope();   //1
                     graphWalker(nextEOG.getLast());
                     variables.removeScope();
                     if (nodeStack.getLast() == null) {
@@ -477,10 +482,9 @@ public class AbstractInterpretation {
                     }
                 }
                 //merge branches
-                if (runThenBranch && runElseBranch) {
+                if (runThenBranch && runElseBranch) { //4
                     variables.merge(thenVariables);
                 } else if (runThenBranch) {
-                    variables = thenVariables;
                     if (!condition.getInformation()) {
                         variables.merge(elseVariables);
                         nodeStack.add(nextEOG.getLast());
@@ -488,7 +492,6 @@ public class AbstractInterpretation {
                         //
                     }
                 } else if (runElseBranch) {
-                    variables = elseVariables;
                     if (!condition.getInformation()) {
                         variables.merge(thenVariables);
                     } else {    //only else branch is run
@@ -497,8 +500,12 @@ public class AbstractInterpretation {
                 } else {    //no branch is run
                     nodeStack.add(nextEOG.getLast());
                 }
-                this.object = variables.getThisObject(); // Update object reference
-                nextNode = nodeStack.getLast();
+                //this.object = variables.getThisObject(); // Update object reference
+                nextNode = nodeStack.getLast(); //5
+                if (ifElseCounter > 0) {
+                    ifElseCounter--;
+                    return null;
+                }
             }
             case SwitchStatement sw -> {
                 assert !valueStack.isEmpty();

@@ -16,6 +16,7 @@
 - [ ] finally
 - [ ] TreeSet
 - [x] Comments/Javadocs
+- [ ] Uninitialized variables to default value
 
 ## Edge Cases to Test
 

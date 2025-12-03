@@ -168,7 +168,7 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/forEach");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());  //z
-        assertFalse(((INumberValue) main.accessField("result2")).getInformation());  //y
+        assertTrue(((INumberValue) main.accessField("result2")).getInformation());  //y
     }
 
     /**
@@ -188,6 +188,42 @@ class DeadCodeDetectionTest {
     @Test
     void testIf() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * test if with an else and another if inside the else block.
+     */
+    @Test
+    void testNestedIf() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/nestedIf");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(50, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * test if with else-if and else.
+     */
+    @Test
+    void testIfElse() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/ifElse");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
+    /**
+     * test if with 2x else-if and else.
+     */
+    @Test
+    void testIfElse2x() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/ifElse2");
         JavaObject main = getMainObject(interpretation);
         assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
         assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y

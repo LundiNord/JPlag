@@ -108,4 +108,15 @@ class DeadCodeDetectionIntervalTest {
         assertFalse(((INumberValue) main.accessField("result3")).getInformation());
     }
 
+    @Test
+    void testInterval() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.SET);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/interval");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(10, ((INumberValue) main.accessField("result")).getValue());   //actual: 0
+        assertEquals(160, ((INumberValue) main.accessField("result2")).getValue());
+        //assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertTrue(true);
+    }
+
 }

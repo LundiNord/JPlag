@@ -85,9 +85,9 @@ public class IntSetValue extends Value implements INumberValue {
                 }
             }
             case ">" -> {
-                if (values.getLast().getUpperBound() > otherValue.values.getFirst().getLowerBound()) {
+                if (values.getFirst().getLowerBound() > otherValue.values.getLast().getUpperBound()) {
                     return new BooleanValue(true);
-                } else if (values.getFirst().getLowerBound() <= otherValue.values.getLast().getUpperBound()) {
+                } else if (values.getLast().getUpperBound() <= otherValue.values.getFirst().getLowerBound()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
@@ -103,9 +103,9 @@ public class IntSetValue extends Value implements INumberValue {
                 }
             }
             case ">=" -> {
-                if (values.getLast().getUpperBound() >= otherValue.values.getFirst().getLowerBound()) {
+                if (values.getFirst().getLowerBound() >= otherValue.values.getLast().getUpperBound()) {
                     return new BooleanValue(true);
-                } else if (values.getFirst().getLowerBound() < otherValue.values.getLast().getUpperBound()) {
+                } else if (values.getLast().getUpperBound() < otherValue.values.getFirst().getLowerBound()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
@@ -132,8 +132,8 @@ public class IntSetValue extends Value implements INumberValue {
                         } else {
                             switch (equal) {
                                 case null -> equal = new BooleanValue(false);
-                                case BooleanValue b when !b.getValue() -> {
-                                } // continue
+                                case BooleanValue b when !b.getValue() -> { // continue
+                                }
                                 case BooleanValue b when b.getValue() -> {
                                     return new BooleanValue();
                                 }
@@ -173,8 +173,40 @@ public class IntSetValue extends Value implements INumberValue {
                 TreeSet<IntInterval> newValues = new TreeSet<>();
                 for (IntInterval interval : otherValue.values) {
                     for (IntInterval value : values) {
-                        newValues.add(interval.divided(value));
+                        newValues.add(value.divided(interval));
                     }
+                }
+                IntSetValue newValue = new IntSetValue(newValues);
+                newValue.mergeOverlappingIntervals();
+                return newValue;
+            }
+            case "min" -> {
+                int upper = Math.min(values.getLast().getUpperBound(), otherValue.values.getLast().getUpperBound());
+                //include all intervals in the result but all are capped at upper
+                TreeSet<IntInterval> newValues = new TreeSet<>();
+                for (IntInterval interval : otherValue.values) {
+                    int upperBound = Math.min(interval.getUpperBound(), upper);
+                    newValues.add(new IntInterval(Math.min(interval.getLowerBound(), upperBound), upperBound));
+                }
+                for (IntInterval interval : values) {
+                    int upperBound = Math.min(interval.getUpperBound(), upper);
+                    newValues.add(new IntInterval(Math.min(interval.getLowerBound(), upperBound), upperBound));
+                }
+                IntSetValue newValue = new IntSetValue(newValues);
+                newValue.mergeOverlappingIntervals();
+                return newValue;
+            }
+            case "max" -> {
+                int lower = Math.max(values.getFirst().getLowerBound(), otherValue.values.getFirst().getLowerBound());
+                //include all intervals in the result, but all are floored at lower
+                TreeSet<IntInterval> newValues = new TreeSet<>();
+                for (IntInterval interval : otherValue.values) {
+                    int lowerBound = Math.max(interval.getLowerBound(), lower);
+                    newValues.add(new IntInterval(lowerBound, Math.max(interval.getUpperBound(), lower)));
+                }
+                for (IntInterval interval : values) {
+                    int lowerBound = Math.max(interval.getLowerBound(), lower);
+                    newValues.add(new IntInterval(lowerBound, Math.max(interval.getUpperBound(), lower)));
                 }
                 IntSetValue newValue = new IntSetValue(newValues);
                 newValue.mergeOverlappingIntervals();
@@ -252,16 +284,15 @@ public class IntSetValue extends Value implements INumberValue {
         TreeSet<IntInterval> newValues = new TreeSet<>();
         newValues.add(values.first());
         values.remove(values.first());
-
         for (IntInterval interval : values) {
             IntInterval lastInterval = newValues.last();
-
-            if (lastInterval.getLowerBound() >= interval.getLowerBound()) {
+            if (lastInterval.getUpperBound() >= interval.getLowerBound()) {
                 lastInterval.setUpperBound(Math.max(lastInterval.getUpperBound(), interval.getUpperBound()));
             } else {
                 newValues.add(interval);
             }
         }
+        this.values = newValues;
     }
 
 }
