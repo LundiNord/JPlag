@@ -100,6 +100,20 @@ public class JavaArray extends JavaObject {
                 }
                 return Value.valueFactory(Type.INT);
             }
+            case "map" -> {
+                //ToDo
+                return this;
+            }
+            case "max" -> {
+                //ToDo
+                if (innerType == Type.INT) {
+                    return Value.valueFactory(Type.INT);
+                } else if (innerType == Type.FLOAT) {
+                    return Value.valueFactory(Type.FLOAT);
+                } else {
+                    return new VoidValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

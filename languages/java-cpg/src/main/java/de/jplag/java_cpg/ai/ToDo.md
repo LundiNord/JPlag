@@ -4,12 +4,14 @@
 - [x] switch statements
 - [x] loop ai
 - [x] exceptions
-- [x] hash maps, ...
+- [x] hash maps, sets
+- [ ] comparators
 - [ ] think about copy of bound JavaObject
 - [ ] ConditionalExpression (a ? b : c)
 - [ ] Array assign
 - [ ] Enums
-- [ ] Streams?
+- [ ] Streams
+- [ ] Lambdas
 - [ ] Import System?
 - [ ] Array Init in Method fields
 - [x] try/catch
@@ -24,11 +26,17 @@
 - [ ] for loop with break/continue
 - [ ] switch with literal returns
 - [x] nested loops
-- [ ] Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(Comparator.comparing((Map.Entry<Vegetable,
+- [x] Set<Map.Entry<Vegetable, Integer>> sortedEntries = new TreeSet<>(Comparator.comparing((Map.Entry<Vegetable,
   Integer>::getKey)));]
 - [x] if with || in condition
 - [x] if with && in condition
 - [x] if with else-if
+
+## Object AI
+
+- [ ] Maps
+- [ ] Sets
+- [ ] Comparators
 
 ## Long Term
 

@@ -313,17 +313,19 @@ public class AbstractInterpretation {
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
                     result = javaObject.callMethod(memberName.getLocalName(), null);
                 } else {
-                    if (!(nodeStack.get(nodeStack.size() - mce.getArguments().size() - 1) instanceof MemberExpression)) {
-                        System.out.println("Debug");
-                    }
-                    assert nodeStack.get(nodeStack.size() - mce.getArguments().size() - 1) instanceof MemberExpression;     //first arguments
                     List<Value> argumentList = new ArrayList<>();
                     for (int i = 0; i < mce.getArguments().size(); i++) {
+                        if (mce.getArguments().get(i) instanceof ProblemExpression) {
+                            continue;
+                        }
                         argumentList.add(valueStack.getLast());
                         nodeStack.removeLast();
                         valueStack.removeLast();
                     }
                     Collections.reverse(argumentList);
+                    if (!(nodeStack.getLast() instanceof MemberExpression)) {
+                        System.out.println("Debug");
+                    }
                     assert nodeStack.getLast() instanceof MemberExpression;
                     Name memberName = (nodeStack.getLast()).getName();
                     assert memberName.getParent() != null;
@@ -752,6 +754,14 @@ public class AbstractInterpretation {
             }
             case TryStatement ts -> {
                 //ignore for now
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
+            case LambdaExpression le -> {
+                FunctionDeclaration lambda = le.getFunction();
+                //ToDo
+                valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.FUNCTION));
+                nodeStack.add(le);
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }

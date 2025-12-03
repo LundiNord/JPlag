@@ -17,6 +17,7 @@ public enum Type {
     ARRAY,
     LIST,
     NULL,
+    FUNCTION,
     VOID;
 
     /**

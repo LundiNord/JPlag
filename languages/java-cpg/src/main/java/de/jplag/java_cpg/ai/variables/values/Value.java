@@ -36,6 +36,7 @@ public abstract class Value {
             case VOID -> new VoidValue();
             case ARRAY -> new JavaArray();
             case FLOAT -> new FloatValue();
+            case FUNCTION -> new FunctionValue();
             default -> throw new IllegalArgumentException("Unsupported type: " + type);
         };
     }
