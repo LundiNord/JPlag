@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.IntAiType;
 import de.jplag.java_cpg.ai.variables.Type;
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -15,9 +16,23 @@ public abstract class Value {
     private static IntAiType usedIntAiType = IntAiType.DEFAULT;
 
     private final Type type;
+    private Pair<JavaArray, INumberValue> arrayPosition;
 
     protected Value(Type type) {
         this.type = type;
+    }
+
+    public static IntAiType getUsedIntAiType() {
+        return usedIntAiType;
+    }
+
+    /**
+     * The default is {@link IntAiType#DEFAULT}.
+     *
+     * @param intAiType the type to use for integer values.
+     */
+    public static void setUsedIntAiType(@NotNull IntAiType intAiType) {
+        usedIntAiType = intAiType;
     }
 
     /**
@@ -79,13 +94,12 @@ public abstract class Value {
         };
     }
 
-    /**
-     * The default is {@link IntAiType#DEFAULT}.
-     *
-     * @param intAiType the type to use for integer values.
-     */
-    public static void setUsedIntAiType(@NotNull IntAiType intAiType) {
-        usedIntAiType = intAiType;
+    public Pair<JavaArray, INumberValue> getArrayPosition() {
+        return arrayPosition;
+    }
+
+    public void setArrayPosition(JavaArray array, INumberValue index) {
+        this.arrayPosition = new Pair<>(array, index);
     }
 
     public Type getType() {

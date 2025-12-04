@@ -379,4 +379,14 @@ class DeadCodeDetectionTest {
         assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
     }
 
+    /**
+     * simple array test
+     */
+    @Test
+    void testArray() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/arrayInit");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(24, ((INumberValue) main.accessField("result2")).getValue()); //y
+    }
+
 }

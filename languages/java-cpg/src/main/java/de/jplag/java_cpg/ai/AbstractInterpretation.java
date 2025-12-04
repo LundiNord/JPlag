@@ -152,14 +152,8 @@ public class AbstractInterpretation {
                         classAi.runClass((RecordDeclaration) classNode, newObject, List.of());
                     }
                     objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
-                } else if (fd.getInitializer() instanceof InitializerListExpression initializerList) {
-                    List<Value> arguments = new ArrayList<>();
-                    for (Expression init : initializerList.getInitializers()) {
-                        //ToDo handle nested initializer lists
-                    }
-                    //assert arguments.stream().map(Value::getType).distinct().count() == 1;
-                    //JavaArray list = new JavaArray(arguments);
-                    JavaArray list = new JavaArray();
+                } else if (fd.getInitializer() instanceof InitializerListExpression || fd.getInitializer() instanceof NewArrayExpression) {
+                    JavaArray list = (JavaArray) graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), list));
                 } else if (fd.getInitializer() instanceof MemberCallExpression mce) {
                     Value result;
@@ -207,6 +201,12 @@ public class AbstractInterpretation {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         switch (node) {
+            case FieldDeclaration fd -> {
+                Value value = valueStack.getLast();
+                valueStack.removeLast();
+                nodeStack.removeLast();
+                return value;   //return so that the class setup method can use the graph walker
+            }
             case VariableDeclaration vd -> {
                 nodeStack.add(vd);
                 assert nextEOG.size() == 1;
@@ -294,7 +294,9 @@ public class AbstractInterpretation {
                     //array might not be initialized yet
                     ref = new JavaArray();
                 }
-                valueStack.add(((JavaArray) ref).arrayAccess(indexLiteral));
+                Value result = ((JavaArray) ref).arrayAccess(indexLiteral);
+                result.setArrayPosition((JavaArray) ref, indexLiteral);
+                valueStack.add(result);
                 nodeStack.removeLast();
                 nodeStack.removeLast();
                 nodeStack.add(se);
@@ -364,13 +366,13 @@ public class AbstractInterpretation {
             }
             case AssignExpression ae -> {
                 assert !valueStack.isEmpty();
-                if (ae.getLhs().getFirst() instanceof SubscriptExpression) {
+                if (ae.getLhs().getFirst() instanceof SubscriptExpression se) {
                     assert ae.getLhs().size() == 1;
                     Value newValue = valueStack.getLast();
                     valueStack.removeLast();
                     Value oldValue = valueStack.getLast();
                     valueStack.removeLast();
-                    //ToDo: how to access array
+                    oldValue.getArrayPosition().component1().arrayAssign(oldValue.getArrayPosition().component2(), newValue);
                 } else {
                     Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
                     if (variable == null || nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression) { //class access
@@ -709,6 +711,9 @@ public class AbstractInterpretation {
                 }
                 assert arguments.stream().map(Value::getType).distinct().count() == 1;
                 JavaArray list = new JavaArray(arguments);
+                if (nextEOG.isEmpty()) {    //when used as a field initializer
+                    return list;
+                }
                 valueStack.add(list);
                 nodeStack.add(ile);
                 assert nextEOG.size() == 1;
@@ -716,7 +721,7 @@ public class AbstractInterpretation {
             }
             case NewArrayExpression nae -> {
                 //either dimension or initializer is present
-                if (nae.getDimensions() != null) {
+                if (!nae.getDimensions().isEmpty()) {
                     INumberValue dimension;
                     if (valueStack.getLast() instanceof VoidValue) {
                         dimension = (INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT);
@@ -726,9 +731,20 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     valueStack.add(new JavaArray(dimension));
                 } else if (nae.getInitializer() != null) {
-                    assert false;   //ToDo
+                    if (nae.getPrevEOG().getFirst() instanceof InitializerListExpression) {
+                        //initializer has already been processed
+                        assert valueStack.getLast() instanceof JavaArray;
+                        assert nodeStack.getLast() instanceof InitializerListExpression;
+                    } else {
+                        throw new IllegalStateException("Unexpected value: " + nae);
+                    }
                 } else {
                     throw new IllegalStateException("Unexpected value: " + nae);
+                }
+                if (nextEOG.isEmpty()) {    //when used as a field initializer
+                    Value value = valueStack.getLast();
+                    valueStack.removeLast();
+                    return value;
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();

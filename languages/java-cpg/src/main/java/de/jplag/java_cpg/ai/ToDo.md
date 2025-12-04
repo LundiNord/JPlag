@@ -8,7 +8,7 @@
 - [ ] comparators
 - [ ] think about copy of bound JavaObject
 - [ ] ConditionalExpression (a ? b : c)
-- [ ] Array assign
+- [x] Array assign
 - [ ] Enums
 - [ ] Streams
 - [ ] Lambdas
@@ -31,6 +31,7 @@
 - [x] if with || in condition
 - [x] if with && in condition
 - [x] if with else-if
+- [ ] nested list initializer in a class field
 
 ## Object AI
 

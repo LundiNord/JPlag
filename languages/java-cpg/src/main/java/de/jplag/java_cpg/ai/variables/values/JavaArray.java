@@ -43,6 +43,14 @@ public class JavaArray extends JavaObject {
     public JavaArray(INumberValue length) {
         super(Type.ARRAY);
         this.innerType = null;  //maybe update later
+        if (length.getInformation()) {
+            int len = Math.max(0, (int) length.getValue());
+            values = new ArrayList<>(len);
+            Value placeholder = new VoidValue();
+            for (int i = 0; i < len; i++) {
+                values.add(placeholder.copy());
+            }
+        }
         //ToDo: length
     }
 
@@ -72,6 +80,18 @@ public class JavaArray extends JavaObject {
             case FLOAT -> new FloatValue();
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
         };
+    }
+
+    public void arrayAssign(INumberValue index, Value value) {
+        if (values != null && index.getInformation()) {
+            int idx = (int) index.getValue();
+            if (idx >= 0 && idx < values.size()) {
+                values.set(idx, value);
+            }
+        } else {
+            //no information about the array, set to unknown
+            values = null;
+        }
     }
 
     @Override
