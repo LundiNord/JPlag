@@ -45,3 +45,8 @@ enum class IntAiType {
     DEFAULT,
     SET,
 }
+
+enum class FloatAiType {
+    SET,
+    DEFAULT,
+}

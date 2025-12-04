@@ -1,5 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import de.jplag.java_cpg.ai.FloatAiType;
 import de.jplag.java_cpg.ai.IntAiType;
 import de.jplag.java_cpg.ai.variables.Type;
 import kotlin.Pair;
@@ -14,9 +15,10 @@ import org.jetbrains.annotations.NotNull;
 public abstract class Value {
 
     private static IntAiType usedIntAiType = IntAiType.DEFAULT;
+    private static FloatAiType usedFloatAiType = FloatAiType.DEFAULT;
 
     private final Type type;
-    private Pair<JavaArray, INumberValue> arrayPosition;
+    private Pair<JavaArray, INumberValue> arrayPosition;    //necessary for an array assign to work
 
     protected Value(Type type) {
         this.type = type;
@@ -35,6 +37,10 @@ public abstract class Value {
         usedIntAiType = intAiType;
     }
 
+    public static void setUsedFloatAiType(@NotNull FloatAiType floatAiType) {
+        usedFloatAiType = floatAiType;
+    }
+
     /**
      * Constructs a Value instance based on the provided type.
      *
@@ -50,7 +56,7 @@ public abstract class Value {
             case OBJECT -> new JavaObject();
             case VOID -> new VoidValue();
             case ARRAY -> new JavaArray();
-            case FLOAT -> new FloatValue();
+            case FLOAT -> getNewFloatValue();
             case FUNCTION -> new FunctionValue();
             default -> throw new IllegalArgumentException("Unsupported type: " + type);
         };
@@ -72,12 +78,13 @@ public abstract class Value {
                 return new BooleanValue(b);
             }
             case Double d -> {
-                return new FloatValue(d);
+                return getNewFloatValue(d);
             }
             default -> throw new IllegalStateException("Unexpected value: " + value);
         }
     }
 
+    @NotNull
     private static Value getNewIntValue() {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue();
@@ -86,11 +93,28 @@ public abstract class Value {
         };
     }
 
+    @NotNull
     private static Value getNewIntValue(int number) {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue(number);
             case DEFAULT -> new IntValue(number);
             case SET -> new IntSetValue(number);
+        };
+    }
+
+    @NotNull
+    private static Value getNewFloatValue() {
+        return switch (usedFloatAiType) {
+            case DEFAULT -> new FloatValue();
+            case SET -> new FloatSetValue();
+        };
+    }
+
+    @NotNull
+    private static Value getNewFloatValue(double number) {
+        return switch (usedFloatAiType) {
+            case DEFAULT -> new FloatValue(number);
+            case SET -> new FloatSetValue(number);
         };
     }
 

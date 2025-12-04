@@ -19,6 +19,7 @@
 - [ ] TreeSet
 - [x] Comments/Javadocs
 - [ ] Uninitialized variables to default value
+- [ ] all java datatypes
 
 ## Edge Cases to Test
 

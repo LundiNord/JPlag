@@ -1,10 +1,7 @@
 package de.jplag.java_cpg.ai;
 
 import de.jplag.ParsingException;
-import de.jplag.java_cpg.ai.variables.values.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.IntSetValue;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.*;
 import org.junit.jupiter.api.Test;
 
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
@@ -112,6 +109,7 @@ class DeadCodeDetectionIntervalTest {
     @Test
     void testInterval() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.SET);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/interval");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());
@@ -129,6 +127,7 @@ class DeadCodeDetectionIntervalTest {
     @Test
     void testMultipleInterval() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.SET);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/intervalMulti");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());
@@ -149,6 +148,26 @@ class DeadCodeDetectionIntervalTest {
         assertEquals(100, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound());
         assertEquals(400, ((IntSetValue) main.accessField("result4")).getIntervals().getLast().getLowerBound());
         assertEquals(600, ((IntSetValue) main.accessField("result4")).getIntervals().getLast().getUpperBound());
+    }
+
+    @Test
+    void testIntervalDouble() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.SET);
+        Value.setUsedFloatAiType(FloatAiType.SET);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/intervalDouble");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertEquals(60.5f, ((FloatSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(110.5, ((FloatSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+        assertEquals(20.65f, ((FloatSetValue) main.accessField("result2")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(20.9f, ((FloatSetValue) main.accessField("result2")).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertFalse(((INumberValue) main.accessField("result3")).getInformation());
+        assertEquals(37.5f, ((FloatSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(112.5f, ((FloatSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertFalse(((INumberValue) main.accessField("result4")).getInformation());
+        assertEquals(10.3f, ((FloatSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(1010.3f, ((FloatSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound(), 0.0001);
     }
 
 }

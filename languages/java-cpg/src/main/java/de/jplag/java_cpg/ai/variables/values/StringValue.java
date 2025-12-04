@@ -57,6 +57,15 @@ public class StringValue extends JavaObject {
                     return Value.valueFactory(Type.INT);
                 }
             }
+            case "parseDouble" -> {
+                assert paramVars.size() == 1;
+                StringValue str = (StringValue) paramVars.getFirst();
+                if (str.getInformation()) {
+                    return Value.valueFactory(Double.parseDouble(str.getValue()));
+                } else {
+                    return Value.valueFactory(Type.FLOAT);
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

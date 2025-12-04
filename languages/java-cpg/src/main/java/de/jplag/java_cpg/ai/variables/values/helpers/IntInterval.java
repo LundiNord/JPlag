@@ -5,13 +5,10 @@ import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
-public class IntInterval implements Comparable<Object> {
+public class IntInterval extends Interval<Integer> {
 
     public static final int MAX_VALUE = Integer.MAX_VALUE;
     public static final int MIN_VALUE = Integer.MIN_VALUE;
-
-    private int lowerBound; //inclusive
-    private int upperBound; //inclusive
 
     public IntInterval() {
         this.lowerBound = MIN_VALUE;
@@ -36,26 +33,31 @@ public class IntInterval implements Comparable<Object> {
         return Math.abs(x);
     }
 
+    @Override
     public boolean getInformation() {
-        return lowerBound == upperBound;
+        return lowerBound.equals(upperBound);
     }
 
-    public double getValue() {
-        assert lowerBound == upperBound;
+    @Override
+    public Integer getValue() {
+        assert lowerBound.equals(upperBound);
         return lowerBound;
     }
 
+    @Override
     public IntInterval copy() {
         return new IntInterval(lowerBound, upperBound);
     }
 
+    @Override
     public void setToUnknown() {
         this.lowerBound = MIN_VALUE;
         this.upperBound = MAX_VALUE;
     }
 
     @Pure
-    public IntInterval plus(@NotNull IntInterval other) {
+    @Override
+    public IntInterval plus(@NotNull Interval<Integer> other) {
         long loSum = (long) lowerBound + (long) other.lowerBound;
         long hiSum = (long) upperBound + (long) other.upperBound;
         int lo = loSum > MAX_VALUE ? MAX_VALUE : (loSum < MIN_VALUE ? MIN_VALUE : (int) loSum);
@@ -64,7 +66,8 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public IntInterval minus(@NotNull IntInterval other) {
+    @Override
+    public IntInterval minus(@NotNull Interval<Integer> other) {
         long loSum = (long) lowerBound - (long) other.lowerBound;
         long hiSum = (long) upperBound - (long) other.upperBound;
         int lo = loSum > MAX_VALUE ? MAX_VALUE : (loSum < MIN_VALUE ? MIN_VALUE : (int) loSum);
@@ -73,7 +76,8 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public IntInterval times(IntInterval other) {
+    @Override
+    public IntInterval times(@NotNull Interval<Integer> other) {
         long p1 = (long) lowerBound * other.lowerBound;
         long p2 = (long) lowerBound * other.upperBound;
         long p3 = (long) upperBound * other.lowerBound;
@@ -86,7 +90,8 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public IntInterval divided(@NotNull IntInterval other) {
+    @Override
+    public IntInterval divided(@NotNull Interval<Integer> other) {
         if (other.lowerBound <= 0 && other.upperBound >= 0) {
             return new IntInterval(MIN_VALUE, MAX_VALUE);
         }
@@ -105,10 +110,10 @@ public class IntInterval implements Comparable<Object> {
         return new IntInterval(lo, hi);
     }
 
-    //FixMe
     @Pure
-    public BooleanValue equal(IntInterval other) {
-        if (lowerBound == upperBound && other.lowerBound == other.upperBound && lowerBound == other.lowerBound) {
+    @Override
+    public BooleanValue equal(@NotNull Interval<Integer> other) {
+        if (lowerBound.equals(upperBound) && other.lowerBound.equals(other.upperBound) && lowerBound.equals(other.lowerBound)) {
             return new BooleanValue(true);
         } else if (upperBound < other.lowerBound || lowerBound > other.upperBound) {
             return new BooleanValue(false);
@@ -118,10 +123,11 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public BooleanValue notEqual(IntInterval other) {
+    @Override
+    public BooleanValue notEqual(@NotNull Interval<Integer> other) {
         if (upperBound < other.lowerBound || lowerBound > other.upperBound) {
             return new BooleanValue(true);
-        } else if (lowerBound == upperBound && other.lowerBound == other.upperBound && lowerBound == other.lowerBound) {
+        } else if (lowerBound.equals(upperBound) && other.lowerBound.equals(other.upperBound) && lowerBound.equals(other.lowerBound)) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -129,7 +135,8 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public BooleanValue smaller(IntInterval other) {
+    @Override
+    public BooleanValue smaller(@NotNull Interval<Integer> other) {
         if (upperBound < other.lowerBound) {
             return new BooleanValue(true);
         } else if (lowerBound >= other.upperBound) {
@@ -140,7 +147,8 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public BooleanValue smallerEqual(IntInterval other) {
+    @Override
+    public BooleanValue smallerEqual(@NotNull Interval<Integer> other) {
         if (upperBound <= other.lowerBound) {
             return new BooleanValue(true);
         } else if (lowerBound > other.upperBound) {
@@ -151,7 +159,8 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public BooleanValue bigger(IntInterval other) {
+    @Override
+    public BooleanValue bigger(@NotNull Interval<Integer> other) {
         if (lowerBound > other.upperBound) {
             return new BooleanValue(true);
         } else if (upperBound <= other.lowerBound) {
@@ -162,7 +171,8 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
-    public BooleanValue biggerEqual(IntInterval other) {
+    @Override
+    public BooleanValue biggerEqual(@NotNull Interval<Integer> other) {
         if (upperBound <= other.lowerBound) {
             return new BooleanValue(true);
         } else if (lowerBound > other.upperBound) {
@@ -173,6 +183,7 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Impure
+    @Override
     public IntInterval plusPlus() {
         long newLower = (long) lowerBound + 1;
         long newUpper = (long) upperBound + 1;
@@ -182,6 +193,7 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Impure
+    @Override
     public IntInterval minusMinus() {
         long newLower = (long) lowerBound - 1;
         long newUpper = (long) upperBound - 1;
@@ -191,6 +203,7 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
+    @Override
     public IntInterval unaryMinus() {
         int newLower = (upperBound == Integer.MIN_VALUE) ? Integer.MAX_VALUE : -upperBound;
         int newUpper = (lowerBound == Integer.MIN_VALUE) ? Integer.MAX_VALUE : -lowerBound;
@@ -198,6 +211,7 @@ public class IntInterval implements Comparable<Object> {
     }
 
     @Pure
+    @Override
     public IntInterval abs() {
         if (upperBound < 0) {
             return new IntInterval(safeAbs(upperBound), safeAbs(lowerBound));
@@ -209,27 +223,9 @@ public class IntInterval implements Comparable<Object> {
         }
     }
 
-    /**
-     * Compares starting point (lowerBound) of intervals.
-     * If they are equal, compare end point (upperBound).
-     *
-     * @return negative: less than, zero: equal, positive: greater than
-     */
-    @Override
-    public int compareTo(@NotNull Object o) {
-        if (o instanceof IntInterval interval) {
-            if (this.lowerBound != interval.lowerBound) {
-                return Integer.compare(this.lowerBound, interval.lowerBound);
-            } else {
-                return Integer.compare(this.upperBound, interval.upperBound);
-            }
-        } else {
-            throw new IllegalArgumentException("Cannot compare IntInterval with " + o.getClass());
-        }
-    }
-
     @Impure
-    public void merge(@NotNull IntInterval other) {
+    @Override
+    public void merge(@NotNull Interval<Integer> other) {
         int smallerLowerBound = Math.min(this.lowerBound, other.lowerBound);
         int largerUpperBound = Math.max(this.upperBound, other.upperBound);
         assert smallerLowerBound <= largerUpperBound;
@@ -237,18 +233,19 @@ public class IntInterval implements Comparable<Object> {
         this.upperBound = largerUpperBound;
     }
 
-    public int getLowerBound() {
-        return lowerBound;
-    }
-
-    public int getUpperBound() {
-        return upperBound;
-    }
-
-    public void setUpperBound(int upperBound) {
+    @Override
+    public void setUpperBound(Integer upperBound) {
         assert upperBound >= lowerBound;
         this.upperBound = upperBound;
     }
 
-
+    @Override
+    public int compareTo(@NotNull Interval<Integer> o) {
+        if (!this.lowerBound.equals(o.lowerBound)) {
+            return Integer.compare(this.lowerBound, o.lowerBound);
+        } else {
+            return Integer.compare(this.upperBound, o.upperBound);
+        }
+    }
+    
 }
