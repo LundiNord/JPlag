@@ -389,4 +389,27 @@ class DeadCodeDetectionTest {
         assertEquals(24, ((INumberValue) main.accessField("result2")).getValue()); //y
     }
 
+    /**
+     * simple test for ConditionalExpressions (a?b:c).
+     */
+    @Disabled
+    @Test
+    void testConditional() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/conditional");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+    }
+
+    /**
+     * simple array test
+     */
+    @Test
+    void testMCEinClassField() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/simpleMCEinClassField");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(43, ((INumberValue) main.accessField("x")).getValue());
+    }
+
 }

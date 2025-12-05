@@ -138,49 +138,14 @@ public class AbstractInterpretation {
                 if (fd.getInitializer() instanceof Literal<?> literal) {
                     Value value = Value.valueFactory(literal.getValue());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
-                } else if (fd.getInitializer() instanceof NewExpression newExpression) {
-                    JavaObject newObject;
-                    switch ((newExpression.getInitializer()).getType().getName().toString()) {
-                        case "java.util.HashMap", "java.util.Map" ->
-                                newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
-                        case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
-                        case "java.util.ArrayList", "java.util.List" -> newObject = new JavaArray();
-                        default -> newObject = new JavaObject();
-                    }
-                    Declaration classNode = ((ConstructExpression) newExpression.getInitializer()).getInstantiates();
-                    if (classNode != null) {    //run constructor
-                        AbstractInterpretation classAi = new AbstractInterpretation();
-                        classAi.runClass((RecordDeclaration) classNode, newObject, List.of());
-                    }
+                } else if (fd.getInitializer() instanceof NewExpression) {
+                    JavaObject newObject = (JavaObject) graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
                 } else if (fd.getInitializer() instanceof InitializerListExpression || fd.getInitializer() instanceof NewArrayExpression) {
                     JavaArray list = (JavaArray) graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), list));
-                } else if (fd.getInitializer() instanceof MemberCallExpression mce) {
-                    Value result;
-                    if (mce.getArguments().isEmpty()) {     //no arguments
-
-                        Name memberName = mce.getCallee().getName();
-                        JavaObject javaObject = (JavaObject) variables.getVariable(mce.getName().getParent().toString()).getValue();
-                        result = javaObject.callMethod(memberName.getLocalName(), null);
-                    } else {
-                        assert false;   //ToDo
-                        List<Value> argumentList = new ArrayList<>();
-                        for (int i = 0; i < mce.getArguments().size(); i++) {
-                            argumentList.add(valueStack.getLast());
-                            nodeStack.removeLast();
-                            valueStack.removeLast();
-                        }
-                        Collections.reverse(argumentList);
-                        Name memberName = mce.getCallee().getName();
-                        assert memberName.getParent() != null;
-                        assert !valueStack.isEmpty();
-                        JavaObject javaObject = (JavaObject) valueStack.getLast();         //for now only one parameter
-                        result = javaObject.callMethod(memberName.getLocalName(), argumentList);
-                    }
-                    if (result == null) {       //if method reference isn't known
-                        result = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType()));
-                    }
+                } else if (fd.getInitializer() instanceof MemberCallExpression) {
+                    Value result = graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), result));
                 } else {
                     throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
@@ -346,8 +311,10 @@ public class AbstractInterpretation {
                 valueStack.add(result);
                 nodeStack.removeLast();
                 nodeStack.add(mce);
-                if (nextEOG.size() != 1) {
-                    System.out.println("Debug");
+                if (nextEOG.isEmpty()) {    //when used as a field initializer
+                    Value value = valueStack.getLast();
+                    valueStack.removeLast();
+                    return value;
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
