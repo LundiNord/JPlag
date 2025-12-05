@@ -134,7 +134,7 @@ public class AbstractInterpretation {
                 newVar.setInitialValue();
                 objectInstance.setField(newVar);
                 //objectInstance.setField(new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)));  //ToDo array inner type lost here
-            } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
+            } else if (!(fd.getInitializer() instanceof ProblemExpression)) {   //ToDo: simplify
                 if (fd.getInitializer() instanceof Literal<?> literal) {
                     Value value = Value.valueFactory(literal.getValue());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
@@ -147,6 +147,10 @@ public class AbstractInterpretation {
                 } else if (fd.getInitializer() instanceof MemberCallExpression) {
                     Value result = graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), result));
+                } else if (fd.getInitializer() instanceof UnaryOperator unop) {
+                    assert Objects.equals(unop.getOperatorCode(), "-");
+                    Value value = graphWalker(fd.getNextEOG().getFirst());
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), value));
                 } else {
                     throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
                 }

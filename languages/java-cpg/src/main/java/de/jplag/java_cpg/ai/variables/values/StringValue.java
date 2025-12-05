@@ -130,11 +130,11 @@ public class StringValue extends JavaObject {
         value = null;
     }
 
-    private boolean getInformation() {
+    public boolean getInformation() {
         return information;
     }
 
-    private String getValue() {
+    public String getValue() {
         assert information;
         return value;
     }

@@ -28,6 +28,24 @@ public class String extends JavaObject {
                 assert !paramVars.isEmpty();
                 return new StringValue();
             }
+            case "join" -> {
+                assert paramVars.size() >= 2;
+                assert paramVars.stream().map(StringValue.class::isInstance).reduce(true, (a, b) -> a && b);
+                // Possibility 1: first delimiter, then strings to join
+                if (paramVars.stream().allMatch(x -> x instanceof StringValue stringValue && stringValue.getInformation())) {
+                    java.lang.String joinedString = java.lang.String.join(
+                            ((StringValue) paramVars.get(0)).getValue(),
+                            paramVars.subList(1, paramVars.size()).stream()
+                                    .map(x -> ((StringValue) x).getValue())
+                                    .toArray(java.lang.String[]::new)
+                    );
+                    return new StringValue(joinedString);
+                }
+                //ToDo
+                // Possibility 2: first delimiter, then iterable of strings to join
+                // Possibility 3: (String prefix, String suffix, String delimiter, String[] elements, int size)
+                return new StringValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

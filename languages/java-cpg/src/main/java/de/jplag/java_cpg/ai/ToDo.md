@@ -7,7 +7,7 @@
 - [x] hash maps, sets
 - [ ] comparators
 - [ ] think about copy of bound JavaObject
-- [ ] ConditionalExpression (a ? b : c)
+- [ ] ConditionalExpression (a ? b : c) (hard)
 - [x] Array assign
 - [ ] Enums
 - [ ] Streams

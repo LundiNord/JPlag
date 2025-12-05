@@ -80,6 +80,12 @@ public abstract class Value {
             case Double d -> {
                 return getNewFloatValue(d);
             }
+            case Long l -> {    //ToDo handle long values properly
+                return getNewIntValue(l.intValue());
+            }
+            case Character c -> {   //ToDo handle char
+                return new StringValue(String.valueOf(c));
+            }
             default -> throw new IllegalStateException("Unexpected value: " + value);
         }
     }
