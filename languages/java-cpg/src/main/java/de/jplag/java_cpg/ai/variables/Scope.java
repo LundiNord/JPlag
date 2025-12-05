@@ -93,4 +93,17 @@ public class Scope {
         return first;
     }
 
+//    @Pure
+//    public List<Change> getChanges(@NotNull Scope otherScope) {
+//        List<Change> changes = new ArrayList<>();
+//        for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {
+//            Variable otherVariable = otherScope.getVariable(entry.getKey());
+//            Change change = entry.getValue().getChange(otherVariable);
+//            if (change != null) {
+//                changes.add(change);
+//            }
+//        }
+//        return changes;
+//    }
+
 }

@@ -110,4 +110,11 @@ public class Variable {
         return this.changeRecorders.removeLast();
     }
 
+//    @Nullable
+//    public Change getChange(@NotNull Variable other) {
+//        assert other.name.equals(this.name);
+//        Value otherValue = other.value;
+//        return this.value.getChange(otherValue);
+//    }
+
 }

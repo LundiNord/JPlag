@@ -189,4 +189,7 @@ public abstract class Value {
      */
     public abstract void setInitialValue();
 
+//    @Nullable
+//    public abstract Change getChange(@NotNull Value otherValue);
+
 }

@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables;
 
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -158,5 +159,27 @@ public class VariableStore {
         assert recorders.stream().allMatch(r -> r == first);
         return first.getChangedVariables();
     }
-    
+
+//    @Pure
+//    public List<Change> getChanges(@NotNull VariableStore otherVarStore) {
+//        assert this.currentScopeIndex == otherVarStore.currentScopeIndex && this.scopes.size() == otherVarStore.scopes.size() && currentScopeIndex == scopes.size() - 1;
+//        List<Change> changes = new ArrayList<>();
+//        for (int i = 0; i <= currentScopeIndex; i++) {
+//            Scope thisScope = this.scopes.get(i);
+//            Scope otherScope = otherVarStore.scopes.get(i);
+//            changes.addAll(thisScope.getChanges(otherScope));
+//        }
+//        return changes;
+//    }
+
+    @Pure
+    public List<Change> getChanges(@NotNull Set<Variable> changedVariables) {
+        List<Change> changes = new ArrayList<>();
+        for (Variable variable1 : changedVariables) {
+            Variable thisVar1 = this.getVariable(variable1.getName());
+            changes.add(new Change(thisVar1.getValue(), variable1.getValue()));
+        }
+        return changes;
+    }
+
 }

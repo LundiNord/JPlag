@@ -7,6 +7,7 @@ import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
 import de.fraunhofer.aisec.cpg.graph.statements.*;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
+import de.jplag.java_cpg.ai.variables.Change;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
@@ -38,6 +39,29 @@ public class AbstractInterpretation {
         nodeStack = new ArrayList<>();
         valueStack = new ArrayList<>();
         methods = new HashMap<>();
+    }
+
+    private LoopType checkLoopType(Node loopNode) {     //ToDo also check condition
+        assert loopNode instanceof WhileStatement || loopNode instanceof ForStatement || loopNode instanceof ForEachStatement;
+        Node currentNode = loopNode;
+        LoopType loopType = LoopType.SIMPLE;
+        while (!(currentNode instanceof Block)) {   //FixMe: does not work for loops with blooks within
+            if (currentNode instanceof WhileStatement || currentNode instanceof ForStatement
+                    || currentNode instanceof SwitchStatement || currentNode instanceof ConditionalExpression
+                    || currentNode instanceof ForEachStatement || currentNode instanceof IfStatement
+            ) {
+                loopType = LoopType.BASIC;
+            }
+            if (currentNode instanceof MemberCallExpression || currentNode instanceof BreakStatement
+                    || currentNode instanceof ContinueStatement || currentNode instanceof ReturnStatement
+                    || currentNode instanceof CatchClause || currentNode instanceof ConstructExpression
+                    || currentNode instanceof NewExpression || currentNode instanceof LambdaExpression
+            ) {
+                loopType = LoopType.COMPLEX;
+            }
+            currentNode = currentNode.getNextEOG().getFirst();
+        }
+        return loopType;
     }
 
     /**
@@ -600,11 +624,29 @@ public class AbstractInterpretation {
             }
             case WhileStatement ws -> {
                 assert nextEOG.size() == 2;
+                LoopType loopType = checkLoopType(ws);
                 //evaluate condition
                 assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 nodeStack.removeLast();
+                if (condition.getInformation() && condition.getValue()) {
+                    VariableStore originalVariables = this.variables;
+                    VariableStore loopVariables = new VariableStore(variables);
+                    this.variables = loopVariables;
+                    this.object = loopVariables.getThisObject();
+                    //
+                    variables.recordChanges();
+                    variables.newScope();
+                    graphWalker(nextEOG.getFirst());
+                    variables.removeScope();
+                    Set<Variable> changedVariables = variables.stopRecordingChanges();
+                    List<Change> changes = originalVariables.getChanges(changedVariables);
+
+                    System.out.println("Test");
+                }
+
+
                 if (!condition.getInformation() || condition.getValue()) {
                     //run body if the condition is true or unknown
                     variables.recordChanges();
@@ -811,6 +853,23 @@ public class AbstractInterpretation {
         this.nodeStack = oldNodeStack;      //restore stack
         this.valueStack = oldValueStack;
         return result;
+    }
+
+    private enum LoopType {
+        /**
+         * Simple loops don't have: branching, method calls, nested loops.
+         */
+        SIMPLE,
+        /**
+         * Basic loops have: nested loops, if branching.
+         * <p>
+         * Basic loops don't have: method calls
+         */
+        BASIC,
+        /**
+         * Complex loops have: all java features, including method calls, streams, try-catch, etc.
+         */
+        COMPLEX
     }
 
 }
