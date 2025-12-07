@@ -14,42 +14,20 @@ public final class Main {
         int z = 500;
         int y = 100;
 
-        if (y < 100) {
-            //never run
-            z = z + 100;
-        }
+        x = x + 50;
+        z = z + 50;
 
         x = x + 50;
         z = z + 50;
 
-        if (y < 100) {
-            //never run
-            z = z + 100;
-        }
+        x = x + 50;
+        z = z + 50;
 
         x = x + 50;
         z = z + 50;
 
-        if (y < 100) {
-            //never run
-            z = z + 100;
-        }
-
         x = x + 50;
         z = z + 50;
-
-        if (y < 100) {
-            //never run
-            z = z + 100;
-        }
-        
-        x = x + 50;
-        z = z + 50;
-
-        if (y < 100) {
-            //never run
-            z = z + 100;
-        }
 
         result = z;
         result2 = y;

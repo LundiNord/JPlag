@@ -14,6 +14,7 @@ import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -29,9 +30,6 @@ class AbstractInterpretationTest {
 
     /**
      * a simple test with the main function only
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testSimple() throws ParsingException, InterruptedException {
@@ -43,9 +41,6 @@ class AbstractInterpretationTest {
 
     /**
      * a simple test with the main function calling another function.
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testSimple2() throws ParsingException, InterruptedException {
@@ -58,9 +53,6 @@ class AbstractInterpretationTest {
     /**
      * a slightly more complex test with the main function calling other functions.
      * with for loop and throw exception.
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testSimple3() throws ParsingException, InterruptedException {
@@ -72,9 +64,6 @@ class AbstractInterpretationTest {
 
     /**
      * simple switch test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testSwitch() throws ParsingException, InterruptedException {
@@ -87,9 +76,6 @@ class AbstractInterpretationTest {
 
     /**
      * simple switch test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testSwitch2() throws ParsingException, InterruptedException {
@@ -125,9 +111,6 @@ class AbstractInterpretationTest {
     /**
      * nondeterministic test! (completes sometimes in debug mode)
      * test creating a new class instance
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testNewClass() throws ParsingException, InterruptedException {
@@ -138,9 +121,6 @@ class AbstractInterpretationTest {
 
     /**
      * test if without else
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testIf() throws ParsingException, InterruptedException {
@@ -152,9 +132,6 @@ class AbstractInterpretationTest {
 
     /**
      * test undetermined exception throw
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testException() throws ParsingException, InterruptedException {
@@ -164,39 +141,30 @@ class AbstractInterpretationTest {
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); //y
     }
 
-//    /**
-//     * simple enum test
-//     *
-//     * @throws ParsingException
-//     * @throws InterruptedException
-//     */
-//    @Test
-//    void testEnum() throws ParsingException, InterruptedException {
-//        AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
-//        JavaObject main = getMainObject(interpretation);
-//        assertEquals(400, ((IntValue) main.accessField("result")).getValue());
-//        assertFalse(((IntValue) main.accessField("result2")).getInformation());
-//    }
+    /**
+     * simple enum test
+     */
+    @Test
+    @Disabled
+    void testEnum() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(400, ((IntValue) main.accessField("result")).getValue());
+        assertFalse(((IntValue) main.accessField("result2")).getInformation());
+    }
 
     /**
      * simple hashmap test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testHashMap() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        //assertEquals(1, ((IntValue) main.accessField("result")).getValue());
+        //assertEquals(1, ((IntValue) main.accessField("result")).getValue());  //ToDo
         //assertEquals(2, ((IntValue) main.accessField("result")).getValue());
     }
 
-    /**
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
     @Test
     void testQueensFarming() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
@@ -204,10 +172,6 @@ class AbstractInterpretationTest {
         assertNotNull(main);
     }
 
-    /**
-     * @throws ParsingException
-     * @throws InterruptedException
-     */
     @Test
     void testQueensFarming2() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex2");
@@ -217,9 +181,6 @@ class AbstractInterpretationTest {
 
     /**
      * simple try/catch test
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testTryCatch() throws ParsingException, InterruptedException {
@@ -232,9 +193,6 @@ class AbstractInterpretationTest {
 
     /**
      * a simple try /catch test with throw inside called method
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testTryCatch2() throws ParsingException, InterruptedException {
@@ -247,9 +205,6 @@ class AbstractInterpretationTest {
 
     /**
      * simple try/catch test with nothing thrown
-     *
-     * @throws ParsingException
-     * @throws InterruptedException
      */
     @Test
     void testTryCatch3() throws ParsingException, InterruptedException {

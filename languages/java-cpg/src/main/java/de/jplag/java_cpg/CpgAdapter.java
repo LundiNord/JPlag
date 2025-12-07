@@ -95,7 +95,7 @@ public class CpgAdapter {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
-
+        TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
         try {
             TranslationConfiguration.Builder configBuilder =
                     new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
@@ -114,12 +114,17 @@ public class CpgAdapter {
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }
-
             translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
-        } catch (ExecutionException | ConfigurationException e) {
+        } catch (ConfigurationException e) {
+            throw new ParsingException(List.copyOf(files).getFirst(), e);
+        } catch (ExecutionException e) {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
         return translationResult;
+    }
+
+    private void setTokenList(List<Token> tokenList) {
+        this.tokenList = tokenList;
     }
 
 }

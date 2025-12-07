@@ -19,7 +19,6 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, JPlag Leon!");
         Language language = new JavaCpgLanguage();
-        //File submissionsRoot = new File("leon/submissions");
         File submissionsRoot = new File("leon/submissionsFolders");
         Set<File> submissionDirectories = Set.of(submissionsRoot);
         JPlagOptions options = new JPlagOptions(language, submissionDirectories, Set.of());

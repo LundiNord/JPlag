@@ -11,6 +11,7 @@ import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -423,10 +424,23 @@ public class AbstractInterpretation {
                 if (condition.getInformation()) {
                     if (condition.getValue()) {
                         runElseBranch = false;
-                        //Dead code detected
+                        //Dead code detected -> remove else branch
+                        TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
                     } else {
                         runThenBranch = false;
                         //Dead code detected
+                        ifStmt.setThenStatement(null);
+                        if (ifStmt.getElseStatement() == null) {
+                            Block containingBlock = (Block) ifStmt.getScope().getAstNode();
+                            assert containingBlock != null;
+                            List<Statement> statements = containingBlock.getStatements();
+                            statements.remove(ifStmt);
+                            containingBlock.setStatements(statements);
+                        }
+                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+//                        if (ifStmt.getElseStatement() == null) {
+//                            TransformationUtil.disconnectFromPredecessor(ifStmt);
+//                        }
                     }
                 }
                 if (ifStmt.getThenStatement() == null) {
@@ -618,6 +632,7 @@ public class AbstractInterpretation {
                     }
                 } else {
                     //Dead code detected, loop never runs
+                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
                 }
                 //continue with next node after while
                 nextNode = nextEOG.getLast();
@@ -642,6 +657,7 @@ public class AbstractInterpretation {
                     }
                 } else {
                     //Dead code detected, loop never runs
+                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
                 }
                 //continue with the next node after for
                 nextNode = nextEOG.getLast();
@@ -657,6 +673,7 @@ public class AbstractInterpretation {
                 valueStack.removeLast();
                 if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
                     //Dead code detected, loop never runs
+                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
                 } else {
                     variables.recordChanges();
                     variables.newScope();

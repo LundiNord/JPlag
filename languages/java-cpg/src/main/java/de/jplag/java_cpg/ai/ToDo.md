@@ -20,6 +20,7 @@
 - [x] Comments/Javadocs
 - [ ] Uninitialized variables to default value
 - [ ] all java datatypes
+- [ ] GoTo
 
 ## Edge Cases to Test
 

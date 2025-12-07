@@ -22,7 +22,7 @@ import java.util.function.Consumer
 /**
  * This pass tokenizes the [TranslationResult].
  */
-//@DependsOn(CpgTransformationPass::class)
+@DependsOn(CpgTransformationPass::class)
 @DependsOn(AiPass::class)
 class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
