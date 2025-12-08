@@ -2,7 +2,11 @@ package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.FloatAiType;
 import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.numbers.*;
+import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
+import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,6 +20,7 @@ public abstract class Value {
 
     private static IntAiType usedIntAiType = IntAiType.DEFAULT;
     private static FloatAiType usedFloatAiType = FloatAiType.DEFAULT;
+    private static StringAiType usedStringAiType = StringAiType.DEFAULT;
 
     private final Type type;
     private Pair<JavaArray, INumberValue> arrayPosition;    //necessary for an array assign to work
@@ -39,6 +44,10 @@ public abstract class Value {
 
     public static void setUsedFloatAiType(@NotNull FloatAiType floatAiType) {
         usedFloatAiType = floatAiType;
+    }
+
+    public static void setUsedStringAiType(@NotNull StringAiType stringAiType) {
+        usedStringAiType = stringAiType;
     }
 
     /**
@@ -124,6 +133,20 @@ public abstract class Value {
         };
     }
 
+    private static Value getNewStringValue() {
+        return switch (usedStringAiType) {
+            case DEFAULT -> new StringValue();
+            case CHAR_INCLUSION -> new StringCharInclValue();
+        };
+    }
+
+    private static Value getNewStringValue(String value) {
+        return switch (usedStringAiType) {
+            case DEFAULT -> new StringValue(value);
+            case CHAR_INCLUSION -> new StringCharInclValue(value);
+        };
+    }
+
     public Pair<JavaArray, INumberValue> getArrayPosition() {
         return arrayPosition;
     }
@@ -186,6 +209,7 @@ public abstract class Value {
 
     /**
      * Resets all information about this value except its type.
+     * Initial value depends on the specific value type.
      */
     public abstract void setInitialValue();
 

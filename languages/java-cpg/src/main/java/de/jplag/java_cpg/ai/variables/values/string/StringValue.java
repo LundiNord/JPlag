@@ -1,6 +1,10 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.string;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -12,7 +16,7 @@ import java.util.List;
  * @author ujiqk
  * @version 1.0
  */
-public class StringValue extends JavaObject {
+public class StringValue extends JavaObject implements IStringValue {
 
     private boolean information;
     private String value;

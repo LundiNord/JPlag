@@ -50,3 +50,8 @@ enum class FloatAiType {
     SET,
     DEFAULT,
 }
+
+enum class StringAiType {
+    CHAR_INCLUSION,
+    DEFAULT,
+}

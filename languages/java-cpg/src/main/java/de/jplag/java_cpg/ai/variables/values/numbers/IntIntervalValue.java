@@ -1,7 +1,8 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.helpers.IntInterval;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
@@ -132,11 +133,11 @@ public class IntIntervalValue extends Value implements INumberValue {
     public void setToUnknown() {
         interval.setToUnknown();
     }
-
-    //ToDo remove setToUnknown() or setInitialValue()
+    
     @Override
     public void setInitialValue() {
-        interval.setToUnknown();
+        interval.setUpperBound(0);
+        interval.setLowerBound(0);
     }
 
 }

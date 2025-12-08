@@ -1,7 +1,11 @@
 package de.jplag.java_cpg.ai;
 
 import de.jplag.ParsingException;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.FloatSetValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IntSetValue;
 import org.junit.jupiter.api.Test;
 
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;

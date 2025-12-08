@@ -1,6 +1,9 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
+import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 import org.jetbrains.annotations.NotNull;
 
 /**

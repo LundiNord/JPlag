@@ -1,4 +1,4 @@
-package de.jplag.java_cpg.ai.variables.values.helpers;
+package de.jplag.java_cpg.ai.variables.values.numbers.helpers;
 
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import org.checkerframework.dataflow.qual.Impure;
@@ -234,12 +234,6 @@ public class IntInterval extends Interval<Integer> {
     }
 
     @Override
-    public void setUpperBound(Integer upperBound) {
-        assert upperBound >= lowerBound;
-        this.upperBound = upperBound;
-    }
-
-    @Override
     public int compareTo(@NotNull Interval<Integer> o) {
         if (!this.lowerBound.equals(o.lowerBound)) {
             return Integer.compare(this.lowerBound, o.lowerBound);
@@ -247,5 +241,5 @@ public class IntInterval extends Interval<Integer> {
             return Integer.compare(this.upperBound, o.upperBound);
         }
     }
-    
+
 }

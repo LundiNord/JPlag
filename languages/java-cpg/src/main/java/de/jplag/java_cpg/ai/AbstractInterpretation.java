@@ -11,6 +11,8 @@ import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
@@ -425,19 +427,19 @@ public class AbstractInterpretation {
                     if (condition.getValue()) {
                         runElseBranch = false;
                         //Dead code detected -> remove else branch
-                        TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
+//                        TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
                     } else {
                         runThenBranch = false;
                         //Dead code detected
-                        ifStmt.setThenStatement(null);
-                        if (ifStmt.getElseStatement() == null) {
-                            Block containingBlock = (Block) ifStmt.getScope().getAstNode();
-                            assert containingBlock != null;
-                            List<Statement> statements = containingBlock.getStatements();
-                            statements.remove(ifStmt);
-                            containingBlock.setStatements(statements);
-                        }
-                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+//                        ifStmt.setThenStatement(null);
+//                        if (ifStmt.getElseStatement() == null) {
+//                            Block containingBlock = (Block) ifStmt.getScope().getAstNode();
+//                            assert containingBlock != null;
+//                            List<Statement> statements = containingBlock.getStatements();
+//                            statements.remove(ifStmt);
+//                            containingBlock.setStatements(statements);
+//                        }
+//                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
 //                        if (ifStmt.getElseStatement() == null) {
 //                            TransformationUtil.disconnectFromPredecessor(ifStmt);
 //                        }

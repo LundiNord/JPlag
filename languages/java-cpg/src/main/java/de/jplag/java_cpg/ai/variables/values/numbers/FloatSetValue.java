@@ -1,7 +1,8 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.helpers.DoubleInterval;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -40,6 +41,12 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
     @Override
     public Value copy() {
         return new FloatSetValue(new TreeSet<>(values));
+    }
+
+    @Override
+    public void setInitialValue() {
+        values = new TreeSet<>();
+        values.add(createInterval(0d, 0d));
     }
 
     /**

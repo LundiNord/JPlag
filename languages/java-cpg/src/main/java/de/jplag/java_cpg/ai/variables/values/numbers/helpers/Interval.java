@@ -1,4 +1,4 @@
-package de.jplag.java_cpg.ai.variables.values.helpers;
+package de.jplag.java_cpg.ai.variables.values.numbers.helpers;
 
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import org.checkerframework.dataflow.qual.Impure;
@@ -67,10 +67,18 @@ public abstract class Interval<T extends Number & Comparable<T>> implements Comp
         return lowerBound;
     }
 
+    public void setLowerBound(@NotNull T lowerBound) {
+        assert lowerBound.compareTo(upperBound) <= 0;
+        this.lowerBound = lowerBound;
+    }
+
     public T getUpperBound() {
         return upperBound;
     }
 
-    public abstract void setUpperBound(T upperBound);
+    public void setUpperBound(T upperBound) {
+        assert lowerBound.compareTo(upperBound) <= 0;
+        this.upperBound = upperBound;
+    }
 
 }

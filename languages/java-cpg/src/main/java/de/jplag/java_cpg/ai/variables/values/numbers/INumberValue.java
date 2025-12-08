@@ -1,4 +1,4 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.numbers;
 
 /**
  * Interface for number values.

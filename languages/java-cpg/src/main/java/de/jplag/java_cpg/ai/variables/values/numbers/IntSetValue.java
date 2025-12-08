@@ -1,7 +1,8 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.helpers.IntInterval;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -40,6 +41,12 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
     @Override
     public Value copy() {
         return new IntSetValue(new TreeSet<>(values));
+    }
+
+    @Override
+    public void setInitialValue() {
+        values = new TreeSet<>();
+        values.add(createInterval(0, 0));
     }
 
     /**

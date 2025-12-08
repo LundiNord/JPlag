@@ -1,7 +1,9 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.helpers.Interval;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.helpers.Interval;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
@@ -253,12 +255,6 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
 
     @Override
     public void setToUnknown() {
-        values = new TreeSet<>();
-        values.add(createFullInterval());
-    }
-
-    @Override
-    public void setInitialValue() {
         values = new TreeSet<>();
         values.add(createFullInterval());
     }

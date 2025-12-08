@@ -93,6 +93,7 @@ public class Variable {
 
     /**
      * Reset all information in this variable expect type and name.
+     * Initial values depend on the type.
      */
     public void setInitialValue() {
         value.setInitialValue();
