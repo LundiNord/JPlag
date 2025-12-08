@@ -60,7 +60,7 @@ public abstract class Value {
     public static Value valueFactory(@NotNull Type type) {
         return switch (type) {
             case INT -> getNewIntValue();
-            case STRING -> new StringValue();
+            case STRING -> getNewStringValue();
             case BOOLEAN -> new BooleanValue();
             case OBJECT -> new JavaObject();
             case VOID -> new VoidValue();
@@ -78,7 +78,7 @@ public abstract class Value {
         }
         switch (value) {
             case String s -> {
-                return new StringValue(s);
+                return getNewStringValue(s);
             }
             case Integer i -> {
                 return getNewIntValue(i);

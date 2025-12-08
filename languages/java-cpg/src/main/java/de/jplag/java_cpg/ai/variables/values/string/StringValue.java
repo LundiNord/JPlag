@@ -70,6 +70,15 @@ public class StringValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(Type.FLOAT);
                 }
             }
+            case "startsWith" -> {
+                assert paramVars.size() == 1;
+                StringValue prefix = (StringValue) paramVars.getFirst();
+                if (information && prefix.getInformation()) {
+                    return Value.valueFactory(value.startsWith(prefix.getValue()));
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
