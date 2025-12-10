@@ -6,6 +6,7 @@ import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.numbers.*;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
+import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -133,17 +134,21 @@ public abstract class Value {
         };
     }
 
+    @NotNull
     private static Value getNewStringValue() {
         return switch (usedStringAiType) {
             case DEFAULT -> new StringValue();
             case CHAR_INCLUSION -> new StringCharInclValue();
+            case REGEX -> new StringRegexValue();
         };
     }
 
+    @NotNull
     private static Value getNewStringValue(String value) {
         return switch (usedStringAiType) {
             case DEFAULT -> new StringValue(value);
             case CHAR_INCLUSION -> new StringCharInclValue(value);
+            case REGEX -> new StringRegexValue(value);
         };
     }
 

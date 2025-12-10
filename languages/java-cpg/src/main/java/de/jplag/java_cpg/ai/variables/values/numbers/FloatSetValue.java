@@ -3,6 +3,7 @@ package de.jplag.java_cpg.ai.variables.values.numbers;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -52,6 +53,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
     /**
      * Used for testing.
      */
+    @TestOnly
     public SortedSet<DoubleInterval> getIntervals() {
         return values;
     }

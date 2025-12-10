@@ -4,9 +4,13 @@ import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
+import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
+import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
@@ -29,6 +33,29 @@ class DeadCodeDetectionStringTest {
         assertEquals(new HashSet<>(Set.of('!', 'c', 'W', 'H', 'm')), ((StringCharInclValue) main.accessField("result")).getMaybeContained());
         assertEquals(new HashSet<>(Set.of('J', 'O', 'H', 'N', ' ', 'D', 'E')), ((StringCharInclValue) main.accessField("result2")).getCertainContained());
         assertEquals(new HashSet<>(Set.of()), ((StringCharInclValue) main.accessField("result2")).getMaybeContained());
+    }
+
+    /**
+     * simple test for regex string analysis.
+     */
+    @Test
+    void testRegexString() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.REGEX);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/string");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(new ArrayList<>(List.of(new RegexChar('H'), new RegexChar('e'), new RegexChar('l'),
+                        new RegexChar('l'), new RegexChar('o'), new RegexChar(','), new RegexChar(' '),
+                        new RegexChar('J'), new RegexChar('o'), new RegexChar('h'), new RegexChar('n'),
+                        new RegexChar(' '), new RegexChar('D'), new RegexChar('o'), new RegexChar('e'),
+                        new RegexChar('!'))),
+                ((StringRegexValue) main.accessField("result")).getContentRegex());
+
+        assertEquals(new ArrayList<>(List.of(new RegexChar('J'), new RegexChar('O'), new RegexChar('H'),
+                        new RegexChar('N'), new RegexChar(' '), new RegexChar('D'), new RegexChar('O'),
+                        new RegexChar('E'))),
+                ((StringRegexValue) main.accessField("result2")).getContentRegex());
     }
 
 }

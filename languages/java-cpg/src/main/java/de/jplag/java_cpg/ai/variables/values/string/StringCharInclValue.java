@@ -7,6 +7,7 @@ import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.HashSet;
 import java.util.List;
@@ -200,6 +201,8 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     /**
      * Only for testing purposes.
      */
+    @Nullable
+    @TestOnly
     public Set<Character> getCertainContained() {
         return this.certainContained;
     }
@@ -207,6 +210,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     /**
      * Only for testing purposes.
      */
+    @TestOnly
     public Set<Character> getMaybeContained() {
         return this.maybeContained;
     }

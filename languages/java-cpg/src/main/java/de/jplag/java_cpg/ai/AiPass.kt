@@ -53,5 +53,6 @@ enum class FloatAiType {
 
 enum class StringAiType {
     CHAR_INCLUSION,
+    REGEX,
     DEFAULT,
 }
