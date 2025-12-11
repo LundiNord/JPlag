@@ -1,12 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values.string.regex;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
 public class RegexChars extends RegexItem {
 
-    //null: represents an empty char
+    //null: represents an empty-non existent char
     private final List<Character> content;
 
     public RegexChars(List<Character> content) {
@@ -18,18 +16,18 @@ public class RegexChars extends RegexItem {
     }
 
     @Override
-    public RegexItem merge(@NotNull RegexItem other) {
+    public RegexItem merge(RegexItem other) {
         switch (other) {
+            case null -> {
+                content.add(null);
+                return this;
+            }
             case RegexChars o -> {
                 content.addAll(o.getContent());
                 return this;
             }
             case RegexChar o -> {
                 content.add(o.getContent());
-                return this;
-            }
-            case RegexEmptyChar ignored -> {
-                content.add(null);
                 return this;
             }
             default -> throw new IllegalStateException("Unexpected value: " + other);

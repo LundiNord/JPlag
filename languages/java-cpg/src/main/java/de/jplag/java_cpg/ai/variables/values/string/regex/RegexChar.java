@@ -1,7 +1,5 @@
 package de.jplag.java_cpg.ai.variables.values.string.regex;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,8 +16,11 @@ public class RegexChar extends RegexItem {
     }
 
     @Override
-    public RegexItem merge(@NotNull RegexItem other) {
+    public RegexItem merge(RegexItem other) {
         switch (other) {
+            case null -> {
+                return new RegexChars(Arrays.asList(this.content, null));
+            }
             case RegexChars o -> {
                 return o.merge(this);
             }
@@ -28,9 +29,6 @@ public class RegexChar extends RegexItem {
                     return this;
                 }
                 return new RegexChars(List.of(this.content, o.content));
-            }
-            case RegexEmptyChar ignored -> {
-                return new RegexChars(Arrays.asList(this.content, null));
             }
             default -> throw new IllegalStateException("Unexpected value: " + other);
         }
@@ -48,5 +46,5 @@ public class RegexChar extends RegexItem {
         RegexChar regexChar = (RegexChar) o;
         return content == regexChar.content;
     }
-    
+
 }

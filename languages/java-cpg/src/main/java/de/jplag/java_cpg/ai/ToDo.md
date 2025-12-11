@@ -20,7 +20,7 @@
 - [x] Comments/Javadocs
 - [ ] Uninitialized variables to default value
 - [ ] all java datatypes
-- [ ] GoTo
+- [ ] goto
 
 ## Edge Cases to Test
 
@@ -44,3 +44,4 @@
 ## Long Term
 
 - [ ] explicitly carry object types everywhere
+- [ ] loop invariants detector
