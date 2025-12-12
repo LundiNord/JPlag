@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.values.string;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
@@ -104,6 +105,12 @@ public class StringValue extends JavaObject implements IStringValue {
                 return new StringValue(this.value + stringvalue.getValue());
             } else {
                 return new StringValue();
+            }
+        } else if (operator.equals("==") && other instanceof NullValue) {
+            if (information) {
+                return Value.valueFactory(this.value == null);
+            } else {
+                return Value.valueFactory(Type.BOOLEAN);
             }
         }
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());

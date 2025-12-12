@@ -6,6 +6,8 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 /**
  * Represents integer values as intervals.
  *
@@ -29,6 +31,12 @@ public class IntIntervalValue extends Value implements INumberValue {
     public IntIntervalValue(int number) {
         super(Type.INT);
         interval = new IntInterval(number);
+    }
+
+    public IntIntervalValue(@NotNull Set<Integer> possibleValues) {
+        super(Type.INT);
+        java.util.List<Integer> values = possibleValues.stream().toList();
+        interval = new IntInterval(values.getFirst(), values.getLast());
     }
 
     private IntIntervalValue(IntInterval interval) {
@@ -133,7 +141,7 @@ public class IntIntervalValue extends Value implements INumberValue {
     public void setToUnknown() {
         interval.setToUnknown();
     }
-    
+
     @Override
     public void setInitialValue() {
         interval.setUpperBound(0);

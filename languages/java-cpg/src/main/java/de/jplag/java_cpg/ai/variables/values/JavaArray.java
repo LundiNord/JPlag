@@ -1,7 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 import org.jetbrains.annotations.NotNull;
@@ -77,10 +76,11 @@ public class JavaArray extends JavaObject {
         return switch (innerType) {
             case INT -> Value.valueFactory(Type.INT);
             case BOOLEAN -> new BooleanValue();
-            case STRING -> new StringValue();
+            case STRING -> Value.valueFactory(Type.STRING);
             case OBJECT -> new JavaObject();
             case ARRAY -> new JavaArray();
-            case FLOAT -> new FloatValue();
+            case FLOAT -> Value.valueFactory(Type.FLOAT);
+            case CHAR -> Value.valueFactory(Type.CHAR);
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
         };
     }

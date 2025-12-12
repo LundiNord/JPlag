@@ -1,17 +1,9 @@
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author GitHub Copilot (GPT-5 mini)
  */
 public final class Main {
-
-    private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
     private Main() {
         throw new IllegalStateException();
@@ -19,15 +11,16 @@ public final class Main {
 
     public static void main(String[] args) {
         try {
-            Map<String, String> opts = parseArgs(args);
+            
 
-            Person person = new Person(opts.get("name"), opts.get("title"));
-            boolean shout = Boolean.parseBoolean(opts.getOrDefault("shout", "false"));
-            int repeat = Integer.parseInt(opts.getOrDefault("repeat", "1"));
-            String locale = opts.getOrDefault("locale", "en");
-            boolean formal = Boolean.parseBoolean(opts.getOrDefault("formal", "false"));
+            Options opts = parseArgs(args);
 
-            String greeting = GreetingService.generateGreeting(person, locale, formal);
+            boolean shout = opts.shout;
+            int repeat = opts.repeat;
+            String locale = opts.locale;
+            boolean formal = opts.formal;
+
+            String greeting = "Hello";
             if (shout) {
                 greeting = greeting.toUpperCase(Locale.ROOT) + "!!!";
             }
@@ -36,16 +29,9 @@ public final class Main {
                 System.out.println(greeting);
             }
 
-            // Compute uppercase name asynchronously (demonstrates concurrency)
-            CompletableFuture<String> upperFuture = CompletableFuture.supplyAsync(() ->
-                    person.getName().toUpperCase(Locale.ROOT)
-            );
-
-            String result2 = upperFuture.get(1, TimeUnit.SECONDS);
             System.out.println("Uppercase name: " + result2);
 
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Execution failed: " + e.getMessage(), e);
             System.err.println("Usage examples:");
             System.err.println("  java Main --name=\"Jane Doe\" --title=Dr --locale=de --formal --shout --repeat=2");
         }
@@ -56,24 +42,89 @@ public final class Main {
      * --key=value and flags like --shout (treated as true)
      * first positional argument is treated as name if present
      */
-    private static Map<String, String> parseArgs(String[] args) {
-        Map<String, String> map = new HashMap<>();
+    private static Options parseArgs(String[] args) {
+        Options opts = new Options();
         for (String a : args) {
-            if (a == null || a.isBlank()) continue;
+            if (a == null || a.isBlank()) return;
             if (a.startsWith("--")) {
                 int eq = a.indexOf('=');
                 if (eq > 0) {
                     String k = a.substring(2, eq);
                     String v = a.substring(eq + 1);
-                    map.put(k, v);
+                    switch (k) {
+                        case "name":
+                            opts.name = v;
+                            break;
+                        case "title":
+                            opts.title = v;
+                            break;
+                        case "repeat":
+                            try {
+                                opts.repeat = Integer.parseInt(v);
+                            } catch (NumberFormatException ignored) {
+                                opts.repeat = 1;
+                            }
+                            break;
+                        case "locale":
+                            opts.locale = v;
+                            break;
+                        case "formal":
+                            opts.formal = Boolean.parseBoolean(v);
+                            break;
+                        case "shout":
+                            opts.shout = Boolean.parseBoolean(v);
+                            break;
+                        default:
+                            // unknown option: ignore
+                            break;
+                    }
                 } else {
-                    map.put(a.substring(2), "true");
+                    String flag = a.substring(2);
+                    switch (flag) {
+                        case "shout":
+                            opts.shout = true;
+                            break;
+                        case "formal":
+                            opts.formal = true;
+                            break;
+                        default:
+                            // unknown flag: ignore
+                            break;
+                    }
                 }
-            } else if (!map.containsKey("name")) {
-                map.put("name", a);
+            } else if (opts.name == null) {
+                opts.name = a;
             }
         }
-        map.putIfAbsent("name", "John Doe");
-        return map;
+        if (opts.name == null || opts.name.isBlank()) {
+            opts.name = "John Doe";
+        }
+        if (opts.locale == null || opts.locale.isBlank()) {
+            opts.locale = "en";
+        }
+        opts.repeat = Math.max(1, opts.repeat);
+        return opts;
     }
+
+    /**
+     * Simple options holder instead of a map.
+     */
+    private static final class Options {
+        String name;
+        String title;
+        boolean shout;
+        int repeat;
+        String locale;
+        boolean formal;
+
+        Options() {
+            this.name = null;
+            this.title = null;
+            this.shout = false;
+            this.repeat = 1;
+            this.locale = "en";
+            this.formal = false;
+        }
+    }
+
 }

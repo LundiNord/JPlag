@@ -43,6 +43,17 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
         }
     }
 
+    public StringCharInclValue(@NotNull Set<String> possibleValues) {
+        super(Type.STRING);
+        certainContained = new HashSet<>();
+        maybeContained = new HashSet<>();
+        for (String value : possibleValues) {
+            for (char c : value.toCharArray()) {
+                maybeContained.add(c);
+            }
+        }
+    }
+
     private StringCharInclValue(@Nullable Set<Character> certainContained, Set<Character> maybeContained) {
         super(Type.STRING);
         this.certainContained = certainContained;

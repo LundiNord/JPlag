@@ -17,6 +17,7 @@ import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.*;
 
@@ -49,33 +50,48 @@ public class AbstractInterpretation {
      * @param tud TranslationUnitDeclaration graph node representing the whole program.
      */
     public void runMain(@NotNull TranslationUnitDeclaration tud) {
-        assert tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1;
-        for (Declaration declaration : tud.getDeclarations()) {
-            if (declaration instanceof NamespaceDeclaration) {      //ToDo: what if not in package
-                RecordDeclaration mainClas = (RecordDeclaration) ((NamespaceDeclaration) declaration).getDeclarations().getFirst();
-                JavaObject mainClassVar = new JavaObject();
-                setupClass(mainClas, mainClassVar);
-                assert mainClas.getMethods().stream().map(MethodDeclaration::getName)
-                        .filter(x -> x.getLocalName().equals("main")).count() == 1;
-                for (MethodDeclaration md : mainClas.getMethods()) {
-                    if (!md.getName().getLocalName().equals("main")) {
-                        methods.put(md.getName().getLocalName(), md);
-                    }
-                }
-                for (MethodDeclaration md : mainClas.getMethods()) {
-                    if (md.getName().getLocalName().equals("main")) {
-                        //Run main method
-                        List<Node> eog = md.getNextEOG();
-                        assert eog.size() == 1;
-                        variables.newScope();
-                        variables.addVariable(new Variable(new VariableName("args"), new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
-                        graphWalker(eog.getFirst());
-                        variables.removeScope();
-                    }
-                }
-            }
-            //ignore include declaration for now
+        RecordDeclaration mainClas;
+        if (tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1) {
+            //Code in a package
+            mainClas = tud.getDeclarations().stream()
+                    .filter(NamespaceDeclaration.class::isInstance)
+                    .map(NamespaceDeclaration.class::cast)
+                    .findFirst()
+                    .map(ns -> (RecordDeclaration) ns.getDeclarations().getFirst())
+                    .orElseThrow(() -> new IllegalStateException("No NamespaceDeclaration found in translation unit"));
+        } else if (tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(RecordDeclaration.class)).count() >= 1) {
+            //Code without a package
+            mainClas = tud.getDeclarations().stream()
+                    .filter(RecordDeclaration.class::isInstance)
+                    .map(RecordDeclaration.class::cast)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No RecordDeclaration found in translation unit"));
+        } else {
+            throw new IllegalStateException("Unexpected number of classes or namespaces in translation unit");
         }
+        JavaObject mainClassVar = new JavaObject();
+        setupClass(mainClas, mainClassVar);
+        assert mainClas.getMethods().stream().map(MethodDeclaration::getName)
+                .filter(x -> x.getLocalName().equals("main")).count() == 1;
+        for (MethodDeclaration md : mainClas.getMethods()) {
+            if (!md.getName().getLocalName().equals("main")) {
+                methods.put(md.getName().getLocalName(), md);
+            }
+        }
+        for (MethodDeclaration md : mainClas.getMethods()) {
+            if (md.getName().getLocalName().equals("main")) {
+                //Run main method
+                List<Node> eog = md.getNextEOG();
+                assert eog.size() == 1;
+                variables.newScope();
+                variables.addVariable(new Variable(new VariableName("args"), new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
+                graphWalker(eog.getFirst());
+                variables.removeScope();
+            }
+
+        }
+        //ignore include declaration for now
+
     }
 
     /**
@@ -671,8 +687,13 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     valueStack.add(new JavaArray());
                 }
-                JavaObject collection = (JavaObject) valueStack.getLast();
+                JavaArray collection = (JavaArray) valueStack.getLast();
+                //ToDo: set right variable value
                 valueStack.removeLast();
+                assert fes.getVariable() != null;
+                String varName = (fes.getVariable().getDeclarations().getFirst()).getName().toString();
+                Variable variable1 = new Variable(new VariableName(varName), collection.arrayAccess((INumberValue) Value.valueFactory(0)));
+                variables.addVariable(variable1);
                 if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
@@ -791,6 +812,7 @@ public class AbstractInterpretation {
         return enumObject;
     }
 
+    @TestOnly
     protected VariableStore getVariables() {
         return variables;
     }

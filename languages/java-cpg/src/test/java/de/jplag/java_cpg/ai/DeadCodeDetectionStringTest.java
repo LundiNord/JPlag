@@ -16,6 +16,7 @@ import java.util.Set;
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class DeadCodeDetectionStringTest {
 
@@ -56,6 +57,16 @@ class DeadCodeDetectionStringTest {
                         new RegexChar('N'), new RegexChar(' '), new RegexChar('D'), new RegexChar('O'),
                         new RegexChar('E'))),
                 ((StringRegexValue) main.accessField("result2")).getContentRegex());
+    }
+
+    @Test
+    void testRegexStringComplex() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.REGEX);
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/stringComplex");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
     }
 
 }

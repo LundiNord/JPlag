@@ -7,6 +7,8 @@ import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 /**
  * Represents a floating point value with optional exact information.
  */
@@ -27,6 +29,27 @@ public class FloatValue extends Value implements INumberValue {
         super(Type.FLOAT);
         this.value = value;
         information = true;
+    }
+
+    public FloatValue(double lowerBound, double upperBound) {
+        super(Type.FLOAT);
+        assert lowerBound <= upperBound;
+        if (lowerBound == upperBound) {
+            this.value = lowerBound;
+            this.information = true;
+        } else {
+            this.information = false;
+        }
+    }
+
+    public FloatValue(@NotNull Set<Double> values) {
+        super(Type.FLOAT);
+        if (values.size() == 1) {
+            this.value = values.iterator().next();
+            this.information = true;
+        } else {
+            this.information = false;
+        }
     }
 
     private FloatValue(double value, boolean information) {

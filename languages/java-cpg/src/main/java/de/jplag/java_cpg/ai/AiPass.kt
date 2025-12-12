@@ -56,3 +56,8 @@ enum class StringAiType {
     REGEX,
     DEFAULT,
 }
+
+enum class CharAiType {
+    SET,
+    DEFAULT,
+}

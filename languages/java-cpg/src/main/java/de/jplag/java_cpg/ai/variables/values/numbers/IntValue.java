@@ -6,6 +6,8 @@ import de.jplag.java_cpg.ai.variables.values.Value;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 public class IntValue extends Value implements INumberValue {
 
     private int value;
@@ -29,6 +31,26 @@ public class IntValue extends Value implements INumberValue {
         super(Type.INT);
         this.value = (int) value;
         information = true;
+    }
+
+    public IntValue(@NotNull Set<Integer> possibleValues) {
+        super(Type.INT);
+        if (possibleValues.size() == 1) {
+            this.value = possibleValues.iterator().next();
+            this.information = true;
+        } else {
+            this.information = false;
+        }
+    }
+
+    public IntValue(int lowerBound, int upperBound) {
+        super(Type.INT);
+        if (lowerBound == upperBound) {
+            this.value = lowerBound;
+            this.information = true;
+        } else {
+            this.information = false;
+        }
     }
 
     private IntValue(int value, boolean information) {

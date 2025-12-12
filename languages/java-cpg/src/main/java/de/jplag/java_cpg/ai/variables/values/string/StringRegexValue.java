@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.values.string;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
@@ -21,7 +22,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
 
     //String=null <--> contentRegex=null
     @Nullable
-    private List<RegexItem> contentRegex;   //ToDo empty chars?
+    private List<RegexItem> contentRegex;
     private boolean unknown;
 
     /**
@@ -42,6 +43,19 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         contentRegex = new ArrayList<>();
         for (char c : value.toCharArray()) {
             contentRegex.add(new RegexChar(c));
+        }
+    }
+
+    public StringRegexValue(@NotNull Set<String> possibleValues) {
+        super(Type.STRING);
+        unknown = false;
+        contentRegex = new ArrayList<>();
+        for (String possibleValue : possibleValues) {
+            List<RegexItem> possibleValueRegex = new ArrayList<>();
+            for (char c : possibleValue.toCharArray()) {
+                possibleValueRegex.add(new RegexChar(c));
+            }
+            appendAtPos(contentRegex, possibleValueRegex, contentRegex.size() - 1);
         }
     }
 
@@ -114,10 +128,10 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             case "startsWith" -> {
                 assert paramVars.size() == 1;
                 StringRegexValue other = (StringRegexValue) paramVars.getFirst();
-                assert this.contentRegex != null && other.contentRegex != null;
                 if (this.unknown || other.unknown) {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
+                assert this.contentRegex != null && other.contentRegex != null;
                 if (this.contentRegex.size() < other.contentRegex.size()) {
                     return Value.valueFactory(false);
                 }
@@ -144,10 +158,10 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             case "equals" -> {
                 assert paramVars.size() == 1;
                 StringRegexValue other = (StringRegexValue) paramVars.getFirst();
-                assert this.contentRegex != null && other.contentRegex != null;
                 if (this.unknown || other.unknown) {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
+                assert this.contentRegex != null && other.contentRegex != null;
                 if (this.contentRegex.size() != other.contentRegex.size()) {
                     return Value.valueFactory(false);
                 }
@@ -195,6 +209,61 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     }
                 }
                 return new StringRegexValue(newContentRegex, false);
+            }
+            case "isBlank" -> { //all whitespace or empty or null
+                if (unknown) {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+                if (contentRegex == null) {
+                    return Value.valueFactory(true);
+                }
+                boolean unknownMatch = false;
+                for (RegexItem item : contentRegex) {
+                    if (item instanceof RegexChar regexChar) {
+                        if (!Character.isWhitespace(regexChar.getContent())) {
+                            return Value.valueFactory(false);
+                        }
+                    } else if (item instanceof RegexChars regexChars) {
+                        for (Character c : regexChars.getContent()) {
+                            if (c == null || !Character.isWhitespace(c)) {
+                                unknownMatch = true;
+                            }
+                        }
+                    }
+                }
+                if (unknownMatch) {
+                    return Value.valueFactory(Type.BOOLEAN);
+                } else {
+                    return Value.valueFactory(true);
+                }
+            }
+            case "indexOf" -> { //Returns the index within this string of the first occurrence of the specified character. -1 if not found.
+                if (unknown) {
+                    return Value.valueFactory(Type.INT);
+                }
+                if (contentRegex == null) {
+                    return Value.valueFactory(-1);
+                }
+                boolean unknownMatch = false;
+                for (RegexItem item : contentRegex) {
+                    if (item instanceof RegexChar regexChar) {
+                        if (!Character.isWhitespace(regexChar.getContent())) {
+                            return Value.valueFactory(false);
+                        }
+                    } else if (item instanceof RegexChars regexChars) {
+                        for (Character c : regexChars.getContent()) {
+                            if (c == null || !Character.isWhitespace(c)) {
+                                unknownMatch = true;
+                            }
+                        }
+                    }
+                }
+                if (unknownMatch) {
+                    return Value.valueFactory(Type.BOOLEAN);
+                } else {
+                    return Value.valueFactory(true);
+                }
+
             }
             default -> throw new UnsupportedOperationException(methodName);
         }
@@ -245,6 +314,12 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 }
             }
             return new StringRegexValue(newContentRegex, false);
+        } else if (operator.equals("==") && other instanceof NullValue) {
+            if (!unknown) {
+                return Value.valueFactory(this.contentRegex == null);
+            } else {
+                return Value.valueFactory(Type.BOOLEAN);
+            }
         }
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }
@@ -273,15 +348,15 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         }
         int maxLength = Math.max(this.contentRegex.size(), otherString.contentRegex.size());
         int minLength = Math.min(this.contentRegex.size(), otherString.contentRegex.size());
-        for (int i = 0; i <= minLength; i++) {
+        for (int i = 0; i < minLength; i++) {
             this.contentRegex.get(i).merge(otherString.contentRegex.get(i));
         }
         if (this.contentRegex.size() < otherString.contentRegex.size()) {
-            for (int i = minLength; i <= maxLength; i++) {
+            for (int i = minLength; i < maxLength; i++) {
                 this.contentRegex.add(RegexItem.merge(null, otherString.contentRegex.get(i)));
             }
         } else {
-            for (int i = minLength; i <= maxLength; i++) {
+            for (int i = minLength; i < maxLength; i++) {
                 this.contentRegex.get(i).merge(null);
             }
         }
