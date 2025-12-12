@@ -45,3 +45,7 @@
 
 - [ ] explicitly carry object types everywhere
 - [ ] loop invariants detector
+
+## Limitations
+
+- cpg does not seem to work with for without { }
