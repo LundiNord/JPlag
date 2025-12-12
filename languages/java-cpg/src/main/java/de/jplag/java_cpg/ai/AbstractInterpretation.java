@@ -137,6 +137,7 @@ public class AbstractInterpretation {
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Integer.getName(), new de.jplag.java_cpg.ai.variables.objects.Integer()));
+        variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Boolean.getName(), new de.jplag.java_cpg.ai.variables.objects.Boolean()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Double.getName(), new de.jplag.java_cpg.ai.variables.objects.Double()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.String.getName(), new de.jplag.java_cpg.ai.variables.objects.String()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
@@ -224,6 +225,7 @@ public class AbstractInterpretation {
                         JavaObject javaObject = (JavaObject) valueStack.getLast();
                         valueStack.removeLast();    //remove object reference
                         Value result = javaObject.accessField(me.getName().getLocalName());
+                        result.setParentObject(javaObject);
                         valueStack.add(result);
                     }
                 } else if (me.getRefersTo() instanceof MethodDeclaration) {
@@ -292,7 +294,7 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case MemberCallExpression mce -> {//adds its value to the value stack
+            case MemberCallExpression mce -> {  //adds its value to the value stack
                 Value result;
                 if (mce.getArguments().isEmpty()) {     //no arguments
                     assert nodeStack.getLast() instanceof MemberExpression;
@@ -371,8 +373,10 @@ public class AbstractInterpretation {
                         if (nodeStack.get(nodeStack.size() - 2).getName().getParent() == null) {    //this class
                             classVal = variables.getThisObject();
                         } else {
-                            VariableName className = new VariableName(nodeStack.get(nodeStack.size() - 2).getName().getParent().toString());
-                            classVal = (JavaObject) variables.getVariable(className).getValue();
+                            assert nodeStack.get(nodeStack.size() - 2).getName().getParent() != null;
+                            //VariableName className = new VariableName(nodeStack.get(nodeStack.size() - 2).getName().getParent().toString());
+                            classVal = valueStack.get(valueStack.size() - 2).getParentObject();
+                            //classVal = (JavaObject) variables.getVariable(className).getValue();
                         }
                         classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
                     } else {
@@ -403,7 +407,6 @@ public class AbstractInterpretation {
             }
             case BinaryOperator bop -> {
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
-                //assert valueStack.get(valueStack.size() - 2).getType() == valueStack.getLast().getType();
                 String operator = bop.getOperatorCode();
                 assert operator != null;
                 Value result = valueStack.get(valueStack.size() - 2).binaryOperation(operator, valueStack.getLast());
@@ -547,7 +550,7 @@ public class AbstractInterpretation {
                     nextNode = block.getNextEOG().getFirst();
                 }
                 if (nextNode == null) {
-                    return new VoidValue(); //ToDo: funktion return (CropArea:31)
+                    return new VoidValue(); //ToDo: function return (CropArea:31)
                 }
             }
             case CaseStatement cs -> {

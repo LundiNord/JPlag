@@ -11,6 +11,7 @@ import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
@@ -27,10 +28,14 @@ public abstract class Value {
     private static StringAiType usedStringAiType = StringAiType.DEFAULT;
     private static CharAiType usedCharAiType = CharAiType.DEFAULT;
 
+    @NotNull
     private final Type type;
+    @Nullable
     private Pair<JavaArray, INumberValue> arrayPosition;    //necessary for an array assign to work
+    @Nullable
+    private JavaObject parentObject;                        //necessary for some field access
 
-    protected Value(Type type) {
+    protected Value(@NotNull Type type) {
         this.type = type;
     }
 
@@ -320,5 +325,14 @@ public abstract class Value {
      * Initial value depends on the specific value type.
      */
     public abstract void setInitialValue();
+
+    @Nullable
+    public JavaObject getParentObject() {
+        return parentObject;
+    }
+
+    public void setParentObject(@Nullable JavaObject parentObject) {
+        this.parentObject = parentObject;
+    }
 
 }

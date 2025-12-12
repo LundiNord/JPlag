@@ -109,6 +109,28 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 int number = Integer.parseInt(possibleChars.toString());
                 return Value.valueFactory(number);
             }
+            case "parseBoolean" -> {
+                assert paramVars.size() == 1;
+                if (unknown || contentRegex == null) {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+                List<Character> possibleChars = new ArrayList<>();
+                for (RegexItem item : contentRegex) {
+                    if (item instanceof RegexChars) {
+                        return Value.valueFactory(Type.BOOLEAN);
+                    } else if (item instanceof RegexChar regexChar) {
+                        possibleChars.add(regexChar.getContent());
+                    }
+                }
+                String str = possibleChars.toString().toLowerCase();
+                if (str.equals("true")) {
+                    return Value.valueFactory(true);
+                } else if (str.equals("false")) {
+                    return Value.valueFactory(false);
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
             case "parseDouble" -> {
                 assert paramVars.size() == 1;
                 if (unknown || contentRegex == null) {
@@ -263,7 +285,27 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 } else {
                     return Value.valueFactory(true);
                 }
-
+            }
+            case "substring" -> {   //(int begin) or (int begin, int end)
+                assert paramVars != null && (paramVars.size() == 1 || paramVars.size() == 2);
+                if (unknown) {
+                    return new StringRegexValue(null, true);
+                }
+                if (contentRegex == null) {
+                    return new StringRegexValue(null, false);
+                }
+                int begin = (int) ((INumberValue) paramVars.get(0)).getValue();
+                int end = contentRegex.size();
+                if (paramVars.size() == 2) {
+                    end = (int) ((INumberValue) paramVars.get(1)).getValue();
+                }
+                begin = Math.clamp(begin, 0, contentRegex.size());
+                end = Math.clamp(end, begin, contentRegex.size());
+                List<RegexItem> sub = new ArrayList<>();
+                for (int i = begin; i < end; i++) {
+                    sub.add(contentRegex.get(i));
+                }
+                return new StringRegexValue(sub, false);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }
@@ -286,10 +328,10 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 return new StringRegexValue(null, true);
             }
             List<RegexItem> newContentRegex = new ArrayList<>(contentRegex);
-            newContentRegex = appendAtPos(newContentRegex, doubleToRegex(inumbervalue.getValue()), contentRegex.size() - 1);
+            appendAtPos(newContentRegex, doubleToRegex(inumbervalue.getValue()), contentRegex.size() - 1);
             for (int i = contentRegex.size() - 1; i >= 0; i--) {
                 if (newContentRegex.get(i) instanceof RegexChars chars && chars.canBeEmpty()) {
-                    newContentRegex = appendAtPos(newContentRegex, doubleToRegex(inumbervalue.getValue()), i);
+                    appendAtPos(newContentRegex, doubleToRegex(inumbervalue.getValue()), i);
                 } else {
                     break;
                 }
@@ -305,10 +347,10 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             }
             //put at the end of each possible list end (without empty chars)
             List<RegexItem> newContentRegex = new ArrayList<>(contentRegex);
-            newContentRegex = appendAtPos(newContentRegex, stringValue.contentRegex, contentRegex.size() - 1);
+            appendAtPos(newContentRegex, stringValue.contentRegex, contentRegex.size() - 1);
             for (int i = contentRegex.size() - 1; i >= 0; i--) {
                 if (newContentRegex.get(i) instanceof RegexChars chars && chars.canBeEmpty()) {
-                    newContentRegex = appendAtPos(newContentRegex, stringValue.contentRegex, i);
+                    appendAtPos(newContentRegex, stringValue.contentRegex, i);
                 } else {
                     break;
                 }
@@ -334,6 +376,14 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         if (other instanceof VoidValue) {
             contentRegex = new ArrayList<>();
             unknown = true;
+            return;
+        }
+        if (other instanceof NullValue) {
+            if (contentRegex == null) {
+                //keep null
+            } else {
+                this.unknown = true;
+            }
             return;
         }
         assert other instanceof StringRegexValue;

@@ -8,12 +8,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class Integer extends JavaObject {
+public class Boolean extends JavaObject {
 
     private static final java.lang.String PATH = "java.lang";
-    private static final java.lang.String NAME = "Integer";
+    private static final java.lang.String NAME = "Boolean";
 
-    public Integer() {
+    public Boolean() {
         super();
     }
 
@@ -24,12 +24,12 @@ public class Integer extends JavaObject {
     @Override
     public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
-            case "parseInt" -> {
+            case "parseBoolean" -> {
                 assert paramVars.size() == 1;
                 Value value = paramVars.getFirst();
                 switch (value) {
                     case IStringValue str -> {
-                        return str.callMethod("parseInt", paramVars);
+                        return str.callMethod("parseBoolean", paramVars);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
@@ -40,7 +40,7 @@ public class Integer extends JavaObject {
 
     @Override
     public JavaObject copy() {
-        return new Integer();
+        return new Boolean();
     }
 
 }

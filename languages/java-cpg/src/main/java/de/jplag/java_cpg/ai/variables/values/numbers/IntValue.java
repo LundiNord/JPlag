@@ -148,6 +148,20 @@ public class IntValue extends Value implements INumberValue {
                     return new BooleanValue();
                 }
             }
+            case "max" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new IntValue(Math.max(this.value, ((IntValue) other).getValue()));
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "min" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new IntValue(Math.min(this.value, ((IntValue) other).getValue()));
+                } else {
+                    return new IntValue();
+                }
+            }
             default ->
                     throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }

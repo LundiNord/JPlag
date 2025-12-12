@@ -16,6 +16,17 @@ public class NullValue extends Value {
     }
 
     @Override
+    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        switch (operator) {
+            case "==" -> {
+                return new BooleanValue(other instanceof NullValue);
+            }
+            default ->
+                    throw new UnsupportedOperationException("Operator " + operator + " not supported for NullValue.");
+        }
+    }
+
+    @Override
     public Value copy() {
         return new NullValue();
     }

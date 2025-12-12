@@ -11,7 +11,7 @@ public final class Main {
 
     public static void main(String[] args) {
         try {
-            
+
 
             Options opts = parseArgs(args);
 
@@ -29,7 +29,7 @@ public final class Main {
                 System.out.println(greeting);
             }
 
-            System.out.println("Uppercase name: " + result2);
+            System.out.println("Uppercase name: ");
 
         } catch (Exception e) {
             System.err.println("Usage examples:");
