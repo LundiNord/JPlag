@@ -1,10 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.NullValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import org.jetbrains.annotations.NotNull;
 
@@ -79,6 +76,29 @@ public class StringValue extends JavaObject implements IStringValue {
                 } else {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
+            }
+            case "equals" -> {
+                assert paramVars.size() == 1;
+                StringValue other = (StringValue) paramVars.getFirst();
+                if (information && other.getInformation()) {
+                    return Value.valueFactory(value.equals(other.getValue()));
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
+            case "split" -> {   //public String[] split(String regex)
+                assert paramVars.size() == 1;
+                StringValue regexValue = (StringValue) paramVars.getFirst();
+                if (!information || !regexValue.getInformation()) {
+                    return new JavaArray(Type.STRING);
+                }
+                assert regexValue.getValue() != null && value != null;
+                String[] parts = value.split(regexValue.getValue());
+                JavaArray array = new JavaArray(Type.STRING);
+                for (int i = 0; i < parts.length; i++) {
+                    array.arrayAssign((INumberValue) Value.valueFactory(i), new StringValue(parts[i]));
+                }
+                return array;
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

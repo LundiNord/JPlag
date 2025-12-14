@@ -314,7 +314,7 @@ class DeadCodeDetectionTest {
      * Test another programming course final project.
      */
     @Test
-    void testQueensFarming2() throws ParsingException, InterruptedException {
+    void testTrafficSym() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex2");
         JavaObject main = getMainObject(interpretation);
