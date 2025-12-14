@@ -31,6 +31,10 @@ public final class Main {
         x = x + 50;
         z = z + 50;
 
+        for (int i = 0; i > 1; i++) {
+            //irrelevant loop
+        }
+
         if (y < 100) {
             //never run
             z = z + 100;

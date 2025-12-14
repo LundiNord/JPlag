@@ -457,6 +457,7 @@ public class AbstractInterpretation {
                         ifStmt.setThenStatement(null);
                         if (ifStmt.getElseStatement() == null) {
                             TransformationUtil.disconnectFromPredecessor(ifStmt);
+                            assert ifStmt.getScope() != null;
                             Block containingBlock = (Block) ifStmt.getScope().getAstNode();
                             assert containingBlock != null;
                             List<Statement> statements = containingBlock.getStatements();
@@ -526,7 +527,7 @@ public class AbstractInterpretation {
                     return null;
                 }
             }
-            case SwitchStatement sw -> {
+            case SwitchStatement sw -> {    //ToDo delete dead Code in switch
                 assert !valueStack.isEmpty();
                 int branches = nextEOG.size();
                 VariableStore originalVariables = new VariableStore(variables);
@@ -656,6 +657,13 @@ public class AbstractInterpretation {
                 } else {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                    TransformationUtil.disconnectFromPredecessor(ws);
+                    assert ws.getScope() != null;
+                    Block containingBlock = (Block) ws.getScope().getAstNode();
+                    assert containingBlock != null;
+                    List<Statement> statements = containingBlock.getStatements();
+                    statements.remove(ws);
+                    containingBlock.setStatements(statements);
                 }
                 //continue with next node after while
                 nextNode = nextEOG.getLast();
@@ -681,6 +689,13 @@ public class AbstractInterpretation {
                 } else {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                    TransformationUtil.disconnectFromPredecessor(fs);
+                    assert fs.getScope() != null;
+                    Block containingBlock = (Block) fs.getScope().getAstNode();
+                    assert containingBlock != null;
+                    List<Statement> statements = containingBlock.getStatements();
+                    statements.remove(fs);
+                    containingBlock.setStatements(statements);
                 }
                 //continue with the next node after for
                 nextNode = nextEOG.getLast();
@@ -702,6 +717,13 @@ public class AbstractInterpretation {
                 if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                    TransformationUtil.disconnectFromPredecessor(fes);
+                    assert fes.getScope() != null;
+                    Block containingBlock = (Block) fes.getScope().getAstNode();
+                    assert containingBlock != null;
+                    List<Statement> statements = containingBlock.getStatements();
+                    statements.remove(fes);
+                    containingBlock.setStatements(statements);
                 } else {
                     variables.recordChanges();
                     variables.newScope();
