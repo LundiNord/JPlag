@@ -446,27 +446,29 @@ public class AbstractInterpretation {
                     if (condition.getValue()) {
                         runElseBranch = false;
                         //Dead code detected -> remove else branch
-//                        TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
+                        if (ifStmt.getElseStatement() != null) {
+                            TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
+                            ifStmt.setElseStatement(null);
+                        }
                     } else {
                         runThenBranch = false;
                         //Dead code detected
-//                        ifStmt.setThenStatement(null);
-//                        if (ifStmt.getElseStatement() == null) {
-//                            Block containingBlock = (Block) ifStmt.getScope().getAstNode();
-//                            assert containingBlock != null;
-//                            List<Statement> statements = containingBlock.getStatements();
-//                            statements.remove(ifStmt);
-//                            containingBlock.setStatements(statements);
-//                        }
-//                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-//                        if (ifStmt.getElseStatement() == null) {
-//                            TransformationUtil.disconnectFromPredecessor(ifStmt);
-//                        }
+                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                        ifStmt.setThenStatement(null);
+                        if (ifStmt.getElseStatement() == null) {
+                            TransformationUtil.disconnectFromPredecessor(ifStmt);
+                            Block containingBlock = (Block) ifStmt.getScope().getAstNode();
+                            assert containingBlock != null;
+                            List<Statement> statements = containingBlock.getStatements();
+                            statements.remove(ifStmt);
+                            containingBlock.setStatements(statements);
+                        }
                     }
                 }
                 if (ifStmt.getThenStatement() == null) {
                     runThenBranch = false;
-                } else if (ifStmt.getElseStatement() == null) {
+                }
+                if (ifStmt.getElseStatement() == null) {
                     runElseBranch = false;
                 }
                 nodeStack.removeLast();     //remove condition

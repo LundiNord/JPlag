@@ -14,6 +14,10 @@ public final class Main {
         int z = 500;
         int y = 100;
 
+        if (y == 100) {
+            z = z + 100;
+        }
+
         x = x + 50;
         z = z + 50;
 

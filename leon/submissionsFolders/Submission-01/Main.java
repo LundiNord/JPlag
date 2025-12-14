@@ -14,9 +14,10 @@ public final class Main {
         int z = 500;
         int y = 100;
 
-        if (y < 100) {
-            //never run
+        if (y == 100) {
             z = z + 100;
+        } else {
+            z = z + 50;
         }
 
         x = x + 50;
@@ -42,7 +43,7 @@ public final class Main {
             //never run
             z = z + 100;
         }
-        
+
         x = x + 50;
         z = z + 50;
 
@@ -50,6 +51,9 @@ public final class Main {
             //never run
             z = z + 100;
         }
+
+        x = x + 50;
+        z = z + 50;
 
         result = z;
         result2 = y;
