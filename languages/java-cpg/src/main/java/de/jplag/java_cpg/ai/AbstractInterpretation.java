@@ -345,14 +345,23 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case DeclarationStatement ds -> {
-                assert !valueStack.isEmpty();
-                Variable variable = new Variable((ds.getDeclarations().getFirst()).getName().toString(), valueStack.getLast());
-                variables.addVariable(variable);
-                nodeStack.removeLast();
-                nodeStack.removeLast();
-                valueStack.removeLast();
-                if (nextEOG.getFirst() instanceof ForEachStatement) {
-                    valueStack.add(variable.getValue());
+                if (((VariableDeclaration) ds.getDeclarations().getFirst()).getInitializer() == null) {
+                    assert ds.getDeclarations().size() == 1;
+                    Variable newVar = new Variable(new VariableName((ds.getDeclarations().getFirst()).getName().toString()),
+                            de.jplag.java_cpg.ai.variables.Type.fromCpgType(((VariableDeclaration) ds.getDeclarations().getFirst()).getType()));
+                    newVar.setInitialValue();
+                    variables.addVariable(newVar);
+                    nodeStack.removeLast();
+                } else {
+                    assert !valueStack.isEmpty();
+                    Variable variable = new Variable((ds.getDeclarations().getFirst()).getName().toString(), valueStack.getLast());
+                    variables.addVariable(variable);
+                    nodeStack.removeLast();
+                    nodeStack.removeLast();
+                    valueStack.removeLast();
+                    if (nextEOG.getFirst() instanceof ForEachStatement) {
+                        valueStack.add(variable.getValue());
+                    }
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
@@ -383,7 +392,7 @@ public class AbstractInterpretation {
                         variable.setValue(valueStack.getLast());
                     }
                     nodeStack.removeLast();
-                    //sometimes value of assign is used after so don't remove it
+                    //sometimes the value of assign is used after, so don't remove it
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
@@ -648,13 +657,19 @@ public class AbstractInterpretation {
                     //run body if the condition is true or unknown
                     variables.recordChanges();
                     variables.newScope();
+                    //ToDo set everything unknown inside while
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
-                    Set<Variable> changedVariables = variables.stopRecordingChanges();
-                    //merge if the loop has been run
-                    for (Variable variable : changedVariables) {
-                        variable.setToUnknown();
+                    try {
+                        Set<Variable> changedVariables = variables.stopRecordingChanges();
+                        //merge if the loop has been run
+                        for (Variable variable : changedVariables) {
+                            variable.setToUnknown();
+                        }
+                    } catch (Exception e) {
+                        System.err.println(e.getMessage());
                     }
+
                 } else {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
@@ -823,6 +838,11 @@ public class AbstractInterpretation {
                 nodeStack.add(le);
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
+            }
+            case EmptyStatement es -> {
+                //occurs, for example, when while loop body is empty
+                assert nextEOG.size() == 1;
+                return null;
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }

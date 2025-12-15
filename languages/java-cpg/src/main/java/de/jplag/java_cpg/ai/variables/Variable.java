@@ -18,16 +18,12 @@ public class Variable {
     private Value value;
     private List<ChangeRecorder> changeRecorders = new ArrayList<>();
 
-    public Variable(VariableName name, Value value) {
-        assert value != null;
-        assert name != null;
+    public Variable(@NotNull VariableName name, @NotNull Value value) {
         this.name = name;
         this.value = value;
     }
 
-    public Variable(String string, Value value) {
-        assert string != null;
-        assert value != null;
+    public Variable(@NotNull String string, @NotNull Value value) {
         this.name = new VariableName(string);
         this.value = value;
     }

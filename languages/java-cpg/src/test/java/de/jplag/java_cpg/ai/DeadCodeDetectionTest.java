@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test that only use the CPG library.
+ * Test that only uses the CPG library.
  *
  * @author ujiqk
  * @version 1.0
@@ -57,7 +57,7 @@ class DeadCodeDetectionTest {
         return interpretation;
     }
 
-    private static TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
+    static TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
@@ -418,6 +418,17 @@ class DeadCodeDetectionTest {
     @Test
     void testWhileAssign() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/whileAssign");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+    }
+
+    /**
+     * simple test for while inside while.
+     */
+    @Test
+    void testNestedWhile() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/nestedWhile");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());

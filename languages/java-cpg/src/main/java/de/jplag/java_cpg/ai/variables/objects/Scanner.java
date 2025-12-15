@@ -1,5 +1,6 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
@@ -33,6 +34,10 @@ public class Scanner extends JavaObject {
             case "close" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return new VoidValue();
+            }
+            case "nextInt" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(Type.INT);
             }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in Scanner.");
         }

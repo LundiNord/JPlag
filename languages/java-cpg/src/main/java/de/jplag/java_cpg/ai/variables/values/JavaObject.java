@@ -77,9 +77,11 @@ public class JavaObject extends Value implements IJavaObject {
         return result.getValue();
     }
 
-    public void changeField(String fieldName, Value value) {
-        assert fieldName != null;
+    public void changeField(@NotNull String fieldName, Value value) {
         Variable variable = fields.getVariable(new VariableName(fieldName));
+        if (variable == null) {
+            System.err.println("Cannot change field '" + fieldName + "' because it does not exist");
+        }
         variable.setValue(value);
     }
 
