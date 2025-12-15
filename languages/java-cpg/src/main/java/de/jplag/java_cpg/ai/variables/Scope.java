@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class Scope {
      *
      * @param otherScope the other scope to merge into this one.
      */
-    public void merge(Scope otherScope) {
+    public void merge(@NotNull Scope otherScope) {
         //assert: both scopes contain the same variables with potentially different values
         for (Map.Entry<VariableName, Variable> entry : otherScope.variables.entrySet()) {
             assert this.variables.containsKey(entry.getKey());
@@ -77,16 +78,20 @@ public class Scope {
         }
     }
 
-    public void addChangeRecorder(ChangeRecorder changeRecorder) {
+    public void addChangeRecorder(@NotNull ChangeRecorder changeRecorder) {
         for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {
             entry.getValue().addChangeRecorder(changeRecorder);
         }
     }
 
+    @Nullable
     public ChangeRecorder removeLastChangeRecorder() {
         List<ChangeRecorder> recorders = new ArrayList<>();
         for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {
             recorders.add(entry.getValue().removeLastChangeRecorder());
+        }
+        if (recorders.isEmpty()) {
+            return null;
         }
         ChangeRecorder first = recorders.getFirst();
         assert recorders.stream().allMatch(r -> r == first);

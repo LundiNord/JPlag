@@ -27,14 +27,16 @@ public class CigarrasTontas {
             }
         }
         for (int i : locaisVisitados) {
-            if (i != 0)
+            if (i != 0) {
                 System.out.println(i);
+            }
         }
     }
 
     static void apagaLocais(int a, int b, int v[]) {
-        for (int i = a; i <= b; i++)
+        for (int i = a; i <= b; i++) {
             v[i] = 0;
+        }
     }
-    
+
 }

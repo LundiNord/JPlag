@@ -172,8 +172,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * nondeterministic test! (completes sometimes in debug mode)
-     * test creating a new class instance
+     * Test creating a new class instance.
      */
     @Test
     void testNewClass() throws ParsingException, InterruptedException {
@@ -413,7 +412,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple test for while with variable assignment in condition.
+     * simple test for while with variable assignment in the condition.
      */
     @Test
     void testWhileAssign() throws ParsingException, InterruptedException {
@@ -428,10 +427,13 @@ class DeadCodeDetectionTest {
      */
     @Test
     void testNestedWhile() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/nestedWhile");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());
-        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+        assertEquals(1, ((INumberValue) main.accessField("result2")).getValue());
     }
 
 }

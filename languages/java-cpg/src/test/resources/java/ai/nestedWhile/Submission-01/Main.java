@@ -20,8 +20,8 @@ public final class Main {
             }
 
         }
-        
-        result1 = x;
+
+        result = x;
         result2 = y;
     }
 

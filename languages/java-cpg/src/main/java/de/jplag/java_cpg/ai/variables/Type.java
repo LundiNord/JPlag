@@ -43,6 +43,7 @@ public enum Type {
         }
     }
 
+    @Deprecated
     public boolean checkEquals(de.fraunhofer.aisec.cpg.graph.types.Type cpgOther) {
         return switch (this) {
             case INT -> cpgOther.getClass() == de.fraunhofer.aisec.cpg.graph.types.IntegerType.class;

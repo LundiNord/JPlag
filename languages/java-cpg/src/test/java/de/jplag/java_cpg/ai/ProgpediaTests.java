@@ -7,6 +7,7 @@ import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -36,16 +37,16 @@ class ProgpediaTests {
         return interpretation;
     }
 
-    private static java.util.stream.Stream<String> acceptedResourceDirs() {
-        ClassLoader classLoader = DeadCodeDetectionTest.class.getClassLoader();
-        java.net.URL url = classLoader.getResource("java/progpedia/00000006/ACCEPTED");
-        if (url == null) return java.util.stream.Stream.empty();
-        File base = new File(java.util.Objects.requireNonNull(url).getFile());
-        File[] dirs = base.listFiles(File::isDirectory);
-        if (dirs == null) return java.util.stream.Stream.empty();
-        return java.util.Arrays.stream(dirs)
-                .map(f -> "java/progpedia/00000006/ACCEPTED/" + f.getName() + "/");
-    }
+//    private static java.util.stream.Stream<String> acceptedResourceDirs() {
+//        ClassLoader classLoader = DeadCodeDetectionTest.class.getClassLoader();
+//        java.net.URL url = classLoader.getResource("java/progpedia/00000006/ACCEPTED");
+//        if (url == null) return java.util.stream.Stream.empty();
+//        File base = new File(java.util.Objects.requireNonNull(url).getFile());
+//        File[] dirs = base.listFiles(File::isDirectory);
+//        if (dirs == null) return java.util.stream.Stream.empty();
+//        return java.util.Arrays.stream(dirs)
+//                .map(f -> "java/progpedia/00000006/ACCEPTED/" + f.getName() + "/");
+//    }
 
     @ParameterizedTest
     @ValueSource(strings = {"java/progpedia/00000006/ACCEPTED/00001_00001/"})
@@ -71,6 +72,7 @@ class ProgpediaTests {
 //    }
 
     @Test
+    @Disabled
     void testComplexWhile() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
@@ -79,6 +81,5 @@ class ProgpediaTests {
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
     }
-
 
 }

@@ -6,6 +6,8 @@ import de.fraunhofer.aisec.cpg.graph.declarations.*;
 import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
 import de.fraunhofer.aisec.cpg.graph.statements.*;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.types.HasType;
+import de.fraunhofer.aisec.cpg.graph.types.PointerType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
@@ -30,11 +32,37 @@ import java.util.*;
  */
 public class AbstractInterpretation {
 
-    private final HashMap<String, MethodDeclaration> methods;    //the methods available for the class
-    private ArrayList<Node> nodeStack;    //Stack for EOG traversal
-    private ArrayList<Value> valueStack;  //Stack for values during EOG traversal
-    private VariableStore variables;      //Scoped variable store
-    private JavaObject object;          //the java object this ai engine does ai for
+    /**
+     * Helper: if we are recording changes for while loops.
+     */
+    private static boolean recordingChanges = false;
+    /**
+     * the methods available for the associated class.
+     */
+    @NotNull
+    private final HashMap<String, MethodDeclaration> methods;
+    /**
+     * Stack for EOG traversal.
+     */
+    @NotNull
+    private ArrayList<Node> nodeStack;
+    /**
+     * Stack for values during EOG traversal.
+     */
+    @NotNull
+    private ArrayList<Value> valueStack;
+    /**
+     * The scoped variable store for the current scope.
+     */
+    @NotNull
+    private VariableStore variables;
+    /**
+     * The object this AI engine is currently interpreting.
+     */
+    private JavaObject object;
+    /**
+     * Helper counter for nested if-else statements because cpg does not provide enough information.
+     */
     private int ifElseCounter = 0;
 
     public AbstractInterpretation() {
@@ -162,6 +190,7 @@ public class AbstractInterpretation {
                     JavaObject newObject = (JavaObject) graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
                 } else if (fd.getInitializer() instanceof InitializerListExpression || fd.getInitializer() instanceof NewArrayExpression) {
+//                    nodeStack.add(fd);
                     JavaArray list = (JavaArray) graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), list));
                 } else if (fd.getInitializer() instanceof MemberCallExpression) {
@@ -653,23 +682,37 @@ public class AbstractInterpretation {
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 nodeStack.removeLast();
-                if (!condition.getInformation() || condition.getValue()) {
-                    //run body if the condition is true or unknown
-                    variables.recordChanges();
-                    variables.newScope();
-                    //ToDo set everything unknown inside while
-                    graphWalker(nextEOG.getFirst());
-                    variables.removeScope();
-                    try {
+                if (!condition.getInformation() || condition.getValue()) {  //run body if the condition is true or unknown
+                    if (recordingChanges) {     //higher level loop wants to know which variables change
+                        variables.newScope();
+                        graphWalker(nextEOG.getFirst());
+                        variables.removeScope();
+                    } else {
+                        VariableStore originalVariables = this.variables;
+                        //1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record changes
+                        this.variables = new VariableStore(variables);
+                        variables.setEverythingUnknown();
+                        variables.recordChanges();
+                        AbstractInterpretation.recordingChanges = true;
+                        variables.newScope();
+                        graphWalker(nextEOG.getFirst());
+                        variables.removeScope();
+                        AbstractInterpretation.recordingChanges = false;
                         Set<Variable> changedVariables = variables.stopRecordingChanges();
-                        //merge if the loop has been run
+                        //2: second loop run with only changed variables unknown
+                        this.variables = new VariableStore(originalVariables);
                         for (Variable variable : changedVariables) {
-                            variable.setToUnknown();
+                            variables.getVariable(variable.getName()).setToUnknown();
                         }
-                    } catch (Exception e) {
-                        System.err.println(e.getMessage());
+                        variables.newScope();
+                        graphWalker(nextEOG.getFirst());
+                        variables.removeScope();
+                        //3: restore variables and set changed variables to unknown
+                        this.variables = originalVariables;
+                        for (Variable variable : changedVariables) {
+                            variables.getVariable(variable.getName()).setToUnknown();
+                        }
                     }
-
                 } else {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
@@ -787,7 +830,12 @@ public class AbstractInterpretation {
                         dimension = (INumberValue) valueStack.getLast();
                     }
                     valueStack.removeLast();
-                    valueStack.add(new JavaArray(dimension));
+                    //recover inner type
+                    de.jplag.java_cpg.ai.variables.Type innerType = null;
+                    if (((HasType) nae.getTypeObservers().iterator().next()).getType() instanceof PointerType pointerType) {
+                        innerType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(pointerType.elementType);
+                    }
+                    valueStack.add(new JavaArray(dimension, innerType));
                 } else if (nae.getInitializer() != null) {
                     if (nae.getPrevEOG().getFirst() instanceof InitializerListExpression) {
                         //initializer has already been processed

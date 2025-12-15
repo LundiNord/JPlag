@@ -4,6 +4,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.Objects;
 public class JavaArray extends JavaObject implements IJavaArray {
 
     private final Type innerType;
+    @Nullable
     private List<Value> values;     //values = null: no information about the array
 
     /**
@@ -42,9 +44,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
         this.innerType = null;
     }
 
-    public JavaArray(@NotNull INumberValue length) {
+    public JavaArray(@NotNull INumberValue length, Type innerType) {
         super(Type.ARRAY);
-        this.innerType = null;  //maybe update later
+        this.innerType = innerType;
         if (length.getInformation()) {
             int len = Math.max(0, (int) length.getValue());
             values = new ArrayList<>(len);
@@ -53,6 +55,15 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 values.add(placeholder.copy());
             }
         }
+    }
+
+    /**
+     * Copy Constructor.
+     */
+    private JavaArray(@Nullable Type innerType, @Nullable List<Value> values) {
+        super(Type.ARRAY);
+        this.innerType = innerType;
+        this.values = values;
     }
 
     /**
@@ -164,7 +175,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
         for (Value value : values) {
             newValues.add(value.copy());
         }
-        return new JavaArray(newValues);
+        return new JavaArray(innerType, newValues);
     }
 
     @Override
