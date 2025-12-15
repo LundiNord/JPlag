@@ -42,7 +42,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
         this.innerType = null;
     }
 
-    public JavaArray(INumberValue length) {
+    public JavaArray(@NotNull INumberValue length) {
         super(Type.ARRAY);
         this.innerType = null;  //maybe update later
         if (length.getInformation()) {
@@ -53,13 +53,12 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 values.add(placeholder.copy());
             }
         }
-        //ToDo: length
     }
 
     /**
      * Access an element of the array.
      *
-     * @param index the index to access, does not have to contain information.
+     * @param index the index to access; does not have to contain information.
      * @return the superset of possible values at the given indexes.
      */
     public Value arrayAccess(INumberValue index) {
@@ -78,7 +77,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case BOOLEAN -> new BooleanValue();
             case STRING -> Value.valueFactory(Type.STRING);
             case OBJECT -> new JavaObject();
-            case ARRAY -> new JavaArray();
+            case ARRAY, LIST -> new JavaArray();
             case FLOAT -> Value.valueFactory(Type.FLOAT);
             case CHAR -> Value.valueFactory(Type.CHAR);
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
@@ -183,6 +182,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     @Override
     public void setToUnknown() {
+        values = null;
+    }
+
+    @Override
+    public void setInitialValue() {
         values = null;
     }
 
