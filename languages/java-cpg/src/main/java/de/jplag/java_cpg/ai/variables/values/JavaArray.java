@@ -17,7 +17,7 @@ import java.util.Objects;
  * @author ujiqk
  * @version 1.0
  */
-public class JavaArray extends JavaObject {
+public class JavaArray extends JavaObject implements IJavaArray {
 
     private final Type innerType;
     private List<Value> values;     //values = null: no information about the array
@@ -155,6 +155,7 @@ public class JavaArray extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaArray copy() {
         List<Value> newValues = new ArrayList<>();

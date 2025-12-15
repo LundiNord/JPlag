@@ -57,6 +57,7 @@ public class VoidValue extends Value {
         }
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new VoidValue();

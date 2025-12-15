@@ -100,6 +100,7 @@ public class BooleanValue extends Value {
         }
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new BooleanValue(value, information);

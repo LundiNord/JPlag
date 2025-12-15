@@ -33,6 +33,7 @@ public class PrintStream extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new PrintStream();

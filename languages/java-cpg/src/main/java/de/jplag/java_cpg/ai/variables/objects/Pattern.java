@@ -17,6 +17,7 @@ public class Pattern extends JavaObject {
         super();
     }
 
+    @NotNull
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -32,6 +33,7 @@ public class Pattern extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new Pattern();

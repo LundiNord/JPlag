@@ -21,7 +21,7 @@ import java.util.Set;
  * @author ujiqk
  * @version 1.0
  */
-public abstract class Value {
+public abstract class Value implements IValue {
 
     private static IntAiType usedIntAiType = IntAiType.DEFAULT;
     private static FloatAiType usedFloatAiType = FloatAiType.DEFAULT;
@@ -260,14 +260,7 @@ public abstract class Value {
         };
     }
 
-    public Pair<JavaArray, INumberValue> getArrayPosition() {
-        return arrayPosition;
-    }
-
-    public void setArrayPosition(JavaArray array, INumberValue index) {
-        this.arrayPosition = new Pair<>(array, index);
-    }
-
+    @NotNull
     public Type getType() {
         return type;
     }
@@ -304,6 +297,7 @@ public abstract class Value {
      *
      * @return a deep copy of this value.
      */
+    @NotNull
     public abstract Value copy();
 
     /**
@@ -322,7 +316,7 @@ public abstract class Value {
 
     /**
      * Resets all information about this value except its type.
-     * Initial value depends on the specific value type.
+     * The initial value depends on the specific value type.
      */
     public abstract void setInitialValue();
 
@@ -333,6 +327,14 @@ public abstract class Value {
 
     public void setParentObject(@Nullable JavaObject parentObject) {
         this.parentObject = parentObject;
+    }
+
+    public Pair<JavaArray, INumberValue> getArrayPosition() {
+        return arrayPosition;
+    }
+
+    public void setArrayPosition(JavaArray array, INumberValue index) {
+        this.arrayPosition = new Pair<>(array, index);
     }
 
 }

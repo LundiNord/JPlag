@@ -40,6 +40,7 @@ public class CharValue extends Value implements ICharValue {
         this.value = value;
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new CharValue(this.value, this.information);

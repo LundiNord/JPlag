@@ -53,6 +53,7 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
         return new IntSetValue(values);
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new IntSetValue(new TreeSet<>(values));

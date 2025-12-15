@@ -11,6 +11,7 @@ public class FunctionValue extends Value {
     }
 
 
+    @NotNull
     @Override
     public Value copy() {
         return new FunctionValue();

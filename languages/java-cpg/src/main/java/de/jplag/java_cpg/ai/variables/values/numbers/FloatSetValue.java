@@ -53,6 +53,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
         return new FloatSetValue(values);
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new FloatSetValue(new TreeSet<>(values));

@@ -45,6 +45,7 @@ public class Math extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new Math();

@@ -207,6 +207,7 @@ public class IntValue extends Value implements INumberValue {
         }
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new IntValue(value, information);

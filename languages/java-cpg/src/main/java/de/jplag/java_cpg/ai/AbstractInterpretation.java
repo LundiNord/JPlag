@@ -450,6 +450,7 @@ public class AbstractInterpretation {
                             TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
                             ifStmt.setElseStatement(null);
                         }
+                        System.out.println("Dead code detected -> remove else branch");
                     } else {
                         runThenBranch = false;
                         //Dead code detected
@@ -465,6 +466,7 @@ public class AbstractInterpretation {
                             containingBlock.setStatements(statements);
                         }
                     }
+                    System.out.println("Dead code detected -> remove then branch");
                 }
                 if (ifStmt.getThenStatement() == null) {
                     runThenBranch = false;
@@ -664,6 +666,7 @@ public class AbstractInterpretation {
                     List<Statement> statements = containingBlock.getStatements();
                     statements.remove(ws);
                     containingBlock.setStatements(statements);
+                    System.out.println("Dead code detected -> remove while");
                 }
                 //continue with next node after while
                 nextNode = nextEOG.getLast();
@@ -696,6 +699,7 @@ public class AbstractInterpretation {
                     List<Statement> statements = containingBlock.getStatements();
                     statements.remove(fs);
                     containingBlock.setStatements(statements);
+                    System.out.println("Dead code detected -> remove for");
                 }
                 //continue with the next node after for
                 nextNode = nextEOG.getLast();
@@ -724,6 +728,7 @@ public class AbstractInterpretation {
                     List<Statement> statements = containingBlock.getStatements();
                     statements.remove(fes);
                     containingBlock.setStatements(statements);
+                    System.out.println("Dead code detected -> remove for each");
                 } else {
                     variables.recordChanges();
                     variables.newScope();

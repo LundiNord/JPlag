@@ -16,7 +16,7 @@ import java.util.List;
  * @author ujiqk
  * @version 1.0
  */
-public class JavaObject extends Value {
+public class JavaObject extends Value implements IJavaObject {
 
     private final Scope fields;
     private AbstractInterpretation abstractInterpretation;  //the abstract interpretation engine for this object
@@ -102,6 +102,7 @@ public class JavaObject extends Value {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new JavaObject(new Scope(this.fields), this.abstractInterpretation);

@@ -19,6 +19,7 @@ public class System extends JavaObject {
     }
 
     @Pure
+    @NotNull
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -49,6 +50,7 @@ public class System extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new System();

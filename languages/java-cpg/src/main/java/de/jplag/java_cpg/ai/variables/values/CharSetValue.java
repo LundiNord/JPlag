@@ -36,6 +36,7 @@ public class CharSetValue extends Value implements ICharValue {
         this.information = information;
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new CharSetValue(this.maybeContained, this.information);

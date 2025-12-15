@@ -17,6 +17,7 @@ public class String extends JavaObject {
         super();
     }
 
+    @NotNull
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -50,6 +51,7 @@ public class String extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new String();

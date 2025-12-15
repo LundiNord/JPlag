@@ -1,5 +1,6 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
@@ -15,6 +16,11 @@ public class Scanner extends JavaObject {
 
     public Scanner() {
         super();
+    }
+
+    @NotNull
+    public static VariableName getName() {
+        return new VariableName(PATH + "." + NAME);
     }
 
     @Override
@@ -39,6 +45,7 @@ public class Scanner extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new Scanner();

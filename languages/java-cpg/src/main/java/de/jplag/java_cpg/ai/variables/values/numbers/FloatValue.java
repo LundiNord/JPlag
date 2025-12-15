@@ -160,6 +160,7 @@ public class FloatValue extends Value implements INumberValue {
         }
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new FloatValue(value, information);

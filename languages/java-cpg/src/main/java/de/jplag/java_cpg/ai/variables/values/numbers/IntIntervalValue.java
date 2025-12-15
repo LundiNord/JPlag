@@ -126,6 +126,7 @@ public class IntIntervalValue extends Value implements INumberValue {
         }
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new IntIntervalValue(interval.copy());

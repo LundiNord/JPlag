@@ -136,6 +136,7 @@ public class StringValue extends JavaObject implements IStringValue {
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new StringValue(value, information);

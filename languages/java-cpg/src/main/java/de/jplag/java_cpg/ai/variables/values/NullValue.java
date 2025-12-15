@@ -26,6 +26,7 @@ public class NullValue extends Value {
         }
     }
 
+    @NotNull
     @Override
     public Value copy() {
         return new NullValue();

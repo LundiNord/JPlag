@@ -17,6 +17,7 @@ public class Double extends JavaObject {
         super();
     }
 
+    @NotNull
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -38,6 +39,7 @@ public class Double extends JavaObject {
         }
     }
 
+    @NotNull
     @Override
     public JavaObject copy() {
         return new Double();
