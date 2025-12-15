@@ -34,6 +34,7 @@
 - [x] if with && in condition
 - [x] if with else-if
 - [ ] nested list initializer in a class field
+- [x] while with assign in condition
 
 ## Object AI
 

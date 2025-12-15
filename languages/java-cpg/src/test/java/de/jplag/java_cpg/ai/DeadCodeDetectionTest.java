@@ -412,4 +412,15 @@ class DeadCodeDetectionTest {
         assertEquals(43, ((INumberValue) main.accessField("x")).getValue());
     }
 
+    /**
+     * simple test for while with variable assignment in condition.
+     */
+    @Test
+    void testWhileAssign() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/whileAssign");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());
+    }
+
 }

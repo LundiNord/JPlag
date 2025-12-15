@@ -383,8 +383,7 @@ public class AbstractInterpretation {
                         variable.setValue(valueStack.getLast());
                     }
                     nodeStack.removeLast();
-                    nodeStack.removeLast();
-                    valueStack.removeLast();
+                    //sometimes value of assign is used after so don't remove it
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
