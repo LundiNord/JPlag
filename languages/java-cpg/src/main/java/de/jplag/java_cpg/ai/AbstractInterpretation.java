@@ -753,37 +753,70 @@ public class AbstractInterpretation {
                 lastVisitedLoopOrIf.removeLast();
                 nextNode = nextEOG.getLast();
             }
-            case ForStatement fs -> {
+            case ForStatement ws -> {
+                //ToDo: combine with while
                 assert nextEOG.size() == 2;
+                //detect infinite loops when no Block inserted by cpg
+                if (!lastVisitedLoopOrIf.isEmpty() && ws == lastVisitedLoopOrIf.getLast()) {
+                    nodeStack.add(null);
+                    return null;
+                }
+                lastVisitedLoopOrIf.addLast(ws);
                 //evaluate condition
                 assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 nodeStack.removeLast();
-                if (!condition.getInformation() || condition.getValue()) {
-                    //run body if the condition is true or unknown
-                    variables.recordChanges();
-                    variables.newScope();
-                    graphWalker(nextEOG.getFirst());
-                    variables.removeScope();
-                    Set<Variable> changedVariables = variables.stopRecordingChanges();
-                    //merge if the loop has been run
-                    for (Variable variable : changedVariables) {
-                        variable.setToUnknown();
+                if (!condition.getInformation() || condition.getValue()) {  //run body if the condition is true or unknown
+                    if (recordingChanges) {     //higher level loop wants to know which variables change
+                        variables.recordChanges();
+                        variables.newScope();
+                        graphWalker(nextEOG.getFirst());
+                        variables.removeScope();
+                        Set<Variable> changedVariables = variables.stopRecordingChanges();
+                        for (Variable variable : changedVariables) {
+                            variables.getVariable(variable.getName()).setToUnknown();
+                        }
+                    } else {
+                        VariableStore originalVariables = this.variables;
+                        //1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record changes
+                        this.variables = new VariableStore(variables);
+                        variables.setEverythingUnknown();
+                        variables.recordChanges();
+                        AbstractInterpretation.recordingChanges = true;
+                        variables.newScope();
+                        graphWalker(nextEOG.getFirst());
+                        variables.removeScope();
+                        AbstractInterpretation.recordingChanges = false;
+                        Set<Variable> changedVariables = variables.stopRecordingChanges();
+                        //2: second loop run with only changed variables unknown
+                        this.variables = new VariableStore(originalVariables);
+                        for (Variable variable : changedVariables) {
+                            variables.getVariable(variable.getName()).setToUnknown();
+                        }
+                        variables.newScope();
+                        graphWalker(nextEOG.getFirst());
+                        variables.removeScope();
+                        //3: restore variables and set changed variables to unknown
+                        this.variables = originalVariables;
+                        for (Variable variable : changedVariables) {
+                            variables.getVariable(variable.getName()).setToUnknown();
+                        }
                     }
                 } else {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                    TransformationUtil.disconnectFromPredecessor(fs);
-                    assert fs.getScope() != null;
-                    Block containingBlock = (Block) fs.getScope().getAstNode();
+                    TransformationUtil.disconnectFromPredecessor(ws);
+                    assert ws.getScope() != null;
+                    Block containingBlock = (Block) ws.getScope().getAstNode();
                     assert containingBlock != null;
                     List<Statement> statements = containingBlock.getStatements();
-                    statements.remove(fs);
+                    statements.remove(ws);
                     containingBlock.setStatements(statements);
-                    System.out.println("Dead code detected -> remove for");
+                    System.out.println("Dead code detected -> remove while");
                 }
-                //continue with the next node after for
+                //continue with next node after while
+                lastVisitedLoopOrIf.removeLast();
                 nextNode = nextEOG.getLast();
             }
             case ForEachStatement fes -> {
