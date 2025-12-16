@@ -64,7 +64,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000006/ACCEPTED/00049_00007");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000006/ACCEPTED/00061_00006");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }

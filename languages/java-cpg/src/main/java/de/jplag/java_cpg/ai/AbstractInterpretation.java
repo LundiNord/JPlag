@@ -224,7 +224,7 @@ public class AbstractInterpretation {
     private Value graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        System.out.println(node);
+        //System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 Value value = valueStack.getLast();
@@ -381,22 +381,23 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case DeclarationStatement ds -> {
-                if (((VariableDeclaration) ds.getDeclarations().getFirst()).getInitializer() == null) {
-                    assert ds.getDeclarations().size() == 1;
-                    Variable newVar = new Variable(new VariableName((ds.getDeclarations().getFirst()).getName().toString()),
-                            de.jplag.java_cpg.ai.variables.Type.fromCpgType(((VariableDeclaration) ds.getDeclarations().getFirst()).getType()));
-                    newVar.setInitialValue();
-                    variables.addVariable(newVar);
-                    nodeStack.removeLast();
-                } else {
-                    assert !valueStack.isEmpty();
-                    Variable variable = new Variable((ds.getDeclarations().getFirst()).getName().toString(), valueStack.getLast());
-                    variables.addVariable(variable);
-                    nodeStack.removeLast();
-                    nodeStack.removeLast();
-                    valueStack.removeLast();
-                    if (nextEOG.getFirst() instanceof ForEachStatement) {
-                        valueStack.add(variable.getValue());
+                for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
+                    if (((VariableDeclaration) ds.getDeclarations().get(i)).getInitializer() == null) {
+                        Variable newVar = new Variable(new VariableName((ds.getDeclarations().get(i)).getName().toString()),
+                                de.jplag.java_cpg.ai.variables.Type.fromCpgType(((VariableDeclaration) ds.getDeclarations().get(i)).getType()));
+                        newVar.setInitialValue();
+                        variables.addVariable(newVar);
+                        nodeStack.removeLast();
+                    } else {
+                        assert !valueStack.isEmpty();
+                        Variable variable = new Variable((ds.getDeclarations().get(i)).getName().toString(), valueStack.getLast());
+                        variables.addVariable(variable);
+                        nodeStack.removeLast();
+                        nodeStack.removeLast();
+                        valueStack.removeLast();
+                        if (nextEOG.getFirst() instanceof ForEachStatement) {
+                            valueStack.add(variable.getValue());
+                        }
                     }
                 }
                 assert nextEOG.size() == 1;
@@ -679,6 +680,11 @@ public class AbstractInterpretation {
                 }
                 //
                 nodeStack.add(ne);
+                if (nextEOG.isEmpty()) {    //when used as a field initializer
+                    Value value = valueStack.getLast();
+                    valueStack.removeLast();
+                    return value;
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -705,7 +711,6 @@ public class AbstractInterpretation {
                         for (Variable variable : changedVariables) {
                             variables.getVariable(variable.getName()).setToUnknown();
                         }
-                        System.out.println("Test");
                     } else {
                         VariableStore originalVariables = this.variables;
                         //1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record changes

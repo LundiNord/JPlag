@@ -49,5 +49,5 @@
 
 ## Limitations
 
-- cpg does not seem to work with for without { }.
-- cpg does not seem to work with multiple declarations in one line (int x, y;).
+-X cpg does not seem to work with for without { }.
+-X cpg does not seem to work with multiple declarations in one line (int x, y;).
