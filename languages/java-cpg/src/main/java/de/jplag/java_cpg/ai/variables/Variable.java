@@ -1,5 +1,6 @@
 package de.jplag.java_cpg.ai.variables;
 
+import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
 
@@ -81,7 +82,12 @@ public class Variable {
      * Delete all content information in this variable.
      */
     public void setToUnknown() {
-        value.setToUnknown();
+        if (getValue() instanceof NullValue) {
+            //replace null with unknown JavaObject
+            setValue(Value.valueFactory(Type.OBJECT));
+        } else {
+            value.setToUnknown();
+        }
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
         }

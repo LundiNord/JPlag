@@ -21,6 +21,9 @@ public class NullValue extends Value {
             case "==" -> {
                 return new BooleanValue(other instanceof NullValue);
             }
+            case "!=" -> {
+                return new BooleanValue(!(other instanceof NullValue));
+            }
             default ->
                     throw new UnsupportedOperationException("Operator " + operator + " not supported for NullValue.");
         }
@@ -39,7 +42,7 @@ public class NullValue extends Value {
 
     @Override
     public void setToUnknown() {
-        //do nothing
+        //ToDo: replace with JavaObject
     }
 
     @Override

@@ -64,12 +64,17 @@ public class AbstractInterpretation {
      * Helper counter for nested if-else statements because cpg does not provide enough information.
      */
     private int ifElseCounter = 0;
+    /**
+     * Helper stack to work around cpg limitations.
+     */
+    private List<Node> lastVisitedLoopOrIf;
 
     public AbstractInterpretation() {
         variables = new VariableStore();
         nodeStack = new ArrayList<>();
         valueStack = new ArrayList<>();
         methods = new HashMap<>();
+        lastVisitedLoopOrIf = new ArrayList<>();
     }
 
     /**
@@ -219,6 +224,7 @@ public class AbstractInterpretation {
     private Value graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
+        System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 Value value = valueStack.getLast();
@@ -241,6 +247,7 @@ public class AbstractInterpretation {
                 if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
                     if (!(valueStack.getLast() instanceof JavaObject)) {
                         //not reached in normal execution
+                        //assert false;
                         nodeStack.removeLast();
                         nodeStack.add(me);
                         valueStack.removeLast();    //remove object reference
@@ -677,6 +684,12 @@ public class AbstractInterpretation {
             }
             case WhileStatement ws -> {
                 assert nextEOG.size() == 2;
+                //detect infinite loops when no Block inserted by cpg
+                if (!lastVisitedLoopOrIf.isEmpty() && ws == lastVisitedLoopOrIf.getLast()) {
+                    nodeStack.add(null);
+                    return null;
+                }
+                lastVisitedLoopOrIf.addLast(ws);
                 //evaluate condition
                 assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
@@ -684,9 +697,15 @@ public class AbstractInterpretation {
                 nodeStack.removeLast();
                 if (!condition.getInformation() || condition.getValue()) {  //run body if the condition is true or unknown
                     if (recordingChanges) {     //higher level loop wants to know which variables change
+                        variables.recordChanges();
                         variables.newScope();
                         graphWalker(nextEOG.getFirst());
                         variables.removeScope();
+                        Set<Variable> changedVariables = variables.stopRecordingChanges();
+                        for (Variable variable : changedVariables) {
+                            variables.getVariable(variable.getName()).setToUnknown();
+                        }
+                        System.out.println("Test");
                     } else {
                         VariableStore originalVariables = this.variables;
                         //1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record changes
@@ -726,6 +745,7 @@ public class AbstractInterpretation {
                     System.out.println("Dead code detected -> remove while");
                 }
                 //continue with next node after while
+                lastVisitedLoopOrIf.removeLast();
                 nextNode = nextEOG.getLast();
             }
             case ForStatement fs -> {

@@ -18,6 +18,7 @@ import java.util.List;
  */
 public class JavaObject extends Value implements IJavaObject {
 
+    //ToDo types
     private final Scope fields;
     private AbstractInterpretation abstractInterpretation;  //the abstract interpretation engine for this object
 
@@ -80,7 +81,8 @@ public class JavaObject extends Value implements IJavaObject {
     public void changeField(@NotNull String fieldName, Value value) {
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
-            System.err.println("Cannot change field '" + fieldName + "' because it does not exist");
+            fields.addVariable(new Variable(fieldName, value));
+            return;
         }
         variable.setValue(value);
     }
@@ -95,6 +97,13 @@ public class JavaObject extends Value implements IJavaObject {
             case "==" -> {
                 if (this.equals(other)) {
                     return new BooleanValue(true);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case "!=" -> {
+                if (this.equals(other)) {
+                    return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
                 }
@@ -127,7 +136,7 @@ public class JavaObject extends Value implements IJavaObject {
 
     @Override
     public void setInitialValue() {
-        //nothing
+        fields.setEverythingInitialValue();
     }
 
 }

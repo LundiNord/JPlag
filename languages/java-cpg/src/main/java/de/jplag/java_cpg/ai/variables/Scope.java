@@ -78,6 +78,12 @@ public class Scope {
         }
     }
 
+    public void setEverythingInitialValue() {
+        for (Variable variable : variables.values()) {
+            variable.setInitialValue();
+        }
+    }
+
     public void addChangeRecorder(@NotNull ChangeRecorder changeRecorder) {
         for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {
             entry.getValue().addChangeRecorder(changeRecorder);
