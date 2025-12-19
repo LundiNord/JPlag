@@ -21,6 +21,7 @@
 - [ ] Uninitialized variables to default value
 - [ ] all java datatypes
 - [ ] goto
+- [x] return inside if or loop
 
 ## Edge Cases to Test
 
@@ -45,6 +46,7 @@
 ## Long Term
 
 - [ ] explicitly carry object types everywhere
+- [ ] split void type and unknown type
 - [ ] loop invariants detector
 
 ## Limitations

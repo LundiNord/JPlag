@@ -19,6 +19,7 @@ public enum Type {
     NULL,
     FUNCTION,
     CHAR,
+    UNKNOWN,    //ToDo: split void value??
     VOID;
 
     /**

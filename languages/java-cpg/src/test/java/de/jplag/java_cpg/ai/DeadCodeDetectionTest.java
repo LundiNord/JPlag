@@ -436,4 +436,52 @@ class DeadCodeDetectionTest {
         assertEquals(1, ((INumberValue) main.accessField("result2")).getValue());
     }
 
+    /**
+     * a simple test for a return statement inside if.
+     */
+    @Test
+    void testReturnInIf() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInIf");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //2*y
+        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); //z
+    }
+
+    /**
+     * a simple test for return statements only inside if.
+     */
+    @Test
+    void testReturnInIf2() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInIf2");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //2*y
+        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); //z
+    }
+
+    /**
+     * a simple test for return statements inside two nested ifs.
+     */
+    @Test
+    void testReturnInIf2x() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInIf2x");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
+        assertEquals(700, ((INumberValue) main.accessField("result2")).getValue()); //2*y
+        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); //z
+    }
+
+    /**
+     * a simple test for a return statement inside a while loop.
+     */
+    @Test
+    void testReturnInWhile() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInWhile");
+        JavaObject main = getMainObject(interpretation);
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());          //y
+        assertEquals(25, ((INumberValue) main.accessField("result3")).getValue()); //z
+    }
+
 }

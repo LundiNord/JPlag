@@ -147,6 +147,44 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     return new VoidValue();
                 }
             }
+            case "indexOf" -> {
+                assert paramVars.size() == 1;
+                if (values != null) {
+                    for (int i = 0; i < values.size(); i++) {
+                        if (values.get(i).equals(paramVars.getFirst())) {
+                            return Value.valueFactory(i);
+                        }
+                    }
+                    return Value.valueFactory(-1);
+                }
+                return Value.valueFactory(Type.INT);
+            }
+            case "remove" -> {
+                assert paramVars.size() == 1;
+                if (values != null) {
+                    return new VoidValue();
+                }
+                //either remove(int index) or remove(Object o) -> ToDo: cannot distinguish with Integer parameter
+                if (paramVars.getFirst() instanceof INumberValue number) {
+                    if (number.getInformation()) {
+                        return values.remove((int) number.getValue());
+                    }
+                    return new VoidValue();
+                } else {
+                    for (int i = 0; i < values.size(); i++) {
+                        if (values.get(i).equals(paramVars.getFirst())) {
+                            values.remove(i);
+                            return Value.valueFactory(true);
+                        }
+                    }
+                    return Value.valueFactory(false);
+                }
+            }
+            case "get" -> {
+                assert paramVars.size() == 1;
+                assert paramVars.getFirst() instanceof INumberValue;
+                return arrayAccess((INumberValue) paramVars.getFirst());
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

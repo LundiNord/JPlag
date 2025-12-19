@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class Scope {
 
-    private final HashMap<VariableName, Variable> variables = new HashMap<>();
+    private HashMap<VariableName, Variable> variables = new HashMap<>();
 
     /**
      * Copy constructor.
@@ -67,6 +67,7 @@ public class Scope {
             assert this.variables.containsKey(entry.getKey());
             this.variables.get(entry.getKey()).merge(entry.getValue());
         }
+        otherScope.variables = this.variables;
     }
 
     /**

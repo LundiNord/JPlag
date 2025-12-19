@@ -4,6 +4,7 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class Arrays extends JavaObject {
     }
 
     @NotNull
+    @Pure
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }

@@ -5,7 +5,7 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -20,6 +20,7 @@ public class Scanner extends JavaObject {
     }
 
     @NotNull
+    @Pure
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -27,9 +28,9 @@ public class Scanner extends JavaObject {
     @Override
     public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
         switch (methodName) {
-            case "nextLine" -> {
+            case "nextLine", "next" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return new StringValue();
+                return Value.valueFactory(Type.STRING);
             }
             case "close" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -39,6 +40,11 @@ public class Scanner extends JavaObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.INT);
             }
+            case "hasNextInt", "hasNext" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(Type.BOOLEAN);
+            }
+
             default -> throw new UnsupportedOperationException(methodName + " is not supported in Scanner.");
         }
     }

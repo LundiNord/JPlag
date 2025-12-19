@@ -25,15 +25,7 @@ public class VoidValue extends Value {
             case "==", ">", "<", ">=", "<=", "!=" -> {
                 return new BooleanValue();
             }
-            case "-" -> {
-                if (other instanceof IntValue) {
-                    return new IntValue();
-                } else if (other instanceof FloatValue) {
-                    return new FloatValue();
-                }
-                return new VoidValue();
-            }
-            case "+" -> {
+            case "+", "-", "*" -> {
                 return switch (other) {
                     case IntValue ignored -> new IntValue();
                     case FloatValue ignored -> new FloatValue();
@@ -51,6 +43,9 @@ public class VoidValue extends Value {
         switch (operator) {
             case "!" -> {
                 return new BooleanValue();
+            }
+            case "--", "++" -> {
+                return new VoidValue();
             }
             default ->
                     throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
