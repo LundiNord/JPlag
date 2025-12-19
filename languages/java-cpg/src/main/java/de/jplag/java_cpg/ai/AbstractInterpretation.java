@@ -346,9 +346,13 @@ public class AbstractInterpretation {
                 if (mce.getArguments().isEmpty()) {     //no arguments
                     assert nodeStack.getLast() instanceof MemberExpression;
                     Name memberName = (nodeStack.getLast()).getName();
-                    if (valueStack.getLast() instanceof VoidValue) {
+                    if (valueStack.getLast() instanceof VoidValue || valueStack.getLast() instanceof NullValue) {
+                        //null value can happen: "if (opts.name == null || opts.name.isBlank())" where we dont strictly follow evaluation order.
                         valueStack.removeLast();
                         valueStack.add(new JavaObject());
+                    }
+                    if (!(valueStack.getLast() instanceof JavaObject)) {
+                        System.out.println("Debug");
                     }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
                     result = javaObject.callMethod(memberName.getLocalName(), null);
@@ -452,7 +456,14 @@ public class AbstractInterpretation {
             }
             case ShortCircuitOperator scop -> {
                 assert scop.getPrevEOG().size() == 2;
+                if (valueStack.get(valueStack.size() - 2) instanceof VoidValue) {
+                    valueStack.set(valueStack.size() - 2, new BooleanValue());
+                }
                 BooleanValue value1 = (BooleanValue) valueStack.get(valueStack.size() - 2);
+                if (valueStack.getLast() instanceof VoidValue) {
+                    valueStack.removeLast();
+                    valueStack.add(new BooleanValue());
+                }
                 BooleanValue value2 = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 valueStack.removeLast();
@@ -543,10 +554,10 @@ public class AbstractInterpretation {
                 VariableStore elseVariables = new VariableStore(variables);
                 //then statement
                 if (runThenBranch) {
-                    if (runElseBranch) {
-                        variables = thenVariables;
-                        this.object = variables.getThisObject();
-                    }
+//                    if (runElseBranch) {
+//                        variables = thenVariables;
+//                        this.object = variables.getThisObject();
+//                    }
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
@@ -572,7 +583,7 @@ public class AbstractInterpretation {
                 }
                 //merge branches
                 if (runThenBranch && runElseBranch) {
-                    originalVariables.merge(thenVariables);
+                    //originalVariables.merge(thenVariables);
                     originalVariables.merge(elseVariables);
                 } else if (runThenBranch) {
                     if (!condition.getInformation()) {

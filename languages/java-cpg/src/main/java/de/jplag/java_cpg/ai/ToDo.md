@@ -22,6 +22,7 @@
 - [ ] all java datatypes
 - [ ] goto
 - [x] return inside if or loop
+- [ ] "if (opts.name == null || opts.name.isBlank())" don't evaluate the second part if the first is true
 
 ## Edge Cases to Test
 

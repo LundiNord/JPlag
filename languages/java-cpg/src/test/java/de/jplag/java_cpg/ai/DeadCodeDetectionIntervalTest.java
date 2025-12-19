@@ -138,7 +138,7 @@ class DeadCodeDetectionIntervalTest {
         assertEquals(0, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
         assertEquals(Integer.MAX_VALUE, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
-        assertEquals(2, ((IntSetValue) main.accessField("result2")).getIntervals().size());
+        assertEquals(2, ((IntSetValue) main.accessField("result2")).getIntervals().size());     //y
         assertEquals(10, ((IntSetValue) main.accessField("result2")).getIntervals().getFirst().getLowerBound());
         assertEquals(50, ((IntSetValue) main.accessField("result2")).getIntervals().getFirst().getUpperBound());
         assertEquals(200, ((IntSetValue) main.accessField("result2")).getIntervals().getLast().getLowerBound());
