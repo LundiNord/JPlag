@@ -397,6 +397,9 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     return value;
                 }
+                if (!(nextEOG.size() == 1)) {
+                    System.out.println("Debug");
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -863,6 +866,13 @@ public class AbstractInterpretation {
                         for (Variable variable : changedVariables) {
                             variables.getVariable(variable.getName()).setToUnknown();
                         }
+                        //for loop special: iteration variable also unknown
+                        if (ws.getIterationStatement() != null) {
+                            Variable iterVar = variables.getVariable(new VariableName(((UnaryOperator) ws.getIterationStatement()).getInput().getName().toString()));
+                            if (iterVar != null) {
+                                iterVar.setToUnknown();
+                            }
+                        }
                         variables.newScope();
                         graphWalker(nextEOG.getFirst());
                         variables.removeScope();
@@ -870,6 +880,13 @@ public class AbstractInterpretation {
                         this.variables = originalVariables;
                         for (Variable variable : changedVariables) {
                             variables.getVariable(variable.getName()).setToUnknown();
+                        }
+                        //for loop special: iteration variable also unknown
+                        if (ws.getIterationStatement() != null) {
+                            Variable iterVar = variables.getVariable(new VariableName(((UnaryOperator) ws.getIterationStatement()).getInput().getName().toString()));
+                            if (iterVar != null) {
+                                iterVar.setToUnknown();
+                            }
                         }
                     }
                 } else if (!recordingChanges) {
@@ -1064,7 +1081,7 @@ public class AbstractInterpretation {
                 return null;
             }
             case ExpressionList el -> {
-                //indicates the end of expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
+                //indicates the end of an expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -1073,6 +1090,7 @@ public class AbstractInterpretation {
         if (nextNode == null || nextNode instanceof DummyNeighbor) {
             System.out.println("Debug");
         }
+        assert nextNode != null;
         return graphWalker(nextNode);
     }
 

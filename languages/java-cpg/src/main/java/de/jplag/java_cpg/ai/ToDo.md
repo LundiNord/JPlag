@@ -18,7 +18,7 @@
 - [ ] finally
 - [ ] TreeSet
 - [x] Comments/Javadocs
-- [ ] Uninitialized variables to default value
+- [x] Uninitialized variables to default value
 - [ ] all java datatypes
 - [ ] goto
 - [x] return inside if or loop

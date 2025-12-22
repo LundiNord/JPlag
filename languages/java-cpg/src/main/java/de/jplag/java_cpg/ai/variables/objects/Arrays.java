@@ -32,6 +32,11 @@ public class Arrays extends JavaObject {
                 JavaArray array = (JavaArray) paramVars.getFirst();
                 return array.callMethod("toString", List.of());
             }
+            case "fill" -> {        //void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
+                assert paramVars.size() == 2 || paramVars.size() == 4;
+                JavaArray array = (JavaArray) paramVars.getFirst();
+                return array.callMethod("fill", paramVars.subList(1, paramVars.size()));
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -44,7 +49,7 @@ public class Arrays extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
-        // Nothing to merge
+        assert other instanceof Arrays;
     }
 
 }

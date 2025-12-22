@@ -273,6 +273,37 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return Value.valueFactory(Type.BOOLEAN);
             }
+            case "fill" -> {        //void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
+                assert paramVars.size() == 1 || paramVars.size() == 3;
+                if (values != null) {
+                    if (paramVars.size() == 1) {
+                        Value val = paramVars.getFirst();
+                        for (int i = 0; i < values.size(); i++) {
+                            values.set(i, val);
+                        }
+                    } else {
+                        assert paramVars.getFirst() instanceof INumberValue;
+                        assert paramVars.get(1) instanceof INumberValue;
+                        INumberValue fromIndex = (INumberValue) paramVars.getFirst();
+                        INumberValue toIndex = (INumberValue) paramVars.get(1);
+                        if (fromIndex.getInformation() && toIndex.getInformation()) {
+                            int fromIdx = (int) fromIndex.getValue();
+                            int toIdx = (int) toIndex.getValue();
+                            if (fromIdx >= 0 && toIdx <= values.size() && fromIdx <= toIdx) {
+                                Value val = paramVars.get(2);
+                                for (int i = fromIdx; i < toIdx; i++) {
+                                    values.set(i, val);
+                                }
+                            } else {
+                                values = null; //no information
+                            }
+                        } else {
+                            values = null; //no information
+                        }
+                    }
+                }
+                return new VoidValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

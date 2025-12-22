@@ -103,6 +103,32 @@ public class StringValue extends JavaObject implements IStringValue {
                 }
                 return array;
             }
+            case "charAt" -> {   //public char charAt(int index)
+                assert paramVars.size() == 1;
+                INumberValue indexValue = (INumberValue) paramVars.getFirst();
+                if (!information || !indexValue.getInformation()) {
+                    return Value.valueFactory(Type.CHAR);
+                }
+                assert value != null;
+                double index = indexValue.getValue();
+                if (index < 0 || index >= value.length()) {
+                    return new VoidValue();
+                }
+                return Value.valueFactory(value.charAt((int) index));
+            }
+            case "toCharArray" -> {   //public char[] toCharArray()
+                assert paramVars == null || paramVars.isEmpty();
+                if (!information) {
+                    return new JavaArray(Type.CHAR);
+                }
+                assert value != null;
+                char[] chars = value.toCharArray();
+                JavaArray array = new JavaArray(Type.CHAR);
+                for (int i = 0; i < chars.length; i++) {
+                    array.arrayAssign((INumberValue) Value.valueFactory(i), Value.valueFactory(chars[i]));
+                }
+                return array;
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

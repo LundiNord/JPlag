@@ -108,6 +108,10 @@ public class BooleanValue extends Value {
 
     @Override
     public void merge(@NotNull Value other) {
+        if (other instanceof VoidValue) {
+            this.information = false;
+            return;
+        }
         assert other instanceof BooleanValue;
         BooleanValue otherBool = (BooleanValue) other;
         if (this.information && otherBool.information && this.value == otherBool.value) {
