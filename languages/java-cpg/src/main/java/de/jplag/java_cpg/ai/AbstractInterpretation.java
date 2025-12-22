@@ -43,13 +43,13 @@ public class AbstractInterpretation {
     @NotNull
     private final HashMap<String, MethodDeclaration> methods;
     /**
-     * Helper stack to work around cpg limitations.
-     */
-    private final List<Node> lastVisitedLoopOrIf;
-    /**
      *
      */
     private final List<Value> returnStorage;
+    /**
+     * Helper stack to work around cpg limitations.
+     */
+    private List<Node> lastVisitedLoopOrIf;
     /**
      * Stack for EOG traversal.
      */
@@ -608,7 +608,7 @@ public class AbstractInterpretation {
                     ifElseCounter--;
                     return null;
                 }
-                if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && runThenBranch != runElseBranch)) {
+                if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch))) {
                     //return in every branch
                     valueStack.add(returnStorage.getLast());
                     nextNode = new ReturnStatement();
@@ -1083,8 +1083,10 @@ public class AbstractInterpretation {
     public Value runMethod(@NotNull String name, List<Value> paramVars) {
         ArrayList<Node> oldNodeStack = this.nodeStack;      //Save stack
         ArrayList<Value> oldValueStack = this.valueStack;
+        List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
         this.nodeStack = new ArrayList<>();
         this.valueStack = new ArrayList<>();
+        this.lastVisitedLoopOrIf = new ArrayList<>();
         MethodDeclaration md = methods.get(name);
         if (md == null) {
             return null;
@@ -1108,6 +1110,7 @@ public class AbstractInterpretation {
         variables.removeScope();
         this.nodeStack = oldNodeStack;      //restore stack
         this.valueStack = oldValueStack;
+        this.lastVisitedLoopOrIf = oldLastVisitedLoopOrIf;
         return result;
     }
 
