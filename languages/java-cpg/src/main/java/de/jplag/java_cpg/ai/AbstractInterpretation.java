@@ -229,7 +229,7 @@ public class AbstractInterpretation {
     private Value graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        System.out.println(node);
+        //System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 Value value = valueStack.getLast();
@@ -429,7 +429,8 @@ public class AbstractInterpretation {
                     Value newValue = valueStack.getLast();
                     valueStack.removeLast();
                     Value oldValue = valueStack.getLast();
-                    valueStack.removeLast();
+                    //sometimes the value of assign is used after, so don't remove it
+                    //valueStack.removeLast();
                     oldValue.getArrayPosition().component1().arrayAssign(oldValue.getArrayPosition().component2(), newValue);
                 } else {
                     Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
@@ -478,6 +479,9 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case BinaryOperator bop -> {
+                if (!(valueStack.size() >= 2 && !nodeStack.isEmpty())) {
+                    System.out.println("Debug");
+                }
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 String operator = bop.getOperatorCode();
                 assert operator != null;
@@ -727,7 +731,8 @@ public class AbstractInterpretation {
                     case "java.util.HashMap", "java.util.Map" ->
                             newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
                     case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
-                    case "java.util.ArrayList", "java.util.List" -> newObject = new JavaArray();
+                    case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList" ->
+                            newObject = new JavaArray();
                     default -> newObject = new JavaObject();
                 }
                 valueStack.add(newObject);

@@ -41,7 +41,7 @@ public class Scanner extends JavaObject {
                 return Value.valueFactory(Type.INT);
             }
             case "hasNextInt", "hasNext" -> {
-                assert paramVars == null || paramVars.isEmpty();
+                assert paramVars == null || paramVars.isEmpty() || (paramVars.size() == 1 && paramVars.get(0).getType() == Type.STRING);
                 return Value.valueFactory(Type.BOOLEAN);
             }
 

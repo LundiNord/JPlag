@@ -115,12 +115,32 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return new StringValue();
             }
             case "add" -> {
-                assert paramVars.size() == 1;
-                if (values != null) {
-                    assert paramVars.getFirst().getType().equals(innerType);
-                    values.add(paramVars.getFirst());
+                if (paramVars.size() == 1) {
+                    if (values != null) {
+                        assert paramVars.getFirst().getType().equals(innerType);
+                        values.add(paramVars.getFirst());
+                    }
+                    return new VoidValue();
+                } else if (paramVars.size() == 2) { //index, element
+                    if (values != null) {
+                        assert paramVars.getFirst() instanceof INumberValue;
+                        INumberValue index = (INumberValue) paramVars.getFirst();
+                        if (index.getInformation()) {
+                            int idx = (int) index.getValue();
+                            if (idx >= 0 && idx <= values.size()) {
+                                assert paramVars.getLast().getType().equals(innerType);
+                                values.add(idx, paramVars.getLast());
+                            } else {
+                                values = null; //no information
+                            }
+                        } else {
+                            values = null; //no information
+                        }
+                    }
+                    return new VoidValue();
+                } else {
+                    throw new UnsupportedOperationException("add with " + paramVars.size() + " parameters is not supported");
                 }
-                return new VoidValue();
             }
             case "stream" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -180,10 +200,22 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     return Value.valueFactory(false);
                 }
             }
-            case "get" -> {
+            case "get", "elementAt" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof INumberValue;
                 return arrayAccess((INumberValue) paramVars.getFirst());
+            }
+            case "contains" -> {
+                assert paramVars.size() == 1;
+                if (values != null) {
+                    for (Value value : values) {
+                        if (value.equals(paramVars.getFirst())) {
+                            return Value.valueFactory(true);
+                        }
+                    }
+                    return Value.valueFactory(false);
+                }
+                return Value.valueFactory(Type.BOOLEAN);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }
