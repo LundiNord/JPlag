@@ -531,7 +531,7 @@ public class AbstractInterpretation {
                 if (ifStmt.getElseStatement() == null) {
                     runElseBranch = false;
                 }
-                if (condition.getInformation()) {
+                if (condition.getInformation() && !recordingChanges) {
                     if (condition.getValue()) {
                         runElseBranch = false;
                         if (ifStmt.getElseStatement() != null) {
@@ -801,7 +801,7 @@ public class AbstractInterpretation {
                             variables.getVariable(variable.getName()).setToUnknown();
                         }
                     }
-                } else {
+                } else if (!recordingChanges) {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
                     TransformationUtil.disconnectFromPredecessor(ws);
@@ -872,7 +872,7 @@ public class AbstractInterpretation {
                             variables.getVariable(variable.getName()).setToUnknown();
                         }
                     }
-                } else {
+                } else if (!recordingChanges) {
                     //Dead code detected, loop never runs
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
                     TransformationUtil.disconnectFromPredecessor(ws);
@@ -882,7 +882,7 @@ public class AbstractInterpretation {
                     List<Statement> statements = containingBlock.getStatements();
                     statements.remove(ws);
                     containingBlock.setStatements(statements);
-                    System.out.println("Dead code detected -> remove while");
+                    System.out.println("Dead code detected -> remove for");
                 }
                 //continue with next node after while
                 lastVisitedLoopOrIf.removeLast();
@@ -913,16 +913,18 @@ public class AbstractInterpretation {
                 Variable variable1 = new Variable(new VariableName(varName), collection.arrayAccess((INumberValue) Value.valueFactory(0)));
                 variables.addVariable(variable1);
                 if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
-                    //Dead code detected, loop never runs
-                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                    TransformationUtil.disconnectFromPredecessor(fes);
-                    assert fes.getScope() != null;
-                    Block containingBlock = (Block) fes.getScope().getAstNode();
-                    assert containingBlock != null;
-                    List<Statement> statements = containingBlock.getStatements();
-                    statements.remove(fes);
-                    containingBlock.setStatements(statements);
-                    System.out.println("Dead code detected -> remove for each");
+                    if (!recordingChanges) {
+                        //Dead code detected, loop never runs
+                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                        TransformationUtil.disconnectFromPredecessor(fes);
+                        assert fes.getScope() != null;
+                        Block containingBlock = (Block) fes.getScope().getAstNode();
+                        assert containingBlock != null;
+                        List<Statement> statements = containingBlock.getStatements();
+                        statements.remove(fes);
+                        containingBlock.setStatements(statements);
+                        System.out.println("Dead code detected -> remove for each");
+                    }
                 } else {   //ToDo: unify with other loops
                     if (recordingChanges) {     //higher level loop wants to know which variables change
                         variables.recordChanges();
@@ -1062,7 +1064,7 @@ public class AbstractInterpretation {
                 return null;
             }
             case ExpressionList el -> {
-                //indicates end of expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
+                //indicates the end of expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }

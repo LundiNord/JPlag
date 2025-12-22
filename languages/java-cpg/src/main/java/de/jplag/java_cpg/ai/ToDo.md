@@ -43,6 +43,7 @@
 - [ ] Maps
 - [ ] Sets
 - [ ] Comparators
+- [ ] dead methods and classes
 
 ## Long Term
 
