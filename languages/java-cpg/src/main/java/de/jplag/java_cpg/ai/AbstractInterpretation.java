@@ -229,7 +229,7 @@ public class AbstractInterpretation {
     private Value graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        //System.out.println(node);
+        System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 Value value = valueStack.getLast();
@@ -505,6 +505,11 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case IfStatement ifStmt -> {
+                //detect infinite loops when no Block inserted by cpg
+                if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ifStmt)) {
+                    nodeStack.add(null);
+                    return null;
+                }
                 lastVisitedLoopOrIf.addLast(ifStmt);
                 if (valueStack.getLast() instanceof VoidValue) {
                     valueStack.removeLast();
@@ -744,7 +749,7 @@ public class AbstractInterpretation {
             case WhileStatement ws -> {     //FixMe: evaluate condition again after record changes
                 assert nextEOG.size() == 2;
                 //detect infinite loops when no Block inserted by cpg
-                if (!lastVisitedLoopOrIf.isEmpty() && ws == lastVisitedLoopOrIf.getLast()) {
+                if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
                     nodeStack.add(null);
                     return null;
                 }
@@ -815,7 +820,7 @@ public class AbstractInterpretation {
                 //ToDo: combine with while
                 assert nextEOG.size() == 2;
                 //detect infinite loops when no Block inserted by cpg
-                if (!lastVisitedLoopOrIf.isEmpty() && ws == lastVisitedLoopOrIf.getLast()) {
+                if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
                     nodeStack.add(null);
                     return null;
                 }
@@ -1049,6 +1054,11 @@ public class AbstractInterpretation {
                 //occurs, for example, when while loop body is empty
                 assert nextEOG.size() == 1;
                 return null;
+            }
+            case ExpressionList el -> {
+                //indicates end of expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
