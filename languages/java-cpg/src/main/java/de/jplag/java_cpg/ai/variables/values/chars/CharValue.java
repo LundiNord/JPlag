@@ -1,6 +1,8 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.chars;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -40,6 +42,37 @@ public class CharValue extends Value implements ICharValue {
         this.value = value;
     }
 
+    @Override
+    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+        switch (operator) {
+            case "==" -> {
+                CharValue otherCharValue = (CharValue) other;
+                if (this.information && otherCharValue.information) {
+                    return new BooleanValue(this.value == otherCharValue.value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case "!=" -> {
+                CharValue otherCharValue = (CharValue) other;
+                if (this.information && otherCharValue.information) {
+                    return new BooleanValue(this.value != otherCharValue.value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
+        }
+    }
+
+    @Override
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            default ->
+                    throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+        }
+    }
+
     @NotNull
     @Override
     public Value copy() {
@@ -67,7 +100,18 @@ public class CharValue extends Value implements ICharValue {
     @Override
     public void setInitialValue() {
         this.information = true;
-        this.value = '\u0000';
+        this.value = DEFAULT_VALUE;
+    }
+
+    @Override
+    public boolean getInformation() {
+        return this.information;
+    }
+
+    @Override
+    public char getValue() {
+        assert getInformation();
+        return this.value;
     }
 
 }

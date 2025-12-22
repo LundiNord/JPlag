@@ -448,6 +448,9 @@ public class AbstractInterpretation {
                             classVal = valueStack.get(valueStack.size() - 2).getParentObject(); //FixMe valueStack is not merged
                             //classVal = (JavaObject) variables.getVariable(className).getValue();
                         }
+                        if (classVal == null) {
+                            System.out.println("Debug");
+                        }
                         classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
                         System.out.println("Test");
                     } else {

@@ -1,6 +1,7 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.chars;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -60,7 +61,17 @@ public class CharSetValue extends Value implements ICharValue {
     @Override
     public void setInitialValue() {
         this.information = true;
-        this.maybeContained = Set.of('\u0000');
+        this.maybeContained = Set.of(DEFAULT_VALUE);
     }
 
+    @Override
+    public boolean getInformation() {
+        return false;
+    }
+
+    @Override
+    public char getValue() {
+        assert this.information;
+        return DEFAULT_VALUE;
+    }
 }

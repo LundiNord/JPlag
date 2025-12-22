@@ -5,6 +5,8 @@ import de.jplag.java_cpg.ai.FloatAiType;
 import de.jplag.java_cpg.ai.IntAiType;
 import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.chars.CharSetValue;
+import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.*;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;

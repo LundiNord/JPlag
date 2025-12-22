@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.values.string;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import org.jetbrains.annotations.NotNull;
 
@@ -149,9 +150,15 @@ public class StringValue extends JavaObject implements IStringValue {
             } else {
                 return new StringValue();
             }
-        } else if (operator.equals("+") && other instanceof StringValue stringvalue) {
-            if (information && stringvalue.getInformation()) {
-                return new StringValue(this.value + stringvalue.getValue());
+        } else if (operator.equals("+") && other instanceof IStringValue stringValue) {
+            if (information && stringValue.getInformation()) {
+                return new StringValue(this.value + stringValue.getValue());
+            } else {
+                return new StringValue();
+            }
+        } else if (operator.equals("+") && other instanceof ICharValue charValue) {
+            if (information && charValue.getInformation()) {
+                return new StringValue(this.value + charValue.getValue());
             } else {
                 return new StringValue();
             }
