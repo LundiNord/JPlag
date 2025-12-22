@@ -79,6 +79,9 @@ public class StringValue extends JavaObject implements IStringValue {
             }
             case "equals" -> {
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                }
                 StringValue other = (StringValue) paramVars.getFirst();
                 if (information && other.getInformation()) {
                     return Value.valueFactory(value.equals(other.getValue()));

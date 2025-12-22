@@ -45,4 +45,9 @@ public class Boolean extends JavaObject {
         return new Boolean();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

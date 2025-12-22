@@ -52,4 +52,9 @@ public class Math extends JavaObject {
         return new Math();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

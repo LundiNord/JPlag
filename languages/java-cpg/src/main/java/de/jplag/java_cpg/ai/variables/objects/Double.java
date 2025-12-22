@@ -45,4 +45,9 @@ public class Double extends JavaObject {
         return new Double();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

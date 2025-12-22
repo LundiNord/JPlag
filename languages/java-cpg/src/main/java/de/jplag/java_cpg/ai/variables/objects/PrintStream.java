@@ -41,4 +41,9 @@ public class PrintStream extends JavaObject {
         return new PrintStream();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

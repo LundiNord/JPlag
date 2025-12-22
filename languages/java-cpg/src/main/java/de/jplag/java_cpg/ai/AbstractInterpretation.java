@@ -98,13 +98,14 @@ public class AbstractInterpretation {
                     .findFirst()
                     .map(ns -> (RecordDeclaration) ns.getDeclarations().getFirst())
                     .orElseThrow(() -> new IllegalStateException("No NamespaceDeclaration found in translation unit"));
-        } else if (tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(RecordDeclaration.class)).count() >= 1) {
-            //Code without a package
+        } else if (tud.getDeclarations().stream().map(Declaration::getClass).anyMatch(x -> x.equals(RecordDeclaration.class))) {
+            //Code without a package co
             mainClas = tud.getDeclarations().stream()
                     .filter(RecordDeclaration.class::isInstance)
                     .map(RecordDeclaration.class::cast)
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("No RecordDeclaration found in translation unit"));
+                    .filter(rd -> rd.getMethods().stream().anyMatch(m -> m.getName().getLocalName().equals("main")
+                            && m.isStatic() && m.hasBody()))
+                    .findFirst().orElseThrow(() -> new IllegalStateException("No RecordDeclaration with public static main method found in translation unit"));
         } else {
             throw new IllegalStateException("Unexpected number of classes or namespaces in translation unit");
         }
@@ -312,12 +313,12 @@ public class AbstractInterpretation {
             case SubscriptExpression se -> {    //adds its value to the value stack
                 if (!(nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
                         || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression
-                        || nodeStack.getLast() instanceof UnaryOperator)) {
+                        || nodeStack.getLast() instanceof UnaryOperator || nodeStack.getLast() instanceof SubscriptExpression)) {
                     System.out.println("Debug");
                 }
                 assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
                         || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression
-                        || nodeStack.getLast() instanceof UnaryOperator;
+                        || nodeStack.getLast() instanceof UnaryOperator || nodeStack.getLast() instanceof SubscriptExpression;
                 assert !valueStack.isEmpty();
                 if ((valueStack.getLast() instanceof VoidValue)) {
                     valueStack.removeLast();

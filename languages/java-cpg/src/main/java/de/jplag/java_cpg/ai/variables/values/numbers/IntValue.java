@@ -3,6 +3,7 @@ package de.jplag.java_cpg.ai.variables.values.numbers;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
@@ -215,6 +216,13 @@ public class IntValue extends Value implements INumberValue {
 
     @Override
     public void merge(@NotNull Value other) {
+        if (other instanceof VoidValue) {
+            this.information = false;
+            return;
+        }
+        if (!(other instanceof IntValue)) {
+            System.out.println("Debug");
+        }
         assert other instanceof IntValue;
         IntValue otherInt = (IntValue) other;
         if (this.information && otherInt.information && this.value == otherInt.value) {

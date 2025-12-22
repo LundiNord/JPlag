@@ -62,4 +62,9 @@ public class Scanner extends JavaObject {
         return new Scanner();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

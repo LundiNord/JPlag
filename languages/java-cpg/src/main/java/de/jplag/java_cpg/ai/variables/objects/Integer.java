@@ -47,4 +47,9 @@ public class Integer extends JavaObject {
         return new Integer();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

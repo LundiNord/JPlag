@@ -181,7 +181,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "remove" -> {
                 assert paramVars.size() == 1;
-                if (values != null) {
+                if (values == null) {
                     return new VoidValue();
                 }
                 //either remove(int index) or remove(Object o) -> ToDo: cannot distinguish with Integer parameter
@@ -214,6 +214,62 @@ public class JavaArray extends JavaObject implements IJavaArray {
                         }
                     }
                     return Value.valueFactory(false);
+                }
+                return Value.valueFactory(Type.BOOLEAN);
+            }
+            case "lastIndexOf" -> {
+                assert paramVars.size() == 1;
+                if (values != null) {
+                    for (int i = values.size() - 1; i >= 0; i--) {
+                        if (values.get(i).equals(paramVars.getFirst())) {
+                            return Value.valueFactory(i);
+                        }
+                    }
+                    return Value.valueFactory(-1);
+                }
+                return Value.valueFactory(Type.INT);
+            }
+            case "getLast" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                if (values != null && !values.isEmpty()) {
+                    return values.getLast();
+                }
+                //no information
+                if (innerType == null) {
+                    return new VoidValue();
+                }
+                return arrayAccess((INumberValue) Value.valueFactory(1));
+            }
+            case "removeLast" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                if (values != null && !values.isEmpty()) {
+                    return values.removeLast();
+                }
+                //no information
+                values = null;
+                return new VoidValue();
+            }
+            case "addLast" -> {
+                assert paramVars.size() == 1;
+                if (values != null) {
+                    assert paramVars.getFirst().getType().equals(innerType);
+                    values.add(paramVars.getFirst());
+                }
+                return new VoidValue();
+            }
+            case "removeFirst" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                if (values != null && !values.isEmpty()) {
+                    return values.removeFirst();
+                }
+                //no information
+                values = null;
+                return new VoidValue();
+            }
+            case "isEmpty" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                if (values != null) {
+                    return Value.valueFactory(values.isEmpty());
                 }
                 return Value.valueFactory(Type.BOOLEAN);
             }

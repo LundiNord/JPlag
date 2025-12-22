@@ -41,4 +41,9 @@ public class HashMap extends JavaObject {
         return new HashMap();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

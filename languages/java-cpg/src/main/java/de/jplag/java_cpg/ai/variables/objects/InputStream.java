@@ -36,4 +36,9 @@ public class InputStream extends JavaObject {
         return new InputStream();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

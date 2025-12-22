@@ -39,4 +39,9 @@ public class Pattern extends JavaObject {
         return new Pattern();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

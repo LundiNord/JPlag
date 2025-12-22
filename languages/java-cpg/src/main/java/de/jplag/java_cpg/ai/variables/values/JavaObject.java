@@ -126,6 +126,9 @@ public class JavaObject extends Value implements IJavaObject {
             return;
         }
         this.fields.merge(((JavaObject) other).fields);
+        if (!java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation)) {
+            System.out.println("Debug");
+        }
         assert java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation);
     }
 

@@ -56,4 +56,9 @@ public class System extends JavaObject {
         return new System();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }

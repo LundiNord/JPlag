@@ -42,4 +42,9 @@ public class Arrays extends JavaObject {
         return new Arrays();
     }
 
+    @Override
+    public void merge(@NotNull Value other) {
+        // Nothing to merge
+    }
+
 }
