@@ -1,16 +1,16 @@
 package de.jplag.java_cpg.ai.variables.values.numbers;
 
-import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
+import java.util.Set;
+
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
+import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
 /**
  * Represents integer values as intervals.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -43,7 +43,6 @@ public class IntIntervalValue extends Value implements INumberValue {
         super(Type.INT);
         this.interval = interval;
     }
-
 
     @Override
     public boolean getInformation() {
@@ -96,8 +95,8 @@ public class IntIntervalValue extends Value implements INumberValue {
                 IntInterval newInterval = this.interval.copy().divided(otherValue.interval);
                 return new IntIntervalValue(newInterval);
             }
-            default ->
-                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> throw new UnsupportedOperationException(
+                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
     }
 
@@ -121,8 +120,7 @@ public class IntIntervalValue extends Value implements INumberValue {
                 IntInterval newInterval = this.interval.copy().abs();
                 return new IntIntervalValue(newInterval);
             }
-            default ->
-                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 

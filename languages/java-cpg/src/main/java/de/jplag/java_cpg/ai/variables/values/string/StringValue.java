@@ -1,17 +1,16 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
- * String representation.
- * Strings are objects with added functionality.
- *
+ * String representation. Strings are objects with added functionality.
  * @author ujiqk
  * @version 1.0
  */
@@ -93,7 +92,7 @@ public class StringValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
             }
-            case "split" -> {   //public String[] split(String regex)
+            case "split" -> {   // public String[] split(String regex)
                 assert paramVars.size() == 1;
                 StringValue regexValue = (StringValue) paramVars.getFirst();
                 if (!information || !regexValue.getInformation()) {
@@ -107,7 +106,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 }
                 return array;
             }
-            case "charAt" -> {   //public char charAt(int index)
+            case "charAt" -> {   // public char charAt(int index)
                 assert paramVars.size() == 1;
                 INumberValue indexValue = (INumberValue) paramVars.getFirst();
                 if (!information || !indexValue.getInformation()) {
@@ -120,7 +119,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 }
                 return Value.valueFactory(value.charAt((int) index));
             }
-            case "toCharArray" -> {   //public char[] toCharArray()
+            case "toCharArray" -> {   // public char[] toCharArray()
                 assert paramVars == null || paramVars.isEmpty();
                 if (!information) {
                     return new JavaArray(Type.CHAR);
@@ -191,7 +190,7 @@ public class StringValue extends JavaObject implements IStringValue {
         assert other instanceof StringValue;
         StringValue otherString = (StringValue) other;
         if (this.information && otherString.information && java.util.Objects.equals(this.value, otherString.value)) {
-            //keep value
+            // keep value
         } else {
             this.information = false;
             this.value = null;

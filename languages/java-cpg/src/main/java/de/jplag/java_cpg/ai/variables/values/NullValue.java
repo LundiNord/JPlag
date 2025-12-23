@@ -1,11 +1,11 @@
 package de.jplag.java_cpg.ai.variables.values;
 
-import de.jplag.java_cpg.ai.variables.Type;
 import org.jetbrains.annotations.NotNull;
+
+import de.jplag.java_cpg.ai.variables.Type;
 
 /**
  * Represents the Java null value.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -24,8 +24,7 @@ public class NullValue extends Value {
             case "!=" -> {
                 return new BooleanValue(!(other instanceof NullValue));
             }
-            default ->
-                    throw new UnsupportedOperationException("Operator " + operator + " not supported for NullValue.");
+            default -> throw new UnsupportedOperationException("Operator " + operator + " not supported for NullValue.");
         }
     }
 
@@ -37,17 +36,17 @@ public class NullValue extends Value {
 
     @Override
     public void merge(@NotNull Value other) {
-        //do nothing
+        // do nothing
     }
 
     @Override
     public void setToUnknown() {
-        //ToDo: replace with JavaObject?
+        // ToDo: replace with JavaObject?
     }
 
     @Override
     public void setInitialValue() {
-        //do nothing
+        // do nothing
     }
 
 }

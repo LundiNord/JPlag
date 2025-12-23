@@ -1,9 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values.numbers.helpers;
 
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
+
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 
 public class IntInterval extends Interval<Integer> {
 
@@ -95,14 +96,10 @@ public class IntInterval extends Interval<Integer> {
         if (other.lowerBound <= 0 && other.upperBound >= 0) {
             return new IntInterval(MIN_VALUE, MAX_VALUE);
         }
-        long p1 = (lowerBound == MIN_VALUE && other.lowerBound == -1)
-                ? (long) MAX_VALUE : (long) lowerBound / (long) other.lowerBound;
-        long p2 = (lowerBound == MIN_VALUE && other.upperBound == -1)
-                ? (long) MAX_VALUE : (long) lowerBound / (long) other.upperBound;
-        long p3 = (upperBound == MIN_VALUE && other.lowerBound == -1)
-                ? (long) MAX_VALUE : (long) upperBound / (long) other.lowerBound;
-        long p4 = (upperBound == MIN_VALUE && other.upperBound == -1)
-                ? (long) MAX_VALUE : (long) upperBound / (long) other.upperBound;
+        long p1 = (lowerBound == MIN_VALUE && other.lowerBound == -1) ? (long) MAX_VALUE : (long) lowerBound / (long) other.lowerBound;
+        long p2 = (lowerBound == MIN_VALUE && other.upperBound == -1) ? (long) MAX_VALUE : (long) lowerBound / (long) other.upperBound;
+        long p3 = (upperBound == MIN_VALUE && other.lowerBound == -1) ? (long) MAX_VALUE : (long) upperBound / (long) other.lowerBound;
+        long p4 = (upperBound == MIN_VALUE && other.upperBound == -1) ? (long) MAX_VALUE : (long) upperBound / (long) other.upperBound;
         long loLong = Math.min(Math.min(p1, p2), Math.min(p3, p4));
         long hiLong = Math.max(Math.max(p1, p2), Math.max(p3, p4));
         int lo = loLong > MAX_VALUE ? MAX_VALUE : (loLong < MIN_VALUE ? MIN_VALUE : (int) loLong);

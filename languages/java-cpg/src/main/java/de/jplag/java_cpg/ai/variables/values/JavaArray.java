@@ -1,20 +1,18 @@
 package de.jplag.java_cpg.ai.variables.values;
 
-import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.string.StringValue;
+
 /**
- * A Java Array representation.
- * Java arrays are objects.
- * Lists are modeled as Java arrays.
- *
+ * A Java Array representation. Java arrays are objects. Lists are modeled as Java arrays.
  * @author ujiqk
  * @version 1.0
  */
@@ -22,7 +20,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     private final Type innerType;
     @Nullable
-    private List<Value> values;     //values = null: no information about the array
+    private List<Value> values;     // values = null: no information about the array
 
     /**
      * a Java Array with no information and undefined size.
@@ -34,7 +32,6 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     /**
      * a Java Array with exact information.
-     *
      * @param values the values of the array in the correct order.
      */
     public JavaArray(@NotNull List<Value> values) {
@@ -76,7 +73,6 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     /**
      * Access an element of the array.
-     *
      * @param index the index to access; does not have to contain information.
      * @return the superset of possible values at the given indexes.
      */
@@ -87,7 +83,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return values.get(idx);
             }
         }
-        //if no information, return an unknown value of the inner type
+        // if no information, return an unknown value of the inner type
         if (innerType == null) {
             return new VoidValue();
         }
@@ -113,7 +109,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 values.set(idx, value);
             }
         } else {
-            //no information about the array, set to unknown
+            // no information about the array, set to unknown
             values = null;
         }
     }
@@ -132,7 +128,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                         values.add(paramVars.getFirst());
                     }
                     return new VoidValue();
-                } else if (paramVars.size() == 2) { //index, element
+                } else if (paramVars.size() == 2) { // index, element
                     if (values != null) {
                         assert paramVars.getFirst() instanceof INumberValue;
                         INumberValue index = (INumberValue) paramVars.getFirst();
@@ -142,10 +138,10 @@ public class JavaArray extends JavaObject implements IJavaArray {
                                 assert paramVars.getLast().getType().equals(innerType);
                                 values.add(idx, paramVars.getLast());
                             } else {
-                                values = null; //no information
+                                values = null; // no information
                             }
                         } else {
-                            values = null; //no information
+                            values = null; // no information
                         }
                     }
                     return new VoidValue();
@@ -165,11 +161,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return Value.valueFactory(Type.INT);
             }
             case "map" -> {
-                //ToDo
+                // ToDo
                 return this;
             }
             case "max" -> {
-                //ToDo
+                // ToDo
                 if (innerType == Type.INT) {
                     return Value.valueFactory(Type.INT);
                 } else if (innerType == Type.FLOAT) {
@@ -195,7 +191,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 if (values == null) {
                     return new VoidValue();
                 }
-                //either remove(int index) or remove(Object o) -> ToDo: cannot distinguish with Integer parameter
+                // either remove(int index) or remove(Object o) -> ToDo: cannot distinguish with Integer parameter
                 if (paramVars.getFirst() instanceof INumberValue number) {
                     if (number.getInformation()) {
                         return values.remove((int) number.getValue());
@@ -245,7 +241,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 if (values != null && !values.isEmpty()) {
                     return values.getLast();
                 }
-                //no information
+                // no information
                 if (innerType == null) {
                     return new VoidValue();
                 }
@@ -256,7 +252,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 if (values != null && !values.isEmpty()) {
                     return values.removeLast();
                 }
-                //no information
+                // no information
                 values = null;
                 return new VoidValue();
             }
@@ -273,7 +269,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 if (values != null && !values.isEmpty()) {
                     return values.removeFirst();
                 }
-                //no information
+                // no information
                 values = null;
                 return new VoidValue();
             }
@@ -284,7 +280,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return Value.valueFactory(Type.BOOLEAN);
             }
-            case "fill" -> {        //void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
+            case "fill" -> {        // void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
                 assert paramVars.size() == 1 || paramVars.size() == 3;
                 if (values != null) {
                     if (paramVars.size() == 1) {
@@ -306,10 +302,10 @@ public class JavaArray extends JavaObject implements IJavaArray {
                                     values.set(i, val);
                                 }
                             } else {
-                                values = null; //no information
+                                values = null; // no information
                             }
                         } else {
-                            values = null; //no information
+                            values = null; // no information
                         }
                     }
                 }
@@ -328,8 +324,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return Value.valueFactory(Type.INT);
             }
-            default ->
-                    throw new UnsupportedOperationException("Field " + fieldName + " is not supported for JavaArray");
+            default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported for JavaArray");
         }
     }
 

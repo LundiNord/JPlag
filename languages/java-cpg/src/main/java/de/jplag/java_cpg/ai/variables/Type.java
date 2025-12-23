@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Enumeration of supported variable types.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -19,7 +18,7 @@ public enum Type {
     NULL,
     FUNCTION,
     CHAR,
-    UNKNOWN,    //ToDo: split void value to void and unknown??
+    UNKNOWN,    // ToDo: split void value to void and unknown??
     VOID;
 
     /**
@@ -36,7 +35,7 @@ public enum Type {
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ObjectType.class) {
             return OBJECT;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.PointerType.class) {
-            return ARRAY;   //in java pointer types are used only for arrays
+            return ARRAY;   // in java pointer types are used only for arrays
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.FloatingPointType.class) {
             return FLOAT;
         } else {

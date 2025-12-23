@@ -1,18 +1,18 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import java.util.List;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
-import org.checkerframework.dataflow.qual.Pure;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Representation of the java.util.Scanner class.
- *
  * @author ujiqk
  * @version 1.0
  * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Scanner.html">Oracle Docs</a>

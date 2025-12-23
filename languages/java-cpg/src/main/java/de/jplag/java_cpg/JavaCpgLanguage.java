@@ -3,6 +3,7 @@ package de.jplag.java_cpg;
 import static de.jplag.java_cpg.transformation.TransformationRepository.*;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -47,36 +48,6 @@ public class JavaCpgLanguage implements Language {
         this.cpgAdapter.addTransformations(transformations);
     }
 
-    @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public int minimumTokenMatch() {
-        return DEFAULT_MINIMUM_TOKEN_MATCH;
-    }
-
-    @Override
-    public List<Token> parse(Set<File> files, boolean normalize) throws ParsingException {
-        try {
-            return cpgAdapter.adapt(files, normalize);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return List.of();
-        }
-    }
-
-    @Override
-    public boolean requiresCoreNormalization() {
-        return false;
-    }
-
     /**
      * Resets the set of transformations to the obligatory transformations only.
      */
@@ -115,12 +86,42 @@ public class JavaCpgLanguage implements Language {
     }
 
     @Override
-    public String[] suffixes() {
-        return FILE_EXTENSIONS;
+    public List<String> fileExtensions() {
+        return Arrays.asList(FILE_EXTENSIONS);
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    @Override
+    public int minimumTokenMatch() {
+        return DEFAULT_MINIMUM_TOKEN_MATCH;
+    }
+
+    @Override
+    public List<Token> parse(Set<File> files, boolean normalize) throws ParsingException {
+        try {
+            return cpgAdapter.adapt(files, normalize);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return List.of();
+        }
     }
 
     @Override
     public boolean supportsNormalization() {
         return true;
+    }
+
+    @Override
+    public boolean requiresCoreNormalization() {
+        return false;
     }
 }

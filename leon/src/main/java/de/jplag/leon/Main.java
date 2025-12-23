@@ -1,5 +1,9 @@
 package de.jplag.leon;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Set;
+
 import de.jplag.JPlag;
 import de.jplag.JPlagResult;
 import de.jplag.Language;
@@ -7,10 +11,6 @@ import de.jplag.exceptions.ExitException;
 import de.jplag.java_cpg.JavaCpgLanguage;
 import de.jplag.options.JPlagOptions;
 import de.jplag.reporting.reportobject.ReportObjectFactory;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Set;
 
 /**
  *
@@ -25,7 +25,7 @@ public class Main {
         try {
             JPlagResult result = JPlag.run(options);
             File outDir = new File("leon/output.zip");
-            //File outDir = new File(System.getProperty("user.home") + "/Downloads/");
+            // File outDir = new File(System.getProperty("user.home") + "/Downloads/");
             ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
             reportObjectFactory.createAndSaveReport(result);
             System.out.println("JPlag analysis finished. Report written to: " + outDir.getAbsolutePath());

@@ -1,17 +1,17 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import java.util.List;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import org.checkerframework.dataflow.qual.Pure;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Representation of the static java.util.Arrays class.
- *
  * @author ujiqk
  * @version 1.0
  * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Arrays.html">Oracle Docs</a></a>
@@ -39,7 +39,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
                 JavaArray array = (JavaArray) paramVars.getFirst();
                 return array.callMethod("toString", List.of());
             }
-            case "fill" -> {        //void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
+            case "fill" -> {        // void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
                 assert paramVars.size() == 2 || paramVars.size() == 4;
                 JavaArray array = (JavaArray) paramVars.getFirst();
                 return array.callMethod("fill", paramVars.subList(1, paramVars.size()));
@@ -57,7 +57,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
     @Override
     public void merge(@NotNull Value other) {
         assert other instanceof Arrays;
-        //nothing to merge
+        // nothing to merge
     }
 
 }

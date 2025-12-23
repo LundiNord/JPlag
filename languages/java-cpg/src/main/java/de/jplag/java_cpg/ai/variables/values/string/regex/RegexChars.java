@@ -4,13 +4,12 @@ import java.util.List;
 
 /**
  * {@link RegexItem} representing multiple characters.
- *
  * @author ujiqk
  * @version 1.0
  */
 public class RegexChars extends RegexItem {
 
-    //null: represents an empty-non existent char
+    // null: represents an empty-non existent char
     private final List<Character> content;
 
     public RegexChars(List<Character> content) {
@@ -39,7 +38,7 @@ public class RegexChars extends RegexItem {
             default -> throw new IllegalStateException("Unexpected value: " + other);
         }
     }
-    
+
     public boolean canBeEmpty() {
         for (Character c : content) {
             if (c == null) {

@@ -1,28 +1,27 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import de.jplag.java_cpg.ai.AbstractInterpretation;
 import de.jplag.java_cpg.ai.variables.Scope;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 /**
- * A Java object in the abstract interpretation.
- * All big data types are also objects (arrays, collections, maps, etc.).
- *
+ * A Java object in the abstract interpretation. All big data types are also objects (arrays, collections, maps, etc.).
  * @author ujiqk
  * @version 1.0
  */
 public class JavaObject extends Value implements IJavaObject {
 
-    //ToDo: save type of the object (class name)
+    // ToDo: save type of the object (class name)
     private final Scope fields;
     @Nullable
-    private AbstractInterpretation abstractInterpretation;  //the abstract interpretation engine for this object
+    private AbstractInterpretation abstractInterpretation;  // the abstract interpretation engine for this object
 
     private JavaObject(@NotNull Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
         super(Type.OBJECT);
@@ -37,7 +36,6 @@ public class JavaObject extends Value implements IJavaObject {
 
     /**
      * Internal constructor for special classes like arrays.
-     *
      * @param type the type of the object.
      */
     protected JavaObject(Type type) {
@@ -47,7 +45,7 @@ public class JavaObject extends Value implements IJavaObject {
 
     /**
      * @param methodName the name of the method to call.
-     * @param paramVars  the parameters to pass to the method.
+     * @param paramVars the parameters to pass to the method.
      * @return null if the method is not known.
      */
     public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
@@ -86,9 +84,8 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     /**
-     * Sets the abstract interpretation engine for this object.
-     * If you call methods on this object, this engine will be used for execution.
-     *
+     * Sets the abstract interpretation engine for this object. If you call methods on this object, this engine will be used
+     * for execution.
      * @param abstractInterpretation the abstract interpretation engine or null.
      */
     public void setAbstractInterpretation(@Nullable AbstractInterpretation abstractInterpretation) {
@@ -112,8 +109,8 @@ public class JavaObject extends Value implements IJavaObject {
                     return new BooleanValue();
                 }
             }
-            default ->
-                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> throw new UnsupportedOperationException(
+                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
     }
 
@@ -125,7 +122,7 @@ public class JavaObject extends Value implements IJavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
-        if (!(other instanceof JavaObject)) {   //cannot merge different types
+        if (!(other instanceof JavaObject)) {   // cannot merge different types
             setToUnknown();
             return;
         }

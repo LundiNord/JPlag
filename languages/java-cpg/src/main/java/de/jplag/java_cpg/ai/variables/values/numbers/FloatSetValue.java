@@ -1,14 +1,15 @@
 package de.jplag.java_cpg.ai.variables.values.numbers;
 
-import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.TestOnly;
-
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
+
+import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
 
 public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
 
@@ -29,7 +30,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
     public FloatSetValue(@NotNull Set<Double> possibleNumbers) {
         super(Type.INT);
         values = new TreeSet<>();
-        //ToDo: slice into intervals
+        // ToDo: slice into intervals
         values.add(new DoubleInterval());
     }
 

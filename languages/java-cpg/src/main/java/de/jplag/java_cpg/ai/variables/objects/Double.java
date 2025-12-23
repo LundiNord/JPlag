@@ -1,17 +1,17 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import java.util.List;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
-import org.checkerframework.dataflow.qual.Pure;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Representation of the static java.lang.Double class.
- *
  * @author ujiqk
  * @version 1.0
  * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html">Oracle Docs</a></a>
@@ -57,7 +57,7 @@ public class Double extends JavaObject implements ISpecialObject {
     @Override
     public void merge(@NotNull Value other) {
         assert other instanceof Double;
-        //nothing to merge
+        // nothing to merge
     }
 
 }

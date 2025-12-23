@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Simplified regex syntax with only single or multiple characters.
- *
  * @author ujiqk
  * @version 1.0
  */

@@ -1,5 +1,14 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
+
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.NullValue;
@@ -9,25 +18,15 @@ import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChars;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexItem;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
- * String representation using regex-like structures.
- * Strings are objects with added functionality.
- *
+ * String representation using regex-like structures. Strings are objects with added functionality.
  * @author ujiqk
  * @version 1.0
  */
 public class StringRegexValue extends JavaObject implements IStringValue {
 
-    //String=null <--> contentRegex=null
+    // String=null <--> contentRegex=null
     @Nullable
     private List<RegexItem> contentRegex;
     private boolean unknown;
@@ -102,7 +101,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(Type.INT);
                 }
                 if ((contentRegex.getLast() instanceof RegexChars chars && chars.canBeEmpty())) {
-                    return Value.valueFactory(Type.INT); //ToDo could return int interval
+                    return Value.valueFactory(Type.INT); // ToDo could return int interval
                 }
                 return Value.valueFactory(contentRegex.size());
             }
@@ -176,7 +175,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     RegexItem otherItem = other.contentRegex.get(i);
                     if (thisItem instanceof RegexChar thisChar && otherItem instanceof RegexChar otherChar) {
                         if (thisChar.getContent() == otherChar.getContent()) {
-                            //match
+                            // match
                         } else {
                             return Value.valueFactory(false);
                         }
@@ -206,7 +205,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     RegexItem otherItem = other.contentRegex.get(i);
                     if (thisItem instanceof RegexChar thisChar && otherItem instanceof RegexChar otherChar) {
                         if (thisChar.getContent() == otherChar.getContent()) {
-                            //match
+                            // match
                         } else {
                             return Value.valueFactory(false);
                         }
@@ -245,7 +244,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 }
                 return new StringRegexValue(newContentRegex, false);
             }
-            case "isBlank" -> { //all whitespace or empty or null
+            case "isBlank" -> { // all whitespace or empty or null
                 if (unknown) {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
@@ -272,7 +271,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(true);
                 }
             }
-            case "indexOf" -> { //Returns the index within this string of the first occurrence of the specified character. -1 if not found.
+            case "indexOf" -> { // Returns the index within this string of the first occurrence of the specified character. -1 if not found.
                 if (unknown) {
                     return Value.valueFactory(Type.INT);
                 }
@@ -299,7 +298,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(true);
                 }
             }
-            case "substring" -> {   //(int begin) or (int begin, int end)
+            case "substring" -> {   // (int begin) or (int begin, int end)
                 assert paramVars != null && (paramVars.size() == 1 || paramVars.size() == 2);
                 if (unknown) {
                     return new StringRegexValue(null, true);
@@ -358,7 +357,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 this.unknown = true;
                 return new StringRegexValue(null, true);
             }
-            //put at the end of each possible list end (without empty chars)
+            // put at the end of each possible list end (without empty chars)
             List<RegexItem> newContentRegex = new ArrayList<>(contentRegex);
             appendAtPos(newContentRegex, stringValue.contentRegex, contentRegex.size() - 1);
             for (int i = contentRegex.size() - 1; i >= 0; i--) {
@@ -394,7 +393,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         }
         if (other instanceof NullValue) {
             if (contentRegex == null) {
-                //keep null
+                // keep null
             } else {
                 this.unknown = true;
             }
@@ -458,7 +457,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     public boolean getInformation() {
-        //ToDo
+        // ToDo
         return false;
     }
 

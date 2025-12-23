@@ -1,13 +1,14 @@
 package de.jplag.java_cpg.ai.variables.values.numbers;
 
+import java.util.Set;
+
+import org.checkerframework.dataflow.qual.Impure;
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
-import org.checkerframework.dataflow.qual.Impure;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Set;
 
 /**
  * Represents a floating point value with optional exact information.
@@ -15,7 +16,7 @@ import java.util.Set;
 public class FloatValue extends Value implements INumberValue {
 
     private double value;
-    private boolean information;    //whether exact information is available
+    private boolean information;    // whether exact information is available
 
     /**
      * a IntValue with no information.
@@ -58,7 +59,7 @@ public class FloatValue extends Value implements INumberValue {
         this.information = information;
     }
 
-    @Deprecated //replaced by unaryOperation?
+    @Deprecated // replaced by unaryOperation?
     public FloatValue abs() {
         if (information) {
             return new FloatValue(Math.abs(value));
@@ -130,8 +131,8 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue();
                 }
             }
-            default ->
-                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> throw new UnsupportedOperationException(
+                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
     }
 
@@ -155,8 +156,7 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue();
                 }
             }
-            default ->
-                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 
@@ -171,7 +171,7 @@ public class FloatValue extends Value implements INumberValue {
         assert other instanceof FloatValue;
         FloatValue otherFloat = (FloatValue) other;
         if (this.information && otherFloat.information && this.value == otherFloat.value) {
-            //keep information
+            // keep information
         } else {
             this.information = false;
         }

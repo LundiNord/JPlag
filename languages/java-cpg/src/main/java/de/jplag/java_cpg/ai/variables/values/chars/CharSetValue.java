@@ -1,14 +1,14 @@
 package de.jplag.java_cpg.ai.variables.values.chars;
 
-import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.Value;
+import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
+import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Char value representation that can hold a set of possible char values or be unknown.
- *
  * @author ujiqk
  * @version 1.0
  */

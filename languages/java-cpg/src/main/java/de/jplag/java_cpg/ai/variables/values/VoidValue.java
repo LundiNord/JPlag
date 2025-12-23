@@ -1,15 +1,14 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
-import org.jetbrains.annotations.NotNull;
 
 /**
- * Void typed value.
- * Represents no value or completely unknown value.
- *
+ * Void typed value. Represents no value or completely unknown value.
  * @author ujiqk
  * @version 1.0
  */
@@ -33,8 +32,7 @@ public class VoidValue extends Value {
                     default -> new VoidValue();
                 };
             }
-            default ->
-                    throw new UnsupportedOperationException("Operator " + operator + " not supported for VoidValue.");
+            default -> throw new UnsupportedOperationException("Operator " + operator + " not supported for VoidValue.");
         }
     }
 
@@ -47,8 +45,7 @@ public class VoidValue extends Value {
             case "--", "++" -> {
                 return new VoidValue();
             }
-            default ->
-                    throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+            default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 
@@ -60,17 +57,17 @@ public class VoidValue extends Value {
 
     @Override
     public void merge(@NotNull Value other) {
-        //do nothing
+        // do nothing
     }
 
     @Override
     public void setToUnknown() {
-        //do nothing
+        // do nothing
     }
 
     @Override
     public void setInitialValue() {
-        //nothing
+        // nothing
     }
 
 }

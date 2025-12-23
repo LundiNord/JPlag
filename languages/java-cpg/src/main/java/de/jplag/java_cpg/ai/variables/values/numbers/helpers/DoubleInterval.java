@@ -1,9 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values.numbers.helpers;
 
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
+
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 
 public class DoubleInterval extends Interval<Double> {
 

@@ -1,15 +1,15 @@
 package de.jplag.java_cpg.ai.variables;
 
-import de.jplag.java_cpg.ai.variables.values.NullValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
+import de.jplag.java_cpg.ai.variables.values.NullValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+
 /**
  * A variable is a named value.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -36,13 +36,12 @@ public class Variable {
 
     /**
      * Copy constructor.
-     *
      * @param variable the variable to deep copy.
      */
     public Variable(@NotNull Variable variable) {
         this.name = variable.name;
         this.value = variable.value.copy();
-        this.changeRecorders = variable.changeRecorders;    //no deep copy
+        this.changeRecorders = variable.changeRecorders;    // no deep copy
     }
 
     /**
@@ -54,12 +53,11 @@ public class Variable {
 
     /**
      * Triggers change recording.
-     *
      * @return The value of this variable.
      */
     public Value getValue() {
-        //trigger change recording because returned value could be modified outside.
-        //ToDo: only trigger when actual changes happen
+        // trigger change recording because returned value could be modified outside.
+        // ToDo: only trigger when actual changes happen
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
         }
@@ -67,9 +65,7 @@ public class Variable {
     }
 
     /**
-     * Set the value of this variable.
-     * Triggers change recording.
-     *
+     * Set the value of this variable. Triggers change recording.
      * @param value the new value for this variable.
      */
     public void setValue(Value value) {
@@ -81,10 +77,8 @@ public class Variable {
     }
 
     /**
-     * Merge content from another variable into this variable.
-     * The provided variable must have the same name as this variable.
-     * The actual merge behavior is delegated to the underlying {@link Value} implementation.
-     *
+     * Merge content from another variable into this variable. The provided variable must have the same name as this
+     * variable. The actual merge behavior is delegated to the underlying {@link Value} implementation.
      * @param value the variable whose content will be merged into this one; must have the same name.
      */
     public void merge(@NotNull Variable value) {
@@ -98,7 +92,7 @@ public class Variable {
      */
     public void setToUnknown() {
         if (getValue() instanceof NullValue) {
-            //replace null with unknown JavaObject
+            // replace null with unknown JavaObject
             setValue(Value.valueFactory(Type.OBJECT));
         } else {
             value.setToUnknown();
@@ -109,8 +103,7 @@ public class Variable {
     }
 
     /**
-     * Reset all information in this variable expect type and name.
-     * Initial values depend on the type.
+     * Reset all information in this variable expect type and name. Initial values depend on the type.
      */
     public void setInitialValue() {
         value.setInitialValue();

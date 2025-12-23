@@ -1,13 +1,14 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import java.util.List;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
-import org.checkerframework.dataflow.qual.Pure;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class Integer extends JavaObject implements ISpecialObject {
 

@@ -1,5 +1,19 @@
 package de.jplag.java_cpg.ai;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import de.fraunhofer.aisec.cpg.*;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
 import de.fraunhofer.aisec.cpg.graph.Component;
@@ -10,25 +24,12 @@ import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test that only uses the CPG library.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -58,20 +59,15 @@ class DeadCodeDetectionTest {
     }
 
     static TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
-        InferenceConfiguration inferenceConfiguration =
-                InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
+        InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
         try {
-            TranslationConfiguration.Builder configBuilder =
-                    new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
-                            .sourceLocations(files.toArray(new File[]{})).registerLanguage(new JavaLanguage());
-            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(
-                    TypeResolver.class, TypeHierarchyResolver.class,
-                    JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-                    ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class,
-                    FilenameMapper.class, ReplaceCallCastPass.class,
-                    EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
-                    ProgramDependenceGraphPass.class, DFGPass.class));
+            TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
+                    .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
+            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(
+                    List.of(TypeResolver.class, TypeHierarchyResolver.class, JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class, FilenameMapper.class, ReplaceCallCastPass.class,
+                            EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class, DFGPass.class));
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }
@@ -112,8 +108,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * a slightly more complex test with the main function calling other functions.
-     * with for loop and throw exception.
+     * a slightly more complex test with the main function calling other functions. with for loop and throw exception.
      */
     @Test
     void testSimple3() throws ParsingException, InterruptedException {
@@ -131,8 +126,8 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -143,8 +138,8 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/switch2");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -155,7 +150,7 @@ class DeadCodeDetectionTest {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); //z
+        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); // z
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
         assertFalse(((INumberValue) main.accessField("result3")).getInformation());
     }
@@ -167,8 +162,8 @@ class DeadCodeDetectionTest {
     void testForEach() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/forEach");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());  //z
-        assertTrue(((INumberValue) main.accessField("result2")).getInformation());  //y
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());  // z
+        assertTrue(((INumberValue) main.accessField("result2")).getInformation());  // y
     }
 
     /**
@@ -188,8 +183,8 @@ class DeadCodeDetectionTest {
     void testIf() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -200,8 +195,8 @@ class DeadCodeDetectionTest {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/nestedIf");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(50, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(50, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -212,8 +207,8 @@ class DeadCodeDetectionTest {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/ifElse");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -224,8 +219,8 @@ class DeadCodeDetectionTest {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/ifElse2");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -235,8 +230,8 @@ class DeadCodeDetectionTest {
     void testIfOr() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/ifOr");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -246,8 +241,8 @@ class DeadCodeDetectionTest {
     void testIfAnd() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/ifAnd");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -257,8 +252,8 @@ class DeadCodeDetectionTest {
     void testException() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/exception");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -281,8 +276,8 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        //assertEquals(1, ((INumberValue) main.accessField("result")).getValue());  //ToDo
-        //assertEquals(2, ((INumberValue) main.accessField("result")).getValue());
+        // assertEquals(1, ((INumberValue) main.accessField("result")).getValue()); //ToDo
+        // assertEquals(2, ((INumberValue) main.accessField("result")).getValue());
     }
 
     /**
@@ -293,9 +288,9 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/set");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-//        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());  //ToDo
-//        assertEquals(true, ((BooleanValue) main.accessField("result")).getValue());
-//        assertEquals(2, ((INumberValue) main.accessField("result")).getValue());
+        // assertEquals(1, ((INumberValue) main.accessField("result")).getValue()); //ToDo
+        // assertEquals(true, ((BooleanValue) main.accessField("result")).getValue());
+        // assertEquals(2, ((INumberValue) main.accessField("result")).getValue());
     }
 
     /**
@@ -328,7 +323,7 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/break");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        //ToDo
+        // ToDo
     }
 
     /**
@@ -339,8 +334,8 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/try");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(101, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(101, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -351,8 +346,8 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/try2");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertEquals(250, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(250, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -363,8 +358,8 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/try3");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -375,7 +370,7 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/stream");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -385,7 +380,7 @@ class DeadCodeDetectionTest {
     void testArray() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/arrayInit");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(24, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(24, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -443,9 +438,9 @@ class DeadCodeDetectionTest {
     void testReturnInIf() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInIf");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
-        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //2*y
-        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); //z
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          // x
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); // 2*y
+        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); // z
     }
 
     /**
@@ -455,9 +450,9 @@ class DeadCodeDetectionTest {
     void testReturnInIf2() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInIf2");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
-        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); //2*y
-        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); //z
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          // x
+        assertEquals(200, ((INumberValue) main.accessField("result2")).getValue()); // 2*y
+        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); // z
     }
 
     /**
@@ -467,9 +462,9 @@ class DeadCodeDetectionTest {
     void testReturnInIf2x() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInIf2x");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
-        assertEquals(700, ((INumberValue) main.accessField("result2")).getValue()); //2*y
-        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); //z
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          // x
+        assertEquals(700, ((INumberValue) main.accessField("result2")).getValue()); // 2*y
+        assertEquals(500, ((INumberValue) main.accessField("result3")).getValue()); // z
     }
 
     /**
@@ -479,9 +474,9 @@ class DeadCodeDetectionTest {
     void testReturnInWhile() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/returnInWhile");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result")).getInformation());          //x
-        assertFalse(((INumberValue) main.accessField("result2")).getInformation());          //y
-        assertEquals(25, ((INumberValue) main.accessField("result3")).getValue()); //z
+        assertFalse(((INumberValue) main.accessField("result")).getInformation());          // x
+        assertFalse(((INumberValue) main.accessField("result2")).getInformation());          // y
+        assertEquals(25, ((INumberValue) main.accessField("result3")).getValue()); // z
     }
 
 }

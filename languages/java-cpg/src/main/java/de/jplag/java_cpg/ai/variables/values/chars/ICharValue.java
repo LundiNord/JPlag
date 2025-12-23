@@ -2,7 +2,6 @@ package de.jplag.java_cpg.ai.variables.values.chars;
 
 /**
  * Interface for all java char value representations.
- *
  * @author ujiqk
  * @version 1.0
  */

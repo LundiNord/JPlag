@@ -1,15 +1,15 @@
 package de.jplag.java_cpg.ai.variables.values.chars;
 
+import java.util.Set;
+
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Set;
 
 /**
  * Char value representation that can hold a single char value or be unknown.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -74,8 +74,7 @@ public class CharValue extends Value implements ICharValue {
     @Override
     public Value unaryOperation(@NotNull String operator) {
         switch (operator) {
-            default ->
-                    throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+            default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 

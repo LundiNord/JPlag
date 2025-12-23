@@ -1,18 +1,18 @@
 package de.jplag.java_cpg.ai.variables.values.numbers;
 
+import java.util.Iterator;
+import java.util.TreeSet;
+
+import org.checkerframework.dataflow.qual.Impure;
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.Interval;
-import org.checkerframework.dataflow.qual.Impure;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Iterator;
-import java.util.TreeSet;
 
 /**
  * Abstract base class for numeric values represented as sets of intervals.
- *
  * @param <T> The type of number (Integer, Double, etc.)
  * @param <I> The interval type for this number
  */
@@ -165,7 +165,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 T upper = values.getLast().getUpperBound().compareTo(otherValue.values.getLast().getUpperBound()) < 0
                         ? values.getLast().getUpperBound()
                         : otherValue.values.getLast().getUpperBound();
-                //include all intervals in the result but all are capped at upper
+                // include all intervals in the result but all are capped at upper
                 TreeSet<I> newValues = new TreeSet<>();
                 for (I interval : otherValue.values) {
                     T upperBound = interval.getUpperBound().compareTo(upper) < 0 ? interval.getUpperBound() : upper;
@@ -185,7 +185,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 T lower = values.getFirst().getLowerBound().compareTo(otherValue.values.getFirst().getLowerBound()) > 0
                         ? values.getFirst().getLowerBound()
                         : otherValue.values.getFirst().getLowerBound();
-                //include all intervals in the result, but all are floored at lower
+                // include all intervals in the result, but all are floored at lower
                 TreeSet<I> newValues = new TreeSet<>();
                 try {
                     for (I interval : otherValue.values) {
@@ -205,8 +205,8 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 newValue.mergeOverlappingIntervals();
                 return newValue;
             }
-            default ->
-                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> throw new UnsupportedOperationException(
+                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
     }
 
@@ -239,8 +239,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 newValue.mergeOverlappingIntervals();
                 return newValue;
             }
-            default ->
-                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 
@@ -269,8 +268,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
         for (I interval : values) {
             I lastInterval = newValues.last();
             if (lastInterval.getUpperBound().compareTo(interval.getLowerBound()) >= 0) {
-                T maxUpper = lastInterval.getUpperBound().compareTo(interval.getUpperBound()) > 0
-                        ? lastInterval.getUpperBound()
+                T maxUpper = lastInterval.getUpperBound().compareTo(interval.getUpperBound()) > 0 ? lastInterval.getUpperBound()
                         : interval.getUpperBound();
                 lastInterval.setUpperBound(maxUpper);
             } else {

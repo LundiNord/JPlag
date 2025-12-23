@@ -1,28 +1,28 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
-import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
+
+import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+
 /**
  * String representation using character inclusion sets.
- *
  * @author ujiqk
  * @version 1.0
  */
 public class StringCharInclValue extends JavaObject implements IStringValue {
 
-    //String=null <--> certainContained=null
+    // String=null <--> certainContained=null
     @Nullable
     Set<Character> certainContained;
     Set<Character> maybeContained;
@@ -91,7 +91,8 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             case "equals" -> {
                 assert paramVars.size() == 1;
                 StringCharInclValue other = (StringCharInclValue) paramVars.getFirst();
-                if (!Objects.equals(this.certainContained, other.certainContained) && this.maybeContained.isEmpty() && other.maybeContained.isEmpty()) {
+                if (!Objects.equals(this.certainContained, other.certainContained) && this.maybeContained.isEmpty()
+                        && other.maybeContained.isEmpty()) {
                     return Value.valueFactory(false);
                 } else {
                     return Value.valueFactory(Type.BOOLEAN);
@@ -125,7 +126,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             return new StringCharInclValue();
         }
         if (operator.equals("+") && other instanceof INumberValue inumbervalue) {
-            if (inumbervalue.getInformation()) {        //ToDo: what to do with intervals?
+            if (inumbervalue.getInformation()) {        // ToDo: what to do with intervals?
                 Set<Character> newCertain = certainContained == null ? null : new HashSet<>(certainContained);
                 assert newCertain != null;
                 newCertain.addAll(doubleToCharSet(inumbervalue.getValue()));
@@ -147,10 +148,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     @NotNull
     @Override
     public JavaObject copy() {
-        return new StringCharInclValue(
-                certainContained == null ? null : new HashSet<>(certainContained),
-                new HashSet<>(maybeContained)
-        );
+        return new StringCharInclValue(certainContained == null ? null : new HashSet<>(certainContained), new HashSet<>(maybeContained));
     }
 
     @Override
@@ -208,7 +206,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     public boolean getInformation() {
-        //always false since order is never known
+        // always false since order is never known
         return false;
     }
 

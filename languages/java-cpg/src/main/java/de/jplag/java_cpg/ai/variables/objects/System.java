@@ -1,17 +1,17 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
+import java.util.List;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.NotNull;
+
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
-import org.checkerframework.dataflow.qual.Pure;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Representation of the static java.lang.System class.
- *
  * @author ujiqk
  * @version 1.0
  * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/System.html">Oracle Docs</a></a>
@@ -38,8 +38,7 @@ public class System extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return new StringValue("\n");
             }
-            default ->
-                    throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
+            default -> throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
         }
     }
 
@@ -52,8 +51,7 @@ public class System extends JavaObject implements ISpecialObject {
             case "in" -> {
                 return new InputStream();
             }
-            default ->
-                    throw new UnsupportedOperationException("Field " + fieldName + " is not supported in " + PATH + "." + NAME);
+            default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported in " + PATH + "." + NAME);
         }
     }
 

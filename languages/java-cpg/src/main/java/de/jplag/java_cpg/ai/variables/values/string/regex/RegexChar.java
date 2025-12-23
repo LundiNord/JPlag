@@ -5,7 +5,6 @@ import java.util.List;
 
 /**
  * {@link RegexItem} representing a single character.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -47,7 +46,8 @@ public class RegexChar extends RegexItem {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         RegexChar regexChar = (RegexChar) o;
         return content == regexChar.content;

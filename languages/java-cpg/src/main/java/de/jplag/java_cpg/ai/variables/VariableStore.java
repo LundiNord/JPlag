@@ -1,14 +1,14 @@
 package de.jplag.java_cpg.ai.variables;
 
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
+import java.util.*;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Stores variables in different scopes.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -19,9 +19,7 @@ public class VariableStore {
     private VariableName thisObject;
 
     /**
-     * Copy constructor.
-     * Performs deep copy down the values.
-     *
+     * Copy constructor. Performs deep copy down the values.
      * @param variableStore the variable store to copy.
      */
     public VariableStore(@NotNull VariableStore variableStore) {
@@ -33,8 +31,7 @@ public class VariableStore {
     }
 
     /**
-     * Default constructor.
-     * Initializes with one {@link Scope}.
+     * Default constructor. Initializes with one {@link Scope}.
      */
     public VariableStore() {
         scopes.add(new Scope());
@@ -106,10 +103,8 @@ public class VariableStore {
     }
 
     /**
-     * Merges the information from another variable store into this one.
-     * Used for merging variable states after control-flow joins.
-     * Merges scopes up to the minimum scope depth of both stores.
-     *
+     * Merges the information from another variable store into this one. Used for merging variable states after control-flow
+     * joins. Merges scopes up to the minimum scope depth of both stores.
      * @param other the other variable store to merge.
      */
     public void merge(@NotNull VariableStore other) {
@@ -150,9 +145,8 @@ public class VariableStore {
     }
 
     /**
-     * Stops recording changes to variables in all scopes and returns the set of changed variables.
-     * Method assumes that recordChanges() was called before.
-     *
+     * Stops recording changes to variables in all scopes and returns the set of changed variables. Method assumes that
+     * recordChanges() was called before.
      * @return the set of changed variables.
      */
     @NotNull

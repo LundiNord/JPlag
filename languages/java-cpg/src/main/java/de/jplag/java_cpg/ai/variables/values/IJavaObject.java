@@ -1,11 +1,12 @@
 package de.jplag.java_cpg.ai.variables.values;
 
-import de.jplag.java_cpg.ai.AbstractInterpretation;
-import de.jplag.java_cpg.ai.variables.Variable;
+import java.util.List;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import de.jplag.java_cpg.ai.AbstractInterpretation;
+import de.jplag.java_cpg.ai.variables.Variable;
 
 public interface IJavaObject extends IValue {
 

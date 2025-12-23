@@ -1,5 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import java.util.Set;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import de.jplag.java_cpg.ai.CharAiType;
 import de.jplag.java_cpg.ai.FloatAiType;
 import de.jplag.java_cpg.ai.IntAiType;
@@ -11,17 +16,13 @@ import de.jplag.java_cpg.ai.variables.values.numbers.*;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
-import kotlin.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Set;
+import kotlin.Pair;
 
 /**
  * Abstract super class for all values.
  * <p>
  * Also contains factory methods to create Value instances based on the configured AI types.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -35,9 +36,9 @@ public abstract class Value implements IValue {
     @NotNull
     private final Type type;
     @Nullable
-    private Pair<JavaArray, INumberValue> arrayPosition;    //necessary for an array assign to work
+    private Pair<JavaArray, INumberValue> arrayPosition;    // necessary for an array assign to work
     @Nullable
-    private JavaObject parentObject;                        //necessary for some field access
+    private JavaObject parentObject;                        // necessary for some field access
 
     protected Value(@NotNull Type type) {
         this.type = type;
@@ -45,7 +46,6 @@ public abstract class Value implements IValue {
 
     /**
      * The default is {@link IntAiType#DEFAULT}.
-     *
      * @param intAiType the type to use for integer values.
      */
     public static void setUsedIntAiType(@NotNull IntAiType intAiType) {
@@ -54,7 +54,6 @@ public abstract class Value implements IValue {
 
     /**
      * The default is {@link FloatAiType#DEFAULT}.
-     *
      * @param floatAiType the type to use for float values.
      */
     public static void setUsedFloatAiType(@NotNull FloatAiType floatAiType) {
@@ -63,7 +62,6 @@ public abstract class Value implements IValue {
 
     /**
      * The default is {@link StringAiType#DEFAULT}.
-     *
      * @param stringAiType the type to use for string values.
      */
     public static void setUsedStringAiType(@NotNull StringAiType stringAiType) {
@@ -72,18 +70,16 @@ public abstract class Value implements IValue {
 
     /**
      * The default is {@link CharAiType#DEFAULT}.
-     *
      * @param charAiType the type to use for char values.
      */
     public static void setUsedCharAiType(@NotNull CharAiType charAiType) {
         usedCharAiType = charAiType;
     }
 
-    //------------------ Value Factories ------------------//
+    // ------------------ Value Factories ------------------//
 
     /**
      * Constructs a Value instance based on the provided type.
-     *
      * @param type the type of the value.
      * @return a Value instance corresponding to the specified type.
      */
@@ -106,7 +102,6 @@ public abstract class Value implements IValue {
 
     /**
      * Value factory for when a value is known.
-     *
      * @param value the known value.
      * @return a {@link Value} instance representing the known value.
      */
@@ -128,7 +123,7 @@ public abstract class Value implements IValue {
             case Double d -> {
                 return getNewFloatValue(d);
             }
-            case Long l -> {    //all integer numbers are treated as int
+            case Long l -> {    // all integer numbers are treated as int
                 assert l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE;
                 return getNewIntValue(l.intValue());
             }
@@ -288,7 +283,7 @@ public abstract class Value implements IValue {
         };
     }
 
-    //------------------ End of Value Factories ------------------//
+    // ------------------ End of Value Factories ------------------//
 
     @NotNull
     public Type getType() {
@@ -297,9 +292,8 @@ public abstract class Value implements IValue {
 
     /**
      * Performs a binary operation between this value and another value.
-     *
      * @param operator the operator.
-     * @param other    the other value.
+     * @param other the other value.
      * @return the result value. VoidValue if the operation does not return a value.
      */
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
@@ -308,7 +302,6 @@ public abstract class Value implements IValue {
 
     /**
      * Performs a unary operation on this value.
-     *
      * @param operator the operator.
      * @return the result value. VoidValue if the operation does not return a value.
      */
@@ -317,14 +310,12 @@ public abstract class Value implements IValue {
             case "throw" -> {
                 return new VoidValue();
             }
-            default ->
-                    throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+            default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 
     /**
      * {@link #setParentObject(JavaObject)} must be called before to use this method.
-     *
      * @return the parent object of this value. Can be null.
      */
     @Nullable
@@ -333,19 +324,15 @@ public abstract class Value implements IValue {
     }
 
     /**
-     * Sets the parent object of this value.
-     * Must be called before some filed accesses.
-     *
+     * Sets the parent object of this value. Must be called before some filed accesses.
      * @param parentObject the parent object. Can be null.
      */
     public void setParentObject(@Nullable JavaObject parentObject) {
         this.parentObject = parentObject;
     }
 
-
     /**
      * {@link #setArrayPosition(JavaArray, INumberValue)} must be called before to use this method.
-     *
      * @return the position of this value in the array that contains it.
      */
     public Pair<JavaArray, INumberValue> getArrayPosition() {
@@ -354,8 +341,7 @@ public abstract class Value implements IValue {
     }
 
     /**
-     * Sets the position of this value in the array that contains it.
-     * Necessary to set before array assignments.
+     * Sets the position of this value in the array that contains it. Necessary to set before array assignments.
      */
     public void setArrayPosition(@NotNull JavaArray array, @NotNull INumberValue index) {
         this.arrayPosition = new Pair<>(array, index);

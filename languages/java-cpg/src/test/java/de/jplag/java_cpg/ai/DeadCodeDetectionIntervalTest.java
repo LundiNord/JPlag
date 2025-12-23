@@ -1,29 +1,27 @@
 package de.jplag.java_cpg.ai;
 
+import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
+import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
 import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.FloatSetValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntSetValue;
-import org.junit.jupiter.api.Test;
-
-import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
-import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test that only uses the CPG library.
- * Specifically tests different integer interval analyses.
- *
+ * Test that only uses the CPG library. Specifically tests different integer interval analyses.
  * @author ujiqk
  * @version 1.0
  */
 class DeadCodeDetectionIntervalTest {
 
     /**
-     * A simple test with the main function only.
-     * Using integer interval analysis.
+     * A simple test with the main function only. Using integer interval analysis.
      */
     @Test
     void testSimpleInterval() throws ParsingException, InterruptedException {
@@ -39,7 +37,7 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.SET);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
         assertEquals(100, ((INumberValue) main.accessField("result2")).getValue());
     }
 
@@ -56,8 +54,7 @@ class DeadCodeDetectionIntervalTest {
     }
 
     /**
-     * a slightly more complex test with the main function calling other functions.
-     * with for loop and throw exception.
+     * a slightly more complex test with the main function calling other functions. with for loop and throw exception.
      */
     @Test
     void testSimple3() throws ParsingException, InterruptedException {
@@ -76,8 +73,8 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  //z
-        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); //y
+        assertEquals(400, ((INumberValue) main.accessField("result")).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2")).getValue()); // y
     }
 
     /**
@@ -99,7 +96,7 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); //z
+        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); // z
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
         assertFalse(((INumberValue) main.accessField("result3")).getInformation());
     }
@@ -112,7 +109,7 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loopx2");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); //z
+        assertEquals(500, ((INumberValue) main.accessField("result")).getValue()); // z
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
         assertFalse(((INumberValue) main.accessField("result3")).getInformation());
     }
@@ -145,7 +142,7 @@ class DeadCodeDetectionIntervalTest {
         assertEquals(0, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
         assertEquals(Integer.MAX_VALUE, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
-        assertEquals(2, ((IntSetValue) main.accessField("result2")).getIntervals().size());     //y
+        assertEquals(2, ((IntSetValue) main.accessField("result2")).getIntervals().size());     // y
         assertEquals(10, ((IntSetValue) main.accessField("result2")).getIntervals().getFirst().getLowerBound());
         assertEquals(50, ((IntSetValue) main.accessField("result2")).getIntervals().getFirst().getUpperBound());
         assertEquals(200, ((IntSetValue) main.accessField("result2")).getIntervals().getLast().getLowerBound());

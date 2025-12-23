@@ -1,16 +1,15 @@
 package de.jplag.java_cpg.ai.variables;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * A scope containing variables.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -19,9 +18,7 @@ public class Scope {
     private HashMap<VariableName, Variable> variables = new HashMap<>();
 
     /**
-     * Copy constructor.
-     * Performs a deep copy of the variables.
-     *
+     * Copy constructor. Performs a deep copy of the variables.
      * @param scope the scope to copy.
      */
     public Scope(@NotNull Scope scope) {
@@ -36,12 +33,11 @@ public class Scope {
      * Default constructor.
      */
     public Scope() {
-        //empty
+        // empty
     }
 
     /**
      * Overwrites or adds a variable in this scope.
-     *
      * @param variable the variable to add.
      */
     public void addVariable(Variable variable) {
@@ -50,7 +46,6 @@ public class Scope {
 
     /**
      * Gets a variable by its name or null if it does not exist in this scope.
-     *
      * @param name the name of the variable.
      * @return the variable or null if it does not exist in this scope.
      */
@@ -59,13 +54,12 @@ public class Scope {
     }
 
     /**
-     * Merges the information of another instance of the same scope into this one.
-     * The same variables with potentially different values must exist in both scopes.
-     *
+     * Merges the information of another instance of the same scope into this one. The same variables with potentially
+     * different values must exist in both scopes.
      * @param otherScope the other scope to merge into this one.
      */
     public void merge(@NotNull Scope otherScope) {
-        //assert: both scopes contain the same variables with potentially different values
+        // assert: both scopes contain the same variables with potentially different values
         for (Map.Entry<VariableName, Variable> entry : otherScope.variables.entrySet()) {
             assert this.variables.containsKey(entry.getKey());
             this.variables.get(entry.getKey()).merge(entry.getValue());
@@ -83,8 +77,7 @@ public class Scope {
     }
 
     /**
-     * Sets all variables to their initial value.
-     * Initial value depends on the variable type.
+     * Sets all variables to their initial value. Initial value depends on the variable type.
      */
     public void setEverythingInitialValue() {
         for (Variable variable : variables.values()) {
@@ -102,9 +95,8 @@ public class Scope {
     }
 
     /**
-     * Stops recording changes to all variables and returns the ChangeRecorder.
-     * If addChangeRecorder() was not called before, null is returned.
-     *
+     * Stops recording changes to all variables and returns the ChangeRecorder. If addChangeRecorder() was not called
+     * before, null is returned.
      * @return the ChangeRecorder that was removed, or null if no recorders existed.
      */
     @Nullable

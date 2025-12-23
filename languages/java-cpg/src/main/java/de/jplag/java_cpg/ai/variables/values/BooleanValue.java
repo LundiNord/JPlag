@@ -1,12 +1,12 @@
 package de.jplag.java_cpg.ai.variables.values;
 
-import de.jplag.java_cpg.ai.variables.Type;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+import de.jplag.java_cpg.ai.variables.Type;
+
 /**
  * Boolean value representation with a possible lack of information.
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -47,7 +47,6 @@ public class BooleanValue extends Value implements IBooleanValue {
 
     /**
      * Assumes that exact information is available.
-     *
      * @return the boolean value.
      */
     public boolean getValue() {
@@ -90,8 +89,8 @@ public class BooleanValue extends Value implements IBooleanValue {
                     return new BooleanValue();
                 }
             }
-            default ->
-                    throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> throw new UnsupportedOperationException(
+                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
     }
 
@@ -106,8 +105,7 @@ public class BooleanValue extends Value implements IBooleanValue {
                     return new BooleanValue();
                 }
             }
-            default ->
-                    throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 
@@ -126,7 +124,7 @@ public class BooleanValue extends Value implements IBooleanValue {
         assert other instanceof BooleanValue;
         BooleanValue otherBool = (BooleanValue) other;
         if (this.information && otherBool.information && this.value == otherBool.value) {
-            //keep information
+            // keep information
         } else {
             this.information = false;
         }

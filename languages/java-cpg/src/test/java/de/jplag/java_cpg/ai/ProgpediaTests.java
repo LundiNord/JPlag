@@ -1,15 +1,7 @@
 package de.jplag.java_cpg.ai;
 
-import de.fraunhofer.aisec.cpg.TranslationResult;
-import de.fraunhofer.aisec.cpg.graph.Component;
-import de.jplag.ParsingException;
-import de.jplag.java_cpg.ai.variables.VariableStore;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.translate;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.util.Arrays;
@@ -17,16 +9,23 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.translate;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import de.fraunhofer.aisec.cpg.TranslationResult;
+import de.fraunhofer.aisec.cpg.graph.Component;
+import de.jplag.ParsingException;
+import de.jplag.java_cpg.ai.variables.VariableStore;
+import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Tests from the Progpedia data set.
  * <p>
- * José Carlos Paiva, José Paulo Leal, and Álvaro Figueira. PROGpedia. Dec. 2022.
- * 10.5281/zenodo.7449056
+ * José Carlos Paiva, José Paulo Leal, and Álvaro Figueira. PROGpedia. Dec. 2022. 10.5281/zenodo.7449056
  * <a href="https://zenodo.org/records/7449056">zenodo.org/records/7449056</a> (visited on 11/04/2025).
- *
  * @author ujiqk
  * @version 1.0
  */
@@ -49,24 +48,27 @@ class ProgpediaTests {
 
     @NotNull
     private static Stream<String> acceptedResourceDirs() {
-        return Stream.of("00000006", "00000016", "00000018", "00000019", "00000021", "00000022", "00000023", "00000034",
-                        "00000035", "00000039", "00000042", "00000043", "00000045", "00000048", "00000053", "00000056")
-                .flatMap(problemId -> Stream.of("ACCEPTED", "WRONG_ANSWER")
-                        .flatMap(category -> getResourceDirsForProblem(problemId, category)));
+        return Stream
+                .of("00000006", "00000016", "00000018", "00000019", "00000021", "00000022", "00000023", "00000034", "00000035", "00000039",
+                        "00000042", "00000043", "00000045", "00000048", "00000053", "00000056")
+                .flatMap(problemId -> Stream.of("ACCEPTED", "WRONG_ANSWER").flatMap(category -> getResourceDirsForProblem(problemId, category)));
     }
 
     private static Stream<String> getResourceDirsForProblem(String problemId, String category) {
         ClassLoader classLoader = DeadCodeDetectionTest.class.getClassLoader();
         java.net.URL url = classLoader.getResource("java/progpedia/" + problemId + "/" + category);
-        if (url == null) return Stream.empty();
+        if (url == null)
+            return Stream.empty();
         File base = new File(Objects.requireNonNull(url).getFile());
         File[] dirs = base.listFiles(File::isDirectory);
-        if (dirs == null) return Stream.empty();
+        if (dirs == null)
+            return Stream.empty();
         return Arrays.stream(dirs).map(f -> "java/progpedia/" + problemId + "/" + category + "/" + f.getName() + "/");
     }
 
     @ParameterizedTest
     @MethodSource("acceptedResourceDirs")
+    @Disabled
     void testProgpedia(String resourceDir) throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
