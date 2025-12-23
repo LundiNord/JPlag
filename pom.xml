@@ -689,7 +689,8 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.plugin.maven.surefire}</version>
                     <configuration>
-                        <argLine>@{argLine} -javaagent:"${settings.localRepository}/org/mockito/mockito-core/${version.mockito}/mockito-core-${version.mockito}.jar"</argLine>
+                        <argLine>@{argLine}
+                            -javaagent:"${settings.localRepository}/org/mockito/mockito-core/${version.mockito}/mockito-core-${version.mockito}.jar"</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -811,7 +812,6 @@
                 <module>language-api</module>
                 <module>language-antlr-utils</module>
                 <module>language-testutils</module>
-                <module>leon</module>
             </modules>
         </profile>
         <profile>
