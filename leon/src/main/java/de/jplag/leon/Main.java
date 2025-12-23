@@ -16,7 +16,8 @@ import de.jplag.reporting.reportobject.ReportObjectFactory;
  *
  */
 public class Main {
-    public static void main(String[] args) {
+
+    static void main(String[] args) {
         System.out.println("Hello, JPlag Leon!");
         Language language = new JavaCpgLanguage();
         File submissionsRoot = new File("leon/submissionsFolders");
@@ -35,4 +36,5 @@ public class Main {
             System.err.println("I/O error: " + e.getMessage());
         }
     }
+
 }
