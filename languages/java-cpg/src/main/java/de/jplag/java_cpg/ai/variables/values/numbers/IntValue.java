@@ -220,9 +220,6 @@ public class IntValue extends Value implements INumberValue {
             this.information = false;
             return;
         }
-        if (!(other instanceof IntValue)) {
-            System.out.println("Debug");
-        }
         assert other instanceof IntValue;
         IntValue otherInt = (IntValue) other;
         if (this.information && otherInt.information && this.value == otherInt.value) {

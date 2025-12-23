@@ -15,7 +15,6 @@ import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
-import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
@@ -251,8 +250,6 @@ public class AbstractInterpretation {
             case MemberExpression me -> {
                 if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
                     if (!(valueStack.getLast() instanceof JavaObject)) {
-                        //not reached in normal execution
-                        //assert false;
                         nodeStack.removeLast();
                         nodeStack.add(me);
                         valueStack.removeLast();    //remove object reference
@@ -310,11 +307,6 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case SubscriptExpression se -> {    //adds its value to the value stack
-                if (!(nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
-                        || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression
-                        || nodeStack.getLast() instanceof UnaryOperator || nodeStack.getLast() instanceof SubscriptExpression)) {
-                    System.out.println("Debug");
-                }
                 assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
                         || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression
                         || nodeStack.getLast() instanceof UnaryOperator || nodeStack.getLast() instanceof SubscriptExpression;
@@ -351,9 +343,6 @@ public class AbstractInterpretation {
                         valueStack.removeLast();
                         valueStack.add(new JavaObject());
                     }
-                    if (!(valueStack.getLast() instanceof JavaObject)) {
-                        System.out.println("Debug");
-                    }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
                     result = javaObject.callMethod(memberName.getLocalName(), null);
                 } else {
@@ -367,9 +356,6 @@ public class AbstractInterpretation {
                         valueStack.removeLast();
                     }
                     Collections.reverse(argumentList);
-                    if (!(nodeStack.getLast() instanceof MemberExpression)) {
-                        System.out.println("Debug");
-                    }
                     assert nodeStack.getLast() instanceof MemberExpression;
                     Name memberName = (nodeStack.getLast()).getName();
                     assert memberName.getParent() != null;
@@ -377,9 +363,6 @@ public class AbstractInterpretation {
                     if (valueStack.getLast() instanceof VoidValue) {
                         valueStack.removeLast();
                         valueStack.add(new JavaObject());
-                    }
-                    if (!(valueStack.getLast() instanceof JavaObject)) {
-                        System.out.println("Debug");
                     }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();         //for now only one parameter
                     result = javaObject.callMethod(memberName.getLocalName(), argumentList);
@@ -395,9 +378,6 @@ public class AbstractInterpretation {
                     Value value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
-                }
-                if (!(nextEOG.size() == 1)) {
-                    System.out.println("Debug");
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
@@ -433,7 +413,6 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     Value oldValue = valueStack.getLast();
                     //sometimes the value of assign is used after, so don't remove it
-                    //valueStack.removeLast();
                     oldValue.getArrayPosition().component1().arrayAssign(oldValue.getArrayPosition().component2(), newValue);
                 } else {
                     Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
@@ -447,11 +426,7 @@ public class AbstractInterpretation {
                             classVal = valueStack.get(valueStack.size() - 2).getParentObject(); //FixMe valueStack is not merged
                             //classVal = (JavaObject) variables.getVariable(className).getValue();
                         }
-                        if (classVal == null) {
-                            System.out.println("Debug");
-                        }
                         classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
-                        System.out.println("Test");
                     } else {
                         variable.setValue(valueStack.getLast());
                     }
@@ -485,9 +460,6 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case BinaryOperator bop -> {
-                if (!(valueStack.size() >= 2 && !nodeStack.isEmpty())) {
-                    System.out.println("Debug");
-                }
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 String operator = bop.getOperatorCode();
                 assert operator != null;
@@ -1088,9 +1060,6 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);
-        }
-        if (nextNode == null || nextNode instanceof DummyNeighbor) {
-            System.out.println("Debug");
         }
         assert nextNode != null;
         return graphWalker(nextNode);
