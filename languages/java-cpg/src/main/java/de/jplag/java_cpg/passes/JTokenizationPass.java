@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import de.fraunhofer.aisec.cpg.graph.Node;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import de.fraunhofer.aisec.cpg.TranslationContext;
 import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.graph.Name;
+import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
 import de.fraunhofer.aisec.cpg.passes.TranslationResultPass;
 import de.jplag.Token;
@@ -24,6 +22,8 @@ import de.jplag.java_cpg.token.CpgNodeListener;
 import de.jplag.java_cpg.token.CpgToken;
 import de.jplag.java_cpg.token.CpgTokenConsumer;
 import de.jplag.java_cpg.visitor.NodeOrderStrategy;
+
+import kotlin.Unit;
 
 /**
  * This pass tokenizes the {@link de.fraunhofer.aisec.cpg.TranslationResult}. It is a duplicate of
@@ -46,27 +46,28 @@ public class JTokenizationPass extends TranslationResultPass {
         super(ctx);
     }
 
-//    @Override
-//    public void accept(TranslationResult translationResult) {
-//        tokenList.clear();
-//        CpgNodeListener listener = new CpgNodeListener(consumer);
-//        SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
-//        walker.setStrategy(strategy::getIterator);
-//        //walker.registerOnNodeVisit(listener::visit);
-//        walker.registerOnNodeVisit((node, parent) -> {
-//            listener.visit(node);
-//            return Unit.INSTANCE;
-//        });
-//        walker.registerOnNodeExit(listener::exit);
-//        walker.iterate(translationResult);
-//        callback.accept(tokenList);
-//    }
+    // @Override
+    // public void accept(TranslationResult translationResult) {
+    // tokenList.clear();
+    // CpgNodeListener listener = new CpgNodeListener(consumer);
+    // SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
+    // walker.setStrategy(strategy::getIterator);
+    // //walker.registerOnNodeVisit(listener::visit);
+    // walker.registerOnNodeVisit((node, parent) -> {
+    // listener.visit(node);
+    // return Unit.INSTANCE;
+    // });
+    // walker.registerOnNodeExit(listener::exit);
+    // walker.iterate(translationResult);
+    // callback.accept(tokenList);
+    // }
 
     /**
-     * Updated for the (<a href="https://github.com/Fraunhofer-AISEC/cpg/pull/1571/files">new CPG version</a>),
-     * the old version commented out above.
+     * Updated for the (<a href="https://github.com/Fraunhofer-AISEC/cpg/pull/1571/files">new CPG version</a>), the old
+     * version commented out above.
      */
-    @Override public void accept(TranslationResult translationResult) {
+    @Override
+    public void accept(TranslationResult translationResult) {
         tokenList.clear();
         CpgNodeListener listener = new CpgNodeListener(consumer);
         SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
@@ -89,9 +90,6 @@ public class JTokenizationPass extends TranslationResultPass {
         }
         callback.accept(tokenList);
     }
-
-
-
 
     @Override
     public void cleanup() {
