@@ -18,6 +18,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * String representation using regex-like structures.
+ * Strings are objects with added functionality.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class StringRegexValue extends JavaObject implements IStringValue {
 
     //String=null <--> contentRegex=null
@@ -33,6 +40,9 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         unknown = true;
     }
 
+    /**
+     * A string value with exact information.
+     */
     public StringRegexValue(@Nullable String value) {
         super(Type.STRING);
         if (value == null) {
@@ -46,6 +56,9 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         }
     }
 
+    /**
+     * A string value with possible values.
+     */
     public StringRegexValue(@NotNull Set<String> possibleValues) {
         super(Type.STRING);
         unknown = false;
@@ -312,7 +325,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value accessField(String fieldName) {
+    public Value accessField(@NotNull String fieldName) {
         throw new UnsupportedOperationException("Access field not supported in StringRegexValue");
     }
 
@@ -445,6 +458,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     public boolean getInformation() {
+        //ToDo
         return false;
     }
 

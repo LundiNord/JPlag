@@ -32,6 +32,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
         this.innerType = innerType;
     }
 
+    /**
+     * a Java Array with exact information.
+     *
+     * @param values the values of the array in the correct order.
+     */
     public JavaArray(@NotNull List<Value> values) {
         super(Type.ARRAY);
         assert values.stream().map(Value::getType).distinct().count() == 1;
@@ -39,11 +44,17 @@ public class JavaArray extends JavaObject implements IJavaArray {
         this.values = values;
     }
 
+    /**
+     * a Java Array with no information and undefined size.
+     */
     public JavaArray() {
         super(Type.ARRAY);
         this.innerType = null;
     }
 
+    /**
+     * a Java Array with exact length and type information.
+     */
     public JavaArray(@NotNull INumberValue length, Type innerType) {
         super(Type.ARRAY);
         this.innerType = innerType;
@@ -57,9 +68,6 @@ public class JavaArray extends JavaObject implements IJavaArray {
         }
     }
 
-    /**
-     * Copy Constructor.
-     */
     private JavaArray(@Nullable Type innerType, @Nullable List<Value> values) {
         super(Type.ARRAY);
         this.innerType = innerType;
@@ -95,6 +103,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
         };
     }
 
+    /**
+     * Assign a value to a position in the array.
+     */
     public void arrayAssign(INumberValue index, Value value) {
         if (values != null && index.getInformation()) {
             int idx = (int) index.getValue();

@@ -18,7 +18,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Set;
 
 /**
- * Anonymous typed value.
+ * Abstract super class for all values.
+ * <p>
+ * Also contains factory methods to create Value instances based on the configured AI types.
  *
  * @author ujiqk
  * @version 1.0
@@ -50,17 +52,34 @@ public abstract class Value implements IValue {
         usedIntAiType = intAiType;
     }
 
+    /**
+     * The default is {@link FloatAiType#DEFAULT}.
+     *
+     * @param floatAiType the type to use for float values.
+     */
     public static void setUsedFloatAiType(@NotNull FloatAiType floatAiType) {
         usedFloatAiType = floatAiType;
     }
 
+    /**
+     * The default is {@link StringAiType#DEFAULT}.
+     *
+     * @param stringAiType the type to use for string values.
+     */
     public static void setUsedStringAiType(@NotNull StringAiType stringAiType) {
         usedStringAiType = stringAiType;
     }
 
+    /**
+     * The default is {@link CharAiType#DEFAULT}.
+     *
+     * @param charAiType the type to use for char values.
+     */
     public static void setUsedCharAiType(@NotNull CharAiType charAiType) {
         usedCharAiType = charAiType;
     }
+
+    //------------------ Value Factories ------------------//
 
     /**
      * Constructs a Value instance based on the provided type.
@@ -85,8 +104,14 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Value factory for when a value is known.
+     *
+     * @param value the known value.
+     * @return a {@link Value} instance representing the known value.
+     */
     @NotNull
-    public static Value valueFactory(Object value) {
+    public static Value valueFactory(@Nullable Object value) {
         if (value == null) {
             return new NullValue();
         }
@@ -103,7 +128,8 @@ public abstract class Value implements IValue {
             case Double d -> {
                 return getNewFloatValue(d);
             }
-            case Long l -> {    //ToDo handle long values properly
+            case Long l -> {    //all integer numbers are treated as int
+                assert l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE;
                 return getNewIntValue(l.intValue());
             }
             case Character c -> {
@@ -262,6 +288,8 @@ public abstract class Value implements IValue {
         };
     }
 
+    //------------------ End of Value Factories ------------------//
+
     @NotNull
     public Type getType() {
         return type;
@@ -295,47 +323,41 @@ public abstract class Value implements IValue {
     }
 
     /**
-     * Creates and returns a deep copy of this value.
+     * {@link #setParentObject(JavaObject)} must be called before to use this method.
      *
-     * @return a deep copy of this value.
+     * @return the parent object of this value. Can be null.
      */
-    @NotNull
-    public abstract Value copy();
-
-    /**
-     * Merges the information of another instance of the same value into this one.
-     * Types should be the same.
-     * For example, when a value has different content in different branches of an if statement.
-     *
-     * @param other other value.
-     */
-    public abstract void merge(@NotNull Value other);
-
-    /**
-     * Delete all information in this value.
-     */
-    public abstract void setToUnknown();
-
-    /**
-     * Resets all information about this value except its type.
-     * The initial value depends on the specific value type.
-     */
-    public abstract void setInitialValue();
-
     @Nullable
     public JavaObject getParentObject() {
         return parentObject;
     }
 
+    /**
+     * Sets the parent object of this value.
+     * Must be called before some filed accesses.
+     *
+     * @param parentObject the parent object. Can be null.
+     */
     public void setParentObject(@Nullable JavaObject parentObject) {
         this.parentObject = parentObject;
     }
 
+
+    /**
+     * {@link #setArrayPosition(JavaArray, INumberValue)} must be called before to use this method.
+     *
+     * @return the position of this value in the array that contains it.
+     */
     public Pair<JavaArray, INumberValue> getArrayPosition() {
+        assert arrayPosition != null;
         return arrayPosition;
     }
 
-    public void setArrayPosition(JavaArray array, INumberValue index) {
+    /**
+     * Sets the position of this value in the array that contains it.
+     * Necessary to set before array assignments.
+     */
+    public void setArrayPosition(@NotNull JavaArray array, @NotNull INumberValue index) {
         this.arrayPosition = new Pair<>(array, index);
     }
 

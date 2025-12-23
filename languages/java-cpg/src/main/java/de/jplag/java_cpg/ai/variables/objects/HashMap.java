@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class HashMap extends JavaObject {
+public class HashMap extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "HashMap";
@@ -22,6 +22,7 @@ public class HashMap extends JavaObject {
 
     @Override
     public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
+        //ToDo: not yet implemented
         switch (methodName) {
             case "put" -> {
                 assert paramVars.size() == 2;
@@ -43,7 +44,8 @@ public class HashMap extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
-        // Nothing to merge
+        assert other instanceof HashMap;
+        // Nothing to merge yet
     }
 
 }

@@ -5,6 +5,13 @@ import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Abstract class representing an interval of numbers.
+ *
+ * @param <T> the type of number (e.g., Integer, Double)
+ * @author ujiqk
+ * @version 1.0
+ */
 public abstract class Interval<T extends Number & Comparable<T>> implements Comparable<Interval<T>> {
 
     protected T lowerBound;

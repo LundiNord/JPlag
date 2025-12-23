@@ -42,7 +42,7 @@ public class NullValue extends Value {
 
     @Override
     public void setToUnknown() {
-        //ToDo: replace with JavaObject
+        //ToDo: replace with JavaObject?
     }
 
     @Override

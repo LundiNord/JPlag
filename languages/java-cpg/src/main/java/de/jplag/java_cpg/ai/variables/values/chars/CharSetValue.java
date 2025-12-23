@@ -6,22 +6,37 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
+/**
+ * Char value representation that can hold a set of possible char values or be unknown.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class CharSetValue extends Value implements ICharValue {
 
     private Set<Character> maybeContained;
     private boolean information;
 
+    /**
+     * an unknown char value.
+     */
     public CharSetValue() {
         super(Type.CHAR);
         this.information = false;
     }
 
+    /**
+     * a exactly known char value.
+     */
     public CharSetValue(char character) {
         super(Type.CHAR);
         this.information = true;
         this.maybeContained = Set.of(character);
     }
 
+    /**
+     * a char value that can be one of the given characters.
+     */
     public CharSetValue(@NotNull Set<Character> characters) {
         super(Type.CHAR);
         this.information = true;
@@ -66,12 +81,13 @@ public class CharSetValue extends Value implements ICharValue {
 
     @Override
     public boolean getInformation() {
-        return false;
+        return this.information && this.maybeContained.size() == 1;
     }
 
     @Override
     public char getValue() {
         assert this.information;
-        return DEFAULT_VALUE;
+        return this.maybeContained.iterator().next();
     }
+
 }

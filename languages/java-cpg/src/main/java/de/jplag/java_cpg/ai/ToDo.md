@@ -52,6 +52,3 @@
 - [ ] loop invariants detector
 
 ## Limitations
-
--X cpg does not seem to work with for without { }.
--X cpg does not seem to work with multiple declarations in one line (int x, y;).

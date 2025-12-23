@@ -14,6 +14,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * String representation using character inclusion sets.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class StringCharInclValue extends JavaObject implements IStringValue {
 
     //String=null <--> certainContained=null
@@ -109,7 +115,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value accessField(String fieldName) {
+    public Value accessField(@NotNull String fieldName) {
         throw new UnsupportedOperationException("Access field not supported in StringValue");
     }
 
@@ -202,6 +208,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     public boolean getInformation() {
+        //always false since order is never known
         return false;
     }
 

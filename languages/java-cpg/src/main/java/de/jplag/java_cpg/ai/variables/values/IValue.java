@@ -6,6 +6,12 @@ import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Interface for all values.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public interface IValue {
 
     @NotNull
@@ -15,13 +21,32 @@ public interface IValue {
 
     Value unaryOperation(@NotNull String operator);
 
+    /**
+     * Creates and returns a deep copy of this value.
+     *
+     * @return a deep copy of this value.
+     */
     @NotNull
     Value copy();
 
+    /**
+     * Merges the information of another instance of the same value into this one.
+     * Types should be the same.
+     * For example, when a value has different content in different branches of an if statement.
+     *
+     * @param other other value.
+     */
     void merge(@NotNull Value other);
 
+    /**
+     * Delete all information in this value.
+     */
     void setToUnknown();
 
+    /**
+     * Resets all information about this value except its type.
+     * The initial value depends on the specific value type.
+     */
     void setInitialValue();
 
     JavaObject getParentObject();

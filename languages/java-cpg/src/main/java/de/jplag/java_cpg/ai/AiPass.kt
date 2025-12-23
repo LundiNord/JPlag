@@ -8,7 +8,7 @@ import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
 import de.jplag.java_cpg.passes.CpgTransformationPass
 
 /**
- * Abstract Interpretation Pass
+ * A CPG Pass performing Abstract Interpretation on the CPG Translation Result.
  */
 @DependsOn(CpgTransformationPass::class)
 class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
@@ -35,28 +35,39 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                 }
             }
         }
-        println("Test")
     }
 
 }
 
+/**
+ * Enumeration of different representations for integers.
+ */
 enum class IntAiType {
     INTERVALS,
     DEFAULT,
     SET,
 }
 
+/**
+ * Enumeration of different representations for floating-point numbers.
+ */
 enum class FloatAiType {
     SET,
     DEFAULT,
 }
 
+/**
+ * Enumeration of different representations for strings.
+ */
 enum class StringAiType {
     CHAR_INCLUSION,
     REGEX,
     DEFAULT,
 }
 
+/**
+ * Enumeration of different representations for characters.
+ */
 enum class CharAiType {
     SET,
     DEFAULT,

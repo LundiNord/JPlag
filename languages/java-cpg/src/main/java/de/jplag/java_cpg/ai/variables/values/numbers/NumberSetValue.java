@@ -48,7 +48,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
     }
 
     @Override
-    @SuppressWarnings("unchecked")  //ToDo unschön
+    @SuppressWarnings("unchecked")
     public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
         if (!(other instanceof NumberSetValue)) {
             other = createInstance(new TreeSet<>());
@@ -212,7 +212,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
 
     @Override
     @Impure
-    @SuppressWarnings("unchecked")  //ToDo unschön
+    @SuppressWarnings("unchecked")
     public Value unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "++" -> {

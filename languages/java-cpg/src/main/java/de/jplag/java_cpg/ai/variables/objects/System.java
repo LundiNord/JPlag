@@ -9,7 +9,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class System extends JavaObject {
+/**
+ * Representation of the static java.lang.System class.
+ *
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/System.html">Oracle Docs</a></a>
+ */
+public class System extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "System";
@@ -58,6 +65,7 @@ public class System extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
+        assert other instanceof System;
         // Nothing to merge
     }
 

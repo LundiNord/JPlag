@@ -12,6 +12,13 @@ import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test that only uses the CPG library.
+ * Specifically tests different integer interval analyses.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 class DeadCodeDetectionIntervalTest {
 
     /**

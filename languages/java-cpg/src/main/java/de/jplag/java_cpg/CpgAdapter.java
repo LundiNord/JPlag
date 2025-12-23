@@ -11,6 +11,7 @@ import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -91,7 +92,7 @@ public class CpgAdapter {
         this.reorderingEnabled = enabled;
     }
 
-    TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
+    TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration =
                 InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;

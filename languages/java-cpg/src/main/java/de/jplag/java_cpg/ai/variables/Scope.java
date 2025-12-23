@@ -32,6 +32,9 @@ public class Scope {
         }
     }
 
+    /**
+     * Default constructor.
+     */
     public Scope() {
         //empty
     }
@@ -79,18 +82,31 @@ public class Scope {
         }
     }
 
+    /**
+     * Sets all variables to their initial value.
+     * Initial value depends on the variable type.
+     */
     public void setEverythingInitialValue() {
         for (Variable variable : variables.values()) {
             variable.setInitialValue();
         }
     }
 
+    /**
+     * Starts recording changes to all variables.
+     */
     public void addChangeRecorder(@NotNull ChangeRecorder changeRecorder) {
         for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {
             entry.getValue().addChangeRecorder(changeRecorder);
         }
     }
 
+    /**
+     * Stops recording changes to all variables and returns the ChangeRecorder.
+     * If addChangeRecorder() was not called before, null is returned.
+     *
+     * @return the ChangeRecorder that was removed, or null if no recorders existed.
+     */
     @Nullable
     public ChangeRecorder removeLastChangeRecorder() {
         List<ChangeRecorder> recorders = new ArrayList<>();

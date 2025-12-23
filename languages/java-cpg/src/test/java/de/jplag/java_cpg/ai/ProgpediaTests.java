@@ -20,6 +20,16 @@ import java.util.stream.Stream;
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.translate;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * Tests from the Progpedia data set.
+ * <p>
+ * José Carlos Paiva, José Paulo Leal, and Álvaro Figueira. PROGpedia. Dec. 2022.
+ * 10.5281/zenodo.7449056
+ * <a href="https://zenodo.org/records/7449056">zenodo.org/records/7449056</a> (visited on 11/04/2025).
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 class ProgpediaTests {
 
     @NotNull

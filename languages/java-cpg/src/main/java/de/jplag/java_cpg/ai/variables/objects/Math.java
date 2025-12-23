@@ -5,11 +5,19 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class Math extends JavaObject {
+/**
+ * Representation of the static java.lang.Math class.
+ *
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html">Oracle Docs</a>
+ */
+public class Math extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "Math";
@@ -18,6 +26,8 @@ public class Math extends JavaObject {
         super();
     }
 
+    @NotNull
+    @Pure
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -54,6 +64,7 @@ public class Math extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
+        assert other instanceof Math;
         // Nothing to merge
     }
 

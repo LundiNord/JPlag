@@ -9,7 +9,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class Arrays extends JavaObject {
+/**
+ * Representation of the static java.util.Arrays class.
+ *
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Arrays.html">Oracle Docs</a></a>
+ */
+public class Arrays extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "Arrays";
@@ -50,6 +57,7 @@ public class Arrays extends JavaObject {
     @Override
     public void merge(@NotNull Value other) {
         assert other instanceof Arrays;
+        //nothing to merge
     }
 
 }

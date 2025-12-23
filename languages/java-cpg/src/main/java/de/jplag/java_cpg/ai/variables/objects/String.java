@@ -4,12 +4,19 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
-import org.jetbrains.annotations.Contract;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class String extends JavaObject {
+/**
+ * Representation of the static java.lang.String class.
+ *
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html">Oracle Docs</a></a>
+ */
+public class String extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "String";
@@ -18,8 +25,8 @@ public class String extends JavaObject {
         super();
     }
 
-    @Contract(" -> new")
     @NotNull
+    @Pure
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -61,6 +68,7 @@ public class String extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
+        assert other instanceof String;
         // Nothing to merge
     }
 

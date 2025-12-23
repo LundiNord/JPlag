@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class Integer extends JavaObject {
+public class Integer extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "Integer";
@@ -50,6 +50,7 @@ public class Integer extends JavaObject {
     @Override
     public void merge(@NotNull Value other) {
         // Nothing to merge
+        assert other instanceof Integer;
     }
 
 }

@@ -6,6 +6,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -18,11 +19,12 @@ import java.util.List;
  */
 public class JavaObject extends Value implements IJavaObject {
 
-    //ToDo types
+    //ToDo: save type of the object (class name)
     private final Scope fields;
+    @Nullable
     private AbstractInterpretation abstractInterpretation;  //the abstract interpretation engine for this object
 
-    private JavaObject(Scope fields, AbstractInterpretation abstractInterpretation) {
+    private JavaObject(@NotNull Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
         super(Type.OBJECT);
         this.fields = fields;
         this.abstractInterpretation = abstractInterpretation;
@@ -43,34 +45,23 @@ public class JavaObject extends Value implements IJavaObject {
         this.fields = new Scope();
     }
 
-    public AbstractInterpretation getAbstractInterpretation() {
-        return abstractInterpretation;
-    }
-
-    /**
-     * Sets the abstract interpretation engine for this object.
-     * If you call methods on this object, this engine will be used for execution.
-     *
-     * @param abstractInterpretation the abstract interpretation engine or null.
-     */
-    public void setAbstractInterpretation(AbstractInterpretation abstractInterpretation) {
-        this.abstractInterpretation = abstractInterpretation;
-    }
-
     /**
      * @param methodName the name of the method to call.
      * @param paramVars  the parameters to pass to the method.
      * @return null if the method is not known.
      */
-    public Value callMethod(String methodName, List<Value> paramVars) {
+    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
         if (abstractInterpretation == null) {
             return new VoidValue();
         }
         return abstractInterpretation.runMethod(methodName, paramVars);
     }
 
-    public Value accessField(String fieldName) {
-        assert fieldName != null;
+    /**
+     * @param fieldName the name of the field to access.
+     * @return the value of the field or VoidValue if the field does not exist.
+     */
+    public Value accessField(@NotNull String fieldName) {
         Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
             return new VoidValue();
@@ -87,8 +78,21 @@ public class JavaObject extends Value implements IJavaObject {
         variable.setValue(value);
     }
 
-    public void setField(Variable field) {
+    /**
+     * Sets a new field variable in this object.
+     */
+    public void setField(@NotNull Variable field) {
         this.fields.addVariable(field);
+    }
+
+    /**
+     * Sets the abstract interpretation engine for this object.
+     * If you call methods on this object, this engine will be used for execution.
+     *
+     * @param abstractInterpretation the abstract interpretation engine or null.
+     */
+    public void setAbstractInterpretation(@Nullable AbstractInterpretation abstractInterpretation) {
+        this.abstractInterpretation = abstractInterpretation;
     }
 
     @Override
@@ -126,9 +130,6 @@ public class JavaObject extends Value implements IJavaObject {
             return;
         }
         this.fields.merge(((JavaObject) other).fields);
-        if (!java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation)) {
-            System.out.println("Debug");
-        }
         assert java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation);
     }
 

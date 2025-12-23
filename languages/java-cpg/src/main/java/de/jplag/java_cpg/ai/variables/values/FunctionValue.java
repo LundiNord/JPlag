@@ -3,7 +3,7 @@ package de.jplag.java_cpg.ai.variables.values;
 import de.jplag.java_cpg.ai.variables.Type;
 import org.jetbrains.annotations.NotNull;
 
-//ToDo
+//ToDo: not currently used, needed for lambda functions etc.
 public class FunctionValue extends Value {
 
     public FunctionValue() {

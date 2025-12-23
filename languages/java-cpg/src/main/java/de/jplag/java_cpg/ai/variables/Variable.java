@@ -45,17 +45,33 @@ public class Variable {
         this.changeRecorders = variable.changeRecorders;    //no deep copy
     }
 
+    /**
+     * @return The name of this variable in the program.
+     */
     public VariableName getName() {
         return name;
     }
 
+    /**
+     * Triggers change recording.
+     *
+     * @return The value of this variable.
+     */
     public Value getValue() {
-        for (ChangeRecorder changeRecorder : changeRecorders) { //ToDo: only when changed after?
+        //trigger change recording because returned value could be modified outside.
+        //ToDo: only trigger when actual changes happen
+        for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
         }
         return value;
     }
 
+    /**
+     * Set the value of this variable.
+     * Triggers change recording.
+     *
+     * @param value the new value for this variable.
+     */
     public void setValue(Value value) {
         assert value != null;
         this.value = value;
@@ -70,7 +86,6 @@ public class Variable {
      * The actual merge behavior is delegated to the underlying {@link Value} implementation.
      *
      * @param value the variable whose content will be merged into this one; must have the same name.
-     * @throws AssertionError if the names differ (when assertions are enabled).
      */
     public void merge(@NotNull Variable value) {
         assert this.changeRecorders == value.changeRecorders;

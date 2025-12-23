@@ -3,6 +3,12 @@ package de.jplag.java_cpg.ai.variables.values.string.regex;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * {@link RegexItem} representing a single character.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class RegexChar extends RegexItem {
 
     private final char content;

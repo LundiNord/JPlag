@@ -2,6 +2,12 @@ package de.jplag.java_cpg.ai.variables.values.string.regex;
 
 import java.util.List;
 
+/**
+ * {@link RegexItem} representing multiple characters.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class RegexChars extends RegexItem {
 
     //null: represents an empty-non existent char
@@ -33,7 +39,7 @@ public class RegexChars extends RegexItem {
             default -> throw new IllegalStateException("Unexpected value: " + other);
         }
     }
-
+    
     public boolean canBeEmpty() {
         for (Character c : content) {
             if (c == null) {

@@ -7,6 +7,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
+/**
+ * Char value representation that can hold a single char value or be unknown.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 public class CharValue extends Value implements ICharValue {
 
     private char value;

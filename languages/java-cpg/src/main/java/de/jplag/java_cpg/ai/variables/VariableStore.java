@@ -18,11 +18,6 @@ public class VariableStore {
     private int currentScopeIndex = 0;
     private VariableName thisObject;
 
-    private VariableStore(ArrayList<Scope> scopes, int currentScopeIndex) {
-        this.scopes.addAll(scopes);
-        this.currentScopeIndex = currentScopeIndex;
-    }
-
     /**
      * Copy constructor.
      * Performs deep copy down the values.
@@ -37,6 +32,10 @@ public class VariableStore {
         thisObject = variableStore.thisObject;
     }
 
+    /**
+     * Default constructor.
+     * Initializes with one {@link Scope}.
+     */
     public VariableStore() {
         scopes.add(new Scope());
     }
@@ -140,6 +139,9 @@ public class VariableStore {
         }
     }
 
+    /**
+     * Starts recording changes to variables in all scopes.
+     */
     public void recordChanges() {
         ChangeRecorder changeRecorder = new ChangeRecorder();
         for (Scope scope : scopes) {
@@ -147,6 +149,12 @@ public class VariableStore {
         }
     }
 
+    /**
+     * Stops recording changes to variables in all scopes and returns the set of changed variables.
+     * Method assumes that recordChanges() was called before.
+     *
+     * @return the set of changed variables.
+     */
     @NotNull
     public Set<Variable> stopRecordingChanges() {
         List<ChangeRecorder> recorders = new ArrayList<>();

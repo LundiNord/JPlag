@@ -2,13 +2,24 @@
 
 For debug, please run with `-ea` JVM flag.
 
+**For now a lot of method have a default switch case that throws an exception.
+They will later be replaced with a default case that sets the value to unknown and returns an unknown value.**
+
 ## Build
 
 Maven: `mvn clean package`
 
+## Code Structure
+
+ToDo
+
 ## Supported language features
 
+see [ToDos](./ToDo.md) for supported and unsupported features.
+
 ## Explicitly not supported language features
+
+see [ToDos](./ToDo.md) for supported and unsupported features.
 
 ## Usage Example
 

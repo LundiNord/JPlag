@@ -10,16 +10,22 @@ import org.jetbrains.annotations.NotNull;
  * @author ujiqk
  * @version 1.0
  */
-public class BooleanValue extends Value {
+public class BooleanValue extends Value implements IBooleanValue {
 
     private boolean value;
     private boolean information;
 
+    /**
+     * Creates a BooleanValue without exact information.
+     */
     public BooleanValue() {
         super(Type.BOOLEAN);
         information = false;
     }
 
+    /**
+     * Creates a BooleanValue with exact information.
+     */
     public BooleanValue(boolean value) {
         super(Type.BOOLEAN);
         this.value = value;
@@ -39,6 +45,11 @@ public class BooleanValue extends Value {
         return information;
     }
 
+    /**
+     * Assumes that exact information is available.
+     *
+     * @return the boolean value.
+     */
     public boolean getValue() {
         assert information;
         return value;

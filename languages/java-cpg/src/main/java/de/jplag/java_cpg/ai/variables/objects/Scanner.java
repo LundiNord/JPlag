@@ -10,7 +10,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class Scanner extends JavaObject {
+/**
+ * Representation of the java.util.Scanner class.
+ *
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Scanner.html">Oracle Docs</a>
+ */
+public class Scanner extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "Scanner";
@@ -64,6 +71,7 @@ public class Scanner extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
+        assert other instanceof Scanner;
         // Nothing to merge
     }
 

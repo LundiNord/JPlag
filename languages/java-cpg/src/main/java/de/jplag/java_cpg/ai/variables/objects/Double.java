@@ -4,11 +4,19 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class Double extends JavaObject {
+/**
+ * Representation of the static java.lang.Double class.
+ *
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html">Oracle Docs</a></a>
+ */
+public class Double extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "Double";
@@ -18,6 +26,7 @@ public class Double extends JavaObject {
     }
 
     @NotNull
+    @Pure
     public static VariableName getName() {
         return new VariableName(PATH + "." + NAME);
     }
@@ -47,7 +56,8 @@ public class Double extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
-        // Nothing to merge
+        assert other instanceof Double;
+        //nothing to merge
     }
 
 }

@@ -26,6 +26,12 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test that uses the CPG library and the existing java-cpg code.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 class AbstractInterpretationTest {
 
     /**

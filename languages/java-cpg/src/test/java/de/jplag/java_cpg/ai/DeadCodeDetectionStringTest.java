@@ -18,6 +18,13 @@ import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * Test that only uses the CPG library.
+ * Specifically tests different string analyses.
+ *
+ * @author ujiqk
+ * @version 1.0
+ */
 class DeadCodeDetectionStringTest {
 
     /**

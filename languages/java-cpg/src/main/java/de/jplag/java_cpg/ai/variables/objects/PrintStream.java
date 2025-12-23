@@ -9,7 +9,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class PrintStream extends JavaObject {
+/**
+ * Representation of the java.io.PrintStream class.
+ *
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/PrintStream.html">Oracle Docs</a></a>
+ */
+public class PrintStream extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.io";
     private static final java.lang.String NAME = "PrintStream";
@@ -43,6 +50,7 @@ public class PrintStream extends JavaObject {
 
     @Override
     public void merge(@NotNull Value other) {
+        assert other instanceof PrintStream;
         // Nothing to merge
     }
 

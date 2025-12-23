@@ -28,6 +28,9 @@ public class StringValue extends JavaObject implements IStringValue {
         information = false;
     }
 
+    /**
+     * A string value with exact information.
+     */
     public StringValue(String value) {
         super(Type.STRING);
         this.value = value;
@@ -135,7 +138,7 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value accessField(String fieldName) {
+    public Value accessField(@NotNull String fieldName) {
         throw new UnsupportedOperationException("Access field not supported in StringValue");
     }
 
