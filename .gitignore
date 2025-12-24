@@ -2,6 +2,8 @@ target/
 .project
 .settings/
 .classpath
+.factorypath
+website/node_modules
 
 *.class
 

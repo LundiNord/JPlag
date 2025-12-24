@@ -1,0 +1,52 @@
+package de.jplag.java_cpg.ai.variables.objects;
+
+import java.util.List;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.NotNull;
+
+import de.jplag.java_cpg.ai.variables.VariableName;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+
+public class HashMap extends JavaObject implements ISpecialObject {
+
+    private static final java.lang.String PATH = "java.util";
+    private static final java.lang.String NAME = "HashMap";
+
+    @NotNull
+    @Pure
+    public static VariableName getName() {
+        return new VariableName(PATH + "." + NAME);
+    }
+
+    @Override
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
+        // ToDo: not yet implemented
+        switch (methodName) {
+            case "put" -> {
+                assert paramVars.size() == 2;
+                return new VoidValue();
+            }
+            case "get" -> {
+                assert paramVars.size() == 1;
+                return new VoidValue();
+            }
+            default -> throw new UnsupportedOperationException(methodName);
+        }
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy() {
+        return new HashMap();
+    }
+
+    @Override
+    public void merge(@NotNull IValue other) {
+        assert other instanceof HashMap;
+        // Nothing to merge yet
+    }
+
+}

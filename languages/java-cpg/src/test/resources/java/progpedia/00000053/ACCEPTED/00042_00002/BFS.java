@@ -1,0 +1,137 @@
+// Exemplo de pesquisa em largura (BFS) num grafo nao dirigido
+// (codigo feito na teorica - inclui calculo de distancias)
+
+import java.io.*;
+import java.util.*;
+
+// Classe que representa um no
+class Node {
+    public LinkedList<Integer> adj; // Lista de adjacencias
+    public boolean visited;         // Valor booleano que indica se foi visitao numa pesquisa
+    public int distance;            // Distancia do no origem da pesquisa
+
+    Node() {
+	adj = new LinkedList<Integer>();
+	visited = false;
+	distance = -1;
+    }
+}
+
+// Classe que representa um grafo
+class Graph {
+    int n;// Numero de nos do grafo
+    int conta;
+    Node nodes[];    // Array para conter os nos
+    Node mmm[];
+    Graph(int n) {
+	this.n = n;
+	nodes  = new Node[n+1]; // +1 se os comecam em 1 ao inves de 0
+	for (int i=1; i<=n; i++)
+	    nodes[i] = new Node();
+    }
+
+    public void addLink(int a, int b) {
+	nodes[a].adj.add(b);
+	nodes[b].adj.add(a);
+    }
+
+    // Algoritmo de pesquisa em largura
+    public int bfs(int v) {
+	LinkedList<Integer> q = new LinkedList<Integer>();
+	int max = -1000;
+	int max1 = -1000;
+	int min = 9999;
+	q.add(v);
+	nodes[v].visited = true;
+	nodes[v].distance = 0;
+
+	while (q.size() > 0) {
+	    int u = q.removeFirst();
+	    //	    System.out.println(u + " [dist=" + nodes[u].distance + "]");
+	    for (int w : nodes[u].adj) {
+		if (!nodes[w].visited) {
+		    q.add(w);
+		    nodes[w].visited  = true;
+		    nodes[w].distance = nodes[u].distance + 1;
+		    if(nodes[w].distance > max)
+			max = nodes[w].distance;
+		}
+	
+	    }
+	}
+	//System.out.println(max);
+	
+	for(int i=1;i<=n;i++){
+	    nodes[i].visited = false;
+	}
+
+	return max;
+	
+    }
+       
+    	   
+}
+
+public class BFS {
+    public static void main(String args[]) {
+	Scanner in = new Scanner(System.in);
+
+	Graph g = new Graph(in.nextInt());
+	int   e = in.nextInt();
+	int v[] = new int[g.n+1];
+	for (int i=0; i<e; i++)
+	    g.addLink(in.nextInt(), in.nextInt());
+	
+
+	
+
+	for(int i=1;i<= g.n;i++) {
+	    v[i] = g.bfs(i);	    
+	}
+
+	int max = v[1];
+	int min = v[1];
+	int mmin []= new int[g.n+1];
+	int mmax []= new int[g.n+1];
+	int count=0;
+	int ocount=0;
+	for(int i=1;i<=g.n;i++){
+	    //System.out.println("v["+i+"]= " + v[i] + " | max=" + max + " | " + "min=" + min);
+	    if(max<v[i]){
+		max=v[i];
+		mmax[0]=i;
+		ocount=1;
+	    } else if(max==v[i]){
+		mmax[ocount++]=i;
+	    }
+	    if(min>v[i]){
+		//System.out.println("!!! + " + i);
+		min=v[i];
+		mmin[0]=i;
+		count=1;
+	    } else if(min==v[i]){
+		mmin[count++]=i;
+	    }
+
+	}
+	System.out.println(max);
+	System.out.println(min);
+
+	for(int i=0;i<count;i++){
+	    if(count-i==1)
+	    System.out.print(mmin[i]);
+	    else
+	    System.out.print(mmin[i]+" ");
+	    
+	}
+	System.out.println();
+	
+	for(int i=0;i<ocount;i++){
+	     if(ocount-i==1)
+	    System.out.print(mmax[i]);
+	    else
+	    System.out.print(mmax[i]+" ");}
+	System.out.println();
+    }
+	
+}
