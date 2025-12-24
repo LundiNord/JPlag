@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Representation of the java.util.regex.Pattern class.
@@ -32,7 +32,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
         switch (methodName) {
             case "matches" -> {
                 assert paramVars.size() == 2;
@@ -49,7 +49,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         assert other instanceof Pattern;
         // Nothing to merge
     }

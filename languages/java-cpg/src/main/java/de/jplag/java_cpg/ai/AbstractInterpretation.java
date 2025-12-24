@@ -20,6 +20,8 @@ import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
+import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
@@ -44,7 +46,7 @@ public class AbstractInterpretation {
     /**
      *
      */
-    private final List<Value> returnStorage;
+    private final List<IValue> returnStorage;
     /**
      * Helper stack to work around cpg limitations.
      */
@@ -58,7 +60,7 @@ public class AbstractInterpretation {
      * Stack for values during EOG traversal.
      */
     @NotNull
-    private ArrayList<Value> valueStack;
+    private ArrayList<IValue> valueStack;
     /**
      * The scoped variable store for the current scope.
      */
@@ -67,7 +69,7 @@ public class AbstractInterpretation {
     /**
      * The object this AI engine is currently interpreting.
      */
-    private JavaObject object;
+    private IJavaObject object;
     /**
      * Helper counter for nested if-else statements because cpg does not provide enough information.
      */
@@ -94,7 +96,7 @@ public class AbstractInterpretation {
                     .map(ns -> (RecordDeclaration) ns.getDeclarations().getFirst())
                     .orElseThrow(() -> new IllegalStateException("No NamespaceDeclaration found in translation unit"));
         } else if (tud.getDeclarations().stream().map(Declaration::getClass).anyMatch(x -> x.equals(RecordDeclaration.class))) {
-            // Code without a package co
+            // Code without a package
             mainClas = tud.getDeclarations().stream().filter(RecordDeclaration.class::isInstance).map(RecordDeclaration.class::cast)
                     .filter(rd -> rd.getMethods().stream().anyMatch(m -> m.getName().getLocalName().equals("main") && m.isStatic() && m.hasBody()))
                     .findFirst()
@@ -116,7 +118,7 @@ public class AbstractInterpretation {
                 List<Node> eog = md.getNextEOG();
                 assert eog.size() == 1;
                 variables.newScope();
-                variables.addVariable(new Variable(new VariableName("args"), new JavaArray(de.jplag.java_cpg.ai.variables.Type.STRING)));
+                variables.addVariable(new Variable(new VariableName("args"), Value.getNewArayValue(de.jplag.java_cpg.ai.variables.Type.STRING)));
                 graphWalker(eog.getFirst());
                 variables.removeScope();
             }
@@ -131,7 +133,7 @@ public class AbstractInterpretation {
      * @param objectInstance the object instance that should represent the class.
      * @param constructorArgs the arguments for the constructor.
      */
-    private void runClass(@NotNull RecordDeclaration rd, @NotNull JavaObject objectInstance, List<Value> constructorArgs) {
+    private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs) {
         setupClass(rd, objectInstance);
         // Run constructor method
         ConstructorDeclaration constr = rd.getConstructors().getFirst();    // ToDo what if multiple constructors?
@@ -157,7 +159,7 @@ public class AbstractInterpretation {
      * @param objectInstance the object instance that should represent the class.
      */
     @Impure
-    private void setupClass(@NotNull RecordDeclaration rd, @NotNull JavaObject objectInstance) {
+    private void setupClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance) {
         assert !rd.getConstructors().isEmpty();
         objectInstance.setAbstractInterpretation(this);
         variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
@@ -192,20 +194,20 @@ public class AbstractInterpretation {
                 // de.jplag.java_cpg.ai.variables.Type.fromCpgType(type))); //ToDo array inner type lost here
             } else if (!(fd.getInitializer() instanceof ProblemExpression)) {   // ToDo: simplify
                 if (fd.getInitializer() instanceof Literal<?> literal) {
-                    Value value = Value.valueFactory(literal.getValue());
+                    IValue value = Value.valueFactory(literal.getValue());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
                 } else if (fd.getInitializer() instanceof NewExpression) {
-                    JavaObject newObject = (JavaObject) graphWalker(fd.getNextEOG().getFirst());
+                    IJavaObject newObject = (IJavaObject) graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
                 } else if (fd.getInitializer() instanceof InitializerListExpression || fd.getInitializer() instanceof NewArrayExpression) {
-                    JavaArray list = (JavaArray) graphWalker(fd.getNextEOG().getFirst());
+                    IJavaArray list = (IJavaArray) graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), list));
                 } else if (fd.getInitializer() instanceof MemberCallExpression) {
-                    Value result = graphWalker(fd.getNextEOG().getFirst());
+                    IValue result = graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), result));
                 } else if (fd.getInitializer() instanceof UnaryOperator unop) {
                     assert Objects.equals(unop.getOperatorCode(), "-");
-                    Value value = graphWalker(fd.getNextEOG().getFirst());
+                    IValue value = graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
                 } else {
                     throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
@@ -221,13 +223,13 @@ public class AbstractInterpretation {
      * @return the value resulting from the traversal, or null if no value is produced.
      */
     @Nullable
-    private Value graphWalker(@NotNull Node node) {
+    private IValue graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         // System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
-                Value value = valueStack.getLast();
+                IValue value = valueStack.getLast();
                 valueStack.removeLast();
                 nodeStack.removeLast();
                 return value;   // return so that the class setup method can use the graph walker
@@ -245,20 +247,20 @@ public class AbstractInterpretation {
             }
             case MemberExpression me -> {
                 if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
-                    if (!(valueStack.getLast() instanceof JavaObject)) {
+                    if (!(valueStack.getLast() instanceof IJavaObject)) {
                         nodeStack.removeLast();
                         nodeStack.add(me);
                         valueStack.removeLast();    // remove object reference
                         valueStack.add(new VoidValue());
                     } else {
-                        assert valueStack.getLast() instanceof JavaObject;
+                        assert valueStack.getLast() instanceof IJavaObject;
                         nodeStack.removeLast();
                         // like Reference
                         nodeStack.add(me);
                         assert me.getName().getParent() != null;
-                        JavaObject javaObject = (JavaObject) valueStack.getLast();
+                        IJavaObject javaObject = (IJavaObject) valueStack.getLast();
                         valueStack.removeLast();    // remove object reference
-                        Value result = javaObject.accessField(me.getName().getLocalName());
+                        IValue result = javaObject.accessField(me.getName().getLocalName());
                         result.setParentObject(javaObject);
                         valueStack.add(result);
                     }
@@ -268,7 +270,7 @@ public class AbstractInterpretation {
                 } else {
                     // unknown
                     // look at last item on value stack
-                    Value value = valueStack.getLast();
+                    IValue value = valueStack.getLast();
                     if (value instanceof VoidValue) {
                         valueStack.removeLast();    // remove object reference
                         valueStack.add(new JavaObject());
@@ -289,7 +291,7 @@ public class AbstractInterpretation {
                     if (variable != null) {
                         valueStack.add(variables.getVariable(new VariableName(ref.getName().toString())).getValue());
                     } else if (object.accessField(ref.getName().toString()) != null) { // sometimes cpg does not insert "this".
-                        Value value = object.accessField(ref.getName().toString());
+                        IValue value = object.accessField(ref.getName().toString());
                         if (value.getType() == de.jplag.java_cpg.ai.variables.Type.VOID) {  // value isn't known
                             value = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(ref.getType()));
                         }
@@ -314,14 +316,14 @@ public class AbstractInterpretation {
                 INumberValue indexLiteral = (INumberValue) valueStack.getLast();
                 valueStack.removeLast();    // remove index value
                 assert indexLiteral != null;
-                Value ref = valueStack.getLast();
+                IValue ref = valueStack.getLast();
                 valueStack.removeLast();    // remove array reference
-                if (!(ref instanceof JavaArray)) {
+                if (!(ref instanceof IJavaArray)) {
                     // array might not be initialized yet
-                    ref = new JavaArray();
+                    ref = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.ARRAY);
                 }
-                Value result = ((JavaArray) ref).arrayAccess(indexLiteral);
-                result.setArrayPosition((JavaArray) ref, indexLiteral);
+                IValue result = ((IJavaArray) ref).arrayAccess(indexLiteral);
+                result.setArrayPosition((IJavaArray) ref, indexLiteral);
                 valueStack.add(result);
                 nodeStack.removeLast();
                 nodeStack.removeLast();
@@ -330,7 +332,7 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case MemberCallExpression mce -> {  // adds its value to the value stack
-                Value result;
+                IValue result;
                 if (mce.getArguments().isEmpty()) {     // no arguments
                     assert nodeStack.getLast() instanceof MemberExpression;
                     Name memberName = (nodeStack.getLast()).getName();
@@ -343,7 +345,7 @@ public class AbstractInterpretation {
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
                     result = javaObject.callMethod(memberName.getLocalName(), null);
                 } else {
-                    List<Value> argumentList = new ArrayList<>();
+                    List<IValue> argumentList = new ArrayList<>();
                     for (int i = 0; i < mce.getArguments().size(); i++) {
                         if (mce.getArguments().get(i) instanceof ProblemExpression) {
                             continue;
@@ -372,7 +374,7 @@ public class AbstractInterpretation {
                 nodeStack.removeLast();
                 nodeStack.add(mce);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
-                    Value value = valueStack.getLast();
+                    IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
                 }
@@ -406,15 +408,15 @@ public class AbstractInterpretation {
                 assert !valueStack.isEmpty();
                 if (ae.getLhs().getFirst() instanceof SubscriptExpression se) {
                     assert ae.getLhs().size() == 1;
-                    Value newValue = valueStack.getLast();
+                    IValue newValue = valueStack.getLast();
                     valueStack.removeLast();
-                    Value oldValue = valueStack.getLast();
+                    IValue oldValue = valueStack.getLast();
                     // sometimes the value of assign is used after, so don't remove it
                     oldValue.getArrayPosition().component1().arrayAssign(oldValue.getArrayPosition().component2(), newValue);
                 } else {
                     Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
                     if (variable == null || nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression) { // class access
-                        JavaObject classVal;
+                        IJavaObject classVal;
                         if (nodeStack.get(nodeStack.size() - 2).getName().getParent() == null) {    // this class
                             classVal = variables.getThisObject();
                         } else {
@@ -460,7 +462,7 @@ public class AbstractInterpretation {
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 String operator = bop.getOperatorCode();
                 assert operator != null;
-                Value result = valueStack.get(valueStack.size() - 2).binaryOperation(operator, valueStack.getLast());
+                IValue result = valueStack.get(valueStack.size() - 2).binaryOperation(operator, valueStack.getLast());
                 assert nodeStack.size() >= 2;
                 nodeStack.removeLast();
                 nodeStack.removeLast();
@@ -475,7 +477,7 @@ public class AbstractInterpretation {
                 assert !valueStack.isEmpty() && !nodeStack.isEmpty();
                 String operator = uop.getOperatorCode();
                 assert operator != null;
-                Value result = valueStack.getLast().unaryOperation(operator);
+                IValue result = valueStack.getLast().unaryOperation(operator);
                 nodeStack.removeLast();
                 nodeStack.add(uop);
                 valueStack.removeLast();
@@ -628,8 +630,8 @@ public class AbstractInterpretation {
                 }
             }
             case CaseStatement cs -> {
-                Value caseValue = valueStack.getLast();
-                Value switchValue = valueStack.getLast();
+                IValue caseValue = valueStack.getLast();
+                IValue switchValue = valueStack.getLast();
                 if (!Objects.equals(caseValue, switchValue)) {
                     return null;
                 }
@@ -659,7 +661,7 @@ public class AbstractInterpretation {
                 }
             }
             case ReturnStatement ret -> {
-                Value result;
+                IValue result;
                 if (valueStack.isEmpty()) {
                     result = new VoidValue();
                 } else {
@@ -672,7 +674,7 @@ public class AbstractInterpretation {
                     returnStorage.addLast(result);
                 } else {
                     // merge other returns
-                    for (Value value : returnStorage) {
+                    for (IValue value : returnStorage) {
                         result.merge(value);
                     }
                     returnStorage.clear();
@@ -687,7 +689,7 @@ public class AbstractInterpretation {
             }
             case NewExpression ne -> {
                 Declaration classNode = ((ConstructExpression) nodeStack.getLast()).getInstantiates();
-                List<Value> arguments = new ArrayList<>();
+                List<IValue> arguments = new ArrayList<>();
                 ConstructExpression ce = (ConstructExpression) nodeStack.getLast();
                 nodeStack.removeLast(); // remove ConstructExpression
                 if (!ce.getArguments().isEmpty()) {
@@ -717,7 +719,7 @@ public class AbstractInterpretation {
                 //
                 nodeStack.add(ne);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
-                    Value value = valueStack.getLast();
+                    IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
                 }
@@ -966,14 +968,14 @@ public class AbstractInterpretation {
                 assert !ile.getInitializers().isEmpty();
                 assert valueStack.size() >= ile.getInitializers().size();
                 assert nodeStack.size() >= ile.getInitializers().size();
-                List<Value> arguments = new ArrayList<>();
+                List<IValue> arguments = new ArrayList<>();
                 for (int i = 0; i < ile.getInitializers().size(); i++) {
                     nodeStack.removeLast();
                     arguments.add(valueStack.getLast());
                     valueStack.removeLast();
                 }
-                assert arguments.stream().map(Value::getType).distinct().count() == 1;
-                JavaArray list = new JavaArray(arguments);
+                assert arguments.stream().map(IValue::getType).distinct().count() == 1;
+                IJavaArray list = new JavaArray(arguments);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
                     return list;
                 }
@@ -1010,7 +1012,7 @@ public class AbstractInterpretation {
                     throw new IllegalStateException("Unexpected value: " + nae);
                 }
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
-                    Value value = valueStack.getLast();
+                    IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
                 }
@@ -1086,9 +1088,9 @@ public class AbstractInterpretation {
      * @param name the name of the method to run.
      * @return null if the method is not known.
      */
-    public Value runMethod(@NotNull String name, List<Value> paramVars) {
+    public IValue runMethod(@NotNull String name, List<IValue> paramVars) {
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
-        ArrayList<Value> oldValueStack = this.valueStack;
+        ArrayList<IValue> oldValueStack = this.valueStack;
         List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
         this.nodeStack = new ArrayList<>();
         this.valueStack = new ArrayList<>();
@@ -1106,7 +1108,7 @@ public class AbstractInterpretation {
         } else {
             assert md.getParameters().isEmpty();
         }
-        Value result;
+        IValue result;
         assert md.getNextEOG().size() <= 1;
         if (md.getNextEOG().size() == 1) {
             result = graphWalker(md.getNextEOG().getFirst());

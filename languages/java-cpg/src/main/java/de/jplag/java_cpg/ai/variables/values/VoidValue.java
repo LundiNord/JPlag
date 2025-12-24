@@ -19,7 +19,7 @@ public class VoidValue extends Value {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         switch (operator) {
             case "==", ">", "<", ">=", "<=", "!=" -> {
                 return new BooleanValue();
@@ -37,7 +37,7 @@ public class VoidValue extends Value {
     }
 
     @Override
-    public Value unaryOperation(@NotNull String operator) {
+    public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "!" -> {
                 return new BooleanValue();
@@ -56,7 +56,7 @@ public class VoidValue extends Value {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         // do nothing
     }
 

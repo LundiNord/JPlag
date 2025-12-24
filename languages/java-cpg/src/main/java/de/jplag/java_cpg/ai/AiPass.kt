@@ -72,3 +72,11 @@ enum class CharAiType {
     SET,
     DEFAULT,
 }
+
+/**
+ * Enumeration of different representations for arrays.
+ */
+enum class ArrayAiType {
+    LENGTH,
+    DEFAULT,
+}

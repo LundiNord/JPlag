@@ -4,8 +4,8 @@ import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Stores variables in different scopes.
@@ -59,7 +59,7 @@ public class VariableStore {
         if (variable == null) {
             return null;
         }
-        Value value = variable.getValue();
+        IValue value = variable.getValue();
         if (value instanceof JavaObject javaObject) {
             return javaObject;
         }

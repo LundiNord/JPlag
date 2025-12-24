@@ -55,7 +55,7 @@ public class BooleanValue extends Value implements IBooleanValue {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (other instanceof VoidValue) {
             return new BooleanValue();
         }
@@ -94,21 +94,6 @@ public class BooleanValue extends Value implements IBooleanValue {
         }
     }
 
-    @Pure
-    @Override
-    public Value unaryOperation(@NotNull String operator) {
-        switch (operator) {
-            case "!" -> {
-                if (information) {
-                    return new BooleanValue(!value);
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
-        }
-    }
-
     @NotNull
     @Override
     public Value copy() {
@@ -116,7 +101,7 @@ public class BooleanValue extends Value implements IBooleanValue {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue) {
             this.information = false;
             return;
@@ -139,6 +124,21 @@ public class BooleanValue extends Value implements IBooleanValue {
     public void setInitialValue() {
         value = false;
         information = true;
+    }
+
+    @Pure
+    @Override
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            case "!" -> {
+                if (information) {
+                    return new BooleanValue(!value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+        }
     }
 
 }

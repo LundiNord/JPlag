@@ -1,4 +1,4 @@
-package de.jplag.java_cpg.ai.variables.values;
+package de.jplag.java_cpg.ai.variables.values.arrays;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
@@ -20,7 +21,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     private final Type innerType;
     @Nullable
-    private List<Value> values;     // values = null: no information about the array
+    private List<IValue> values;     // values = null: no information about the array
 
     /**
      * a Java Array with no information and undefined size.
@@ -34,9 +35,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
      * a Java Array with exact information.
      * @param values the values of the array in the correct order.
      */
-    public JavaArray(@NotNull List<Value> values) {
+    public JavaArray(@NotNull List<IValue> values) {
         super(Type.ARRAY);
-        assert values.stream().map(Value::getType).distinct().count() == 1;
+        assert values.stream().map(IValue::getType).distinct().count() == 1;
         this.innerType = values.getFirst().getType();
         this.values = values;
     }
@@ -65,7 +66,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
         }
     }
 
-    private JavaArray(@Nullable Type innerType, @Nullable List<Value> values) {
+    private JavaArray(@Nullable Type innerType, @Nullable List<IValue> values) {
         super(Type.ARRAY);
         this.innerType = innerType;
         this.values = values;
@@ -76,7 +77,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
      * @param index the index to access; does not have to contain information.
      * @return the superset of possible values at the given indexes.
      */
-    public Value arrayAccess(INumberValue index) {
+    public IValue arrayAccess(INumberValue index) {
         if (values != null && index.getInformation()) {
             int idx = (int) index.getValue();
             if (idx >= 0 && idx < values.size()) {
@@ -102,7 +103,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     /**
      * Assign a value to a position in the array.
      */
-    public void arrayAssign(INumberValue index, Value value) {
+    public void arrayAssign(INumberValue index, IValue value) {
         if (values != null && index.getInformation()) {
             int idx = (int) index.getValue();
             if (idx >= 0 && idx < values.size()) {
@@ -115,7 +116,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -215,7 +216,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "contains" -> {
                 assert paramVars.size() == 1;
                 if (values != null) {
-                    for (Value value : values) {
+                    for (IValue value : values) {
                         if (value.equals(paramVars.getFirst())) {
                             return Value.valueFactory(true);
                         }
@@ -284,7 +285,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 assert paramVars.size() == 1 || paramVars.size() == 3;
                 if (values != null) {
                     if (paramVars.size() == 1) {
-                        Value val = paramVars.getFirst();
+                        IValue val = paramVars.getFirst();
                         for (int i = 0; i < values.size(); i++) {
                             values.set(i, val);
                         }
@@ -297,7 +298,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                             int fromIdx = (int) fromIndex.getValue();
                             int toIdx = (int) toIndex.getValue();
                             if (fromIdx >= 0 && toIdx <= values.size() && fromIdx <= toIdx) {
-                                Value val = paramVars.get(2);
+                                IValue val = paramVars.get(2);
                                 for (int i = fromIdx; i < toIdx; i++) {
                                     values.set(i, val);
                                 }
@@ -316,7 +317,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     }
 
     @Override
-    public Value accessField(@NotNull String fieldName) {
+    public IValue accessField(@NotNull String fieldName) {
         switch (fieldName) {
             case "length" -> {
                 if (values != null) {
@@ -331,18 +332,18 @@ public class JavaArray extends JavaObject implements IJavaArray {
     @NotNull
     @Override
     public JavaArray copy() {
-        List<Value> newValues = new ArrayList<>();
+        List<IValue> newValues = new ArrayList<>();
         if (values == null) {
             return new JavaArray(innerType);
         }
-        for (Value value : values) {
+        for (IValue value : values) {
             newValues.add(value.copy());
         }
         return new JavaArray(innerType, newValues);
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         assert other instanceof JavaArray;
         assert Objects.equals(this.innerType, ((JavaArray) other).innerType);
         if (this.values == null || ((JavaArray) other).values == null || this.values.size() != ((JavaArray) other).values.size()) {

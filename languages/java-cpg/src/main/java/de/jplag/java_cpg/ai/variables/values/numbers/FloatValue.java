@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
@@ -83,7 +84,7 @@ public class FloatValue extends Value implements INumberValue {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (other instanceof VoidValue) {
             return new VoidValue();
         }
@@ -138,7 +139,7 @@ public class FloatValue extends Value implements INumberValue {
 
     @Override
     @Impure
-    public Value unaryOperation(@NotNull String operator) {
+    public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "++" -> {
                 if (information) {
@@ -167,7 +168,7 @@ public class FloatValue extends Value implements INumberValue {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         assert other instanceof FloatValue;
         FloatValue otherFloat = (FloatValue) other;
         if (this.information && otherFloat.information && this.value == otherFloat.value) {

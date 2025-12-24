@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
+import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
@@ -43,7 +45,7 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -96,11 +98,11 @@ public class StringValue extends JavaObject implements IStringValue {
                 assert paramVars.size() == 1;
                 StringValue regexValue = (StringValue) paramVars.getFirst();
                 if (!information || !regexValue.getInformation()) {
-                    return new JavaArray(Type.STRING);
+                    return Value.getNewArayValue(Type.STRING);
                 }
                 assert regexValue.getValue() != null && value != null;
                 String[] parts = value.split(regexValue.getValue());
-                JavaArray array = new JavaArray(Type.STRING);
+                IJavaArray array = Value.getNewArayValue(Type.STRING);
                 for (int i = 0; i < parts.length; i++) {
                     array.arrayAssign((INumberValue) Value.valueFactory(i), new StringValue(parts[i]));
                 }
@@ -142,7 +144,7 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (other instanceof VoidValue) {
             return new VoidValue();
         }
@@ -181,7 +183,7 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue) {
             this.information = false;
             this.value = null;

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 import kotlin.Pair;
@@ -18,23 +19,23 @@ public interface IValue {
     @NotNull
     Type getType();
 
-    Value binaryOperation(@NotNull String operator, @NotNull Value other);
+    IValue binaryOperation(@NotNull String operator, @NotNull IValue other);
 
-    Value unaryOperation(@NotNull String operator);
+    IValue unaryOperation(@NotNull String operator);
 
     /**
      * Creates and returns a deep copy of this value.
      * @return a deep copy of this value.
      */
     @NotNull
-    Value copy();
+    IValue copy();
 
     /**
      * Merges the information of another instance of the same value into this one. Types should be the same. For example,
      * when a value has different content in different branches of an if statement.
      * @param other other value.
      */
-    void merge(@NotNull Value other);
+    void merge(@NotNull IValue other);
 
     /**
      * Delete all information in this value.
@@ -46,12 +47,12 @@ public interface IValue {
      */
     void setInitialValue();
 
-    JavaObject getParentObject();
+    IJavaObject getParentObject();
 
-    void setParentObject(@Nullable JavaObject parentObject);
+    void setParentObject(@Nullable IJavaObject parentObject);
 
-    Pair<JavaArray, INumberValue> getArrayPosition();
+    Pair<IJavaArray, INumberValue> getArrayPosition();
 
-    void setArrayPosition(JavaArray array, INumberValue index);
+    void setArrayPosition(IJavaArray array, INumberValue index);
 
 }

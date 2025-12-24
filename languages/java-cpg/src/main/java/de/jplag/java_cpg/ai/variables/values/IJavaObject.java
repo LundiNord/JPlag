@@ -10,11 +10,11 @@ import de.jplag.java_cpg.ai.variables.Variable;
 
 public interface IJavaObject extends IValue {
 
-    Value callMethod(@NotNull String methodName, List<Value> paramVars);
+    IValue callMethod(@NotNull String methodName, List<IValue> paramVars);
 
-    Value accessField(@NotNull String fieldName);
+    IValue accessField(@NotNull String fieldName);
 
-    void changeField(@NotNull String fieldName, Value value);
+    void changeField(@NotNull String fieldName, IValue value);
 
     void setField(@NotNull Variable field);
 

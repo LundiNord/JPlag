@@ -48,7 +48,7 @@ public class JavaObject extends Value implements IJavaObject {
      * @param paramVars the parameters to pass to the method.
      * @return null if the method is not known.
      */
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
         if (abstractInterpretation == null) {
             return new VoidValue();
         }
@@ -59,7 +59,7 @@ public class JavaObject extends Value implements IJavaObject {
      * @param fieldName the name of the field to access.
      * @return the value of the field or VoidValue if the field does not exist.
      */
-    public Value accessField(@NotNull String fieldName) {
+    public IValue accessField(@NotNull String fieldName) {
         Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
             return new VoidValue();
@@ -67,7 +67,7 @@ public class JavaObject extends Value implements IJavaObject {
         return result.getValue();
     }
 
-    public void changeField(@NotNull String fieldName, Value value) {
+    public void changeField(@NotNull String fieldName, IValue value) {
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
             fields.addVariable(new Variable(fieldName, value));
@@ -93,7 +93,7 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         switch (operator) {
             case "==" -> {
                 if (this.equals(other)) {
@@ -121,7 +121,7 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         if (!(other instanceof JavaObject)) {   // cannot merge different types
             setToUnknown();
             return;

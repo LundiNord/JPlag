@@ -6,8 +6,8 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.VariableName;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
 public class HashMap extends JavaObject implements ISpecialObject {
@@ -22,7 +22,7 @@ public class HashMap extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
         // ToDo: not yet implemented
         switch (methodName) {
             case "put" -> {
@@ -44,7 +44,7 @@ public class HashMap extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         assert other instanceof HashMap;
         // Nothing to merge yet
     }

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.Interval;
 
@@ -49,7 +50,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
 
     @Override
     @SuppressWarnings("unchecked")
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (!(other instanceof NumberSetValue)) {
             other = createInstance(new TreeSet<>());
         }
@@ -211,9 +212,24 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public void merge(@NotNull IValue other) {
+        assert other.getClass().equals(this.getClass());
+        TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
+        this.values.addAll(otherValues);
+        mergeOverlappingIntervals();
+    }
+
+    @Override
+    public void setToUnknown() {
+        values = new TreeSet<>();
+        values.add(createFullInterval());
+    }
+
+    @Override
     @Impure
     @SuppressWarnings("unchecked")
-    public Value unaryOperation(@NotNull String operator) {
+    public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "++" -> {
                 values.forEach(Interval::plusPlus);
@@ -241,21 +257,6 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
             }
             default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void merge(@NotNull Value other) {
-        assert other.getClass().equals(this.getClass());
-        TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
-        this.values.addAll(otherValues);
-        mergeOverlappingIntervals();
-    }
-
-    @Override
-    public void setToUnknown() {
-        values = new TreeSet<>();
-        values.add(createFullInterval());
     }
 
     protected void mergeOverlappingIntervals() {

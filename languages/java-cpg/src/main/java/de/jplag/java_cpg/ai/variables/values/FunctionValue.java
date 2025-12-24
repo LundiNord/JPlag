@@ -18,7 +18,7 @@ public class FunctionValue extends Value {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         // ToDo
     }
 

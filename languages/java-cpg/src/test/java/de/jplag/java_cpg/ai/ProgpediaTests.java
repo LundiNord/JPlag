@@ -48,9 +48,7 @@ class ProgpediaTests {
 
     @NotNull
     private static Stream<String> acceptedResourceDirs() {
-        return Stream
-                .of("00000006", "00000016", "00000018", "00000019", "00000021", "00000022", "00000023", "00000034", "00000035", "00000039",
-                        "00000042", "00000043", "00000045", "00000048", "00000053", "00000056")
+        return Stream.of("00000006")
                 .flatMap(problemId -> Stream.of("ACCEPTED", "WRONG_ANSWER").flatMap(category -> getResourceDirsForProblem(problemId, category)));
     }
 
@@ -68,7 +66,6 @@ class ProgpediaTests {
 
     @ParameterizedTest
     @MethodSource("acceptedResourceDirs")
-    @Disabled
     void testProgpedia(String resourceDir) throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 
@@ -16,15 +17,15 @@ import de.jplag.java_cpg.ai.variables.values.Value;
 public class Variable {
 
     private final VariableName name;
-    private Value value;
+    private IValue value;
     private List<ChangeRecorder> changeRecorders = new ArrayList<>();
 
-    public Variable(@NotNull VariableName name, @NotNull Value value) {
+    public Variable(@NotNull VariableName name, @NotNull IValue value) {
         this.name = name;
         this.value = value;
     }
 
-    public Variable(@NotNull String string, @NotNull Value value) {
+    public Variable(@NotNull String string, @NotNull IValue value) {
         this.name = new VariableName(string);
         this.value = value;
     }
@@ -55,7 +56,7 @@ public class Variable {
      * Triggers change recording.
      * @return The value of this variable.
      */
-    public Value getValue() {
+    public IValue getValue() {
         // trigger change recording because returned value could be modified outside.
         // ToDo: only trigger when actual changes happen
         for (ChangeRecorder changeRecorder : changeRecorders) {
@@ -68,7 +69,7 @@ public class Variable {
      * Set the value of this variable. Triggers change recording.
      * @param value the new value for this variable.
      */
-    public void setValue(Value value) {
+    public void setValue(IValue value) {
         assert value != null;
         this.value = value;
         for (ChangeRecorder changeRecorder : changeRecorders) {

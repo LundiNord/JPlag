@@ -19,6 +19,8 @@ see [ToDos](./ToDo.md) for supported and unsupported features.
 
 ## Explicitly not supported language features
 
+- exception flow is not modeled
+
 see [ToDos](./ToDo.md) for supported and unsupported features.
 
 ## Usage Example

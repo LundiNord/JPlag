@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
@@ -49,7 +50,7 @@ public class CharValue extends Value implements ICharValue {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         switch (operator) {
             case "==" -> {
                 CharValue otherCharValue = (CharValue) other;
@@ -72,7 +73,7 @@ public class CharValue extends Value implements ICharValue {
     }
 
     @Override
-    public Value unaryOperation(@NotNull String operator) {
+    public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
         }
@@ -85,7 +86,7 @@ public class CharValue extends Value implements ICharValue {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         assert other instanceof CharValue;
         CharValue otherCharValue = (CharValue) other;
         if (!otherCharValue.information) {

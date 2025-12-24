@@ -6,6 +6,7 @@ import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
@@ -55,7 +56,7 @@ public class IntIntervalValue extends Value implements INumberValue {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (!(other instanceof INumberValue)) {
             other = new IntIntervalValue();
         }
@@ -102,7 +103,7 @@ public class IntIntervalValue extends Value implements INumberValue {
 
     @Override
     @Impure
-    public Value unaryOperation(@NotNull String operator) {
+    public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "++" -> {
                 this.interval.plusPlus();
@@ -126,12 +127,12 @@ public class IntIntervalValue extends Value implements INumberValue {
 
     @NotNull
     @Override
-    public Value copy() {
+    public IValue copy() {
         return new IntIntervalValue(interval.copy());
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         assert other instanceof IntIntervalValue;
         this.interval.merge(((IntIntervalValue) other).interval);
     }

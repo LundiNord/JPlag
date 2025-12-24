@@ -15,7 +15,7 @@ import de.jplag.Token;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
 /**
- * This class represents the frond end of the CPG module of JPlag.
+ * This class represents the front end of the CPG module of JPlag.
  */
 @MetaInfServices(de.jplag.Language.class)
 public class JavaCpgLanguage implements Language {

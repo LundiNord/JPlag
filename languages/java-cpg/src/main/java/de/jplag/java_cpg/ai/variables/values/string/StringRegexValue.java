@@ -10,10 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.NullValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChars;
@@ -93,7 +90,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -329,7 +326,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (other instanceof VoidValue) {
             return new StringRegexValue();
         }
@@ -385,7 +382,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue) {
             contentRegex = new ArrayList<>();
             unknown = true;

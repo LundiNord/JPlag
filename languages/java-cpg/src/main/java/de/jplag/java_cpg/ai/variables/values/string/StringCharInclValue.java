@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
@@ -67,7 +68,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value callMethod(@NotNull String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -121,7 +122,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (other instanceof VoidValue) {
             return new StringCharInclValue();
         }
@@ -152,7 +153,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue) {
             this.certainContained = new HashSet<>();
             this.maybeContained = allCharactersSet();

@@ -5,11 +5,11 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
+import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
+import de.jplag.java_cpg.ai.variables.values.arrays.JavaLengthArray;
 import de.jplag.java_cpg.ai.variables.values.chars.CharSetValue;
 import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.*;
@@ -32,13 +32,14 @@ public abstract class Value implements IValue {
     private static FloatAiType usedFloatAiType = FloatAiType.DEFAULT;
     private static StringAiType usedStringAiType = StringAiType.DEFAULT;
     private static CharAiType usedCharAiType = CharAiType.DEFAULT;
+    private static ArrayAiType usedArrayAiType = ArrayAiType.DEFAULT;
 
     @NotNull
     private final Type type;
     @Nullable
-    private Pair<JavaArray, INumberValue> arrayPosition;    // necessary for an array assign to work
+    private Pair<IJavaArray, INumberValue> arrayPosition;    // necessary for an array assign to work
     @Nullable
-    private JavaObject parentObject;                        // necessary for some field access
+    private IJavaObject parentObject;                        // necessary for some field access
 
     protected Value(@NotNull Type type) {
         this.type = type;
@@ -76,6 +77,14 @@ public abstract class Value implements IValue {
         usedCharAiType = charAiType;
     }
 
+    /**
+     * The default is {@link ArrayAiType#DEFAULT}.
+     * @param arrayAiType the type to use for array values.
+     */
+    public static void setUsedArrayAiType(@NotNull ArrayAiType arrayAiType) {
+        usedArrayAiType = arrayAiType;
+    }
+
     // ------------------ Value Factories ------------------//
 
     /**
@@ -84,14 +93,14 @@ public abstract class Value implements IValue {
      * @return a Value instance corresponding to the specified type.
      */
     @NotNull
-    public static Value valueFactory(@NotNull Type type) {
+    public static IValue valueFactory(@NotNull Type type) {
         return switch (type) {
             case INT -> getNewIntValue();
             case STRING -> getNewStringValue();
             case BOOLEAN -> new BooleanValue();
             case OBJECT -> new JavaObject();
             case VOID -> new VoidValue();
-            case ARRAY, LIST -> new JavaArray();
+            case ARRAY, LIST -> getNewArayValue();
             case NULL -> new NullValue();
             case FLOAT -> getNewFloatValue();
             case FUNCTION -> new FunctionValue();
@@ -106,7 +115,7 @@ public abstract class Value implements IValue {
      * @return a {@link Value} instance representing the known value.
      */
     @NotNull
-    public static Value valueFactory(@Nullable Object value) {
+    public static IValue valueFactory(@Nullable Object value) {
         if (value == null) {
             return new NullValue();
         }
@@ -139,7 +148,7 @@ public abstract class Value implements IValue {
      */
     @NotNull
     @SuppressWarnings("unchecked")
-    public static <T> Value valueFactory(@NotNull Set<T> values) {
+    public static <T> IValue valueFactory(@NotNull Set<T> values) {
         assert !values.isEmpty();
         Object first = values.iterator().next();
         return switch (first) {
@@ -155,7 +164,7 @@ public abstract class Value implements IValue {
      * Value factory for when a value has lower/upper bounds.
      */
     @NotNull
-    public static <T> Value valueFactory(@NotNull T lowerBound, @NotNull T upperBound) {
+    public static <T> IValue valueFactory(@NotNull T lowerBound, @NotNull T upperBound) {
         return switch (lowerBound) {
             case String ignored -> throw new IllegalStateException("Strings dont have bounds");
             case Integer ignored -> getNewIntValue((int) lowerBound, (int) upperBound);
@@ -283,6 +292,22 @@ public abstract class Value implements IValue {
         };
     }
 
+    @NotNull
+    private static Value getNewArayValue() {
+        return switch (usedArrayAiType) {
+            case DEFAULT -> new JavaArray();
+            case LENGTH -> new JavaLengthArray();
+        };
+    }
+
+    @NotNull
+    public static IJavaArray getNewArayValue(Type innerType) {
+        return switch (usedArrayAiType) {
+            case DEFAULT -> new JavaArray(innerType);
+            case LENGTH -> new JavaLengthArray(innerType);
+        };
+    }
+
     // ------------------ End of Value Factories ------------------//
 
     @NotNull
@@ -296,7 +321,7 @@ public abstract class Value implements IValue {
      * @param other the other value.
      * @return the result value. VoidValue if the operation does not return a value.
      */
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }
 
@@ -305,7 +330,7 @@ public abstract class Value implements IValue {
      * @param operator the operator.
      * @return the result value. VoidValue if the operation does not return a value.
      */
-    public Value unaryOperation(@NotNull String operator) {
+    public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "throw" -> {
                 return new VoidValue();
@@ -315,11 +340,11 @@ public abstract class Value implements IValue {
     }
 
     /**
-     * {@link #setParentObject(JavaObject)} must be called before to use this method.
+     * {@link #setParentObject(IJavaObject)} must be called before to use this method.
      * @return the parent object of this value. Can be null.
      */
     @Nullable
-    public JavaObject getParentObject() {
+    public IJavaObject getParentObject() {
         return parentObject;
     }
 
@@ -327,15 +352,15 @@ public abstract class Value implements IValue {
      * Sets the parent object of this value. Must be called before some filed accesses.
      * @param parentObject the parent object. Can be null.
      */
-    public void setParentObject(@Nullable JavaObject parentObject) {
+    public void setParentObject(@Nullable IJavaObject parentObject) {
         this.parentObject = parentObject;
     }
 
     /**
-     * {@link #setArrayPosition(JavaArray, INumberValue)} must be called before to use this method.
+     * {@link #setArrayPosition(IJavaArray, INumberValue)} must be called before to use this method.
      * @return the position of this value in the array that contains it.
      */
-    public Pair<JavaArray, INumberValue> getArrayPosition() {
+    public Pair<IJavaArray, INumberValue> getArrayPosition() {
         assert arrayPosition != null;
         return arrayPosition;
     }
@@ -343,7 +368,7 @@ public abstract class Value implements IValue {
     /**
      * Sets the position of this value in the array that contains it. Necessary to set before array assignments.
      */
-    public void setArrayPosition(@NotNull JavaArray array, @NotNull INumberValue index) {
+    public void setArrayPosition(@NotNull IJavaArray array, @NotNull INumberValue index) {
         this.arrayPosition = new Pair<>(array, index);
     }
 

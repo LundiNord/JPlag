@@ -16,7 +16,7 @@ public class NullValue extends Value {
     }
 
     @Override
-    public Value binaryOperation(@NotNull String operator, @NotNull Value other) {
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         switch (operator) {
             case "==" -> {
                 return new BooleanValue(other instanceof NullValue);
@@ -35,7 +35,7 @@ public class NullValue extends Value {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         // do nothing
     }
 

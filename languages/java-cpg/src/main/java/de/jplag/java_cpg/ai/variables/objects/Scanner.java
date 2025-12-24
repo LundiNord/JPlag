@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
@@ -33,7 +34,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
         switch (methodName) {
             case "nextLine", "next" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -70,7 +71,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         assert other instanceof Scanner;
         // Nothing to merge
     }

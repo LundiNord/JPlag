@@ -5,6 +5,7 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
@@ -59,7 +60,7 @@ public class CharSetValue extends Value implements ICharValue {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         CharSetValue otherCharValue = (CharSetValue) other;
         if (!otherCharValue.information) {
             this.information = false;

@@ -6,8 +6,8 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.VariableName;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 public class Integer extends JavaObject implements ISpecialObject {
@@ -26,11 +26,11 @@ public class Integer extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value callMethod(@NotNull java.lang.String methodName, List<Value> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
         switch (methodName) {
             case "parseInt" -> {
                 assert paramVars.size() == 1;
-                Value value = paramVars.getFirst();
+                IValue value = paramVars.getFirst();
                 switch (value) {
                     case IStringValue str -> {
                         return str.callMethod("parseInt", paramVars);
@@ -49,7 +49,7 @@ public class Integer extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull Value other) {
+    public void merge(@NotNull IValue other) {
         // Nothing to merge
         assert other instanceof Integer;
     }
