@@ -133,16 +133,17 @@ public class AbstractInterpretation {
      * @param objectInstance the object instance that should represent the class.
      * @param constructorArgs the arguments for the constructor.
      */
-    private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs) {
+    private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs,
+            @NotNull ConstructorDeclaration constructor) {
         setupClass(rd, objectInstance);
         // Run constructor method
-        ConstructorDeclaration constr = rd.getConstructors().getFirst();    // ToDo what if multiple constructors?
-        List<Node> eog = constr.getNextEOG();
+        List<Node> eog = constructor.getNextEOG();
         if (eog.size() == 1) {
             variables.newScope();
-            assert constr.getParameters().size() == constructorArgs.size();
+            assert constructor.getParameters().size() == constructorArgs.size();
             for (int i = 0; i < constructorArgs.size(); i++) {
-                variables.addVariable(new Variable(new VariableName(constr.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
+                variables
+                        .addVariable(new Variable(new VariableName(constructor.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
             }
             graphWalker(eog.getFirst());
             variables.removeScope();
@@ -226,7 +227,7 @@ public class AbstractInterpretation {
     private IValue graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        // System.out.println(node);
+        System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 IValue value = valueStack.getLast();
@@ -251,7 +252,9 @@ public class AbstractInterpretation {
                         nodeStack.removeLast();
                         nodeStack.add(me);
                         valueStack.removeLast();    // remove object reference
-                        valueStack.add(new VoidValue());
+                        Value result = new VoidValue();
+                        result.setParentObject((IJavaObject) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.OBJECT));
+                        valueStack.add(result);
                     } else {
                         assert valueStack.getLast() instanceof IJavaObject;
                         nodeStack.removeLast();
@@ -378,8 +381,12 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     return value;
                 }
-                assert nextEOG.size() == 1;
-                nextNode = nextEOG.getFirst();
+                if (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator) {
+                    nextNode = nextEOG.getFirst();
+                } else {
+                    assert nextEOG.size() == 1;
+                    nextNode = nextEOG.getFirst();
+                }
             }
             case DeclarationStatement ds -> {
                 for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
@@ -424,6 +431,9 @@ public class AbstractInterpretation {
                             // VariableName className = new VariableName(nodeStack.get(nodeStack.size() - 2).getName().getParent().toString());
                             classVal = valueStack.get(valueStack.size() - 2).getParentObject(); // FixMe valueStack is not merged
                             // classVal = (JavaObject) variables.getVariable(className).getValue();
+                        }
+                        if (classVal == null) {
+                            System.out.println("Debug");
                         }
                         classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
                     } else {
@@ -714,7 +724,7 @@ public class AbstractInterpretation {
                 // run constructor
                 if (classNode != null) {
                     AbstractInterpretation classAi = new AbstractInterpretation();
-                    classAi.runClass((RecordDeclaration) classNode, newObject, arguments);
+                    classAi.runClass((RecordDeclaration) classNode, newObject, arguments, ce.getConstructor());
                 }
                 //
                 nodeStack.add(ne);

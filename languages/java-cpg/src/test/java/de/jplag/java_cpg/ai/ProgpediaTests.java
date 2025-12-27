@@ -48,7 +48,9 @@ class ProgpediaTests {
 
     @NotNull
     private static Stream<String> acceptedResourceDirs() {
-        return Stream.of("00000006")
+        return Stream
+                .of("00000006", "00000016", "00000018", "00000019", "00000021", "00000022", "00000023", "00000034", "00000035", "00000039",
+                        "00000042", "00000043", "00000045", "00000048", "00000053", "00000056")
                 .flatMap(problemId -> Stream.of("ACCEPTED", "WRONG_ANSWER").flatMap(category -> getResourceDirsForProblem(problemId, category)));
     }
 
@@ -77,7 +79,7 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle() throws ParsingException, InterruptedException {
+    void testSingle() throws ParsingException, InterruptedException {       // for(Node cursor=invert.top;cursor!=null;cursor=cursor.next)
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -88,11 +90,11 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle2() throws ParsingException, InterruptedException {
+    void testSingle2() throws ParsingException, InterruptedException {  // recursive call: dfs_visit(ppl[x].amigos[j]);
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00109_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00135_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }

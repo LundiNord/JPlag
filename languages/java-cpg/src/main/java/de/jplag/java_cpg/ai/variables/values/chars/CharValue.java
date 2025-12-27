@@ -8,6 +8,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Char value representation that can hold a single char value or be unknown.
@@ -66,6 +67,14 @@ public class CharValue extends Value implements ICharValue {
                     return new BooleanValue(this.value != otherCharValue.value);
                 } else {
                     return new BooleanValue();
+                }
+            }
+            case "+" -> {
+                IStringValue otherStringValue = (IStringValue) other;
+                if (this.information && otherStringValue.getInformation()) {
+                    return Value.valueFactory(this.value + otherStringValue.getValue());
+                } else {
+                    return Value.valueFactory(Type.STRING);
                 }
             }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
