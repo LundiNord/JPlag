@@ -5,6 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.AbstractInterpretation;
 import de.jplag.java_cpg.ai.variables.Scope;
 import de.jplag.java_cpg.ai.variables.Type;
@@ -48,11 +49,11 @@ public class JavaObject extends Value implements IJavaObject {
      * @param paramVars the parameters to pass to the method.
      * @return null if the method is not known.
      */
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
         if (abstractInterpretation == null) {
             return new VoidValue();
         }
-        return abstractInterpretation.runMethod(methodName, paramVars);
+        return abstractInterpretation.runMethod(methodName, paramVars, method);
     }
 
     /**

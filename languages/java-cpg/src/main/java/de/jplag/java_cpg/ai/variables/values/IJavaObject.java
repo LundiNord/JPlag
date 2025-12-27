@@ -5,12 +5,13 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.AbstractInterpretation;
 import de.jplag.java_cpg.ai.variables.Variable;
 
 public interface IJavaObject extends IValue {
 
-    IValue callMethod(@NotNull String methodName, List<IValue> paramVars);
+    IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method);
 
     IValue accessField(@NotNull String fieldName);
 

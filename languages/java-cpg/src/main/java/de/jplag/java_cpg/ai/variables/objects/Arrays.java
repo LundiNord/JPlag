@@ -5,6 +5,7 @@ import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -32,17 +33,17 @@ public class Arrays extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars.size() == 1;
                 JavaArray array = (JavaArray) paramVars.getFirst();
-                return array.callMethod("toString", List.of());
+                return array.callMethod("toString", List.of(), null);
             }
             case "fill" -> {        // void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
                 assert paramVars.size() == 2 || paramVars.size() == 4;
                 JavaArray array = (JavaArray) paramVars.getFirst();
-                return array.callMethod("fill", paramVars.subList(1, paramVars.size()));
+                return array.callMethod("fill", paramVars.subList(1, paramVars.size()), null);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

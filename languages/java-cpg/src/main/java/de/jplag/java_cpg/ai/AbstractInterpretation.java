@@ -227,7 +227,7 @@ public class AbstractInterpretation {
     private IValue graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        System.out.println(node);
+        // System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 IValue value = valueStack.getLast();
@@ -337,8 +337,8 @@ public class AbstractInterpretation {
             case MemberCallExpression mce -> {  // adds its value to the value stack
                 IValue result;
                 if (mce.getArguments().isEmpty()) {     // no arguments
-                    assert nodeStack.getLast() instanceof MemberExpression;
-                    Name memberName = (nodeStack.getLast()).getName();
+                    MemberExpression me = (MemberExpression) nodeStack.getLast();
+                    Name memberName = me.getName();
                     if (valueStack.getLast() instanceof VoidValue || valueStack.getLast() instanceof NullValue) {
                         // null value can happen: "if (opts.name == null || opts.name.isBlank())" where we dont strictly follow evaluation
                         // order.
@@ -346,7 +346,7 @@ public class AbstractInterpretation {
                         valueStack.add(new JavaObject());
                     }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
-                    result = javaObject.callMethod(memberName.getLocalName(), null);
+                    result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) me.getRefersTo());
                 } else {
                     List<IValue> argumentList = new ArrayList<>();
                     for (int i = 0; i < mce.getArguments().size(); i++) {
@@ -358,8 +358,8 @@ public class AbstractInterpretation {
                         valueStack.removeLast();
                     }
                     Collections.reverse(argumentList);
-                    assert nodeStack.getLast() instanceof MemberExpression;
-                    Name memberName = (nodeStack.getLast()).getName();
+                    MemberExpression me = (MemberExpression) nodeStack.getLast();
+                    Name memberName = me.getName();
                     assert memberName.getParent() != null;
                     assert !valueStack.isEmpty();
                     if (valueStack.getLast() instanceof VoidValue) {
@@ -367,7 +367,7 @@ public class AbstractInterpretation {
                         valueStack.add(new JavaObject());
                     }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();         // for now only one parameter
-                    result = javaObject.callMethod(memberName.getLocalName(), argumentList);
+                    result = javaObject.callMethod(memberName.getLocalName(), argumentList, (MethodDeclaration) me.getRefersTo());
                 }
                 valueStack.removeLast();    // remove object reference
                 if (result == null) {       // if method reference isn't known
@@ -1098,30 +1098,35 @@ public class AbstractInterpretation {
      * @param name the name of the method to run.
      * @return null if the method is not known.
      */
-    public IValue runMethod(@NotNull String name, List<IValue> paramVars) {
+    public IValue runMethod(@NotNull String name, List<IValue> paramVars, MethodDeclaration method) {
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
         List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
         this.nodeStack = new ArrayList<>();
         this.valueStack = new ArrayList<>();
         this.lastVisitedLoopOrIf = new ArrayList<>();
-        MethodDeclaration md = methods.get(name);
-        if (md == null) {
+        if (method == null) {
             return null;
         }
         variables.newScope();
         if (paramVars != null) {
-            assert md.getParameters().size() == paramVars.size();
+            assert method.getParameters().size() == paramVars.size();
             for (int i = 0; i < paramVars.size(); i++) {
-                variables.addVariable(new Variable(new VariableName(md.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
+                variables.addVariable(new Variable(new VariableName(method.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
             }
         } else {
-            assert md.getParameters().isEmpty();
+            if (!(method.getParameters().isEmpty())) {
+                System.out.println("Debug");
+            }
+            assert method.getParameters().isEmpty();
         }
         IValue result;
-        assert md.getNextEOG().size() <= 1;
-        if (md.getNextEOG().size() == 1) {
-            result = graphWalker(md.getNextEOG().getFirst());
+        if (!(method.getNextEOG().size() <= 1)) {
+            System.out.println("Debug");
+        }
+        assert method.getNextEOG().size() <= 1;
+        if (method.getNextEOG().size() == 1) {
+            result = graphWalker(method.getNextEOG().getFirst());
         } else {
             result = new VoidValue();
         }
