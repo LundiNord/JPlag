@@ -43,12 +43,18 @@ public class Math extends JavaObject implements ISpecialObject {
             }
             case "min" -> {
                 assert paramVars.size() == 2;
+                if (paramVars.getFirst() instanceof VoidValue || paramVars.getLast() instanceof VoidValue) {
+                    return new VoidValue();
+                }
                 assert paramVars.get(0) instanceof INumberValue;
                 assert paramVars.get(1) instanceof INumberValue;
                 return paramVars.get(0).binaryOperation("min", paramVars.get(1));
             }
             case "max" -> {
                 assert paramVars.size() == 2;
+                if (paramVars.getFirst() instanceof VoidValue || paramVars.getLast() instanceof VoidValue) {
+                    return new VoidValue();
+                }
                 assert paramVars.get(0) instanceof INumberValue;
                 assert paramVars.get(1) instanceof INumberValue || paramVars.get(1) instanceof VoidValue;
                 return paramVars.get(0).binaryOperation("max", paramVars.get(1));

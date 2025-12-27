@@ -211,6 +211,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "get", "elementAt" -> {
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.INT));
+                }
                 assert paramVars.getFirst() instanceof INumberValue;
                 return arrayAccess((INumberValue) paramVars.getFirst());
             }

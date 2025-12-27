@@ -210,6 +210,9 @@ public class AbstractInterpretation {
                     assert Objects.equals(unop.getOperatorCode(), "-");
                     IValue value = graphWalker(fd.getNextEOG().getFirst());
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
+                } else if (fd.getInitializer() instanceof MemberExpression) {
+                    IValue result = graphWalker(fd.getNextEOG().getFirst());
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
                 } else {
                     throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
                 }
@@ -282,6 +285,11 @@ public class AbstractInterpretation {
                     }
                     nodeStack.removeLast();
                     nodeStack.add(me);
+                }
+                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                    IValue value = valueStack.getLast();
+                    valueStack.removeLast();
+                    return value;
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();

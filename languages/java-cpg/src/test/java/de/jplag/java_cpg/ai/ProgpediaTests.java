@@ -121,4 +121,15 @@ class ProgpediaTests {
         assertNotNull(variableStore);
     }
 
+    @Test
+    @Disabled
+    void testSingle5() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000021/WRONG_ANSWER/00090_00005");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
+
 }
