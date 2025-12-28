@@ -32,6 +32,12 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
         this.length = length;
     }
 
+    public JavaLengthArray(List<IValue> values) {
+        super(Type.ARRAY);
+        this.innerType = values.getFirst().getType();
+        this.length = (INumberValue) Value.valueFactory(values.size());
+    }
+
     @Override
     public IValue arrayAccess(INumberValue index) {
         // if no information, return an unknown value of the inner type

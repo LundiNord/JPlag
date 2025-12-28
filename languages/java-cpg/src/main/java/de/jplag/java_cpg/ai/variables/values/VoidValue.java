@@ -24,7 +24,7 @@ public class VoidValue extends Value {
             case "==", ">", "<", ">=", "<=", "!=" -> {
                 return new BooleanValue();
             }
-            case "+", "-", "*" -> {
+            case "+", "-", "*", "/" -> {
                 return switch (other) {
                     case IntValue ignored -> new IntValue();
                     case FloatValue ignored -> new FloatValue();

@@ -90,11 +90,11 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle2() throws ParsingException, InterruptedException {  // recursive call: dfs_visit(ppl[x].amigos[j]);
+    void testSingle2() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00135_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00089_00005");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -105,29 +105,62 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00044_00002");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00107_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
 
     @Test
     @Disabled
-    void testSingle4() throws ParsingException, InterruptedException {  // stack overflow
+    void testSingle4() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00014_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00072_00007");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
 
     @Test
     @Disabled
-    void testSingle5() throws ParsingException, InterruptedException {  // recursive stack overflow
+    void testSingle5() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000035/ACCEPTED/00022_00004");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00089_00003");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
+
+    @Test
+    @Disabled
+    void testSingle6() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000048/ACCEPTED/00146_00001");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
+
+    @Test
+    @Disabled
+    void testSingle7() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/ACCEPTED/00036_00006");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
+
+    @Test
+    @Disabled
+    void testSingle8() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000042/ACCEPTED/00081_00003");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }

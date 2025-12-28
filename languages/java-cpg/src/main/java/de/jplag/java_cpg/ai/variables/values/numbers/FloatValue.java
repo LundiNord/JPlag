@@ -132,6 +132,13 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue();
                 }
             }
+            case "/" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new FloatValue(this.value / ((INumberValue) other).getValue());
+                } else {
+                    return new FloatValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }

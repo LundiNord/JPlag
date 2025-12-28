@@ -49,11 +49,19 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.INT);
             }
+            case "nextDouble", "nextFloat" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(Type.FLOAT);
+            }
             case "hasNextInt", "hasNext" -> {
                 assert paramVars == null || paramVars.isEmpty() || (paramVars.size() == 1 && paramVars.get(0).getType() == Type.STRING);
                 return Value.valueFactory(Type.BOOLEAN);
             }
-
+            case "useLocale" -> {
+                assert paramVars.size() == 1;
+                // We don't model Locale, so just return this
+                return this;
+            }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in Scanner.");
         }
     }

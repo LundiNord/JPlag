@@ -52,6 +52,10 @@ public class AbstractInterpretation {
      */
     private List<Node> lastVisitedLoopOrIf;
     /**
+     * Helper to detect recursive method calls.
+     */
+    private List<Node> lastVisitedMethod;
+    /**
      * Stack for EOG traversal.
      */
     @NotNull
@@ -82,6 +86,7 @@ public class AbstractInterpretation {
         methods = new HashMap<>();
         lastVisitedLoopOrIf = new ArrayList<>();
         returnStorage = new ArrayList<>();
+        lastVisitedMethod = new ArrayList<>();
     }
 
     /**
@@ -230,7 +235,7 @@ public class AbstractInterpretation {
     private IValue graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        System.out.println(node);
+        // System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 IValue value = valueStack.getLast();
@@ -1116,6 +1121,12 @@ public class AbstractInterpretation {
      * @return null if the method is not known.
      */
     public IValue runMethod(@NotNull String name, List<IValue> paramVars, MethodDeclaration method) {
+        if (lastVisitedMethod.contains(method)) {
+            // recursive call detected
+            this.variables.setEverythingUnknown();
+            return new VoidValue();
+        }
+        lastVisitedMethod.add(method);
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
         List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
@@ -1151,6 +1162,7 @@ public class AbstractInterpretation {
         this.nodeStack = oldNodeStack;      // restore stack
         this.valueStack = oldValueStack;
         this.lastVisitedLoopOrIf = oldLastVisitedLoopOrIf;
+        lastVisitedMethod.removeLast();
         return result;
     }
 

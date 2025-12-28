@@ -1,5 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
@@ -305,6 +306,14 @@ public abstract class Value implements IValue {
         return switch (usedArrayAiType) {
             case DEFAULT -> new JavaArray(innerType);
             case LENGTH -> new JavaLengthArray(innerType);
+        };
+    }
+
+    @NotNull
+    public static IJavaArray getNewArayValue(List<IValue> values) {
+        return switch (usedArrayAiType) {
+            case DEFAULT -> new JavaArray(values);
+            case LENGTH -> new JavaLengthArray(values);
         };
     }
 

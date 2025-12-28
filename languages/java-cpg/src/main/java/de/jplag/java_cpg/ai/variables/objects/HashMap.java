@@ -6,9 +6,11 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
 public class HashMap extends JavaObject implements ISpecialObject {
@@ -37,6 +39,10 @@ public class HashMap extends JavaObject implements ISpecialObject {
             case "containsKey" -> {
                 assert paramVars.size() == 1;
                 return new VoidValue();
+            }
+            case "size" -> {
+                assert paramVars.size() == 0;
+                return Value.valueFactory(Type.INT);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

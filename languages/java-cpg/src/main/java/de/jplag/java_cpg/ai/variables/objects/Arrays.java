@@ -9,6 +9,7 @@ import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 
 /**
@@ -54,6 +55,9 @@ public class Arrays extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 3;
                 JavaArray array = (JavaArray) paramVars.getFirst();
                 return array.callMethod("copyOfRange", paramVars.subList(1, paramVars.size()), null);
+            }
+            case "asList" -> {      // <T> List<T> asList(T... a)
+                return Value.getNewArayValue(paramVars);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

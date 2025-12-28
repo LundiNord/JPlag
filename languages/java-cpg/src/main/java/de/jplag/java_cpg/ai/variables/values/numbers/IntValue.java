@@ -165,6 +165,13 @@ public class IntValue extends Value implements INumberValue {
                     return new IntValue();
                 }
             }
+            case "%" -> {
+                if (information && ((IntValue) other).getInformation()) {
+                    return new IntValue(this.value % ((IntValue) other).getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
