@@ -53,6 +53,10 @@ public class String extends JavaObject implements ISpecialObject {
                 // Possibility 3: (String prefix, String suffix, String delimiter, String[] elements, int size)
                 return new StringValue();
             }
+            case "valueOf" -> {
+                assert paramVars.size() == 1;
+                return new StringValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

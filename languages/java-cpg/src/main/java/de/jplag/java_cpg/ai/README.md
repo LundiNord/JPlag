@@ -20,6 +20,8 @@ see [ToDos](./ToDo.md) for supported and unsupported features.
 ## Explicitly not supported language features
 
 - exception flow is not modeled
+- System.exit calls are not supported
+- Continues and breaks in loops are not supported
 
 see [ToDos](./ToDo.md) for supported and unsupported features.
 

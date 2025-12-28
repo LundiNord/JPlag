@@ -230,7 +230,7 @@ public class AbstractInterpretation {
     private IValue graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        // System.out.println(node);
+        System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 IValue value = valueStack.getLast();
@@ -500,7 +500,7 @@ public class AbstractInterpretation {
                 nodeStack.add(uop);
                 valueStack.removeLast();
                 valueStack.add(result);
-                assert nextEOG.size() == 1;
+                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
             case IfStatement ifStmt -> {
@@ -565,7 +565,7 @@ public class AbstractInterpretation {
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
-                    if (nodeStack.getLast() == null) {
+                    if (nodeStack.isEmpty() || nodeStack.getLast() == null) {
                         nodeStack.add(nextEOG.getLast());
                     }
                 }
@@ -753,6 +753,10 @@ public class AbstractInterpretation {
                 }
                 lastVisitedLoopOrIf.addLast(ws);
                 // evaluate condition
+                if (valueStack.getLast() instanceof VoidValue) {
+                    valueStack.removeLast();
+                    valueStack.add(new BooleanValue());
+                }
                 assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
@@ -1076,6 +1080,11 @@ public class AbstractInterpretation {
             }
             case ExpressionList el -> {
                 // indicates the end of an expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
+            case CastExpression ce -> {
+                // ignore casts for now as java types are not tracked precisely yet
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }

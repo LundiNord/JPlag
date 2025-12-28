@@ -316,6 +316,53 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return new VoidValue();
             }
+            case "sort" -> {        // void// sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
+                assert paramVars.size() == 0 || paramVars.size() == 2;
+                if (values != null) {
+                    if (paramVars.size() == 0) {
+                        values.sort(null);
+                    } else {
+                        assert paramVars.getFirst() instanceof INumberValue;
+                        assert paramVars.get(1) instanceof INumberValue;
+                        INumberValue fromIndex = (INumberValue) paramVars.getFirst();
+                        INumberValue toIndex = (INumberValue) paramVars.get(1);
+                        if (fromIndex.getInformation() && toIndex.getInformation()) {
+                            int fromIdx = (int) fromIndex.getValue();
+                            int toIdx = (int) toIndex.getValue();
+                            if (fromIdx >= 0 && toIdx <= values.size() && fromIdx <= toIdx) {
+                                List<IValue> sublist = values.subList(fromIdx, toIdx);
+                                sublist.sort(null);
+                                for (int i = fromIdx; i < toIdx; i++) {
+                                    values.set(i, sublist.get(i - fromIdx));
+                                }
+                            } else {
+                                values = null; // no information
+                            }
+                        } else {
+                            values = null; // no information
+                        }
+                    }
+                }
+                return new VoidValue();
+            }
+            case "copyOfRange" -> { // int[] copyOfRange(int[] original, int from, int to)
+                assert paramVars.size() == 2;
+                if (values != null) {
+                    assert paramVars.getFirst() instanceof INumberValue;
+                    assert paramVars.get(1) instanceof INumberValue;
+                    INumberValue fromIndex = (INumberValue) paramVars.getFirst();
+                    INumberValue toIndex = (INumberValue) paramVars.get(1);
+                    if (fromIndex.getInformation() && toIndex.getInformation()) {
+                        int fromIdx = (int) fromIndex.getValue();
+                        int toIdx = (int) toIndex.getValue();
+                        if (fromIdx >= 0 && toIdx <= values.size() && fromIdx <= toIdx) {
+                            List<IValue> sublist = new ArrayList<>(values.subList(fromIdx, toIdx));
+                            return new JavaArray(sublist);
+                        }
+                    }
+                }
+                return new JavaArray(innerType);
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

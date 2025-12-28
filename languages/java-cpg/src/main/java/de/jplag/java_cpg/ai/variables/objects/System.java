@@ -40,6 +40,9 @@ public class System extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return new StringValue("\n");
             }
+            case "exit" -> {
+                throw new UnsupportedOperationException("System.exit() called");
+            }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
         }
     }

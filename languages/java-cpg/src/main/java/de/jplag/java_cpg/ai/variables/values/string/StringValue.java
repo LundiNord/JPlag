@@ -135,6 +135,30 @@ public class StringValue extends JavaObject implements IStringValue {
                 }
                 return array;
             }
+            case "concat" -> {   // public String concat(String str)
+                assert paramVars.size() == 1;
+                StringValue str = (StringValue) paramVars.getFirst();
+                if (information && str.getInformation()) {
+                    return new StringValue(this.value + str.getValue());
+                } else {
+                    return new StringValue();
+                }
+            }
+            case "substring" -> {   // public String substring(int beginIndex, int endIndex)
+                assert paramVars.size() == 2;
+                INumberValue beginIndexValue = (INumberValue) paramVars.get(0);
+                INumberValue endIndexValue = (INumberValue) paramVars.get(1);
+                if (information && beginIndexValue.getInformation() && endIndexValue.getInformation()) {
+                    int beginIndex = (int) beginIndexValue.getValue();
+                    int endIndex = (int) endIndexValue.getValue();
+                    if (beginIndex < 0 || endIndex > value.length() || beginIndex > endIndex) {
+                        return new VoidValue();
+                    }
+                    return new StringValue(this.value.substring(beginIndex, endIndex));
+                } else {
+                    return new StringValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

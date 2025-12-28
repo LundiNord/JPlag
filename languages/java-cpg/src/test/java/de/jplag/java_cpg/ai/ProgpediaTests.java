@@ -105,14 +105,14 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000018/ACCEPTED/00078_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00044_00002");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
 
     @Test
     @Disabled
-    void testSingle4() throws ParsingException, InterruptedException {
+    void testSingle4() throws ParsingException, InterruptedException {  // stack overflow
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -123,11 +123,11 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle5() throws ParsingException, InterruptedException {
+    void testSingle5() throws ParsingException, InterruptedException {  // recursive stack overflow
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000021/WRONG_ANSWER/00090_00005");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000035/ACCEPTED/00022_00004");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }

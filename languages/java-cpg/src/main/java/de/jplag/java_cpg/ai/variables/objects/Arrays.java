@@ -45,6 +45,16 @@ public class Arrays extends JavaObject implements ISpecialObject {
                 JavaArray array = (JavaArray) paramVars.getFirst();
                 return array.callMethod("fill", paramVars.subList(1, paramVars.size()), null);
             }
+            case "sort" -> {        // void sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
+                assert paramVars.size() == 1 || paramVars.size() == 3;
+                JavaArray array = (JavaArray) paramVars.getFirst();
+                return array.callMethod("sort", paramVars.subList(1, paramVars.size()), null);
+            }
+            case "copyOfRange" -> { // int[] copyOfRange(int[] original, int from, int to)
+                assert paramVars.size() == 3;
+                JavaArray array = (JavaArray) paramVars.getFirst();
+                return array.callMethod("copyOfRange", paramVars.subList(1, paramVars.size()), null);
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

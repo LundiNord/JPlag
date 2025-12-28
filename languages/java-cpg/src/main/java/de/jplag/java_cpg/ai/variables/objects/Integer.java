@@ -6,9 +6,11 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 public class Integer extends JavaObject implements ISpecialObject {
@@ -35,6 +37,9 @@ public class Integer extends JavaObject implements ISpecialObject {
                 switch (value) {
                     case IStringValue str -> {
                         return str.callMethod("parseInt", paramVars, null);
+                    }
+                    case VoidValue ignored -> {
+                        return VoidValue.valueFactory(Type.INT);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }

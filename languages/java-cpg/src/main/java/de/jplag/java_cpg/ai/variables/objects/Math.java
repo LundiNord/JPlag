@@ -38,7 +38,7 @@ public class Math extends JavaObject implements ISpecialObject {
         switch (methodName) {
             case "abs" -> {
                 assert paramVars.size() == 1;
-                assert paramVars.getFirst() instanceof INumberValue;
+                assert paramVars.getFirst() instanceof INumberValue || paramVars.getFirst() instanceof VoidValue;
                 return paramVars.getFirst().unaryOperation("abs");
             }
             case "min" -> {

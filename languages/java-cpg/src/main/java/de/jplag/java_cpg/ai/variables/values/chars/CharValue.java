@@ -77,6 +77,14 @@ public class CharValue extends Value implements ICharValue {
                     return Value.valueFactory(Type.STRING);
                 }
             }
+            case "-" -> {
+                CharValue otherCharValue = (CharValue) other;
+                if (this.information && otherCharValue.information) {
+                    return new CharValue((char) (this.value - otherCharValue.value));
+                } else {
+                    return new CharValue();
+                }
+            }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
         }
     }
