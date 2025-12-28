@@ -47,7 +47,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
                 return array.callMethod("fill", paramVars.subList(1, paramVars.size()), null);
             }
             case "sort" -> {        // void sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
-                assert paramVars.size() == 1 || paramVars.size() == 3;
+                assert paramVars.size() == 1 || paramVars.size() == 3 || paramVars.size() == 2;
                 JavaArray array = (JavaArray) paramVars.getFirst();
                 return array.callMethod("sort", paramVars.subList(1, paramVars.size()), null);
             }

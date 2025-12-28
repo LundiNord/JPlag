@@ -317,6 +317,10 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return new VoidValue();
             }
             case "sort" -> {        // void// sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
+                if (paramVars.size() == 1) {    // with Comparator
+                    this.values = null; // ToDo
+                    return new VoidValue();
+                }
                 assert paramVars.size() == 0 || paramVars.size() == 2;
                 if (values != null) {
                     if (paramVars.size() == 0) {

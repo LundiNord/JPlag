@@ -8,6 +8,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
@@ -104,13 +105,27 @@ public class CharValue extends Value implements ICharValue {
 
     @Override
     public void merge(@NotNull IValue other) {
-        assert other instanceof CharValue;
-        CharValue otherCharValue = (CharValue) other;
-        if (!otherCharValue.information) {
-            this.information = false;
-        } else if (this.information) {
-            if (this.value != otherCharValue.value) {
-                this.information = false;
+        switch (other) {
+            case CharValue otherCharValue -> {
+                if (!otherCharValue.information) {
+                    this.information = false;
+                } else if (this.information) {
+                    if (this.value != otherCharValue.value) {
+                        this.information = false;
+                    }
+                }
+            }
+            case INumberValue otherNumberValue -> {
+                if (!otherNumberValue.getInformation()) {
+                    this.information = false;
+                } else if (this.information) {
+                    if (this.value != (char) otherNumberValue.getValue()) {
+                        this.information = false;
+                    }
+                }
+            }
+            default -> {
+                throw new IllegalArgumentException("Cannot merge " + getType() + " with " + other.getType());
             }
         }
     }

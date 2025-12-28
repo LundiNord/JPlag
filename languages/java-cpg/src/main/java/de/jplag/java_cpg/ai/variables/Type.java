@@ -38,6 +38,9 @@ public enum Type {
             return ARRAY;   // in java pointer types are used only for arrays
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.FloatingPointType.class) {
             return FLOAT;
+        } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IncompleteType.class
+                && cpgType.getName().getLocalName().equals("void")) {
+            return VOID;
         } else {
             throw new IllegalArgumentException("Unsupported CPG type: " + cpgType);
         }

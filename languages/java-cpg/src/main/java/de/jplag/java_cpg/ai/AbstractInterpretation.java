@@ -235,7 +235,7 @@ public class AbstractInterpretation {
     private IValue graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        // System.out.println(node);
+        System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 IValue value = valueStack.getLast();
@@ -344,7 +344,7 @@ public class AbstractInterpretation {
                 nodeStack.removeLast();
                 nodeStack.removeLast();
                 nodeStack.add(se);
-                assert nextEOG.size() == 1;
+                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
             case MemberCallExpression mce -> {  // adds its value to the value stack
