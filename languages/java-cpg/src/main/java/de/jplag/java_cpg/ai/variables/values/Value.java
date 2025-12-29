@@ -317,6 +317,14 @@ public abstract class Value implements IValue {
         };
     }
 
+    @NotNull
+    public static IJavaArray getNewArayValue(Type innerType, INumberValue length) {
+        return switch (usedArrayAiType) {
+            case DEFAULT -> new JavaArray(length, innerType);
+            case LENGTH -> new JavaLengthArray(innerType, length);
+        };
+    }
+
     // ------------------ End of Value Factories ------------------//
 
     @NotNull

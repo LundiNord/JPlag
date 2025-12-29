@@ -26,7 +26,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
         this.innerType = innerType;
     }
 
-    private JavaLengthArray(@NotNull Type innerType, @NotNull INumberValue length) {
+    public JavaLengthArray(@NotNull Type innerType, @NotNull INumberValue length) {
         super(Type.ARRAY);
         this.innerType = innerType;
         this.length = length;

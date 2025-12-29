@@ -59,6 +59,23 @@ public class Math extends JavaObject implements ISpecialObject {
                 assert paramVars.get(1) instanceof INumberValue || paramVars.get(1) instanceof VoidValue;
                 return paramVars.get(0).binaryOperation("max", paramVars.get(1));
             }
+            case "sqrt" -> {
+                assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    return new VoidValue();
+                }
+                assert paramVars.getFirst() instanceof INumberValue;
+                return paramVars.getFirst().unaryOperation("sqrt");
+            }
+            case "pow" -> {
+                assert paramVars.size() == 2;
+                if (paramVars.getFirst() instanceof VoidValue || paramVars.getLast() instanceof VoidValue) {
+                    return new VoidValue();
+                }
+                assert paramVars.get(0) instanceof INumberValue;
+                assert paramVars.get(1) instanceof INumberValue;
+                return paramVars.get(0).binaryOperation("pow", paramVars.get(1));
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

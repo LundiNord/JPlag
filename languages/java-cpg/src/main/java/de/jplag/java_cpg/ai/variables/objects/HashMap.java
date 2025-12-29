@@ -44,6 +44,10 @@ public class HashMap extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 0;
                 return Value.valueFactory(Type.INT);
             }
+            case "remove" -> {
+                assert paramVars.size() == 1;
+                return new VoidValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

@@ -94,32 +94,32 @@ class ProgpediaTests {
     // Value.setUsedIntAiType(IntAiType.DEFAULT);
     // Value.setUsedFloatAiType(FloatAiType.DEFAULT);
     // Value.setUsedStringAiType(StringAiType.DEFAULT);
-    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00089_00005");
+    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000056/ACCEPTED/00019_00003");
     // VariableStore variableStore = interpretation.getVariables();
     // assertNotNull(variableStore);
     // }
 
-    // @Test
-    // @Disabled
-    // void testSingle3() throws ParsingException, InterruptedException {
-    // Value.setUsedIntAiType(IntAiType.DEFAULT);
-    // Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-    // Value.setUsedStringAiType(StringAiType.DEFAULT);
-    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00107_00001");
-    // VariableStore variableStore = interpretation.getVariables();
-    // assertNotNull(variableStore);
-    // }
+    @Test
+    @Disabled
+    void testSingle3() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000056/ACCEPTED/00065_00002");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
 
-    // @Test
-    // @Disabled
-    // void testSingle4() throws ParsingException, InterruptedException {
-    // Value.setUsedIntAiType(IntAiType.DEFAULT);
-    // Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-    // Value.setUsedStringAiType(StringAiType.DEFAULT);
-    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00072_00007");
-    // VariableStore variableStore = interpretation.getVariables();
-    // assertNotNull(variableStore);
-    // }
+    @Test
+    @Disabled
+    void testSingle4() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000053/ACCEPTED/00028_00003");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
 
     // @Test
     // @Disabled

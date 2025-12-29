@@ -139,6 +139,13 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue();
                 }
             }
+            case "pow" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new FloatValue(Math.pow(this.value, ((INumberValue) other).getValue()));
+                } else {
+                    return new FloatValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
@@ -160,6 +167,13 @@ public class FloatValue extends Value implements INumberValue {
                 if (information) {
                     this.value = -this.value;
                     return new FloatValue(this.value);
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "sqrt" -> {
+                if (information) {
+                    return new FloatValue(Math.sqrt(this.value));
                 } else {
                     return new FloatValue();
                 }

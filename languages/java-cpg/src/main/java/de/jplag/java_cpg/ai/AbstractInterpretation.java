@@ -1014,19 +1014,39 @@ public class AbstractInterpretation {
             case NewArrayExpression nae -> {
                 // either dimension or initializer is present
                 if (!nae.getDimensions().isEmpty()) {
-                    INumberValue dimension;
-                    if (valueStack.getLast() instanceof VoidValue) {
-                        dimension = (INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT);
-                    } else {
-                        dimension = (INumberValue) valueStack.getLast();
+                    List<INumberValue> dimensions = new ArrayList<>();
+                    for (int i = 0; i < nae.getDimensions().size(); i++) {
+                        if (valueStack.getLast() instanceof VoidValue) {
+                            dimensions.add((INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT));
+                        } else {
+                            if (!(valueStack.getLast() instanceof INumberValue)) {
+                                System.out.println("Debug");
+                            }
+                            dimensions.add((INumberValue) valueStack.getLast());
+                        }
+                        valueStack.removeLast();
+                        nodeStack.removeLast();
                     }
-                    valueStack.removeLast();
                     // recover inner type
                     de.jplag.java_cpg.ai.variables.Type innerType = null;
                     if (((HasType) nae.getTypeObservers().iterator().next()).getType() instanceof PointerType pointerType) {
                         innerType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(pointerType.elementType);
                     }
-                    valueStack.add(new JavaArray(dimension, innerType));
+                    IJavaArray newArray = Value.getNewArayValue(innerType, dimensions.getFirst());
+                    for (int i = 1; i < nae.getDimensions().size(); i++) {  // multi-dimensional arrays
+                        List<IJavaArray> innerArrays = new ArrayList<>();
+                        INumberValue dimension = dimensions.get(i - 1);
+                        if (dimension.getInformation()) {
+                            for (int j = 0; j < dimension.getValue(); j++) {
+                                innerArrays.add(Value.getNewArayValue(innerType));
+                            }
+                        } else {
+                            // Dimension is unknown, create an array with unknown contents
+                            innerArrays.add(Value.getNewArayValue(innerType));
+                        }
+                        newArray = new JavaArray(innerArrays.stream().map(a -> (IValue) a).toList());
+                    }
+                    valueStack.add(newArray);
                 } else if (nae.getInitializer() != null) {
                     if (nae.getPrevEOG().getFirst() instanceof InitializerListExpression) {
                         // initializer has already been processed
@@ -1043,6 +1063,7 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     return value;
                 }
+                nodeStack.add(nae);
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }

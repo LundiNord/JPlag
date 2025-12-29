@@ -42,7 +42,7 @@ public class VoidValue extends Value {
             case "!" -> {
                 return new BooleanValue();
             }
-            case "--", "++" -> {
+            case "--", "++", "abs" -> {
                 return new VoidValue();
             }
             default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());

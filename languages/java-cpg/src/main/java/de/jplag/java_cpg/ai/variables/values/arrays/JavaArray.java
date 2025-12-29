@@ -384,6 +384,19 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return arrayAccess((INumberValue) Value.valueFactory(0));
             }
+            case "removeFirstOccurrence" -> {
+                assert paramVars.size() == 1;
+                if (values == null) {
+                    return Value.valueFactory(false);
+                }
+                for (int i = 0; i < values.size(); i++) {
+                    if (values.get(i).equals(paramVars.getFirst())) {
+                        values.remove(i);
+                        return Value.valueFactory(true);
+                    }
+                }
+                return Value.valueFactory(false);
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
