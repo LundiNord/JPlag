@@ -89,8 +89,30 @@ public class BooleanValue extends Value implements IBooleanValue {
                     return new BooleanValue();
                 }
             }
+            case "&" -> {
+                if (this.getInformation() && otherBool.getInformation()) {
+                    return new BooleanValue(this.getValue() & otherBool.getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        }
+    }
+
+    @Pure
+    @Override
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            case "!" -> {
+                if (information) {
+                    return new BooleanValue(!value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 
@@ -124,21 +146,6 @@ public class BooleanValue extends Value implements IBooleanValue {
     public void setInitialValue() {
         value = false;
         information = true;
-    }
-
-    @Pure
-    @Override
-    public Value unaryOperation(@NotNull String operator) {
-        switch (operator) {
-            case "!" -> {
-                if (information) {
-                    return new BooleanValue(!value);
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
-        }
     }
 
 }

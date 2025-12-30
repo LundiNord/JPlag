@@ -219,7 +219,7 @@ public abstract class Value implements IValue {
     }
 
     @NotNull
-    private static Value getNewFloatValue(double number) {
+    public static Value getNewFloatValue(double number) {
         return switch (usedFloatAiType) {
             case DEFAULT -> new FloatValue(number);
             case SET -> new FloatSetValue(number);

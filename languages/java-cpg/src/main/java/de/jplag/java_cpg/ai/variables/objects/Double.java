@@ -6,9 +6,13 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
 /**
@@ -42,7 +46,27 @@ public class Double extends JavaObject implements ISpecialObject {
                     case StringValue str -> {
                         return str.callMethod("parseDouble", paramVars, null);
                     }
+                    case INumberValue num -> {
+                        if (num.getInformation()) {
+                            return Value.getNewFloatValue(num.getValue());
+                        } else {
+                            return Value.valueFactory(Type.FLOAT);
+                        }
+                    }
+                    case VoidValue ignored -> {
+                        return Value.valueFactory(Type.FLOAT);
+                    }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
+                }
+            }
+            case "compare" -> {
+                assert paramVars.size() == 2;
+                IValue first = paramVars.get(0);
+                IValue second = paramVars.get(1);
+                if (first instanceof INumberValue && second instanceof INumberValue) {
+                    return first.binaryOperation("compareTo", second);
+                } else {
+                    throw new IllegalStateException("Unexpected values: " + first + ", " + second);
                 }
             }
             default -> throw new UnsupportedOperationException(methodName);

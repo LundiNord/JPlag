@@ -197,6 +197,12 @@ public class StringValue extends JavaObject implements IStringValue {
             } else {
                 return Value.valueFactory(Type.BOOLEAN);
             }
+        } else if (operator.equals("==") && other instanceof IStringValue otherString) {
+            if (information && otherString.getInformation()) {
+                return Value.valueFactory(java.util.Objects.equals(this.value, otherString.getValue()));
+            } else {
+                return Value.valueFactory(Type.BOOLEAN);
+            }
         }
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }

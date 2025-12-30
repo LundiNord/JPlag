@@ -39,6 +39,10 @@ public class PrintStream extends JavaObject implements ISpecialObject {
                 // do nothing
                 return new VoidValue();
             }
+            case "format" -> {
+                // do nothing & return this
+                return this;
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

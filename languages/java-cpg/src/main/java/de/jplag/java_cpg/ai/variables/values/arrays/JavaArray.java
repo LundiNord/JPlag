@@ -373,7 +373,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return new VoidValue();
             }
-            case "getFirst" -> {
+            case "getFirst", "peekFirst" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 if (values != null && !values.isEmpty()) {
                     return values.getFirst();
@@ -396,6 +396,22 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     }
                 }
                 return Value.valueFactory(false);
+            }
+            case "addAll" -> {
+                assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof JavaArray otherArray) {
+                    if (this.values != null && otherArray.values != null) {
+                        for (IValue val : otherArray.values) {
+                            assert val.getType().equals(this.innerType);
+                            this.values.add(val);
+                        }
+                    } else {
+                        this.values = null;
+                    }
+                } else {
+                    this.values = null;
+                }
+                return new VoidValue();
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

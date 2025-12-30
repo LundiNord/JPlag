@@ -6,10 +6,7 @@ import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 
 public class IntValue extends Value implements INumberValue {
 
@@ -227,6 +224,14 @@ public class IntValue extends Value implements INumberValue {
         if (other instanceof VoidValue) {
             this.information = false;
             return;
+        }
+        if (other instanceof JavaObject javaObject) {   // could be an Integer object
+            if (javaObject.accessField("value") instanceof IntValue intValue) {
+                other = intValue;
+            } else {
+                this.information = false;
+                return;
+            }
         }
         assert other instanceof IntValue;
         IntValue otherInt = (IntValue) other;

@@ -1058,7 +1058,7 @@ public class AbstractInterpretation {
                 } else {
                     throw new IllegalStateException("Unexpected value: " + nae);
                 }
-                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                if (nextEOG.isEmpty() || nextEOG.getFirst() instanceof RecordDeclaration) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
