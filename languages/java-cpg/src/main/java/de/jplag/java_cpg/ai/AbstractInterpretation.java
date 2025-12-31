@@ -730,7 +730,7 @@ public class AbstractInterpretation {
                 switch (name) {
                     case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
                     case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
-                    case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList" -> newObject = new JavaArray();
+                    case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue" -> newObject = new JavaArray();
                     default -> newObject = new JavaObject();
                 }
                 valueStack.add(newObject);
@@ -923,6 +923,9 @@ public class AbstractInterpretation {
                 if (valueStack.getLast() instanceof VoidValue) {
                     valueStack.removeLast();
                     valueStack.add(new JavaArray());
+                }
+                if (!(valueStack.getLast() instanceof JavaArray)) {
+                    System.out.println("Debug");
                 }
                 JavaArray collection = (JavaArray) valueStack.getLast();
                 // ToDo: set right variable value

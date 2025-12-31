@@ -76,95 +76,95 @@ public class IntValue extends Value implements INumberValue {
         if (!(other instanceof INumberValue)) {
             other = new IntValue();
         }
-        assert other instanceof IntValue;
+        INumberValue otherNumber = (INumberValue) other;
         switch (operator) {
             case "+" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value + ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value + otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "<" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value < ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value < otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value > ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value > otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "-" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value - ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value - otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "!=" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value != ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value != otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "==" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value == ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value == otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "*" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value * ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value * otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "/" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value / ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value / otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "<=" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value <= ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value <= otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">=" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value >= ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value >= otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "max" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(Math.max(this.value, ((IntValue) other).getValue()));
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(Math.max(this.value, otherNumber.getValue()));
                 } else {
                     return new IntValue();
                 }
             }
             case "min" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(Math.min(this.value, ((IntValue) other).getValue()));
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(Math.min(this.value, otherNumber.getValue()));
                 } else {
                     return new IntValue();
                 }
             }
             case "%" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value % ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value % otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }

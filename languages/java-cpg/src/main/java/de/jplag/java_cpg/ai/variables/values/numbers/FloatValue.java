@@ -190,6 +190,10 @@ public class FloatValue extends Value implements INumberValue {
 
     @Override
     public void merge(@NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            this.information = false;
+            return;
+        }
         assert other instanceof FloatValue;
         FloatValue otherFloat = (FloatValue) other;
         if (this.information && otherFloat.information && this.value == otherFloat.value) {

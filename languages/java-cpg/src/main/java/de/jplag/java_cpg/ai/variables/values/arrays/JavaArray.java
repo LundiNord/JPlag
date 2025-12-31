@@ -189,6 +189,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return Value.valueFactory(Type.INT);
             }
             case "remove" -> {
+                if (paramVars == null || paramVars.size() == 1) {    // remove head
+                    return this.callMethod("removeFirst", paramVars, method);
+                }
                 assert paramVars.size() == 1;
                 if (values == null) {
                     return new VoidValue();
