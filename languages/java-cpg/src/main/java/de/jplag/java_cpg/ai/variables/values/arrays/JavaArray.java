@@ -38,6 +38,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
      */
     public JavaArray(@NotNull List<IValue> values) {
         super(Type.ARRAY);
+        if (values.isEmpty()) {
+            this.innerType = null;
+            this.values = values;
+            return;
+        }
         assert values.stream().map(IValue::getType).distinct().count() == 1;
         this.innerType = values.getFirst().getType();
         this.values = values;

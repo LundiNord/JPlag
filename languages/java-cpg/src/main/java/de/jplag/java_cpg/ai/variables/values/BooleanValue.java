@@ -4,6 +4,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 /**
  * Boolean value representation with a possible lack of information.
@@ -126,6 +127,22 @@ public class BooleanValue extends Value implements IBooleanValue {
     public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue) {
             this.information = false;
+            return;
+        }
+        if (other instanceof INumberValue numberValue) {    // 1 and 0 to boolean conversion
+            if (this.information && numberValue.getInformation()) {
+                if (numberValue.getValue() == 0) {
+                    if (this.value) {
+                        this.information = false;
+                    }
+                } else {
+                    if (!this.value) {
+                        this.information = false;
+                    }
+                }
+            } else {
+                this.information = false;
+            }
             return;
         }
         assert other instanceof BooleanValue;

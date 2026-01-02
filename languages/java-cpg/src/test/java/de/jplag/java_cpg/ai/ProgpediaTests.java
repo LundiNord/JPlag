@@ -94,7 +94,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/WRONG_ANSWER/00098_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00233_00002");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -105,7 +105,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/WRONG_ANSWER/00011_00002");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00216_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -127,7 +127,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/WRONG_ANSWER/00036_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00142_00003");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -138,7 +138,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/ACCEPTED/00203_00002");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/ACCEPTED/00075_00010");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -149,7 +149,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000043/WRONG_ANSWER/00015_00002");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000023/ACCEPTED/00062_00002");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -160,7 +160,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000043/WRONG_ANSWER/00174_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000023/ACCEPTED/00065_00009");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -171,7 +171,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000043/WRONG_ANSWER/00159_00002");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000022/WRONG_ANSWER/00083_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }

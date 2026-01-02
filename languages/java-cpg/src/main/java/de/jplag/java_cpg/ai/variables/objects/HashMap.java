@@ -56,6 +56,10 @@ public class HashMap extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.size() == 0;
                 return new VoidValue();
             }
+            case "keySet" -> {
+                assert paramVars == null || paramVars.size() == 0;
+                return new VoidValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

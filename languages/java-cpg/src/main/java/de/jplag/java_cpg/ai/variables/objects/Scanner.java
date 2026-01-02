@@ -45,7 +45,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return new VoidValue();
             }
-            case "nextInt" -> {
+            case "nextInt", "nextLong" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.INT);
             }
@@ -53,7 +53,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.FLOAT);
             }
-            case "hasNextInt", "hasNext" -> {
+            case "hasNextInt", "hasNext", "hasNextLine" -> {
                 assert paramVars == null || paramVars.isEmpty() || (paramVars.size() == 1 && paramVars.get(0).getType() == Type.STRING);
                 return Value.valueFactory(Type.BOOLEAN);
             }

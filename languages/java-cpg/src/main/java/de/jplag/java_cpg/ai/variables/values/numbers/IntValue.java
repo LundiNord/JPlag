@@ -170,6 +170,20 @@ public class IntValue extends Value implements INumberValue {
                     return new IntValue();
                 }
             }
+            case ">>" -> {
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value >> (int) otherNumber.getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "<<" -> {
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value << (int) otherNumber.getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
@@ -242,9 +256,9 @@ public class IntValue extends Value implements INumberValue {
             }
             return;
         }
-        assert other instanceof IntValue;
-        IntValue otherInt = (IntValue) other;
-        if (this.information && otherInt.information && this.value == otherInt.value) {
+        assert other instanceof INumberValue;
+        INumberValue otherInt = (INumberValue) other;
+        if (this.information && otherInt.getInformation() && this.value == otherInt.getValue()) {
             // keep information
         } else {
             this.information = false;
