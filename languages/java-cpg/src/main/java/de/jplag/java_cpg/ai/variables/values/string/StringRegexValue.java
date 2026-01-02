@@ -414,7 +414,9 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         }
         if (this.contentRegex.size() < otherString.contentRegex.size()) {
             for (int i = minLength; i < maxLength; i++) {
-                this.contentRegex.add(RegexItem.merge(null, otherString.contentRegex.get(i)));
+                RegexItem otherRegx = otherString.contentRegex.get(i);
+                otherRegx.merge(null);
+                this.contentRegex.add(otherRegx);
             }
         } else {
             for (int i = minLength; i < maxLength; i++) {

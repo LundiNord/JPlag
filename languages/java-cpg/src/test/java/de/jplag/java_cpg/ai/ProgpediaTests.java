@@ -94,7 +94,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000018/ACCEPTED/00065_00023");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/WRONG_ANSWER/00098_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -105,7 +105,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/WRONG_ANSWER/00099_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/WRONG_ANSWER/00011_00002");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -127,7 +127,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00088_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/WRONG_ANSWER/00036_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -138,7 +138,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00042_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/ACCEPTED/00203_00002");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -149,7 +149,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00089_00003");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000043/WRONG_ANSWER/00015_00002");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -160,7 +160,7 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00089_00005");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000043/WRONG_ANSWER/00174_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
@@ -171,14 +171,14 @@ class ProgpediaTests {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00195_00002");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000043/WRONG_ANSWER/00159_00002");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
 
     @Test
     @Disabled
-    void testSingle10() throws ParsingException, InterruptedException {
+    void testSingle10() throws ParsingException, InterruptedException {     // FixMe
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
 
 public class IntValue extends Value implements INumberValue {
 
@@ -232,6 +233,14 @@ public class IntValue extends Value implements INumberValue {
                 this.information = false;
                 return;
             }
+        }
+        if (other instanceof CharValue charValue) {   // cannot merge different types
+            if (information && charValue.getInformation() && this.value == charValue.getValue()) {
+                // keep information
+            } else {
+                this.information = false;
+            }
+            return;
         }
         assert other instanceof IntValue;
         IntValue otherInt = (IntValue) other;

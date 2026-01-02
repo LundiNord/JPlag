@@ -13,18 +13,20 @@ import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 
 /**
- * A Java object in the abstract interpretation. All big data types are also objects (arrays, collections, maps, etc.).
+ * A Java object instance in the abstract interpretation. All big data types are also objects (arrays, collections,
+ * maps, etc.).
  * @author ujiqk
  * @version 1.0
  */
 public class JavaObject extends Value implements IJavaObject {
 
     // ToDo: save type of the object (class name)
-    private final Scope fields;
+    @Nullable
+    private Scope fields;       // fields == null => object null
     @Nullable
     private AbstractInterpretation abstractInterpretation;  // the abstract interpretation engine for this object
 
-    private JavaObject(@NotNull Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
+    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
         super(Type.OBJECT);
         this.fields = fields;
         this.abstractInterpretation = abstractInterpretation;
@@ -118,6 +120,9 @@ public class JavaObject extends Value implements IJavaObject {
     @NotNull
     @Override
     public JavaObject copy() {
+        if (fields == null) {
+            return new JavaObject(null, this.abstractInterpretation);
+        }
         return new JavaObject(new Scope(this.fields), this.abstractInterpretation);
     }
 
@@ -127,21 +132,26 @@ public class JavaObject extends Value implements IJavaObject {
             setToUnknown();
             return;
         }
+        if (fields == null || ((JavaObject) other).fields == null) {
+            fields = new Scope();
+            return;
+        }
         this.fields.merge(((JavaObject) other).fields);
-        // if (!java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation)) {
-        // System.out.println("Debug");
-        // }
-        // assert java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation);
     }
 
     @Override
     public void setToUnknown() {
-        fields.setEverythingUnknown();
+        if (fields != null) {
+            fields.setEverythingUnknown();
+        }
     }
 
     @Override
     public void setInitialValue() {
-        fields.setEverythingInitialValue();
+        if (fields != null) {
+            fields.setEverythingUnknown();
+        }
+        fields = null;
     }
 
 }

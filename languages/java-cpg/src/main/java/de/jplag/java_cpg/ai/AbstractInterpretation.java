@@ -1117,6 +1117,14 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
+            case AssertStatement as -> {
+                // ignore for now, is technically dead code
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
+            case ContinueStatement co -> {
+                throw new IllegalStateException("ContinueStatement not supported yet");
+            }
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
         assert nextNode != null;

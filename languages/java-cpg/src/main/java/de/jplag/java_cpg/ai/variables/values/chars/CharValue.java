@@ -71,6 +71,13 @@ public class CharValue extends Value implements ICharValue {
                 }
             }
             case "+" -> {
+                if (other instanceof CharValue otherCharValue) {
+                    if (this.information && otherCharValue.information) {
+                        return new CharValue((char) (this.value + otherCharValue.value));
+                    } else {
+                        return new CharValue();
+                    }
+                }
                 IStringValue otherStringValue = (IStringValue) other;
                 if (this.information && otherStringValue.getInformation()) {
                     return Value.valueFactory(this.value + otherStringValue.getValue());
@@ -147,7 +154,7 @@ public class CharValue extends Value implements ICharValue {
     }
 
     @Override
-    public char getValue() {
+    public double getValue() {
         assert getInformation();
         return this.value;
     }

@@ -424,6 +424,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return new VoidValue();
             }
+            case "iterator" -> {
+                throw new UnsupportedOperationException("Iterators are not supported");
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -456,6 +459,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     @Override
     public void merge(@NotNull IValue other) {
+        if (other instanceof VoidValue) {   // cannot merge different types
+            other = new JavaArray();
+        }
         assert other instanceof JavaArray;
         assert Objects.equals(this.innerType, ((JavaArray) other).innerType);
         if (this.values == null || ((JavaArray) other).values == null || this.values.size() != ((JavaArray) other).values.size()) {

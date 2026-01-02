@@ -27,7 +27,7 @@ public class CharSetValue extends Value implements ICharValue {
     }
 
     /**
-     * a exactly known char value.
+     * an exactly known char value.
      */
     public CharSetValue(char character) {
         super(Type.CHAR);
@@ -86,7 +86,7 @@ public class CharSetValue extends Value implements ICharValue {
     }
 
     @Override
-    public char getValue() {
+    public double getValue() {
         assert this.information;
         return this.maybeContained.iterator().next();
     }
