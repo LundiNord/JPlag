@@ -189,8 +189,8 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return Value.valueFactory(Type.INT);
             }
             case "remove" -> {
-                if (paramVars == null || paramVars.size() == 1) {    // remove head
-                    return this.callMethod("removeFirst", paramVars, method);
+                if (paramVars == null || paramVars.isEmpty()) {    // remove head
+                    return this.callMethod("removeFirst", null, method);
                 }
                 assert paramVars.size() == 1;
                 if (values == null) {
@@ -264,7 +264,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 values = null;
                 return new VoidValue();
             }
-            case "addLast" -> {
+            case "addLast", "push" -> {
                 assert paramVars.size() == 1;
                 if (values != null) {
                     assert paramVars.getFirst().getType().equals(innerType);
@@ -413,6 +413,14 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     }
                 } else {
                     this.values = null;
+                }
+                return new VoidValue();
+            }
+            case "addFirst" -> {
+                assert paramVars.size() == 1;
+                if (values != null) {
+                    assert paramVars.getFirst().getType().equals(innerType);
+                    values.addFirst(paramVars.getFirst());
                 }
                 return new VoidValue();
             }

@@ -61,6 +61,9 @@ public class Scope {
     public void merge(@NotNull Scope otherScope) {
         // assert: both scopes contain the same variables with potentially different values
         for (Map.Entry<VariableName, Variable> entry : otherScope.variables.entrySet()) {
+            if (!(this.variables.containsKey(entry.getKey()))) {
+                System.out.println("Debug");
+            }
             assert this.variables.containsKey(entry.getKey());
             this.variables.get(entry.getKey()).merge(entry.getValue());
         }
@@ -77,7 +80,7 @@ public class Scope {
     }
 
     /**
-     * Sets all variables to their initial value. Initial value depends on the variable type.
+     * Sets all variables to their initial value. The initial value depends on the variable type.
      */
     public void setEverythingInitialValue() {
         for (Variable variable : variables.values()) {

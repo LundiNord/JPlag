@@ -203,6 +203,13 @@ public class StringValue extends JavaObject implements IStringValue {
             } else {
                 return Value.valueFactory(Type.BOOLEAN);
             }
+        } else if (operator.equals("+") && other instanceof IJavaObject javaObject) {
+            // case: JavaObject with toString method
+            IValue toStringResult = javaObject.callMethod("toString", List.of(), null);
+            if (toStringResult instanceof IStringValue otherStringFromObject && information && otherStringFromObject.getInformation()) {
+                return new StringValue(this.value + otherStringFromObject.getValue());
+            }
+            return new StringValue();
         }
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }

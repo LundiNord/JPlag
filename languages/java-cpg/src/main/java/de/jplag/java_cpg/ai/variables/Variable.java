@@ -83,7 +83,7 @@ public class Variable {
      * @param value the variable whose content will be merged into this one; must have the same name.
      */
     public void merge(@NotNull Variable value) {
-        assert this.changeRecorders == value.changeRecorders;
+        assert this.changeRecorders.equals(value.changeRecorders);
         assert value.name.equals(this.name);
         this.value.merge(value.value);
     }

@@ -379,7 +379,7 @@ public class AbstractInterpretation {
                         valueStack.removeLast();
                         valueStack.add(new JavaObject());
                     }
-                    JavaObject javaObject = (JavaObject) valueStack.getLast();         // for now only one parameter
+                    JavaObject javaObject = (JavaObject) valueStack.getLast();
                     result = javaObject.callMethod(memberName.getLocalName(), argumentList, (MethodDeclaration) me.getRefersTo());
                 }
                 valueStack.removeLast();    // remove object reference
@@ -596,7 +596,7 @@ public class AbstractInterpretation {
                     originalVariables.merge(elseVariables);
                 } else if (runThenBranch) {
                     if (!condition.getInformation()) {
-                        originalVariables.merge(thenVariables);
+                        thenVariables.merge(originalVariables);
                         nodeStack.add(nextEOG.getLast());
                     } else {   // only then branch is run
                         //
