@@ -88,7 +88,7 @@ public class FloatValue extends Value implements INumberValue {
         if (other instanceof VoidValue) {
             return new VoidValue();
         }
-        assert other instanceof FloatValue || other instanceof IntValue;
+        assert other instanceof INumberValue;
         switch (operator) {
             case "+" -> {
                 if (information && ((INumberValue) other).getInformation()) {
@@ -116,6 +116,13 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue(this.value - ((INumberValue) other).getValue());
                 } else {
                     return new FloatValue();
+                }
+            }
+            case "==" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new BooleanValue(this.value == ((INumberValue) other).getValue());
+                } else {
+                    return new BooleanValue();
                 }
             }
             case "!=" -> {

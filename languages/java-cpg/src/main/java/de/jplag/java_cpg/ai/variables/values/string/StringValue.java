@@ -159,6 +159,14 @@ public class StringValue extends JavaObject implements IStringValue {
                     return new StringValue();
                 }
             }
+            case "trim" -> {   // public String trim()
+                assert paramVars == null || paramVars.isEmpty();
+                if (information) {
+                    return new StringValue(this.value.trim());
+                } else {
+                    return new StringValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

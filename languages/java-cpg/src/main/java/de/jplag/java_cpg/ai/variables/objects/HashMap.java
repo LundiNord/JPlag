@@ -60,6 +60,10 @@ public class HashMap extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.size() == 0;
                 return new VoidValue();
             }
+            case "clone" -> {
+                assert paramVars == null || paramVars.size() == 0;
+                return new HashMap();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

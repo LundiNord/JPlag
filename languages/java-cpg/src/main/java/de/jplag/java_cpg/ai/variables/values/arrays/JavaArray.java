@@ -6,6 +6,8 @@ import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
@@ -20,7 +22,8 @@ import de.jplag.java_cpg.ai.variables.values.string.StringValue;
  */
 public class JavaArray extends JavaObject implements IJavaArray {
 
-    private final Type innerType;
+    private static final Logger log = LoggerFactory.getLogger(JavaArray.class);
+    private Type innerType;
     @Nullable
     private List<IValue> values;     // values = null: no information about the array
 
@@ -260,7 +263,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 return arrayAccess((INumberValue) Value.valueFactory(1));
             }
-            case "removeLast" -> {
+            case "removeLast", "pop" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 if (values != null && !values.isEmpty()) {
                     return values.removeLast();
@@ -432,6 +435,10 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "iterator" -> {
                 throw new UnsupportedOperationException("Iterators are not supported");
             }
+            case "clone" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return this.copy();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -467,13 +474,16 @@ public class JavaArray extends JavaObject implements IJavaArray {
         if (other instanceof VoidValue) {   // cannot merge different types
             other = new JavaArray();
         }
-        assert other instanceof JavaArray;
-        assert Objects.equals(this.innerType, ((JavaArray) other).innerType);
-        if (this.values == null || ((JavaArray) other).values == null || this.values.size() != ((JavaArray) other).values.size()) {
+        JavaArray otherArray = (JavaArray) other;
+        if (this.innerType == null && otherArray.innerType != null) {
+            this.innerType = otherArray.innerType;
+        }
+        assert Objects.equals(this.innerType, otherArray.innerType);
+        if (this.values == null || otherArray.values == null || this.values.size() != otherArray.values.size()) {
             this.values = null;
         } else {
             for (int i = 0; i < this.values.size(); i++) {
-                this.values.get(i).merge(((JavaArray) other).values.get(i));
+                this.values.get(i).merge(otherArray.values.get(i));
             }
         }
     }

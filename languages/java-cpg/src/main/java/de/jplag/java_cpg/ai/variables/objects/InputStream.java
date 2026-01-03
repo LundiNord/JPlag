@@ -6,9 +6,11 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Representation of the java.io.InputStream class.
@@ -34,6 +36,13 @@ public class InputStream extends JavaObject implements ISpecialObject {
     @Override
     public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
+            case "read" -> {
+                if (paramVars == null || paramVars.isEmpty()) {
+                    return Value.valueFactory(Type.INT);
+                } else {
+                    throw new UnsupportedOperationException("InputStream.read() with parameters is not supported");
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

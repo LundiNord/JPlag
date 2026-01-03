@@ -62,8 +62,9 @@ public class Scope {
         // assert: both scopes contain the same variables with potentially different values
         for (Map.Entry<VariableName, Variable> entry : otherScope.variables.entrySet()) {
             if (!(this.variables.containsKey(entry.getKey()))) {
-                // can happen if object null in one branch but assigned in other
-                System.out.println("Debug");
+                // can happen if the object is null in one branch but assigned in other
+                entry.getValue().setToUnknown();
+                continue;
             }
             assert this.variables.containsKey(entry.getKey());
             this.variables.get(entry.getKey()).merge(entry.getValue());

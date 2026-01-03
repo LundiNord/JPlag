@@ -371,6 +371,11 @@ public class AbstractInterpretation {
                         valueStack.removeLast();
                     }
                     Collections.reverse(argumentList);
+                    while (!(nodeStack.getLast() instanceof MemberExpression)) {
+                        // necessary for calls like g.inserirLigacao(v1,almax>=lmin && acmax>=cmin && ahmax>=hmin,v2);
+                        // where the arguments contain operations
+                        nodeStack.removeLast();
+                    }
                     MemberExpression me = (MemberExpression) nodeStack.getLast();
                     Name memberName = me.getName();
                     assert memberName.getParent() != null;
@@ -868,8 +873,15 @@ public class AbstractInterpretation {
                         }
                         // for loop special: iteration variable also unknown
                         if (ws.getIterationStatement() != null) {
-                            Variable iterVar = variables
-                                    .getVariable(new VariableName(((UnaryOperator) ws.getIterationStatement()).getInput().getName().toString()));
+                            Variable iterVar;
+                            if (ws.getIterationStatement() instanceof UnaryOperator unaryOperator) {
+                                iterVar = variables.getVariable(new VariableName(unaryOperator.getInput().getName().toString()));
+                            } else if (ws.getIterationStatement() instanceof AssignExpression assignExpression) {
+                                assert assignExpression.getLhs().size() == 1;
+                                iterVar = variables.getVariable(new VariableName(assignExpression.getLhs().getFirst().getName().toString()));
+                            } else {
+                                throw new IllegalStateException();
+                            }
                             if (iterVar != null) {
                                 iterVar.setToUnknown();
                             }
@@ -884,8 +896,15 @@ public class AbstractInterpretation {
                         }
                         // for loop special: iteration variable also unknown
                         if (ws.getIterationStatement() != null) {
-                            Variable iterVar = variables
-                                    .getVariable(new VariableName(((UnaryOperator) ws.getIterationStatement()).getInput().getName().toString()));
+                            Variable iterVar;
+                            if (ws.getIterationStatement() instanceof UnaryOperator unaryOperator) {
+                                iterVar = variables.getVariable(new VariableName(unaryOperator.getInput().getName().toString()));
+                            } else if (ws.getIterationStatement() instanceof AssignExpression assignExpression) {
+                                assert assignExpression.getLhs().size() == 1;
+                                iterVar = variables.getVariable(new VariableName(assignExpression.getLhs().getFirst().getName().toString()));
+                            } else {
+                                throw new IllegalStateException();
+                            }
                             if (iterVar != null) {
                                 iterVar.setToUnknown();
                             }
@@ -922,12 +941,12 @@ public class AbstractInterpretation {
                 assert !valueStack.isEmpty();
                 if (valueStack.getLast() instanceof VoidValue) {
                     valueStack.removeLast();
-                    valueStack.add(new JavaArray());
+                    valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.ARRAY));
                 }
-                if (!(valueStack.getLast() instanceof JavaArray)) {
+                if (!(valueStack.getLast() instanceof IJavaArray)) {
                     System.out.println("Debug");
                 }
-                JavaArray collection = (JavaArray) valueStack.getLast();
+                IJavaArray collection = (IJavaArray) valueStack.getLast();
                 // ToDo: set right variable value
                 valueStack.removeLast();
                 assert fes.getVariable() != null;
