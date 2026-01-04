@@ -14,7 +14,8 @@ import de.jplag.java_cpg.passes.CpgTransformationPass
 class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     //passes have to be in kotlin!
 
-    var abstractInterpretation: AbstractInterpretation = AbstractInterpretation()
+    val visitedLinesRecorder = VisitedLinesRecorder()
+    val abstractInterpretation: AbstractInterpretation = AbstractInterpretation(visitedLinesRecorder)
 
     /**
      * Empty cleanup method.

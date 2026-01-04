@@ -258,7 +258,7 @@ class AbstractInterpretationTest {
         File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
         TranslationResult result = translate(submissionDirectories);
-        AbstractInterpretation interpretation = new AbstractInterpretation();
+        AbstractInterpretation interpretation = new AbstractInterpretation(new VisitedLinesRecorder());
 
         Component comp = result.getComponents().getFirst();
         for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {

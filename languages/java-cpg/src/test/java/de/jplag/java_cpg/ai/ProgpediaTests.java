@@ -37,7 +37,7 @@ class ProgpediaTests {
         File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
         TranslationResult result = translate(submissionDirectories);
-        AbstractInterpretation interpretation = new AbstractInterpretation();
+        AbstractInterpretation interpretation = new AbstractInterpretation(new VisitedLinesRecorder());
 
         assert result.getComponents().size() == 1;
         Component comp = result.getComponents().getFirst();

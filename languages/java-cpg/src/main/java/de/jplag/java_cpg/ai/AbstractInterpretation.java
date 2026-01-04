@@ -39,22 +39,17 @@ public class AbstractInterpretation {
      */
     private static boolean recordingChanges = false;
     /**
-     * the methods available for the associated class.
-     */
-    @NotNull
-    private final HashMap<String, MethodDeclaration> methods;
-    /**
      *
      */
     private final List<IValue> returnStorage;
     /**
+     * Helper to detect recursive method calls.
+     */
+    private final List<Node> lastVisitedMethod;
+    /**
      * Helper stack to work around cpg limitations.
      */
     private List<Node> lastVisitedLoopOrIf;
-    /**
-     * Helper to detect recursive method calls.
-     */
-    private List<Node> lastVisitedMethod;
     /**
      * Stack for EOG traversal.
      */
@@ -78,15 +73,16 @@ public class AbstractInterpretation {
      * Helper counter for nested if-else statements because cpg does not provide enough information.
      */
     private int ifElseCounter = 0;
+    private VisitedLinesRecorder visitedLinesRecorder;
 
-    public AbstractInterpretation() {
+    public AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder) {
         variables = new VariableStore();
         nodeStack = new ArrayList<>();
         valueStack = new ArrayList<>();
-        methods = new HashMap<>();
         lastVisitedLoopOrIf = new ArrayList<>();
         returnStorage = new ArrayList<>();
         lastVisitedMethod = new ArrayList<>();
+        this.visitedLinesRecorder = visitedLinesRecorder;
     }
 
     /**
@@ -113,12 +109,8 @@ public class AbstractInterpretation {
         setupClass(mainClas, mainClassVar);
         assert mainClas.getMethods().stream().map(MethodDeclaration::getName).filter(x -> x.getLocalName().equals("main")).count() == 1;
         for (MethodDeclaration md : mainClas.getMethods()) {
-            if (!md.getName().getLocalName().equals("main")) {
-                methods.put(md.getName().getLocalName(), md);
-            }
-        }
-        for (MethodDeclaration md : mainClas.getMethods()) {
             if (md.getName().getLocalName().equals("main")) {
+                visitedLinesRecorder.recordFirstLineVisited(md);
                 // Run main method
                 List<Node> eog = md.getNextEOG();
                 assert eog.size() == 1;
@@ -141,6 +133,7 @@ public class AbstractInterpretation {
     private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs,
             @NotNull ConstructorDeclaration constructor) {
         setupClass(rd, objectInstance);
+        visitedLinesRecorder.recordFirstLineVisited(constructor);
         // Run constructor method
         List<Node> eog = constructor.getNextEOG();
         if (eog.size() == 1) {
@@ -186,10 +179,9 @@ public class AbstractInterpretation {
         variables.addVariable(
                 new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
         this.object = objectInstance;
-        for (MethodDeclaration md : rd.getMethods()) {
-            methods.put(md.getName().getLocalName(), md);
-        }
+        visitedLinesRecorder.recordFirstLineVisited(rd);
         for (FieldDeclaration fd : rd.getFields()) {
+            visitedLinesRecorder.recordLinesVisited(fd);
             Type type = fd.getType();
             Name name = fd.getName();
             if (fd.getInitializer() == null) {      // no initial value
@@ -198,28 +190,16 @@ public class AbstractInterpretation {
                 objectInstance.setField(newVar);
                 // objectInstance.setField(new Variable(new VariableName(name.toString()),
                 // de.jplag.java_cpg.ai.variables.Type.fromCpgType(type))); //ToDo array inner type lost here
-            } else if (!(fd.getInitializer() instanceof ProblemExpression)) {   // ToDo: simplify
-                if (fd.getInitializer() instanceof Literal<?> literal) {
-                    IValue value = Value.valueFactory(literal.getValue());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), value));
-                } else if (fd.getInitializer() instanceof NewExpression) {
-                    IJavaObject newObject = (IJavaObject) graphWalker(fd.getNextEOG().getFirst());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
-                } else if (fd.getInitializer() instanceof InitializerListExpression || fd.getInitializer() instanceof NewArrayExpression) {
-                    IJavaArray list = (IJavaArray) graphWalker(fd.getNextEOG().getFirst());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), list));
-                } else if (fd.getInitializer() instanceof MemberCallExpression) {
-                    IValue result = graphWalker(fd.getNextEOG().getFirst());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
-                } else if (fd.getInitializer() instanceof UnaryOperator unop) {
+            } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
+                if (fd.getInitializer() instanceof UnaryOperator unop) {
                     assert Objects.equals(unop.getOperatorCode(), "-");
                     IValue value = graphWalker(fd.getNextEOG().getFirst());
+                    assert value != null;
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
-                } else if (fd.getInitializer() instanceof MemberExpression) {
-                    IValue result = graphWalker(fd.getNextEOG().getFirst());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
                 } else {
-                    throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
+                    IValue result = graphWalker(fd.getNextEOG().getFirst());
+                    assert result != null;
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
                 }
             }
         }
@@ -235,6 +215,7 @@ public class AbstractInterpretation {
     private IValue graphWalker(@NotNull Node node) {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
+        visitedLinesRecorder.recordLinesVisited(node);
         System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
@@ -251,6 +232,11 @@ public class AbstractInterpretation {
             case Literal<?> l -> {  // adds its value to the value stack
                 nodeStack.add(l);
                 valueStack.add(Value.valueFactory(l.getValue()));
+                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                    IValue value = valueStack.getLast();
+                    valueStack.removeLast();
+                    return value;
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -741,7 +727,7 @@ public class AbstractInterpretation {
                 valueStack.add(newObject);
                 // run constructor
                 if (classNode != null) {
-                    AbstractInterpretation classAi = new AbstractInterpretation();
+                    AbstractInterpretation classAi = new AbstractInterpretation(visitedLinesRecorder);
                     classAi.runClass((RecordDeclaration) classNode, newObject, arguments, ce.getConstructor());
                 }
                 //
@@ -1177,6 +1163,7 @@ public class AbstractInterpretation {
             this.variables.setEverythingUnknown();
             return new VoidValue();
         }
+        visitedLinesRecorder.recordFirstLineVisited(method);
         lastVisitedMethod.add(method);
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
