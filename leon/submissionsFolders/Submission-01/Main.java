@@ -54,6 +54,7 @@ public final class Main {
         if (y < 100) {
             //never run
             z = z + 100;
+            y = compute(x, z);
         }
 
         x = x + 50;
@@ -61,6 +62,10 @@ public final class Main {
 
         result = z;
         result2 = y;
+    }
+
+    private int compute(int x, int y) {
+        return x + y;
     }
 
 }

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.sarif.PhysicalLocation;
@@ -55,6 +56,7 @@ public class VisitedLinesRecorder {
 
     @NotNull
     @Pure
+    @TestOnly
     public Map<URI, Set<Integer>> getNonVisitedLines() {
         Map<URI, Set<Integer>> nonVisitedLines = new HashMap<>();
         for (Map.Entry<URI, Set<Integer>> entry : possibleLines.entrySet()) {
@@ -66,6 +68,22 @@ public class VisitedLinesRecorder {
             nonVisitedLines.put(uri, nonVisited);
         }
         return nonVisitedLines;
+    }
+
+    @Pure
+    public boolean checkIfCompletelyDead(@NotNull URI uri, int startLine, int endLine) {
+        if (startLine == -1 || endLine == -1) {
+            return false;
+        }
+        assert startLine <= endLine;
+        assert startLine >= 0;
+        Set<Integer> visited = visitedLines.getOrDefault(uri, new HashSet<>());
+        for (int line = startLine; line <= endLine; line++) {
+            if (visited.contains(line)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @NotNull
