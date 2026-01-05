@@ -77,7 +77,7 @@ public class Token {
                         generateErrorPosition(type, file, startLine, startColumn, endLine, endColumn));
             }
             if (startLine > endLine || startLine == endLine && startColumn > endColumn) {
-                logger.warn("Creating a token that ends earlier than it start. {}",
+                logger.warn("Creating a token that ends before it starts. {}",
                         generateErrorPosition(type, file, startLine, startColumn, endLine, endColumn));
             }
         }
