@@ -478,4 +478,70 @@ class DeadCodeDetectionTest {
         assertEquals(25, ((INumberValue) main.accessField("result3")).getValue()); // z
     }
 
+    @Test
+    void testDeadCode() throws ParsingException, InterruptedException {     // if-else
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        // lines 14, 15: result = 2; result = 3;
+        assertFalse(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 14, 14));
+        assertFalse(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 15, 15));
+    }
+
+    @Test
+    void testDeadCode2() throws ParsingException, InterruptedException {    // code after return
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode2");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 9, 9));
+    }
+
+    @Test
+    void testDeadCode3() throws ParsingException, InterruptedException {    // unused method
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode3");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 10, 12));
+    }
+
+    @Test
+    void testDeadCode4() throws ParsingException, InterruptedException {    // false while loop
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode4");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        // While body on line 9
+        assertFalse(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 9, 9));
+    }
+
+    @NotNull
+    private java.net.URI getURI(@NotNull AbstractInterpretation interpretation, @NotNull String fileName) {
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        var nonVisited = recorder.getNonVisitedLines();
+        for (var uri : nonVisited.keySet()) {
+            if (uri.getPath().endsWith(fileName)) {
+                return uri;
+            }
+        }
+        throw new RuntimeException("URI not found for " + fileName);
+    }
+
+    @NotNull
+    public VisitedLinesRecorder getVisitedLinesRecorder(@NotNull AbstractInterpretation interpretation) {
+        try {
+            java.lang.reflect.Field field = AbstractInterpretation.class.getDeclaredField("visitedLinesRecorder");
+            field.setAccessible(true);
+            return (VisitedLinesRecorder) field.get(interpretation);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
