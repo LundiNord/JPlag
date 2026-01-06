@@ -23,7 +23,6 @@ import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 
 /**
@@ -46,6 +45,10 @@ public class AbstractInterpretation {
      * Helper to detect recursive method calls.
      */
     private final List<Node> lastVisitedMethod;
+    /**
+     * Recorder for visited lines to detect dead methods/classes later.
+     */
+    private final VisitedLinesRecorder visitedLinesRecorder;
     /**
      * Helper stack to work around cpg limitations.
      */
@@ -73,7 +76,6 @@ public class AbstractInterpretation {
      * Helper counter for nested if-else statements because cpg does not provide enough information.
      */
     private int ifElseCounter = 0;
-    private VisitedLinesRecorder visitedLinesRecorder;
 
     public AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder) {
         variables = new VariableStore();
@@ -83,6 +85,19 @@ public class AbstractInterpretation {
         returnStorage = new ArrayList<>();
         lastVisitedMethod = new ArrayList<>();
         this.visitedLinesRecorder = visitedLinesRecorder;
+    }
+
+    private static JavaObject createNewObject(@NotNull ConstructExpression ce) {
+        JavaObject newObject;
+        String name = ce.getType().getName().toString();
+        name = name.split("<")[0]; // remove generics
+        switch (name) {
+            case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+            case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
+            case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue" -> newObject = new JavaArray();
+            default -> newObject = new JavaObject();
+        }
+        return newObject;
     }
 
     /**
@@ -145,8 +160,8 @@ public class AbstractInterpretation {
             }
             graphWalker(eog.getFirst());
             variables.removeScope();
-        } else if (eog.isEmpty()) { // empty constructor
-            return;
+        } else if (eog.isEmpty()) {
+            // empty constructor -> return
         } else {
             throw new IllegalStateException("Unexpected value: " + eog.size());
         }
@@ -216,7 +231,6 @@ public class AbstractInterpretation {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         visitedLinesRecorder.recordLinesVisited(node);
-        // System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 IValue value = valueStack.getLast();
@@ -242,23 +256,22 @@ public class AbstractInterpretation {
             }
             case MemberExpression me -> {
                 if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
-                    if (!(valueStack.getLast() instanceof IJavaObject)) {
-                        nodeStack.removeLast();
-                        nodeStack.add(me);
-                        valueStack.removeLast();    // remove object reference
-                        Value result = new VoidValue();
-                        result.setParentObject((IJavaObject) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.OBJECT));
-                        valueStack.add(result);
-                    } else {
+                    if (valueStack.getLast() instanceof IJavaObject javaObject) {
                         assert valueStack.getLast() instanceof IJavaObject;
                         nodeStack.removeLast();
                         // like Reference
                         nodeStack.add(me);
                         assert me.getName().getParent() != null;
-                        IJavaObject javaObject = (IJavaObject) valueStack.getLast();
                         valueStack.removeLast();    // remove object reference
                         IValue result = javaObject.accessField(me.getName().getLocalName());
                         result.setParentObject(javaObject);
+                        valueStack.add(result);
+                    } else {
+                        nodeStack.removeLast();
+                        nodeStack.add(me);
+                        valueStack.removeLast();    // remove object reference
+                        Value result = new VoidValue();
+                        result.setParentObject((IJavaObject) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.OBJECT));
                         valueStack.add(result);
                     }
                 } else if (me.getRefersTo() instanceof MethodDeclaration) {
@@ -357,12 +370,11 @@ public class AbstractInterpretation {
                         valueStack.removeLast();
                     }
                     Collections.reverse(argumentList);
-                    while (!(nodeStack.getLast() instanceof MemberExpression)) {
+                    while (!(nodeStack.getLast() instanceof MemberExpression me)) {
                         // necessary for calls like g.inserirLigacao(v1,almax>=lmin && acmax>=cmin && ahmax>=hmin,v2);
                         // where the arguments contain operations
                         nodeStack.removeLast();
                     }
-                    MemberExpression me = (MemberExpression) nodeStack.getLast();
                     Name memberName = me.getName();
                     assert memberName.getParent() != null;
                     assert !valueStack.isEmpty();
@@ -417,7 +429,7 @@ public class AbstractInterpretation {
             }
             case AssignExpression ae -> {
                 assert !valueStack.isEmpty();
-                if (ae.getLhs().getFirst() instanceof SubscriptExpression se) {
+                if (ae.getLhs().getFirst() instanceof SubscriptExpression) {
                     assert ae.getLhs().size() == 1;
                     IValue newValue = valueStack.getLast();
                     valueStack.removeLast();
@@ -432,13 +444,12 @@ public class AbstractInterpretation {
                             classVal = variables.getThisObject();
                         } else {
                             assert nodeStack.get(nodeStack.size() - 2).getName().getParent() != null;
-                            // VariableName className = new VariableName(nodeStack.get(nodeStack.size() - 2).getName().getParent().toString());
-                            classVal = valueStack.get(valueStack.size() - 2).getParentObject(); // FixMe valueStack is not merged
-                            // classVal = (JavaObject) variables.getVariable(className).getValue();
+                            classVal = valueStack.get(valueStack.size() - 2).getParentObject();
                         }
                         if (classVal == null) {
                             System.out.println("Debug");
                         }
+                        assert classVal != null;
                         classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
                     } else {
                         variable.setValue(valueStack.getLast());
@@ -554,10 +565,6 @@ public class AbstractInterpretation {
                 VariableStore elseVariables = new VariableStore(variables);
                 // then statement
                 if (runThenBranch) {
-                    // if (runElseBranch) {
-                    // variables = thenVariables;
-                    // this.object = variables.getThisObject();
-                    // }
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
@@ -583,20 +590,15 @@ public class AbstractInterpretation {
                 }
                 // merge branches
                 if (runThenBranch && runElseBranch) {
-                    // originalVariables.merge(thenVariables);
                     originalVariables.merge(elseVariables);
                 } else if (runThenBranch) {
                     if (!condition.getInformation()) {
                         thenVariables.merge(originalVariables);
                         nodeStack.add(nextEOG.getLast());
-                    } else {   // only then branch is run
-                        //
                     }
                 } else if (runElseBranch) {
                     if (!condition.getInformation()) {
                         originalVariables.merge(elseVariables);
-                    } else {    // only else branch is run
-                        //
                     }
                 } else {    // no branch is run
                     nodeStack.add(nextEOG.getLast());
@@ -643,7 +645,7 @@ public class AbstractInterpretation {
                     return new VoidValue(); // ToDo: function return (CropArea:31)
                 }
             }
-            case CaseStatement cs -> {
+            case CaseStatement ignored -> {
                 IValue caseValue = valueStack.getLast();
                 IValue switchValue = valueStack.getLast();
                 if (!Objects.equals(caseValue, switchValue)) {
@@ -652,7 +654,7 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case DefaultStatement ds -> {
+            case DefaultStatement ignored -> {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -674,7 +676,7 @@ public class AbstractInterpretation {
                     }
                 }
             }
-            case ReturnStatement ret -> {
+            case ReturnStatement ignored -> {
                 IValue result;
                 if (valueStack.isEmpty()) {
                     result = new VoidValue();
@@ -682,7 +684,6 @@ public class AbstractInterpretation {
                     result = valueStack.getLast();
                     valueStack.removeLast();
                 }
-                // if (!lastVisitedLoopOrIf.isEmpty() && storeReturns) {
                 if (!lastVisitedLoopOrIf.isEmpty()) {
                     // we are inside a loop or if statement
                     returnStorage.addLast(result);
@@ -715,20 +716,12 @@ public class AbstractInterpretation {
                     }
                 }
                 Collections.reverse(arguments);
-                JavaObject newObject;
-                String name = ce.getType().getName().toString();
-                name = name.split("<")[0]; // remove generics
-                switch (name) {
-                    case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
-                    case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
-                    case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue" -> newObject = new JavaArray();
-                    default -> newObject = new JavaObject();
-                }
+                JavaObject newObject = createNewObject(ce);
                 valueStack.add(newObject);
                 // run constructor
                 if (classNode != null) {
                     AbstractInterpretation classAi = new AbstractInterpretation(visitedLinesRecorder);
-                    classAi.runClass((RecordDeclaration) classNode, newObject, arguments, ce.getConstructor());
+                    classAi.runClass((RecordDeclaration) classNode, newObject, arguments, Objects.requireNonNull(ce.getConstructor()));
                 }
                 //
                 nodeStack.add(ne);
@@ -740,7 +733,7 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case WhileStatement ws -> {     // FixMe: evaluate condition again after record changes
+            case WhileStatement ws -> {
                 assert nextEOG.size() == 2;
                 // detect infinite loops when no Block inserted by cpg
                 if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
@@ -993,11 +986,6 @@ public class AbstractInterpretation {
                 // continue with the next node after for each
                 lastVisitedLoopOrIf.removeLast();
                 nextNode = nextEOG.getLast();
-                // if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
-                // //return in every branch
-                // valueStack.add(returnStorage.getLast());
-                // nextNode = new ReturnStatement();
-                // }
             }
             case InitializerListExpression ile -> {
                 assert !ile.getInitializers().isEmpty();
@@ -1027,9 +1015,6 @@ public class AbstractInterpretation {
                         if (valueStack.getLast() instanceof VoidValue) {
                             dimensions.add((INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT));
                         } else {
-                            if (!(valueStack.getLast() instanceof INumberValue)) {
-                                System.out.println("Debug");
-                            }
                             dimensions.add((INumberValue) valueStack.getLast());
                         }
                         valueStack.removeLast();
@@ -1075,26 +1060,26 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case ConditionalExpression ce -> {
+            case ConditionalExpression _ -> {
                 assert nextEOG.size() == 2;
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 nodeStack.removeLast();
                 // paths have no block statements at the end
                 // ToDo
-                nextNode = nextEOG.getLast();
+                throw new IllegalArgumentException("ConditionalExpression not supported yet");
             }
-            case BreakStatement bs -> {
+            case BreakStatement _ -> {
                 assert nextEOG.size() == 1;
                 nodeStack.add(nextEOG.getFirst());
                 return null;
             }
-            case CatchClause cc -> {
+            case CatchClause _ -> {
                 // nothing for now
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case TryStatement ts -> {
+            case TryStatement _ -> {
                 // ignore for now
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
@@ -1107,46 +1092,34 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case EmptyStatement es -> {
+            case EmptyStatement _ -> {
                 // occurs, for example, when while loop body is empty
                 assert nextEOG.size() == 1;
                 return null;
             }
-            case ExpressionList el -> {
+            case ExpressionList _ -> {
                 // indicates the end of an expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case CastExpression ce -> {
+            case CastExpression _ -> {
                 // ignore casts for now as java types are not tracked precisely yet
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case AssertStatement as -> {
+            case AssertStatement _ -> {
                 // ignore for now, is technically dead code
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case ContinueStatement co -> {
-                throw new IllegalStateException("ContinueStatement not supported yet");
-            }
+            case ContinueStatement _ -> throw new IllegalStateException("ContinueStatement not supported yet");
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
         assert nextNode != null;
         return graphWalker(nextNode);
     }
 
-    @Deprecated
-    private JavaObject createEnum(EnumDeclaration enumDeclaration) {
-        JavaObject enumObject = new JavaObject();
-        int i = 0;
-        for (EnumConstantDeclaration ec : enumDeclaration.getEntries()) {
-            enumObject.setField(new Variable(new VariableName(ec.getName().toString()), new IntValue(i)));
-            i++;
-        }
-        return enumObject;
-    }
-
+    @NotNull
     @TestOnly
     protected VariableStore getVariables() {
         return variables;

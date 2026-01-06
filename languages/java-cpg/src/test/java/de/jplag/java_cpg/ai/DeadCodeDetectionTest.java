@@ -260,7 +260,6 @@ class DeadCodeDetectionTest {
      * simple enum test
      */
     @Test
-    @Disabled
     void testEnum() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
         JavaObject main = getMainObject(interpretation);
@@ -386,8 +385,8 @@ class DeadCodeDetectionTest {
     /**
      * simple test for ConditionalExpressions (a?b:c).
      */
-    @Disabled
     @Test
+    @Disabled
     void testConditional() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);

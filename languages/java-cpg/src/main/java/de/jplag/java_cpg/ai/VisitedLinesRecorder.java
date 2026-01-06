@@ -13,6 +13,11 @@ import org.jetbrains.annotations.TestOnly;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.sarif.PhysicalLocation;
 
+/**
+ * Records visited code lines in source files.
+ * @author ujiqk
+ * @version 1.0
+ */
 public class VisitedLinesRecorder {
 
     private final Map<URI, Set<Integer>> visitedLines;

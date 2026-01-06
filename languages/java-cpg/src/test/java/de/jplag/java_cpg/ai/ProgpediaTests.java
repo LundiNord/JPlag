@@ -79,7 +79,7 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle() throws ParsingException, InterruptedException {       // for(Node cursor=invert.top;cursor!=null;cursor=cursor.next)
+    void testSingle1() throws ParsingException, InterruptedException {       // for(Node cursor=invert.top;cursor!=null;cursor=cursor.next)
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -88,20 +88,9 @@ class ProgpediaTests {
         assertNotNull(variableStore);
     }
 
-    // @Test
-    // @Disabled
-    // void testSingle2() throws ParsingException, InterruptedException {
-    // Value.setUsedIntAiType(IntAiType.DEFAULT);
-    // Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-    // Value.setUsedStringAiType(StringAiType.DEFAULT);
-    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00233_00002");
-    // VariableStore variableStore = interpretation.getVariables();
-    // assertNotNull(variableStore);
-    // }
-
     @Test
     @Disabled
-    void testSingle3() throws ParsingException, InterruptedException {  // for (int k=0, i=0; i<ns; i++) for (int j=i+1; j<ns; j++, k++)
+    void testSingle2() throws ParsingException, InterruptedException {  // for (int k=0, i=0; i<ns; i++) for (int j=i+1; j<ns; j++, k++)
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -112,7 +101,7 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle4() throws ParsingException, InterruptedException {  // class has the same name as an array
+    void testSingle3() throws ParsingException, InterruptedException {  // class has the same name as an array
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -123,7 +112,7 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle5() throws ParsingException, InterruptedException {  // pesquisabinaria
+    void testSingle4() throws ParsingException, InterruptedException {  // pesquisabinaria
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -132,31 +121,9 @@ class ProgpediaTests {
         assertNotNull(variableStore);
     }
 
-    // @Test
-    // @Disabled
-    // void testSingle6() throws ParsingException, InterruptedException {
-    // Value.setUsedIntAiType(IntAiType.DEFAULT);
-    // Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-    // Value.setUsedStringAiType(StringAiType.DEFAULT);
-    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/ACCEPTED/00075_00010");
-    // VariableStore variableStore = interpretation.getVariables();
-    // assertNotNull(variableStore);
-    // }
-
-    // @Test
-    // @Disabled
-    // void testSingle7() throws ParsingException, InterruptedException {
-    // Value.setUsedIntAiType(IntAiType.DEFAULT);
-    // Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-    // Value.setUsedStringAiType(StringAiType.DEFAULT);
-    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000053/ACCEPTED/00103_00004");
-    // VariableStore variableStore = interpretation.getVariables();
-    // assertNotNull(variableStore);
-    // }
-
     @Test
     @Disabled
-    void testSingle8() throws ParsingException, InterruptedException {
+    void testSingle5() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -165,20 +132,9 @@ class ProgpediaTests {
         assertNotNull(variableStore);
     }
 
-    // @Test
-    // @Disabled
-    // void testSingle9() throws ParsingException, InterruptedException {
-    // Value.setUsedIntAiType(IntAiType.DEFAULT);
-    // Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-    // Value.setUsedStringAiType(StringAiType.DEFAULT);
-    // AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/ACCEPTED/00203_00002");
-    // VariableStore variableStore = interpretation.getVariables();
-    // assertNotNull(variableStore);
-    // }
-
     @Test
     @Disabled
-    void testSingle10() throws ParsingException, InterruptedException {     // FixMe
+    void testSingle6() throws ParsingException, InterruptedException {     // FixMe
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);

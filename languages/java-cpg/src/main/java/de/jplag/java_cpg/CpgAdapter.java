@@ -78,6 +78,7 @@ public class CpgAdapter {
         CpgTransformationPass.clearTransformations();
     }
 
+    @NotNull
     private <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
     }
@@ -110,9 +111,7 @@ public class CpgAdapter {
                 configBuilder.registerPass(getKClass(passClass));
             }
             translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
-        } catch (ConfigurationException e) {
-            throw new ParsingException(List.copyOf(files).getFirst(), e);
-        } catch (ExecutionException e) {
+        } catch (ConfigurationException | ExecutionException e) {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
         return translationResult;

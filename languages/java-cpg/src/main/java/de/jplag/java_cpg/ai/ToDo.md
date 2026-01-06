@@ -9,7 +9,7 @@
 - [ ] think about copy of bound JavaObject
 - [ ] ConditionalExpression (a ? b : c) (hard)
 - [x] Array assign
-- [ ] Enums
+- [x] Enums
 - [ ] Streams
 - [ ] Lambdas
 - [ ] Import System?
@@ -23,6 +23,7 @@
 - [ ] goto
 - [x] return inside if or loop
 - [ ] "if (opts.name == null || opts.name.isBlank())" don't evaluate the second part if the first is true
+- [ ] proper switch statement support
 
 ## Edge Cases to Test
 
@@ -43,7 +44,7 @@
 - [ ] Maps
 - [ ] Sets
 - [ ] Comparators
-- [ ] dead methods and classes
+- [x] dead methods and classes
 
 ## Long Term
 
