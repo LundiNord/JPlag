@@ -174,7 +174,6 @@ public class AbstractInterpretation {
      */
     @Impure
     private void setupClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance) {
-        assert !rd.getConstructors().isEmpty();
         objectInstance.setAbstractInterpretation(this);
         variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
         variables.setThisName(new VariableName(rd.getName().toString()));

@@ -3,17 +3,13 @@ package de.jplag.java_cpg.ai
 import de.fraunhofer.aisec.cpg.TranslationContext
 import de.fraunhofer.aisec.cpg.TranslationResult
 import de.fraunhofer.aisec.cpg.graph.Component
-import de.fraunhofer.aisec.cpg.graph.declarations.Declaration
-import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration
-import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration
-import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration
+import de.fraunhofer.aisec.cpg.graph.declarations.*
 import de.fraunhofer.aisec.cpg.graph.records
 import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
 import de.jplag.java_cpg.passes.CpgTransformationPass
 import de.jplag.java_cpg.transformation.matching.edges.CpgNthEdge
-import de.jplag.java_cpg.transformation.matching.edges.Edges.RECORD_DECLARATION__METHODS
-import de.jplag.java_cpg.transformation.matching.edges.Edges.TRANSLATION_UNIT__DECLARATIONS
+import de.jplag.java_cpg.transformation.matching.edges.Edges.*
 import de.jplag.java_cpg.transformation.operations.RemoveOperation
 import java.net.URI
 
@@ -37,7 +33,9 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     override fun accept(p0: TranslationResult) {
         val comp: Component = p0.components.first()
         for (translationUnit in comp.translationUnits) {
-            if (translationUnit.name.parent?.localName?.endsWith("Main") == true) {
+            if (translationUnit.name.parent?.localName?.endsWith("Main") == true || translationUnit.name.toString()
+                    .endsWith("Main.java")
+            ) {
                 runCatching {
                     abstractInterpretation.runMain(translationUnit)
                 }.onFailure { t ->
@@ -58,10 +56,28 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                         visitedLinesRecorder.checkIfCompletelyDead(fileName, startLine, endLine)
                     if (completelyDead) {
                         println("Dead code (class) detected: ${recordDeclaration.name}")
-                        val index = translationUnit.declarations.indexOf(recordDeclaration)
-                        val edge =
-                            CpgNthEdge<TranslationUnitDeclaration, Declaration>(TRANSLATION_UNIT__DECLARATIONS, index)
-                        RemoveOperation.apply(translationUnit, recordDeclaration, edge, true)
+                        // Try removing from TU directly
+                        val tuIndex = translationUnit.declarations.indexOf(recordDeclaration)
+                        if (tuIndex != -1) {
+                            val edge =
+                                CpgNthEdge<TranslationUnitDeclaration, Declaration>(
+                                    TRANSLATION_UNIT__DECLARATIONS,
+                                    tuIndex
+                                )
+                            RemoveOperation.apply(translationUnit, recordDeclaration, edge, true)
+                        }
+                        // Try removing from Namespaces
+                        for (ns in translationUnit.declarations.filterIsInstance<NamespaceDeclaration>()) {
+                            val nsIndex = ns.declarations.indexOf(recordDeclaration)
+                            if (nsIndex != -1) {
+                                val edge =
+                                    CpgNthEdge<NamespaceDeclaration, Declaration>(
+                                        NAMESPACE_DECLARATION__DECLARATIONS,
+                                        nsIndex
+                                    )
+                                RemoveOperation.apply(ns, recordDeclaration, edge, true)
+                            }
+                        }
                         continue
                     }
                     for (method in recordDeclaration.methods) {
@@ -72,9 +88,11 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                         if (methodCompletelyDead) {
                             println("Dead code (method) detected: ${method.name} in class ${recordDeclaration.name}")
                             val index = recordDeclaration.methods.indexOf(method)
-                            val edge =
-                                CpgNthEdge<RecordDeclaration, MethodDeclaration>(RECORD_DECLARATION__METHODS, index)
-                            RemoveOperation.apply(recordDeclaration, method, edge, true)
+                            if (index != -1) {
+                                val edge =
+                                    CpgNthEdge<RecordDeclaration, MethodDeclaration>(RECORD_DECLARATION__METHODS, index)
+                                RemoveOperation.apply(recordDeclaration, method, edge, true)
+                            }
                         }
                     }
                 }

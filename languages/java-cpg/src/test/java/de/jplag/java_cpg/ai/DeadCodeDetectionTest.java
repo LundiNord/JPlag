@@ -479,18 +479,6 @@ class DeadCodeDetectionTest {
     }
 
     @Test
-    void testDeadCode() throws ParsingException, InterruptedException {     // if-else
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode");
-        JavaObject main = getMainObject(interpretation);
-        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
-
-        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
-        // lines 14, 15: result = 2; result = 3;
-        assertFalse(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 14, 14));
-        assertFalse(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 15, 15));
-    }
-
-    @Test
     void testDeadCode2() throws ParsingException, InterruptedException {    // code after return
         AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode2");
         JavaObject main = getMainObject(interpretation);
@@ -511,14 +499,24 @@ class DeadCodeDetectionTest {
     }
 
     @Test
-    void testDeadCode4() throws ParsingException, InterruptedException {    // false while loop
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode4");
+    void testDeadCode5() throws ParsingException, InterruptedException {    // dead class
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode5");
         JavaObject main = getMainObject(interpretation);
         assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
 
         VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
-        // While body on line 9
-        assertFalse(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 9, 9));
+        // DeadClass on lines 11-15
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 11, 15));
+    }
+
+    @Test
+    void testDeadCode11() throws ParsingException, InterruptedException {    // dead code in constructor and dead class
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode11");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        // DeadClass on lines 20-32
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 20, 32));
     }
 
     @NotNull

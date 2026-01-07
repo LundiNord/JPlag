@@ -5,8 +5,11 @@ public final class Main {
 
     public static void main(String[] args) {
         result = 1;
-        while (false) {
-            result = 2; // Dead loop body
-        }
+    }
+}
+
+class DeadClass {
+    public void deadMethod() {
+        System.out.println("I am dead");
     }
 }
