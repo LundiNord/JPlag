@@ -32,7 +32,8 @@ public final class TransformationUtil {
      * @param astRoot the root of the sub-AST
      * @return the EOG {@link SubgraphWalker.Border} of the AST
      */
-    public static SubgraphWalker.Border getEogBorders(Node astRoot) {
+    @NotNull
+    public static SubgraphWalker.Border getEogBorders(@NotNull Node astRoot) {
         SubgraphWalker.Border result;
         if (astRoot instanceof Block block && !block.getStatements().isEmpty() && block.getNextEOG().isEmpty() && block.getPrevEOG().isEmpty()) {
             result = new SubgraphWalker.Border();
@@ -50,15 +51,20 @@ public final class TransformationUtil {
             }
             if (result.getExits().isEmpty()) {
                 Node exit = astRoot;
-                while (!exit.getNextEOG().isEmpty())
+                java.util.Set<Node> visited = new java.util.HashSet<>();
+                visited.add(exit);
+                while (!exit.getNextEOG().isEmpty()) {
                     exit = exit.getNextEOG().getFirst();
+                    if (!visited.add(exit)) {
+                        // cycle detected
+                        // FixMe: now still right exit?
+                        break;
+                    }
+                }
                 result.setExits(List.of(exit));
             }
-
         }
-
         checkBorder(astRoot, result);
-
         return result;
     }
 

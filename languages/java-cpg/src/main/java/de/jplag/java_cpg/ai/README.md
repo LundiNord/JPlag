@@ -5,6 +5,8 @@ For debug, please run with `-ea` JVM flag.
 **For now a lot of methods have a default switch case that throws an exception.
 They will later be replaced with a default case that sets the value to unknown and returns an unknown value.**
 
+All inputted code must be syntactically correct Java code that compiles without errors.
+
 ## Build
 
 Maven: `mvn clean package`

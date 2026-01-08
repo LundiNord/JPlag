@@ -230,6 +230,7 @@ public class AbstractInterpretation {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         visitedLinesRecorder.recordLinesVisited(node);
+        System.out.println(node);
         switch (node) {
             case FieldDeclaration fd -> {
                 IValue value = valueStack.getLast();
@@ -525,10 +526,12 @@ public class AbstractInterpretation {
                 valueStack.removeLast();
                 boolean runThenBranch = true;
                 boolean runElseBranch = true;
-                if (ifStmt.getThenStatement() == null) {
+                Node thenBlock = ifStmt.getThenStatement(); // not always a block
+                Node elseBlock = ifStmt.getElseStatement();
+                if (thenBlock == null) {
                     runThenBranch = false;
                 }
-                if (ifStmt.getElseStatement() == null) {
+                if (elseBlock == null) {
                     runElseBranch = false;
                 }
                 if (condition.getInformation() && !recordingChanges) {
@@ -567,6 +570,11 @@ public class AbstractInterpretation {
                     variables.newScope();
                     graphWalker(nextEOG.getFirst());
                     variables.removeScope();
+                    if (nodeStack.getLast() == null && elseBlock != null && ifStmt.getElseStatement() == null && !elseBlock.getNextEOG().isEmpty()) {
+                        // special case for dead else branch
+                        assert elseBlock.getNextEOG().size() == 1;
+                        nodeStack.add(elseBlock.getNextEOG().getFirst());
+                    }
                     if (nodeStack.isEmpty() || nodeStack.getLast() == null) {
                         nodeStack.add(nextEOG.getLast());
                     }
@@ -644,7 +652,7 @@ public class AbstractInterpretation {
                     return new VoidValue(); // ToDo: function return (CropArea:31)
                 }
             }
-            case CaseStatement ignored -> {
+            case CaseStatement _ -> {
                 IValue caseValue = valueStack.getLast();
                 IValue switchValue = valueStack.getLast();
                 if (!Objects.equals(caseValue, switchValue)) {
@@ -653,7 +661,7 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case DefaultStatement ignored -> {
+            case DefaultStatement _ -> {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
