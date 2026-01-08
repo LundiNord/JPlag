@@ -29,7 +29,11 @@ public class JavaCpgLanguage implements Language {
      * Creates a new {@link JavaCpgLanguage}.
      */
     public JavaCpgLanguage() {
-        this.cpgAdapter = new CpgAdapter(allTransformations());
+        this.cpgAdapter = new CpgAdapter(true, true, allTransformations());
+    }
+
+    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode) {
+        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, allTransformations());
     }
 
     /**

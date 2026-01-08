@@ -22,10 +22,12 @@ public class VisitedLinesRecorder {
 
     private final Map<URI, Set<Integer>> visitedLines;
     private final Map<URI, Set<Integer>> possibleLines;
+    private final Map<URI, Set<Integer>> detectedDeadLines;
 
     public VisitedLinesRecorder() {
         visitedLines = new HashMap<>();
         possibleLines = new HashMap<>();
+        detectedDeadLines = new HashMap<>();
     }
 
     public void recordLinesVisited(@NotNull Node node) {
@@ -57,6 +59,28 @@ public class VisitedLinesRecorder {
         alreadyVisitedLines.add(startLine);
         // check if file information is already present
         possibleLines.computeIfAbsent(uri, this::countLinesInFile);
+    }
+
+    public void recordDetectedDeadLines(@NotNull URI uri, int startLine, int endLine) {
+        assert startLine <= endLine;
+        assert startLine >= 0;
+        Set<Integer> deadLines = new HashSet<>();
+        for (int line = startLine; line <= endLine; line++) {
+            deadLines.add(line);
+        }
+        Set<Integer> alreadyDeadLines = detectedDeadLines.computeIfAbsent(uri, _ -> new HashSet<>());
+        alreadyDeadLines.addAll(deadLines);
+    }
+
+    public void recordDetectedDeadLines(@NotNull Node node) {
+        PhysicalLocation location = node.getLocation();
+        if (location == null) {
+            return;
+        }
+        URI uri = location.getArtifactLocation().getUri();
+        int startLine = location.getRegion().startLine;
+        int endLine = location.getRegion().getEndLine();
+        recordDetectedDeadLines(uri, startLine, endLine);
     }
 
     @NotNull

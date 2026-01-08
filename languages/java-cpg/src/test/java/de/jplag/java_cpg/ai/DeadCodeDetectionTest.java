@@ -46,7 +46,7 @@ class DeadCodeDetectionTest {
         File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
         TranslationResult result = translate(submissionDirectories);
-        AbstractInterpretation interpretation = new AbstractInterpretation(new VisitedLinesRecorder());
+        AbstractInterpretation interpretation = new AbstractInterpretation(new VisitedLinesRecorder(), true);
 
         Component comp = result.getComponents().getFirst();
         for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
@@ -287,9 +287,6 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/set");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        // assertEquals(1, ((INumberValue) main.accessField("result")).getValue()); //ToDo
-        // assertEquals(true, ((BooleanValue) main.accessField("result")).getValue());
-        // assertEquals(2, ((INumberValue) main.accessField("result")).getValue());
     }
 
     /**

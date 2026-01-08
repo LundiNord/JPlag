@@ -27,6 +27,8 @@ import kotlin.reflect.KClass;
  */
 public class CpgAdapter {
 
+    private final boolean removeDeadCode;
+    private final boolean detectDeadCode;
     private List<Token> tokenList;
     private boolean reorderingEnabled = true;
 
@@ -34,11 +36,13 @@ public class CpgAdapter {
      * Constructs a new CpgAdapter.
      * @param transformations a list of {@link GraphTransformation}s
      */
-    public CpgAdapter(GraphTransformation... transformations) {
+    public CpgAdapter(boolean removeDeadCode, boolean detectDeadCode, GraphTransformation... transformations) {
         addTransformations(transformations);
+        this.removeDeadCode = removeDeadCode;
+        this.detectDeadCode = detectDeadCode;
     }
 
-    List<Token> adapt(Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
+    List<Token> adapt(@NotNull Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
         assert !files.isEmpty();
         tokenList = null;
         if (!normalize) {
@@ -54,7 +58,7 @@ public class CpgAdapter {
      * Adds a transformation at the end of its respective ATransformationPass.
      * @param transformation a {@link GraphTransformation}
      */
-    public void addTransformation(GraphTransformation transformation) {
+    public void addTransformation(@NotNull GraphTransformation transformation) {
         switch (transformation.getPhase()) {
             case OBLIGATORY -> PrepareTransformationPass.registerTransformation(transformation);
             case AST_TRANSFORM -> AstTransformationPass.registerTransformation(transformation);
@@ -95,6 +99,7 @@ public class CpgAdapter {
         InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
         TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
+        AiPass.Config.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
@@ -105,8 +110,12 @@ public class CpgAdapter {
                     AstTransformationPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
                     DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
 
-            if (!reorderingEnabled)
+            if (!reorderingEnabled) {
                 passClasses.remove(DfgSortPass.class);
+            }
+            if (!detectDeadCode && !removeDeadCode) {
+                passClasses.remove(AiPass.class);
+            }
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }

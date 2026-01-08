@@ -7,7 +7,9 @@ import de.fraunhofer.aisec.cpg.graph.declarations.*
 import de.fraunhofer.aisec.cpg.graph.records
 import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
+import de.fraunhofer.aisec.cpg.passes.configuration.ExecuteBefore
 import de.jplag.java_cpg.passes.CpgTransformationPass
+import de.jplag.java_cpg.passes.TokenizationPass
 import de.jplag.java_cpg.transformation.matching.edges.CpgNthEdge
 import de.jplag.java_cpg.transformation.matching.edges.Edges.*
 import de.jplag.java_cpg.transformation.operations.RemoveOperation
@@ -17,11 +19,12 @@ import java.net.URI
  * A CPG Pass performing Abstract Interpretation on the CPG Translation Result.
  */
 @DependsOn(CpgTransformationPass::class)
+@ExecuteBefore(TokenizationPass::class)
 class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     //passes have to be in kotlin!
 
     val visitedLinesRecorder = VisitedLinesRecorder()
-    val abstractInterpretation: AbstractInterpretation = AbstractInterpretation(visitedLinesRecorder)
+    val abstractInterpretation: AbstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
 
     /**
      * Empty cleanup method.
@@ -34,7 +37,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         val comp: Component = p0.components.first()
         for (translationUnit in comp.translationUnits) {
             if (translationUnit.name.parent?.localName?.endsWith("Main") == true || translationUnit.name.toString()
-                    .endsWith("Main.java")
+                    .endsWith("Main.java") || comp.translationUnits.size == 1
             ) {
                 runCatching {
                     abstractInterpretation.runMain(translationUnit)
@@ -55,6 +58,9 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                     val completelyDead: Boolean =
                         visitedLinesRecorder.checkIfCompletelyDead(fileName, startLine, endLine)
                     if (completelyDead) {
+                        visitedLinesRecorder.recordDetectedDeadLines(fileName, startLine, endLine)
+                    }
+                    if (completelyDead && removeDeadCode) {
                         println("Dead code (class) detected: ${recordDeclaration.name}")
                         // Try removing from TU directly
                         val tuIndex = translationUnit.declarations.indexOf(recordDeclaration)
@@ -85,7 +91,10 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                         val endLine: Int = method.location?.region?.endLine ?: -1
                         val methodCompletelyDead: Boolean =
                             visitedLinesRecorder.checkIfCompletelyDead(fileName, startLine, endLine)
-                        if (methodCompletelyDead) {
+                        if (completelyDead) {
+                            visitedLinesRecorder.recordDetectedDeadLines(fileName, startLine, endLine)
+                        }
+                        if (methodCompletelyDead && removeDeadCode) {
                             println("Dead code (method) detected: ${method.name} in class ${recordDeclaration.name}")
                             val index = recordDeclaration.methods.indexOf(method)
                             if (index != -1) {
@@ -101,6 +110,11 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
             log.error("Error while detecting dead classes and methods", e)
         }
     }
+
+    companion object Config {
+        var removeDeadCode: Boolean = true
+    }
+
 }
 
 /**

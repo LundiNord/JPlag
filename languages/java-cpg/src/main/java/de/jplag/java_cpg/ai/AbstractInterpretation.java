@@ -23,6 +23,7 @@ import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 
 /**
@@ -49,6 +50,7 @@ public class AbstractInterpretation {
      * Recorder for visited lines to detect dead methods/classes later.
      */
     private final VisitedLinesRecorder visitedLinesRecorder;
+    private final boolean removeDeadCode;
     /**
      * Helper stack to work around cpg limitations.
      */
@@ -77,7 +79,7 @@ public class AbstractInterpretation {
      */
     private int ifElseCounter = 0;
 
-    public AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder) {
+    public AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder, boolean removeDeadCode) {
         variables = new VariableStore();
         nodeStack = new ArrayList<>();
         valueStack = new ArrayList<>();
@@ -85,6 +87,7 @@ public class AbstractInterpretation {
         returnStorage = new ArrayList<>();
         lastVisitedMethod = new ArrayList<>();
         this.visitedLinesRecorder = visitedLinesRecorder;
+        this.removeDeadCode = removeDeadCode;
     }
 
     private static JavaObject createNewObject(@NotNull ConstructExpression ce) {
@@ -383,7 +386,8 @@ public class AbstractInterpretation {
                         valueStack.add(new JavaObject());
                     }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
-                    result = javaObject.callMethod(memberName.getLocalName(), argumentList, (MethodDeclaration) mce.getInvokes().getLast());
+                    result = javaObject.callMethod(memberName.getLocalName(), argumentList,
+                            (!mce.getInvokes().isEmpty()) ? (MethodDeclaration) mce.getInvokes().getLast() : null);
                 }
                 valueStack.removeLast();    // remove object reference
                 if (result == null) {       // if method reference isn't known
@@ -445,9 +449,6 @@ public class AbstractInterpretation {
                         } else {
                             assert nodeStack.get(nodeStack.size() - 2).getName().getParent() != null;
                             classVal = valueStack.get(valueStack.size() - 2).getParentObject();
-                        }
-                        if (classVal == null) {
-                            System.out.println("Debug");
                         }
                         assert classVal != null;
                         classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
@@ -538,26 +539,35 @@ public class AbstractInterpretation {
                     if (condition.getValue()) {
                         runElseBranch = false;
                         if (ifStmt.getElseStatement() != null) {
+                            System.out.println("Dead code detected -> remove else branch");
+                            visitedLinesRecorder.recordLinesVisited(ifStmt.getElseStatement());
+                        }
+                        if (ifStmt.getElseStatement() != null && removeDeadCode) {
                             // Dead code detected -> remove else branch
                             TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
                             ifStmt.setElseStatement(null);
-                            System.out.println("Dead code detected -> remove else branch");
                         }
                     } else {
                         runThenBranch = false;
                         // Dead code detected
-                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                        ifStmt.setThenStatement(null);
-                        if (ifStmt.getElseStatement() == null) {
-                            TransformationUtil.disconnectFromPredecessor(ifStmt);
-                            assert ifStmt.getScope() != null;
-                            Block containingBlock = (Block) ifStmt.getScope().getAstNode();
-                            assert containingBlock != null;
-                            List<Statement> statements = containingBlock.getStatements();
-                            statements.remove(ifStmt);
-                            containingBlock.setStatements(statements);
-                        }
                         System.out.println("Dead code detected -> remove then branch");
+                        visitedLinesRecorder.recordDetectedDeadLines(ifStmt.getThenStatement());
+                        if (ifStmt.getElseStatement() == null) {
+                            visitedLinesRecorder.recordDetectedDeadLines(ifStmt);
+                        }
+                        if (removeDeadCode) {
+                            TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                            ifStmt.setThenStatement(null);
+                            if (ifStmt.getElseStatement() == null) {
+                                TransformationUtil.disconnectFromPredecessor(ifStmt);
+                                assert ifStmt.getScope() != null;
+                                Block containingBlock = (Block) ifStmt.getScope().getAstNode();
+                                assert containingBlock != null;
+                                List<Statement> statements = containingBlock.getStatements();
+                                statements.remove(ifStmt);
+                                containingBlock.setStatements(statements);
+                            }
+                        }
                     }
                 }
                 nodeStack.removeLast();     // remove condition
@@ -683,7 +693,7 @@ public class AbstractInterpretation {
                     }
                 }
             }
-            case ReturnStatement ignored -> {
+            case ReturnStatement _ -> {
                 IValue result;
                 if (valueStack.isEmpty()) {
                     result = new VoidValue();
@@ -727,12 +737,12 @@ public class AbstractInterpretation {
                 valueStack.add(newObject);
                 // run constructor
                 if (classNode != null) {
-                    AbstractInterpretation classAi = new AbstractInterpretation(visitedLinesRecorder);
+                    AbstractInterpretation classAi = new AbstractInterpretation(visitedLinesRecorder, removeDeadCode);
                     classAi.runClass((RecordDeclaration) classNode, newObject, arguments, Objects.requireNonNull(ce.getConstructor()));
                 }
                 //
                 nodeStack.add(ne);
-                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                if (nextEOG.isEmpty() || nextEOG.getFirst() instanceof DummyNeighbor) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
@@ -796,14 +806,17 @@ public class AbstractInterpretation {
                     }
                 } else if (!recordingChanges) {
                     // Dead code detected, loop never runs
-                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                    TransformationUtil.disconnectFromPredecessor(ws);
-                    assert ws.getScope() != null;
-                    Block containingBlock = (Block) ws.getScope().getAstNode();
-                    assert containingBlock != null;
-                    List<Statement> statements = containingBlock.getStatements();
-                    statements.remove(ws);
-                    containingBlock.setStatements(statements);
+                    if (removeDeadCode) {
+                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                        TransformationUtil.disconnectFromPredecessor(ws);
+                        assert ws.getScope() != null;
+                        Block containingBlock = (Block) ws.getScope().getAstNode();
+                        assert containingBlock != null;
+                        List<Statement> statements = containingBlock.getStatements();
+                        statements.remove(ws);
+                        containingBlock.setStatements(statements);
+                    }
+                    visitedLinesRecorder.recordDetectedDeadLines(ws);
                     System.out.println("Dead code detected -> remove while");
                 }
                 // continue with next node after while
@@ -898,14 +911,17 @@ public class AbstractInterpretation {
                     }
                 } else if (!recordingChanges) {
                     // Dead code detected, loop never runs
-                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                    TransformationUtil.disconnectFromPredecessor(ws);
-                    assert ws.getScope() != null;
-                    Block containingBlock = (Block) ws.getScope().getAstNode();
-                    assert containingBlock != null;
-                    List<Statement> statements = containingBlock.getStatements();
-                    statements.remove(ws);
-                    containingBlock.setStatements(statements);
+                    if (removeDeadCode) {
+                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                        TransformationUtil.disconnectFromPredecessor(ws);
+                        assert ws.getScope() != null;
+                        Block containingBlock = (Block) ws.getScope().getAstNode();
+                        assert containingBlock != null;
+                        List<Statement> statements = containingBlock.getStatements();
+                        statements.remove(ws);
+                        containingBlock.setStatements(statements);
+                    }
+                    visitedLinesRecorder.recordDetectedDeadLines(ws);
                     System.out.println("Dead code detected -> remove for");
                 }
                 // continue with next node after while
@@ -929,9 +945,6 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.ARRAY));
                 }
-                if (!(valueStack.getLast() instanceof IJavaArray)) {
-                    System.out.println("Debug");
-                }
                 IJavaArray collection = (IJavaArray) valueStack.getLast();
                 // ToDo: set right variable value
                 valueStack.removeLast();
@@ -942,14 +955,17 @@ public class AbstractInterpretation {
                 if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
                     if (!recordingChanges) {
                         // Dead code detected, loop never runs
-                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                        TransformationUtil.disconnectFromPredecessor(fes);
-                        assert fes.getScope() != null;
-                        Block containingBlock = (Block) fes.getScope().getAstNode();
-                        assert containingBlock != null;
-                        List<Statement> statements = containingBlock.getStatements();
-                        statements.remove(fes);
-                        containingBlock.setStatements(statements);
+                        if (removeDeadCode) {
+                            TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                            TransformationUtil.disconnectFromPredecessor(fes);
+                            assert fes.getScope() != null;
+                            Block containingBlock = (Block) fes.getScope().getAstNode();
+                            assert containingBlock != null;
+                            List<Statement> statements = containingBlock.getStatements();
+                            statements.remove(fes);
+                            containingBlock.setStatements(statements);
+                        }
+                        visitedLinesRecorder.recordDetectedDeadLines(fes);
                         System.out.println("Dead code detected -> remove for each");
                     }
                 } else {   // ToDo: unify with other loops
@@ -1137,13 +1153,12 @@ public class AbstractInterpretation {
      * @param name the name of the method to run.
      * @return null if the method is not known.
      */
-    public IValue runMethod(@NotNull String name, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue runMethod(@NotNull String name, List<IValue> paramVars, @Nullable MethodDeclaration method) {
         if (lastVisitedMethod.contains(method)) {
             // recursive call detected
             this.variables.setEverythingUnknown();
             return new VoidValue();
         }
-        visitedLinesRecorder.recordFirstLineVisited(method);
         lastVisitedMethod.add(method);
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
@@ -1154,6 +1169,7 @@ public class AbstractInterpretation {
         if (method == null) {
             return null;
         }
+        visitedLinesRecorder.recordFirstLineVisited(method);
         variables.newScope();
         if (paramVars != null) {
             assert method.getParameters().size() == paramVars.size();
@@ -1161,15 +1177,9 @@ public class AbstractInterpretation {
                 variables.addVariable(new Variable(new VariableName(method.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
             }
         } else {
-            if (!(method.getParameters().isEmpty())) {
-                System.out.println("Debug");
-            }
             assert method.getParameters().isEmpty();
         }
         IValue result;
-        if (!(method.getNextEOG().size() <= 1)) {
-            System.out.println("Debug");
-        }
         assert method.getNextEOG().size() <= 1;
         if (method.getNextEOG().size() == 1) {
             result = graphWalker(method.getNextEOG().getFirst());
