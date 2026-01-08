@@ -128,6 +128,9 @@ public class JavaObject extends Value implements IJavaObject {
                             "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
                 }
             }
+            case "instanceof" -> {
+                return new BooleanValue();
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }

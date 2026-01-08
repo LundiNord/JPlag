@@ -1,3 +1,9 @@
+// DeadFactoryPattern.java
+//@author Anthropic Claude Sonnet 4.5
+
+import java.util.ArrayList;
+import java.util.List;
+
 // DEAD STRATEGY PATTERN: Never used
 interface PaymentStrategy {
     void pay(double amount);
@@ -26,11 +32,9 @@ interface AdvancedMediaPlayer {
     void playMp4(String filename);
 }
 
-// DeadFactoryPattern.java
-//@author Anthropic Claude Sonnet 4.5
 // DEAD FACTORY CLASS: Never used
-class AnimalFactory {
-    public static Animal createAnimal(String type) {
+class CreatureFactory {
+    public static Creature createCreature(String type) {
         switch (type.toLowerCase()) {
             case "dog":
                 return new FactoryDog();
@@ -44,14 +48,25 @@ class AnimalFactory {
     }
 }
 
+// DEAD BASE CLASS for factory pattern
+abstract class Creature {
+    protected String species;
+
+    public abstract void makeNoise();
+
+    public void describe() {
+        System.out.println("This is a " + species);
+    }
+}
+
 // DEAD CLASSES: Factory implementations never used
-class FactoryDog extends Animal {
+class FactoryDog extends Creature {
     public FactoryDog() {
         this.species = "Dog";
     }
 
     @Override
-    public void makeSound() {
+    public void makeNoise() {
         System.out.println("Woof!");
     }
 
@@ -60,13 +75,13 @@ class FactoryDog extends Animal {
     }
 }
 
-class FactoryCat extends Animal {
+class FactoryCat extends Creature {
     public FactoryCat() {
         this.species = "Cat";
     }
 
     @Override
-    public void makeSound() {
+    public void makeNoise() {
         System.out.println("Meow!");
     }
 
@@ -75,17 +90,17 @@ class FactoryCat extends Animal {
     }
 }
 
-class FactoryBird extends Animal {
+class FactoryBird extends Creature {
     public FactoryBird() {
         this.species = "Bird";
     }
 
     @Override
-    public void makeSound() {
+    public void makeNoise() {
         System.out.println("Tweet!");
     }
 
-    public void fly() {
+    public void flyAway() {
         System.out.println("Flying high");
     }
 }
@@ -146,19 +161,19 @@ class PersonBuilder {
         return this;
     }
 
-    public Person build() {
-        return new Person(name, age, address, phone);
+    public PersonData build() {
+        return new PersonData(name, age, address, phone);
     }
 }
 
 // DEAD CLASS: Result of builder
-class Person {
+class PersonData {
     private final String name;
     private final int age;
     private final String address;
     private final String phone;
 
-    public Person(String name, int age, String address, String phone) {
+    public PersonData(String name, int age, String address, String phone) {
         this.name = name;
         this.age = age;
         this.address = address;
@@ -236,7 +251,7 @@ class ShoppingCart {
 }
 
 class EventPublisher {
-    private java.util.List<EventListener> listeners = new java.util.ArrayList<>();
+    private List<EventListener> listeners = new ArrayList<>();
 
     public void subscribe(EventListener listener) {
         listeners.add(listener);

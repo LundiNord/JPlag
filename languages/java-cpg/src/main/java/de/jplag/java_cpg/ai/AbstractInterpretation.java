@@ -358,7 +358,7 @@ public class AbstractInterpretation {
                         valueStack.add(new JavaObject());
                     }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
-                    result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) me.getRefersTo());
+                    result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
                 } else {
                     List<IValue> argumentList = new ArrayList<>();
                     for (int i = 0; i < mce.getArguments().size(); i++) {
@@ -383,7 +383,7 @@ public class AbstractInterpretation {
                         valueStack.add(new JavaObject());
                     }
                     JavaObject javaObject = (JavaObject) valueStack.getLast();
-                    result = javaObject.callMethod(memberName.getLocalName(), argumentList, (MethodDeclaration) me.getRefersTo());
+                    result = javaObject.callMethod(memberName.getLocalName(), argumentList, (MethodDeclaration) mce.getInvokes().getLast());
                 }
                 valueStack.removeLast();    // remove object reference
                 if (result == null) {       // if method reference isn't known

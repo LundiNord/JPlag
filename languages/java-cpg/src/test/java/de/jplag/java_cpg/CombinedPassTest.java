@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import de.jplag.ParsingException;
@@ -72,14 +71,25 @@ class CombinedPassTest extends AbstractJavaCpgLanguageTest {
     }
 
     @Test
-    @Disabled
     void testDeadCodeRemovalInTokens3() throws ParsingException {
         String directoryName = "combined/Two";
         JavaCpgLanguage language = new JavaCpgLanguage();
         File directory = new File(baseDirectory.getAbsolutePath(), directoryName);
         Set<File> files = Set.of(Objects.requireNonNull(directory.listFiles((dir, name) -> name.endsWith(".java"))));
         List<Token> parsedTokens = language.parse(files, true);
-        assertEquals(0, parsedTokens.size(), "Unexpected number of tokens after dead code removal");
+        assertEquals(117, parsedTokens.size(), "Unexpected number of tokens after dead code removal");
+        assertEquals(CpgTokenType.RECORD_DECL_BEGIN, parsedTokens.getFirst().getType());
+        assertEquals(CpgTokenType.CONSTRUCTOR_CALL, parsedTokens.get(10).getType());
+        assertEquals(CpgTokenType.IF_BLOCK_END, parsedTokens.get(20).getType());
+        assertEquals(CpgTokenType.METHOD_DECL_BEGIN, parsedTokens.get(30).getType());
+        assertEquals(CpgTokenType.METHOD_BODY_END, parsedTokens.get(40).getType());
+        assertEquals(CpgTokenType.METHOD_DECL_BEGIN, parsedTokens.get(50).getType());
+        assertEquals(CpgTokenType.METHOD_BODY_END, parsedTokens.get(60).getType());
+        assertEquals(CpgTokenType.METHOD_BODY_BEGIN, parsedTokens.get(70).getType());
+        assertEquals(CpgTokenType.METHOD_BODY_END, parsedTokens.get(80).getType());
+        assertEquals(CpgTokenType.FIELD_DECL, parsedTokens.get(90).getType());
+        assertEquals(CpgTokenType.ASSIGNMENT, parsedTokens.get(100).getType());
+        assertEquals(CpgTokenType.METHOD_PARAM, parsedTokens.get(110).getType());
     }
 
 }
