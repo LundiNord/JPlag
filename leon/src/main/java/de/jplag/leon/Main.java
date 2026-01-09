@@ -18,7 +18,6 @@ import de.jplag.reporting.reportobject.ReportObjectFactory;
 public class Main {
 
     static void main(String[] args) {
-        System.out.println("Hello, JPlag Leon!");
         Language language = new JavaCpgLanguage();
         File submissionsRoot = new File("leon/submissionsFolders");
         Set<File> submissionDirectories = Set.of(submissionsRoot);
@@ -26,7 +25,6 @@ public class Main {
         try {
             JPlagResult result = JPlag.run(options);
             File outDir = new File("leon/output.zip");
-            // File outDir = new File(System.getProperty("user.home") + "/Downloads/");
             ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
             reportObjectFactory.createAndSaveReport(result);
             System.out.println("JPlag analysis finished. Report written to: " + outDir.getAbsolutePath());

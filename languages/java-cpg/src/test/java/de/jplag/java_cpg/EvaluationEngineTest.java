@@ -1,27 +1,28 @@
 package de.jplag.java_cpg;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static de.jplag.options.JPlagOptions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.jplag.ParsingException;
-import de.jplag.Token;
-import de.jplag.java_cpg.ai.AiPass;
-import de.jplag.java_cpg.ai.VisitedLinesRecorder;
+import de.jplag.*;
+import de.jplag.clustering.ClusteringOptions;
+import de.jplag.exceptions.ExitException;
+import de.jplag.highlightextraction.FrequencyAnalysisOptions;
+import de.jplag.merging.MergingOptions;
+import de.jplag.options.JPlagOptions;
 
 class EvaluationEngineTest {
     // Test 1: amount of dead code detected
@@ -80,27 +81,7 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled
     @MethodSource("testFiles")
-    void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException, IOException {
-        Set<Integer> deadLines = new TreeSet<>(getDeadLinesFromFile(fileName));
-        Set<Integer> expectedDeadLines = new TreeSet<>(getExpectedDeadLines(fileName));
-
-        assertEquals(expectedDeadLines, deadLines);
-    }
-
-    @Test
-    @Disabled
-    void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException, IOException {
-        String fileName = "aiGenerated/gemini/ProjectE.java";
-        Set<Integer> deadLines = new TreeSet<>(getDeadLinesFromFile(fileName));
-        Set<Integer> expectedDeadLines = new TreeSet<>(getExpectedDeadLines(fileName));
-
-        assertEquals(expectedDeadLines, deadLines);
-    }
-
-    @ParameterizedTest
-    @Disabled
-    @MethodSource("testFiles")
-    void AiGeneratedTestDataEvaluation(String fileName) throws ParsingException {
+    void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, true, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
@@ -111,6 +92,20 @@ class EvaluationEngineTest {
                 + similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode) + "%");
         System.out.println(
                 "Similarity between manual and automatic dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode) + "%");
+        assertTrue(true);
+    }
+
+    @ParameterizedTest
+    @Disabled
+    @MethodSource("testFiles")
+    void AiGeneratedTestDataPlagEvaluation(String fileName) throws ParsingException, ExitException, IOException {
+        String fileA = "aiGenerated/gemini/ProjectA.java";
+        String fileB = "aiGenerated/gemini/ProjectC.java";
+        double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
+        double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
+        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, true, true, true);
+        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, true, true);
+
         assertTrue(true);
     }
 
@@ -157,38 +152,49 @@ class EvaluationEngineTest {
         }
     }
 
-    @NotNull
-    private Set<Integer> getDeadLinesFromFile(@NotNull String fileName) throws ParsingException {
-        getTokensFromFile(fileName, false, true, true, true);
-        VisitedLinesRecorder visitedLinesRecorder = AiPass.AiPassCompanion.getVisitedLinesRecorder();
-        Map<URI, Set<Integer>> deadLines = visitedLinesRecorder.getDetectedDeadLines();
-        assert deadLines.size() == 1;
-        return deadLines.values().iterator().next();
+    private double getJPlagCpgPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean removeDeadCode, boolean detectDeadCode,
+            boolean reorder, boolean normalize) throws ExitException, IOException {
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder);
+        return getJPlagScore(fileNameA, fileNameB, normalize, language);
     }
 
-    @NotNull
-    private Set<Integer> getExpectedDeadLines(@NotNull String fileName) throws IOException {
-        File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
-        Set<Integer> expectedDeadLines = new HashSet<>();
+    private double getJPlagPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize) throws ExitException, IOException {
+        de.jplag.java.JavaLanguage language = new de.jplag.java.JavaLanguage();
+        return getJPlagScore(fileNameA, fileNameB, normalize, language);
+    }
 
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line;
-        int lineNumber = 1;
-        boolean inDeadCode = false;
+    private double getJPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize, Language language)
+            throws ExitException, IOException {
+        File fileA = new File(BASE_PATH.toFile().getAbsolutePath(), fileNameA);
+        File fileB = new File(BASE_PATH.toFile().getAbsolutePath(), fileNameB);
+        // Create temporary directories for submissions
+        File tempDirA = createTempDir();
+        File tempDirB = createTempDir();
+        // Copy files to temp directories
+        File targetA = new File(tempDirA, "SubmissionA.java");
+        File targetB = new File(tempDirB, "SubmissionB.java");
+        java.nio.file.Files.copy(fileA.toPath(), targetA.toPath());
+        java.nio.file.Files.copy(fileB.toPath(), targetB.toPath());
+        Set<File> submissionDirectories = Set.of(tempDirA, tempDirB);
+        JPlagOptions options = new JPlagOptions(language, null, submissionDirectories, Set.of(), null, null, null, null, DEFAULT_SIMILARITY_METRIC,
+                DEFAULT_SIMILARITY_THRESHOLD, DEFAULT_SHOWN_COMPARISONS, new ClusteringOptions(), false, new MergingOptions(), normalize, false,
+                new FrequencyAnalysisOptions());
+        JPlagResult result = JPlag.run(options);
+        assert result.getAllComparisons().size() == 1;
+        JPlagComparison comparison = result.getAllComparisons().getFirst();
+        double similarity = comparison.similarity();
+        double maxSimilarity = comparison.maximalSimilarity();
+        int matchedTokens = comparison.getNumberOfMatchedTokens();
+        double frequencyWeightedSimilarity = comparison.frequencyWeightedSimilarity();
+        return similarity;
+    }
 
-        while ((line = reader.readLine()) != null) {
-            String trimmed = line.trim();
-
-            if (trimmed.contains("//DeadCodeStart")) {
-                inDeadCode = true;
-            } else if (trimmed.contains("//DeadCodeEnd")) {
-                inDeadCode = false;
-            } else if (inDeadCode) {
-                expectedDeadLines.add(lineNumber);
-            }
-            lineNumber++;
-        }
-        return expectedDeadLines;
+    private @NotNull File createTempDir() throws IOException {
+        File tempDir = File.createTempFile("jplag_submission_", "");
+        tempDir.delete();
+        tempDir.mkdir();
+        tempDir.deleteOnExit();
+        return tempDir;
     }
 
 }

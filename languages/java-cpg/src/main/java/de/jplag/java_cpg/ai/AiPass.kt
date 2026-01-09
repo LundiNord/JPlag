@@ -31,9 +31,8 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     }
 
     override fun accept(p0: TranslationResult) {
-        visitedLinesRecorder = VisitedLinesRecorder()   //reset for each run
-        val abstractInterpretation: AbstractInterpretation =
-            AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
+        var visitedLinesRecorder = VisitedLinesRecorder()
+        val abstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
         val comp: Component = p0.components.first()
         for (translationUnit in comp.translationUnits) {
             if (translationUnit.name.parent?.localName?.endsWith("Main") == true || translationUnit.name.toString()
@@ -113,7 +112,6 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
     companion object AiPassCompanion {
         var removeDeadCode: Boolean = true
-        var visitedLinesRecorder: VisitedLinesRecorder = VisitedLinesRecorder()
     }
 
 }

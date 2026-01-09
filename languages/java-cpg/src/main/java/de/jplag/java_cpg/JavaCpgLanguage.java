@@ -129,6 +129,11 @@ public class JavaCpgLanguage implements Language {
     }
 
     @Override
+    public boolean expectsSubmissionOrder() {   // FixMe: parallelimus seems to only sometimes work correctly
+        return true;
+    }
+
+    @Override
     public boolean supportsNormalization() {
         return true;
     }
