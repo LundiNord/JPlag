@@ -1,7 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * PROJECT D: The Hider
@@ -14,7 +14,7 @@ public class MathTutor {
         Scanner scanner = new Scanner(System.in);
         Random rand = new Random();
         System.out.println("--- Math Tutor 1.0 ---");
-        
+
         int correct = 0;
         for (int i = 0; i < 3; i++) {
             int a = rand.nextInt(10);
@@ -33,28 +33,31 @@ public class MathTutor {
             }
         }
         System.out.println("Score: " + correct + "/3");
-        
+
         // DEAD CODE CALL
         // This method is called, but the logic inside is gated by 'if (false)'
         // effectively hiding the plagiarized code within the executable.
-        executeHiddenLogic(); 
+        //DeadCodeStart
+        executeHiddenLogic();
+        //DeadCodeEnd
     }
 
     private static void executeHiddenLogic() {
         // DEAD CODE & PLAGIARISM COMBO
         // The compiler may ignore this, but it exists in the source code.
         // It is a direct copy of BankingSystem.java logic, hidden here.
+        ///DeadCodeStart
         if (false) {
             Map<String, Double> hiddenAccounts = new HashMap<>();
             Scanner sc = new Scanner(System.in);
             boolean running = true;
-            
+
             // Stolen Banking Logic
             while (running) {
                 System.out.println("1. Create (Stolen)");
                 System.out.println("2. Deposit (Stolen)");
                 String cmd = sc.nextLine();
-                
+
                 if (cmd.equals("1")) {
                     String name = sc.nextLine();
                     hiddenAccounts.put(name, 0.0);
@@ -65,5 +68,6 @@ public class MathTutor {
                 }
             }
         }
+        ///DeadCodeEnd
     }
 }

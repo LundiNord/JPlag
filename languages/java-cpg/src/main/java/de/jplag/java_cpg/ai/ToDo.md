@@ -24,6 +24,9 @@
 - [x] return inside if or loop
 - [ ] "if (opts.name == null || opts.name.isBlank())" don't evaluate the second part if the first is true
 - [ ] proper switch statement support
+- [ ] if always true → remove condition
+- [ ] remove empty methods and their method calls
+- [ ] hard: remove useless loops ← runs only once
 
 ## Edge Cases to Test
 

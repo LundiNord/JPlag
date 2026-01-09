@@ -1,1 +1,10 @@
 All Code in this directory is generated with Google Gemini 3 Pro.
+Initial Prompt: " write a java example project that must contain:
+
+                 - a Main class with a main method as a starting point
+
+                 - sometimes dead code in all variants
+
+                 - sometimes one project should plagiarize from another
+
+                 - plagiarisms and dead code can be combined, and dead code can be used to hide plagiarisms "

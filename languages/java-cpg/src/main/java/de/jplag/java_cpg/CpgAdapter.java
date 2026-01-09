@@ -36,10 +36,11 @@ public class CpgAdapter {
      * Constructs a new CpgAdapter.
      * @param transformations a list of {@link GraphTransformation}s
      */
-    public CpgAdapter(boolean removeDeadCode, boolean detectDeadCode, GraphTransformation... transformations) {
+    public CpgAdapter(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation... transformations) {
         addTransformations(transformations);
         this.removeDeadCode = removeDeadCode;
         this.detectDeadCode = detectDeadCode;
+        setReorderingEnabled(reorder);
     }
 
     List<Token> adapt(@NotNull Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
@@ -47,6 +48,7 @@ public class CpgAdapter {
         tokenList = null;
         if (!normalize) {
             clearTransformations();
+            addTransformations(JavaCpgLanguage.minimalTransformations());
             setReorderingEnabled(false);
         }
         // TokenizationPass sets tokenList
@@ -99,7 +101,7 @@ public class CpgAdapter {
         InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
         TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
-        AiPass.Config.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
+        AiPass.AiPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());

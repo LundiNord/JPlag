@@ -21,31 +21,48 @@ public class BankingSystem {
             printMenu();
             String command = scanner.nextLine();
 
-            switch (command) {
-                case "1":
-                    createAccount(scanner);
-                    break;
-                case "2":
-                    deposit(scanner);
-                    break;
-                case "3":
-                    withdraw(scanner);
-                    break;
-                case "4":
-                    checkBalance(scanner);
-                    break;
-                case "5":
-                    running = false;
-                    System.out.println("Exiting...");
-                    break;
-                default:
-                    System.out.println("Invalid option.");
+//            switch (command) {        //Does not work with java-cpg graph normalization
+//                case "1":
+//                    createAccount(scanner);
+//                    break;
+//                case "2":
+//                    deposit(scanner);
+//                    break;
+//                case "3":
+//                    withdraw(scanner);
+//                    break;
+//                case "4":
+//                    checkBalance(scanner);
+//                    break;
+//                case "5":
+//                    running = false;
+//                    System.out.println("Exiting...");
+//                    break;
+//                default:
+//                    System.out.println("Invalid option.");
+//            }
+
+            if (command.equals("1")) {
+                createAccount(scanner);
+            } else if (command.equals("2")) {
+                deposit(scanner);
+            } else if (command.equals("3")) {
+                withdraw(scanner);
+            } else if (command.equals("4")) {
+                checkBalance(scanner);
+            } else if (command.equals("5")) {
+                running = false;
+                System.out.println("Exiting...");
+            } else {
+                System.out.println("Invalid option.");
             }
 
-            // Dead code: This block will never execute
+
+            //DeadCodeStart
             if (DEBUG_MODE) {
                 System.out.println("[DEBUG] Current memory usage: " + Runtime.getRuntime().totalMemory());
             }
+            //DeadCodeEnd
         }
         scanner.close();
     }

@@ -51,7 +51,7 @@ class DeadCodeDetectionTest {
         Component comp = result.getComponents().getFirst();
         for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
             Assertions.assertNotNull(translationUnit.getName().getParent());
-            if (translationUnit.getName().getParent().getLocalName().endsWith("Main")) {
+            if (translationUnit.getName().getParent().getLocalName().endsWith("Main") || comp.getTranslationUnits().size() == 1) {
                 interpretation.runMain(translationUnit);
             }
         }
@@ -514,6 +514,12 @@ class DeadCodeDetectionTest {
         VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
         // DeadClass on lines 20-32
         assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 20, 32));
+    }
+
+    @Test
+    void testExample() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/aiGenerated/test/testb");
+        assertNotNull(interpretation);
     }
 
     @NotNull

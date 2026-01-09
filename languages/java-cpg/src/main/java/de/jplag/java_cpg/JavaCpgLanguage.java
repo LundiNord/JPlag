@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 
 import de.jplag.Language;
@@ -29,11 +30,19 @@ public class JavaCpgLanguage implements Language {
      * Creates a new {@link JavaCpgLanguage}.
      */
     public JavaCpgLanguage() {
-        this.cpgAdapter = new CpgAdapter(true, true, allTransformations());
+        this.cpgAdapter = new CpgAdapter(true, true, true, allTransformations());
     }
 
-    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode) {
-        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, allTransformations());
+    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder) {
+        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, allTransformations());
+    }
+
+    /**
+     * @return array with only the minimal set of transformations needed for a standard tokenization
+     */
+    @NotNull
+    public static GraphTransformation[] minimalTransformations() {
+        return new GraphTransformation[] {removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField,};
     }
 
     /**

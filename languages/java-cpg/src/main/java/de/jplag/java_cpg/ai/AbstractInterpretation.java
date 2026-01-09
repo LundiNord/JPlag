@@ -202,6 +202,7 @@ public class AbstractInterpretation {
             Type type = fd.getType();
             Name name = fd.getName();
             if (fd.getInitializer() == null) {      // no initial value
+                // visitedLinesRecorder.recordLinesVisited(fd);
                 Variable newVar = new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type));
                 newVar.setInitialValue();
                 objectInstance.setField(newVar);
@@ -230,17 +231,17 @@ public class AbstractInterpretation {
      */
     @Nullable
     private IValue graphWalker(@NotNull Node node) {
+        if (node instanceof FieldDeclaration || node instanceof RecordDeclaration) {
+            IValue value = valueStack.getLast();
+            valueStack.removeLast();
+            nodeStack.removeLast();
+            return value;   // return so that the class setup method can use the graph walker
+        }
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         visitedLinesRecorder.recordLinesVisited(node);
         System.out.println(node);
         switch (node) {
-            case FieldDeclaration fd -> {
-                IValue value = valueStack.getLast();
-                valueStack.removeLast();
-                nodeStack.removeLast();
-                return value;   // return so that the class setup method can use the graph walker
-            }
             case VariableDeclaration vd -> {
                 nodeStack.add(vd);
                 assert nextEOG.size() == 1;

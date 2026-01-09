@@ -100,7 +100,7 @@ class AbstractInterpretationTest {
     void testLoop() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
+        assertTrue(((IntValue) main.accessField("result")).getInformation());
         assertFalse(((IntValue) main.accessField("result2")).getInformation());
     }
 
@@ -141,7 +141,7 @@ class AbstractInterpretationTest {
      */
     @Test
     void testException() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/exeption");
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/exception");
         JavaObject main = getMainObject(interpretation);
         assertEquals(400, ((IntValue) main.accessField("result")).getValue());  // z
         assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); // y

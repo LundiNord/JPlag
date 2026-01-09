@@ -23,9 +23,6 @@ import java.net.URI
 class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     //passes have to be in kotlin!
 
-    val visitedLinesRecorder = VisitedLinesRecorder()
-    val abstractInterpretation: AbstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
-
     /**
      * Empty cleanup method.
      */
@@ -34,6 +31,9 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     }
 
     override fun accept(p0: TranslationResult) {
+        visitedLinesRecorder = VisitedLinesRecorder()   //reset for each run
+        val abstractInterpretation: AbstractInterpretation =
+            AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
         val comp: Component = p0.components.first()
         for (translationUnit in comp.translationUnits) {
             if (translationUnit.name.parent?.localName?.endsWith("Main") == true || translationUnit.name.toString()
@@ -91,7 +91,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                         val endLine: Int = method.location?.region?.endLine ?: -1
                         val methodCompletelyDead: Boolean =
                             visitedLinesRecorder.checkIfCompletelyDead(fileName, startLine, endLine)
-                        if (completelyDead) {
+                        if (methodCompletelyDead) {
                             visitedLinesRecorder.recordDetectedDeadLines(fileName, startLine, endLine)
                         }
                         if (methodCompletelyDead && removeDeadCode) {
@@ -111,8 +111,9 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         }
     }
 
-    companion object Config {
+    companion object AiPassCompanion {
         var removeDeadCode: Boolean = true
+        var visitedLinesRecorder: VisitedLinesRecorder = VisitedLinesRecorder()
     }
 
 }

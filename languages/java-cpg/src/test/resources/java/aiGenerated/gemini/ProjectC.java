@@ -20,12 +20,14 @@ public class AssetManager {
             showOptions();
             String selection = inputProcessor.nextLine();
 
-            // DEAD CODE / OBFUSCATION: 
+            // DEAD CODE / OBFUSCATION:
             // A useless conditional to break the visual flow of the switch statement
+            //DeadCodeStart
             if (1 == 2) {
-                System.out.println("System failure."); 
+                System.out.println("System failure.");
                 break;
             }
+            //DeadCodeEnd
 
             // PLAGIARISM: Logic mapping is identical to BankingSystem (1=create, 2=dep, 3=with, 4=bal)
             if (selection.equals("1")) {
@@ -43,9 +45,11 @@ public class AssetManager {
                 System.out.println("Unknown command.");
             }
         }
-        
+
         // DEAD CODE: Method call that looks important but does nothing
-        cleanupMemory(); 
+        //DeadCodeStart
+        cleanupMemory();
+        //DeadCodeEnd
     }
 
     // PLAGIARISM: Exact copy of 'printMenu' from Project A, just different text
@@ -62,25 +66,31 @@ public class AssetManager {
     private static void registerClient(Scanner s) {
         System.out.print("Client ID: ");
         String id = s.nextLine();
-        
+
         // OBFUSCATION: Wrapping the check in a redundant 'true' block
+        ///DeadCodeStart
         if (true) {
+            ///DeadCodeEnd
             if (clientAssets.containsKey(id)) {
                 System.out.println("Client ID conflict.");
             } else {
                 clientAssets.put(id, 0.00);
                 System.out.println("Client registered: " + id);
             }
+            ///DeadCodeStart
         }
+        ///DeadCodeEnd
     }
 
     // PLAGIARISM: 'deposit' from Project A
     private static void addFunds(Scanner s) {
         System.out.print("Client ID: ");
         String id = s.nextLine();
-        
+
         // OBFUSCATION: Added a useless loop that runs once to hide the logic nesting
-        for(int k=0; k<1; k++) {
+        //DeadCodeStart
+        for (int k = 0; k < 1; k++) {
+            //DeadCodeEnd
             if (clientAssets.containsKey(id)) {
                 System.out.print("Value to inject: ");
                 try {
@@ -99,22 +109,26 @@ public class AssetManager {
             } else {
                 System.out.println("ID not found.");
             }
+            //DeadCodeStart
         }
+        //DeadCodeEnd
     }
 
     // PLAGIARISM: 'withdraw' from Project A
     private static void removeFunds(Scanner s) {
         System.out.print("Client ID: ");
         String id = s.nextLine();
-        
+
         if (clientAssets.containsKey(id)) {
             System.out.print("Liquidation amount: ");
             try {
                 double val = Double.parseDouble(s.nextLine());
-                
+
                 // DEAD CODE: Variable that is calculated but never affects the outcome
-                double taxEstimate = val * 0.05; 
-                
+                ///DeadCodeStart
+                double taxEstimate = val * 0.05;
+                ///DeadCodeEnd
+
                 double current = clientAssets.get(id);
                 if (val > 0 && current >= val) {
                     clientAssets.put(id, current - val);
@@ -142,9 +156,11 @@ public class AssetManager {
     }
 
     // DEAD CODE: A method added purely to make the file size different from Project A
+    //DeadCodeStart
     private static void cleanupMemory() {
         int x = 0;
         x++;
         // Does nothing meaningful
     }
+    //DeadCodeEnd
 }
