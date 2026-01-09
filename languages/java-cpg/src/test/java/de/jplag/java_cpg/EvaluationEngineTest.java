@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -24,16 +25,45 @@ import de.jplag.highlightextraction.FrequencyAnalysisOptions;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
 
+import kotlin.Pair;
+
 class EvaluationEngineTest {
     // Test 1: amount of dead code detected
     // Test 2: plagiarism score accuracy
     // run with and without dead code removal
+    // ToDo: assert that dead code removal does not remove non-dead code
+    // ToDo look at Project H, perplexityLabs 2
+    // maybe: tokensWithoutSimpleDeadCode: disable other graph normalizations except dead code removal
 
     @NotNull
     private static Stream<String> testFiles() {
         return Stream.of("aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/ProjectB.java", "aiGenerated/gemini/ProjectC.java",
                 // "aiGenerated/gemini/ProjectD.java",
-                "aiGenerated/gemini/ProjectE.java");
+                "aiGenerated/gemini/ProjectE.java", "aiGenerated/gemini/ProjectF.java", "aiGenerated/gemini/ProjectG.java",
+                "aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java", "aiGenerated/gemini/ProjectJ.java",
+                "aiGenerated/gemini/ProjectK.java",
+                //
+                "aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java", "aiGenerated/claude/Project3.java",
+                "aiGenerated/claude/Project4.java",
+                //
+                "aiGenerated/perplexityLabs/Project1.java", "aiGenerated/perplexityLabs/Project2.java", "aiGenerated/perplexityLabs/Project3.java",
+                "aiGenerated/perplexityLabs/Project4.java");
+    }
+
+    @NotNull
+    private static Stream<Pair<String, String>> testPlagFiles() {
+        return Stream.of(new Pair<>("aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/ProjectC.java"),
+                new Pair<>("aiGenerated/gemini/ProjectB.java", "aiGenerated/gemini/ProjectE.java"),
+                new Pair<>("aiGenerated/gemini/ProjectF.java", "aiGenerated/gemini/ProjectG.java"),
+                new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java"),
+                new Pair<>("aiGenerated/gemini/ProjectJ.java", "aiGenerated/gemini/ProjectK.java"),
+                //
+                new Pair<>("aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java"),
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project3.java"),
+                //
+                new Pair<>("aiGenerated/perplexityLabs/Project1.java", "aiGenerated/perplexityLabs/Project3.java"),
+                new Pair<>("aiGenerated/perplexityLabs/Project1.java", "aiGenerated/perplexityLabs/Project4.java"));
     }
 
     private static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
@@ -83,7 +113,7 @@ class EvaluationEngineTest {
     @MethodSource("testFiles")
     void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, true, false, true);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
 
@@ -95,17 +125,57 @@ class EvaluationEngineTest {
         assertTrue(true);
     }
 
+    @Test
+    @Disabled
+    void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
+        String fileName = "aiGenerated/perplexityLabs/Project4.java";
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
+
+        System.out.println("Similarity between manual and no dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokens) + "%");
+        System.out.println("Similarity between manual and simple dead code removal: "
+                + similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode) + "%");
+        System.out
+                .println("Similarity between manual and dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode) + "%");
+        assertTrue(true);
+    }
+
     @ParameterizedTest
     @Disabled
-    @MethodSource("testFiles")
-    void AiGeneratedTestDataPlagEvaluation(String fileName) throws ParsingException, ExitException, IOException {
-        String fileA = "aiGenerated/gemini/ProjectA.java";
-        String fileB = "aiGenerated/gemini/ProjectC.java";
+    @MethodSource("testPlagFiles")
+    void AiGeneratedTestDataPlagEvaluation(@NotNull Pair<String, String> fileNames) throws ExitException, IOException {
+        String fileA = fileNames.getFirst();
+        String fileB = fileNames.getSecond();
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
         double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
-        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, true, true, true);
-        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, true, true);
+        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);   // ToDo: enable reorder
+        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true);
 
+        System.out.println("Plagiarism scores for " + fileA + " and " + fileB + ":");
+        System.out.println("JPlag standard: " + similarityJPlag);
+        System.out.println("Cpg minimal transformations: " + similarityMinimalCpg);
+        System.out.println("Cpg standard transformations: " + similarityStandardCpg);
+        System.out.println("Cpg with AI dead code removal: " + similarityAi);
+        assertTrue(true);
+    }
+
+    @Test
+    @Disabled
+    void AiGeneratedTestDataPlagEvaluationSingle() throws ExitException, IOException {
+        String fileA = "aiGenerated/perplexityLabs/Project1.java";
+        String fileB = "aiGenerated/perplexityLabs/Project4.java";
+        double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
+        double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
+        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);
+        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true);
+
+        System.out.println("Plagiarism scores for " + fileA + " and " + fileB + ":");
+        System.out.println("JPlag standard: " + similarityJPlag);
+        System.out.println("Cpg minimal transformations: " + similarityMinimalCpg);
+        System.out.println("Cpg standard transformations: " + similarityStandardCpg);
+        System.out.println("Cpg with AI dead code removal: " + similarityAi);
         assertTrue(true);
     }
 

@@ -72,7 +72,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val movableStatements = getMovableStatements(root, null, parentInfo)
 
         val finalState = stateSafe[root]
-            ?: throw TransformationException("EOG traversion did not reach the start - cannot sort statements")
+            ?: throw TransformationException("EOG traverse did not reach the start - cannot sort statements")
 
         /*
          * Sets DFG edges between statements

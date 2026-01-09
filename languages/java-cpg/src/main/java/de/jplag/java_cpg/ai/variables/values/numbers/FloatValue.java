@@ -160,6 +160,13 @@ public class FloatValue extends Value implements INumberValue {
                     return new BooleanValue();
                 }
             }
+            case ">=" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new BooleanValue(this.value >= ((INumberValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }

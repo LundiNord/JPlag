@@ -205,6 +205,12 @@ public class StringValue extends JavaObject implements IStringValue {
             } else {
                 return Value.valueFactory(Type.BOOLEAN);
             }
+        } else if (operator.equals("!=") && other instanceof NullValue) {
+            if (information) {
+                return Value.valueFactory(this.value != null);
+            } else {
+                return Value.valueFactory(Type.BOOLEAN);
+            }
         } else if (operator.equals("==") && other instanceof IStringValue otherString) {
             if (information && otherString.getInformation()) {
                 return Value.valueFactory(java.util.Objects.equals(this.value, otherString.getValue()));
