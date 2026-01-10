@@ -32,7 +32,7 @@ public class VoidValue extends Value {
                     default -> new VoidValue();
                 };
             }
-            case "&" -> {
+            case "&", "^" -> {
                 return new VoidValue();
             }
             default -> throw new UnsupportedOperationException("Operator " + operator + " not supported for VoidValue.");

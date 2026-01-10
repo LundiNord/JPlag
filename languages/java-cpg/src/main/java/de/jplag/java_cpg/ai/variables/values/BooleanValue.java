@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Boolean value representation with a possible lack of information.
@@ -59,6 +60,13 @@ public class BooleanValue extends Value implements IBooleanValue {
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         if (other instanceof VoidValue) {
             return new BooleanValue();
+        }
+        if (other instanceof IStringValue stringValue && operator.equals("+")) {
+            if (this.getInformation()) {
+                return stringValue.binaryOperation(operator, other);
+            } else {
+                return Value.valueFactory(Type.STRING);
+            }
         }
         BooleanValue otherBool = (BooleanValue) other;
         switch (operator) {

@@ -6,9 +6,11 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
@@ -75,6 +77,18 @@ public class Math extends JavaObject implements ISpecialObject {
                 assert paramVars.get(0) instanceof INumberValue;
                 assert paramVars.get(1) instanceof INumberValue;
                 return paramVars.get(0).binaryOperation("pow", paramVars.get(1));
+            }
+            case "sin" -> {
+                assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    return Value.valueFactory(Type.FLOAT);
+                }
+                assert paramVars.getFirst() instanceof INumberValue;
+                return paramVars.getFirst().unaryOperation("sin");
+            }
+            case "random" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(Type.FLOAT);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

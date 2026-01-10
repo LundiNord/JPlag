@@ -1,5 +1,5 @@
 All Code in this directory is generated with Anthropic Claude Sonnet 4.5
-Initial Prompt: " write a java example project that must contain:
+Initial Prompt: " write one or more java example projects that must contain:
 
                  - a Main class with a main method as a starting point
 

@@ -199,6 +199,12 @@ public class StringValue extends JavaObject implements IStringValue {
             } else {
                 return new StringValue();
             }
+        } else if (operator.equals("+") && other instanceof BooleanValue boolValue) {
+            if (information && boolValue.getInformation()) {
+                return new StringValue(this.value + boolValue.getValue());
+            } else {
+                return new StringValue();
+            }
         } else if (operator.equals("==") && other instanceof NullValue) {
             if (information) {
                 return Value.valueFactory(this.value == null);

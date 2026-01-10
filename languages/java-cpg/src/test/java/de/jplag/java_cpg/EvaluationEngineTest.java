@@ -34,6 +34,10 @@ class EvaluationEngineTest {
     // ToDo: assert that dead code removal does not remove non-dead code
     // ToDo look at Project H, perplexityLabs 2
     // maybe: tokensWithoutSimpleDeadCode: disable other graph normalizations except dead code removal
+    // claude: project 5 dead code
+    // gemini project L , comparator ; projectN, project Q
+    // network controller.java
+    // grok: project1
 
     @NotNull
     private static Stream<String> testFiles() {
@@ -41,13 +45,28 @@ class EvaluationEngineTest {
                 // "aiGenerated/gemini/ProjectD.java",
                 "aiGenerated/gemini/ProjectE.java", "aiGenerated/gemini/ProjectF.java", "aiGenerated/gemini/ProjectG.java",
                 "aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java", "aiGenerated/gemini/ProjectJ.java",
-                "aiGenerated/gemini/ProjectK.java",
+                "aiGenerated/gemini/ProjectK.java", "aiGenerated/gemini/ProjectL.java", "aiGenerated/gemini/ProjectM.java",
+                "aiGenerated/gemini/ProjectN.java", "aiGenerated/gemini/ProjectO.java", "aiGenerated/gemini/ProjectP.java",
+                "aiGenerated/gemini/ProjectQ.java",
+                // "aiGenerated/gemini/ProjectR.java", "aiGenerated/gemini/ProjectS.java", //anonymus class causes problems
+                "aiGenerated/gemini/ProjectT.java", "aiGenerated/gemini/ProjectU.java", "aiGenerated/gemini/Project1.java",
+                "aiGenerated/gemini/Project2.java", "aiGenerated/gemini/Project3.java", "aiGenerated/gemini/Project4.java",
+                // "aiGenerated/gemini/Project5.java", //bug in GraphTransformations
+                "aiGenerated/gemini/Project7.java", "aiGenerated/gemini/Project8.java",
                 //
                 "aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java", "aiGenerated/claude/Project3.java",
-                "aiGenerated/claude/Project4.java",
+                "aiGenerated/claude/Project4.java", "aiGenerated/claude/Project5.java", "aiGenerated/claude/Project6.java",
+                "aiGenerated/claude/Project7.java", "aiGenerated/claude/Project8.java", "aiGenerated/claude/Project9.java",
+                "aiGenerated/claude/Project10.java",
                 //
                 "aiGenerated/perplexityLabs/Project1.java", "aiGenerated/perplexityLabs/Project2.java", "aiGenerated/perplexityLabs/Project3.java",
-                "aiGenerated/perplexityLabs/Project4.java");
+                "aiGenerated/perplexityLabs/Project4.java",
+                //
+                "aiGenerated/geminiPlag/NetworkController.java", "aiGenerated/geminiPlag/ServerProcessManager.java",
+                "aiGenerated/geminiPlag/GridOverseer.java",
+                //
+                "aiGenerated/grok/project1.java", "aiGenerated/grok/project2.java", "aiGenerated/grok/project3.java",
+                "aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java");
     }
 
     @NotNull
@@ -57,13 +76,37 @@ class EvaluationEngineTest {
                 new Pair<>("aiGenerated/gemini/ProjectF.java", "aiGenerated/gemini/ProjectG.java"),
                 new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java"),
                 new Pair<>("aiGenerated/gemini/ProjectJ.java", "aiGenerated/gemini/ProjectK.java"),
+                new Pair<>("aiGenerated/gemini/ProjectL.java", "aiGenerated/gemini/ProjectM.java"),
+                new Pair<>("aiGenerated/gemini/ProjectN.java", "aiGenerated/gemini/ProjectO.java"),
+                new Pair<>("aiGenerated/gemini/ProjectP.java", "aiGenerated/gemini/ProjectQ.java"),
+                // new Pair<>("aiGenerated/gemini/ProjectR.java", "aiGenerated/gemini/ProjectS.java"), //anonymus class causes problems
+                new Pair<>("aiGenerated/gemini/ProjectT.java", "aiGenerated/gemini/ProjectU.java"),
+                new Pair<>("aiGenerated/gemini/Project1.java", "aiGenerated/gemini/Project2.java"),
+                new Pair<>("aiGenerated/gemini/Project1.java", "aiGenerated/gemini/Project3.java"),
+                // new Pair<>("aiGenerated/gemini/Project4.java", "aiGenerated/gemini/Project5.java"), //bug in GraphTransformations
+                new Pair<>("aiGenerated/gemini/Project7.java", "aiGenerated/gemini/Project8.java"),
+                new Pair<>("aiGenerated/gemini/Project4.java", "aiGenerated/gemini/Project7.java"),
+                new Pair<>("aiGenerated/gemini/Project4.java", "aiGenerated/gemini/Project8.java"),
+                //
+                new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/geminiPlag/NetworkController.java"),
+                new Pair<>("aiGenerated/gemini/ProjectJ.java", "aiGenerated/geminiPlag/ServerProcessManager.java"),
+                new Pair<>("aiGenerated/gemini/NetworkController.java", "aiGenerated/geminiPlag/GridOverseer.java"),
                 //
                 new Pair<>("aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java"),
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project3.java"),
+                new Pair<>("aiGenerated/claude/Project5.java", "aiGenerated/claude/Project6.java"),
+                new Pair<>("aiGenerated/claude/Project7.java", "aiGenerated/claude/Project8.java"),
+                new Pair<>("aiGenerated/claude/Project9.java", "aiGenerated/claude/Project10.java"),
                 //
                 new Pair<>("aiGenerated/perplexityLabs/Project1.java", "aiGenerated/perplexityLabs/Project3.java"),
-                new Pair<>("aiGenerated/perplexityLabs/Project1.java", "aiGenerated/perplexityLabs/Project4.java"));
+                new Pair<>("aiGenerated/perplexityLabs/Project1.java", "aiGenerated/perplexityLabs/Project4.java"),
+                //
+                new Pair<>("aiGenerated/grok/project1.java", "aiGenerated/grok/project2.java"),
+                new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/grok/project4.java"),
+                new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/grok/project5.java"),
+                new Pair<>("aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java"));
+
     }
 
     private static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
@@ -128,7 +171,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "aiGenerated/perplexityLabs/Project4.java";
+        String fileName = "aiGenerated/grok/project5.java";
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
@@ -164,8 +207,8 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataPlagEvaluationSingle() throws ExitException, IOException {
-        String fileA = "aiGenerated/perplexityLabs/Project1.java";
-        String fileB = "aiGenerated/perplexityLabs/Project4.java";
+        String fileA = "aiGenerated/grok/project5.java";
+        String fileB = "aiGenerated/grok/project4.java";
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
         double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
         double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);

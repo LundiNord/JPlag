@@ -41,6 +41,8 @@ public enum Type {
         } else if ((cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IncompleteType.class && cpgType.getName().getLocalName().equals("void"))
                 || cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.UnknownType.class) {
             return VOID;
+        } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ParameterizedType.class) {
+            return VOID;    // ToDo: should be changed to UNKNOWN everywhere
         } else {
             throw new IllegalArgumentException("Unsupported CPG type: " + cpgType);
         }

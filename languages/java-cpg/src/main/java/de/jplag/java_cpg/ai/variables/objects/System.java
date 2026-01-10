@@ -6,6 +6,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -42,6 +43,10 @@ public class System extends JavaObject implements ISpecialObject {
             }
             case "exit" -> {
                 throw new UnsupportedOperationException("System.exit() called");
+            }
+            case "currentTimeMillis" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(Type.INT);
             }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
         }

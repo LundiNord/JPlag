@@ -224,6 +224,13 @@ public class IntValue extends Value implements INumberValue {
                     return new IntValue();
                 }
             }
+            case "sin" -> {
+                if (information) {
+                    return Value.valueFactory(Math.sin(this.value));
+                } else {
+                    return Value.valueFactory(Type.FLOAT);
+                }
+            }
             default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
