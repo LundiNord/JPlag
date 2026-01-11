@@ -66,7 +66,8 @@ class EvaluationEngineTest {
                 "aiGenerated/geminiPlag/GridOverseer.java",
                 //
                 "aiGenerated/grok/project1.java", "aiGenerated/grok/project2.java", "aiGenerated/grok/project3.java",
-                "aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java");
+                "aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java", "aiGenerated/grok/project6.java",
+                "aiGenerated/grok/project7.java", "aiGenerated/grok/project8.java");
     }
 
     @NotNull
@@ -105,7 +106,10 @@ class EvaluationEngineTest {
                 new Pair<>("aiGenerated/grok/project1.java", "aiGenerated/grok/project2.java"),
                 new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/grok/project4.java"),
                 new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/grok/project5.java"),
-                new Pair<>("aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java"));
+                new Pair<>("aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java"),
+                new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/grok/project7.java"),
+                new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/grok/project8.java"),
+                new Pair<>("aiGenerated/grok/project7.java", "aiGenerated/grok/project8.java"));
 
     }
 
@@ -171,7 +175,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "aiGenerated/grok/project5.java";
+        String fileName = "aiGenerated/grok/project8.java";
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
@@ -207,8 +211,8 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataPlagEvaluationSingle() throws ExitException, IOException {
-        String fileA = "aiGenerated/grok/project5.java";
-        String fileB = "aiGenerated/grok/project4.java";
+        String fileA = "aiGenerated/grok/project7.java";
+        String fileB = "aiGenerated/grok/project8.java";
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
         double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
         double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);

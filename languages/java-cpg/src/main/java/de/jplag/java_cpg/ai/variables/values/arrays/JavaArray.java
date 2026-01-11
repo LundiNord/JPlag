@@ -6,8 +6,6 @@ import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
@@ -22,7 +20,6 @@ import de.jplag.java_cpg.ai.variables.values.string.StringValue;
  */
 public class JavaArray extends JavaObject implements IJavaArray {
 
-    private static final Logger log = LoggerFactory.getLogger(JavaArray.class);
     private Type innerType;
     @Nullable
     private List<IValue> values;     // values = null: no information about the array
@@ -438,6 +435,23 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "clone" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return this.copy();
+            }
+            case "filter" -> {
+                this.values = null;
+                return Value.valueFactory(Type.LIST);
+            }
+            case "findFirst" -> {
+                if (values != null) {
+                    if (!values.isEmpty()) {
+                        return values.getFirst();
+                    }
+                }
+                return new VoidValue();
+            }
+            case "forEach" -> {
+                this.values = null;
+                this.innerType = Type.VOID;
+                return Value.valueFactory(Type.LIST);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }
