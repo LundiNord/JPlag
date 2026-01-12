@@ -8,11 +8,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,7 +40,6 @@ class EvaluationEngineTest {
     // claude: project 5 dead code
     // gemini project L , comparator ; projectN, project Q
     // network controller.java
-    // grok: project1
 
     @NotNull
     private static Stream<String> testFiles() {
@@ -155,6 +157,111 @@ class EvaluationEngineTest {
         return costs[s2.size()];
     }
 
+    @NotNull
+    private static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
+            boolean normalize) throws ParsingException {
+        assert normalize || !reorder;
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, JavaCpgLanguage.deadCodeRemovalTransformations());
+        File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
+        Set<File> files = Set.of(file);
+        List<Token> result = language.parse(files, normalize);
+        result.removeLast(); // remove EOF token
+        return result;
+    }
+
+    @NotNull
+    private static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder) throws ParsingException {
+        try {
+            File originalFile = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
+            File tempFile = File.createTempFile("jplag_temp_", ".java");
+            tempFile.deleteOnExit();
+            BufferedReader reader = new BufferedReader(new FileReader(originalFile));
+            java.io.PrintWriter writer = new java.io.PrintWriter(tempFile);
+            String line;
+            boolean inDeadCode = false;
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
+                if (trimmed.contains("//DeadCodeStart")) {
+                    inDeadCode = true;
+                } else if (trimmed.contains("//DeadCodeEnd")) {
+                    inDeadCode = false;
+                } else if (!inDeadCode) {
+                    writer.println(line);
+                }
+            }
+            reader.close();
+            writer.close();
+            JavaCpgLanguage language = new JavaCpgLanguage(false, false, reorder);
+            List<Token> result = language.parse(Set.of(tempFile), false);
+            result.removeLast(); // remove EOF token
+            return result;
+        } catch (IOException e) {
+            throw new ParsingException(new File(BASE_PATH.toFile().getAbsolutePath(), fileName), e.getMessage());
+        }
+    }
+
+    private static double getJPlagCpgPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean removeDeadCode, boolean detectDeadCode,
+            boolean reorder, boolean normalize) throws ExitException, IOException {
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder);
+        return getJPlagScore(fileNameA, fileNameB, normalize, language);
+    }
+
+    private static double getJPlagPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize)
+            throws ExitException, IOException {
+        de.jplag.java.JavaLanguage language = new de.jplag.java.JavaLanguage();
+        return getJPlagScore(fileNameA, fileNameB, normalize, language);
+    }
+
+    private static double getJPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize, Language language)
+            throws ExitException, IOException {
+        File fileA = new File(BASE_PATH.toFile().getAbsolutePath(), fileNameA);
+        File fileB = new File(BASE_PATH.toFile().getAbsolutePath(), fileNameB);
+        // Create temporary directories for submissions
+        File tempDirA = createTempDir();
+        File tempDirB = createTempDir();
+        // Copy files to temp directories
+        File targetA = new File(tempDirA, "SubmissionA.java");
+        File targetB = new File(tempDirB, "SubmissionB.java");
+        java.nio.file.Files.copy(fileA.toPath(), targetA.toPath());
+        java.nio.file.Files.copy(fileB.toPath(), targetB.toPath());
+        Set<File> submissionDirectories = Set.of(tempDirA, tempDirB);
+        JPlagOptions options = new JPlagOptions(language, null, submissionDirectories, Set.of(), null, null, null, null, DEFAULT_SIMILARITY_METRIC,
+                DEFAULT_SIMILARITY_THRESHOLD, DEFAULT_SHOWN_COMPARISONS, new ClusteringOptions(), false, new MergingOptions(), normalize, false,
+                new FrequencyAnalysisOptions());
+        JPlagResult result = JPlag.run(options);
+        assert result.getAllComparisons().size() == 1;
+        JPlagComparison comparison = result.getAllComparisons().getFirst();
+        double similarity = comparison.similarity();
+        double maxSimilarity = comparison.maximalSimilarity();
+        int matchedTokens = comparison.getNumberOfMatchedTokens();
+        double frequencyWeightedSimilarity = comparison.frequencyWeightedSimilarity();
+        return similarity;
+    }
+
+    private static @NotNull File createTempDir() throws IOException {
+        File tempDir = File.createTempFile("jplag_submission_", "");
+        tempDir.delete();
+        tempDir.mkdir();
+        tempDir.deleteOnExit();
+        return tempDir;
+    }
+
+    public static void checkNonDeadCodeNotRemoved(@NotNull List<Token> verifiedDeadCode, @NotNull List<Token> detectedDeadCode) {
+        // we check that all tokens in verifiedDeadCode are also in detectedDeadCode
+        Assertions.assertTrue(detectedDeadCode.size() >= verifiedDeadCode.size(), "Detected dead code is smaller than verified dead code"
+                + " (detected: " + detectedDeadCode.size() + ", verified: " + verifiedDeadCode.size() + ")");
+        ArrayList<Token> detectedDeadCodeCopy = new ArrayList<>(detectedDeadCode);
+        int i = 0;
+        for (Token token : verifiedDeadCode) {
+            Token nextToken = detectedDeadCodeCopy.get(i);
+            while (!Objects.equals(nextToken.toString(), token.toString())) {
+                i++;
+                nextToken = detectedDeadCodeCopy.get(i);
+            }
+        }
+        Assertions.assertTrue(true);
+    }
+
     @ParameterizedTest
     @Disabled
     @MethodSource("testFiles")
@@ -175,11 +282,14 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "aiGenerated/grok/project8.java";
+        String fileName = "aiGenerated/geminiPlag/NetworkController.java";
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
+        // Assert we don't remove non-dead code
+        checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
+        checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
 
         System.out.println("Similarity between manual and no dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokens) + "%");
         System.out.println("Similarity between manual and simple dead code removal: "
@@ -224,94 +334,6 @@ class EvaluationEngineTest {
         System.out.println("Cpg standard transformations: " + similarityStandardCpg);
         System.out.println("Cpg with AI dead code removal: " + similarityAi);
         assertTrue(true);
-    }
-
-    @NotNull
-    private List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
-            boolean normalize) throws ParsingException {
-        assert normalize || !reorder;
-        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder);
-        File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
-        Set<File> files = Set.of(file);
-        List<Token> result = language.parse(files, normalize);
-        result.removeLast(); // remove EOF token
-        return result;
-    }
-
-    @NotNull
-    private List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder) throws ParsingException {
-        try {
-            File originalFile = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
-            File tempFile = File.createTempFile("jplag_temp_", ".java");
-            tempFile.deleteOnExit();
-            BufferedReader reader = new BufferedReader(new FileReader(originalFile));
-            java.io.PrintWriter writer = new java.io.PrintWriter(tempFile);
-            String line;
-            boolean inDeadCode = false;
-            while ((line = reader.readLine()) != null) {
-                String trimmed = line.trim();
-                if (trimmed.contains("//DeadCodeStart")) {
-                    inDeadCode = true;
-                } else if (trimmed.contains("//DeadCodeEnd")) {
-                    inDeadCode = false;
-                } else if (!inDeadCode) {
-                    writer.println(line);
-                }
-            }
-            reader.close();
-            writer.close();
-            JavaCpgLanguage language = new JavaCpgLanguage(false, false, reorder);
-            List<Token> result = language.parse(Set.of(tempFile), false);
-            result.removeLast(); // remove EOF token
-            return result;
-        } catch (IOException e) {
-            throw new ParsingException(new File(BASE_PATH.toFile().getAbsolutePath(), fileName), e.getMessage());
-        }
-    }
-
-    private double getJPlagCpgPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean removeDeadCode, boolean detectDeadCode,
-            boolean reorder, boolean normalize) throws ExitException, IOException {
-        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder);
-        return getJPlagScore(fileNameA, fileNameB, normalize, language);
-    }
-
-    private double getJPlagPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize) throws ExitException, IOException {
-        de.jplag.java.JavaLanguage language = new de.jplag.java.JavaLanguage();
-        return getJPlagScore(fileNameA, fileNameB, normalize, language);
-    }
-
-    private double getJPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize, Language language)
-            throws ExitException, IOException {
-        File fileA = new File(BASE_PATH.toFile().getAbsolutePath(), fileNameA);
-        File fileB = new File(BASE_PATH.toFile().getAbsolutePath(), fileNameB);
-        // Create temporary directories for submissions
-        File tempDirA = createTempDir();
-        File tempDirB = createTempDir();
-        // Copy files to temp directories
-        File targetA = new File(tempDirA, "SubmissionA.java");
-        File targetB = new File(tempDirB, "SubmissionB.java");
-        java.nio.file.Files.copy(fileA.toPath(), targetA.toPath());
-        java.nio.file.Files.copy(fileB.toPath(), targetB.toPath());
-        Set<File> submissionDirectories = Set.of(tempDirA, tempDirB);
-        JPlagOptions options = new JPlagOptions(language, null, submissionDirectories, Set.of(), null, null, null, null, DEFAULT_SIMILARITY_METRIC,
-                DEFAULT_SIMILARITY_THRESHOLD, DEFAULT_SHOWN_COMPARISONS, new ClusteringOptions(), false, new MergingOptions(), normalize, false,
-                new FrequencyAnalysisOptions());
-        JPlagResult result = JPlag.run(options);
-        assert result.getAllComparisons().size() == 1;
-        JPlagComparison comparison = result.getAllComparisons().getFirst();
-        double similarity = comparison.similarity();
-        double maxSimilarity = comparison.maximalSimilarity();
-        int matchedTokens = comparison.getNumberOfMatchedTokens();
-        double frequencyWeightedSimilarity = comparison.frequencyWeightedSimilarity();
-        return similarity;
-    }
-
-    private @NotNull File createTempDir() throws IOException {
-        File tempDir = File.createTempFile("jplag_submission_", "");
-        tempDir.delete();
-        tempDir.mkdir();
-        tempDir.deleteOnExit();
-        return tempDir;
     }
 
 }

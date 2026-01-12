@@ -35,11 +35,11 @@ public class Product {
     public void setName(String name) {
         this.name = name;
     }
-    //DeadCodeEnd
 
     public String getSupplier() {
         return supplier;
     }
+    //DeadCodeEnd
 
     //DeadCodeStart
     public void setSupplier(String supplier) {
@@ -64,7 +64,7 @@ public class Product {
     public void setInStock(boolean inStock) {
         this.inStock = inStock;
     }
-
+    
     @Override
     public int hashCode() {
         return Objects.hash(productId);

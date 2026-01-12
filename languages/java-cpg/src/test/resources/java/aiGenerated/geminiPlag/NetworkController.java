@@ -59,7 +59,7 @@ public class NetworkController {
         // Renamed method: toggle -> switchState
         void switchState() {
             isActive = !isActive;
-            String state = isActive ? "[ENABLED]" : "[DISABLED]";
+            String state = isActive + "[DISABLED]";
             System.out.println(" > " + uID + " status: " + state);
         }
 

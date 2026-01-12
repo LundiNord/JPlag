@@ -51,16 +51,8 @@ public final class TransformationUtil {
             }
             if (result.getExits().isEmpty()) {
                 Node exit = astRoot;
-                java.util.Set<Node> visited = new java.util.HashSet<>();
-                visited.add(exit);
-                while (!exit.getNextEOG().isEmpty()) {
+                while (!exit.getNextEOG().isEmpty())
                     exit = exit.getNextEOG().getFirst();
-                    if (!visited.add(exit)) {
-                        // cycle detected
-                        // FixMe: now still right exit?
-                        break;
-                    }
-                }
                 result.setExits(List.of(exit));
             }
         }

@@ -21,6 +21,7 @@ public class Account {
         return accountNumber;
     }
 
+    //DeadCodeStart
     public String getOwner() {
         return owner;
     }
@@ -29,13 +30,10 @@ public class Account {
         return balance;
     }
 
-    //DeadCodeStart
     public void setBalance(double balance) {
         this.balance = balance;
     }
-    //DeadCodeEnd
 
-    //DeadCodeStart
     public boolean isActive() {
         return active;
     }

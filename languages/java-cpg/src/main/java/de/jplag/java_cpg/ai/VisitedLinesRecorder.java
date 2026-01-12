@@ -134,4 +134,9 @@ public class VisitedLinesRecorder {
         return detectedDeadLines;
     }
 
+    @TestOnly
+    public Map<URI, Set<Integer>> getVisitedLines() {
+        return visitedLines;
+    }
+
 }

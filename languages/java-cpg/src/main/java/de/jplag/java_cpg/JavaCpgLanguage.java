@@ -37,12 +37,25 @@ public class JavaCpgLanguage implements Language {
         this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, allTransformations());
     }
 
+    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation[] transformations) {
+        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, transformations);
+    }
+
     /**
      * @return array with only the minimal set of transformations needed for a standard tokenization
      */
     @NotNull
     public static GraphTransformation[] minimalTransformations() {
         return new GraphTransformation[] {removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField,};
+    }
+
+    /**
+     * @return array with only the set of transformations needed for dead code removal
+     */
+    @NotNull
+    public static GraphTransformation[] deadCodeRemovalTransformations() {
+        return new GraphTransformation[] {removeEmptyDeclarationStatement, removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField,
+                removeEmptyConstructor, removeUnsupportedConstructor, removeUnsupportedMethod, removeEmptyRecord};
     }
 
     /**

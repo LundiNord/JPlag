@@ -83,6 +83,29 @@ class DeadCodeDetectionTest {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
     }
 
+    @NotNull
+    private static java.net.URI getURI(@NotNull AbstractInterpretation interpretation, @NotNull String fileName) {
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        var nonVisited = recorder.getNonVisitedLines();
+        for (var uri : nonVisited.keySet()) {
+            if (uri.getPath().endsWith(fileName)) {
+                return uri;
+            }
+        }
+        throw new RuntimeException("URI not found for " + fileName);
+    }
+
+    @NotNull
+    public static VisitedLinesRecorder getVisitedLinesRecorder(@NotNull AbstractInterpretation interpretation) {
+        try {
+            java.lang.reflect.Field field = AbstractInterpretation.class.getDeclaredField("visitedLinesRecorder");
+            field.setAccessible(true);
+            return (VisitedLinesRecorder) field.get(interpretation);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * a simple test with the main function only
      */
@@ -517,32 +540,10 @@ class DeadCodeDetectionTest {
     }
 
     @Test
-    void testExample() throws ParsingException, InterruptedException {
-        AbstractInterpretation interpretation = interpretFromResource("java/aiGenerated/test/testb");
-        assertNotNull(interpretation);
-    }
-
-    @NotNull
-    private java.net.URI getURI(@NotNull AbstractInterpretation interpretation, @NotNull String fileName) {
-        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
-        var nonVisited = recorder.getNonVisitedLines();
-        for (var uri : nonVisited.keySet()) {
-            if (uri.getPath().endsWith(fileName)) {
-                return uri;
-            }
-        }
-        throw new RuntimeException("URI not found for " + fileName);
-    }
-
-    @NotNull
-    public VisitedLinesRecorder getVisitedLinesRecorder(@NotNull AbstractInterpretation interpretation) {
-        try {
-            java.lang.reflect.Field field = AbstractInterpretation.class.getDeclaredField("visitedLinesRecorder");
-            field.setAccessible(true);
-            return (VisitedLinesRecorder) field.get(interpretation);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    void testInheritance() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/inheritance");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
     }
 
 }
