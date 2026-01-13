@@ -27,10 +27,10 @@ public class FactoryFloorSystem {
         //DeadCodeStart
         // "Ghost" Code: This is the 'voiceEnabled' check from SmartHomeHub
         // The variable name was changed, but the logic structure remains.
-        boolean remoteAccess = false; 
+        boolean remoteAccess = false;
         if (remoteAccess) {
             // "listenForCommands" was renamed but body is empty/dead
-            connectToCloud(); 
+            connectToCloud();
         }
         //DeadCodeEnd
     }
@@ -51,11 +51,11 @@ public class FactoryFloorSystem {
             }
 
             //DeadCodeStart
-            // Obvious Plagiarism Leftover: 
-            // The logic checks for 'hour == 99' (from SmartHomeHub) 
+            // Obvious Plagiarism Leftover:
+            // The logic checks for 'hour == 99' (from SmartHomeHub)
             // even though this loop uses 'shiftBlock'.
             if (shiftBlock == 99) {
-                 System.out.println("Demo Mode: Lights On"); // "Lights" reveals the source
+                System.out.println("Demo Mode: Lights On"); // "Lights" reveals the source
             }
             //DeadCodeEnd
         }
@@ -75,11 +75,13 @@ public class FactoryFloorSystem {
         String assetId;
         boolean isActive = false;
 
-        IndustrialUnit(String id) { this.assetId = id; }
+        IndustrialUnit(String id) {
+            this.assetId = id;
+        }
 
         void switchPower() {
             isActive = !isActive;
-            System.out.println(assetId + " state: " + (isActive ? "RUNNING" : "HALTED"));
+            System.out.println(assetId + " state: " + (isActive + "HALTED"));
         }
 
         abstract void performTask();
@@ -87,7 +89,10 @@ public class FactoryFloorSystem {
 
     // PLAGIARISM: Direct copy of 'SmartBulb' logic
     static class HydraulicPress extends IndustrialUnit {
-        HydraulicPress(String id) { super(id); }
+        HydraulicPress(String id) {
+            super(id);
+        }
+
         @Override
         void performTask() {
             // Logic is identical to bulb illumination, just different text
@@ -97,21 +102,28 @@ public class FactoryFloorSystem {
 
     // PLAGIARISM: Direct copy of 'SmartThermostat' logic
     static class ConveyorBelt extends IndustrialUnit {
-        ConveyorBelt(String id) { super(id); }
+        ConveyorBelt(String id) {
+            super(id);
+        }
+
         @Override
         void performTask() {
             System.out.println("  -> " + assetId + " is moving at 2.5 m/s.");
         }
     }
-    
+
     //DeadCodeStart
+
     /**
      * Vestigial class from the stolen project.
-     * This class 'SmartLock' was copied over but never renamed 
+     * This class 'SmartLock' was copied over but never renamed
      * or used in the Factory system.
      */
     static class SmartLock extends IndustrialUnit {
-        SmartLock(String id) { super(id); }
+        SmartLock(String id) {
+            super(id);
+        }
+
         @Override
         void performTask() {
             System.out.println("Locking doors.");

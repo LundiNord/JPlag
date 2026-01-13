@@ -13,6 +13,8 @@ import org.kohsuke.MetaInfServices;
 import de.jplag.Language;
 import de.jplag.ParsingException;
 import de.jplag.Token;
+import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
 /**
@@ -39,6 +41,16 @@ public class JavaCpgLanguage implements Language {
 
     public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation[] transformations) {
         this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, transformations);
+    }
+
+    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation[] transformations,
+            IntAiType intAiType, FloatAiType floatAiType, StringAiType stringAiType, CharAiType charAiType, ArrayAiType arrayAiType) {
+        this(removeDeadCode, detectDeadCode, reorder, transformations);
+        Value.setUsedIntAiType(intAiType);
+        Value.setUsedFloatAiType(floatAiType);
+        Value.setUsedStringAiType(stringAiType);
+        Value.setUsedCharAiType(charAiType);
+        Value.setUsedArrayAiType(arrayAiType);
     }
 
     /**

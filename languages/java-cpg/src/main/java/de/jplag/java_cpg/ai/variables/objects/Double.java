@@ -13,7 +13,7 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Representation of the static java.lang.Double class.
@@ -43,7 +43,7 @@ public class Double extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 1;
                 IValue value = paramVars.getFirst();
                 switch (value) {
-                    case StringValue str -> {
+                    case IStringValue str -> {
                         return str.callMethod("parseDouble", paramVars, null);
                     }
                     case INumberValue num -> {
@@ -53,7 +53,7 @@ public class Double extends JavaObject implements ISpecialObject {
                             return Value.valueFactory(Type.FLOAT);
                         }
                     }
-                    case VoidValue ignored -> {
+                    case VoidValue _ -> {
                         return Value.valueFactory(Type.FLOAT);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);

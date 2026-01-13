@@ -29,7 +29,7 @@ import de.jplag.java_cpg.ai.variables.values.Value;
  * @author ujiqk
  * @version 1.0
  */
-class ProgpediaTests {
+public class ProgpediaTests {
 
     @NotNull
     private static AbstractInterpretation interpretFromResource(String resourceDir) throws ParsingException, InterruptedException {
@@ -47,11 +47,26 @@ class ProgpediaTests {
     }
 
     @NotNull
-    private static Stream<String> acceptedResourceDirs() {
+    public static Stream<String> progpediaResourceDirs() {
         return Stream
                 .of("00000006", "00000016", "00000018", "00000019", "00000021", "00000022", "00000023", "00000034", "00000035", "00000039",
                         "00000042", "00000043", "00000045", "00000048", "00000053", "00000056")
                 .flatMap(problemId -> Stream.of("ACCEPTED", "WRONG_ANSWER").flatMap(category -> getResourceDirsForProblem(problemId, category)));
+    }
+
+    @NotNull
+    public static Stream<String> progpediaFiles() {
+        return progpediaResourceDirs().flatMap(dir -> {
+            ClassLoader classLoader = DeadCodeDetectionTest.class.getClassLoader();
+            java.net.URL url = classLoader.getResource(dir);
+            if (url == null)
+                return Stream.empty();
+            File directory = new File(url.getFile());
+            File[] javaFiles = directory.listFiles((d, name) -> name.endsWith(".java"));
+            if (javaFiles == null)
+                return Stream.empty();
+            return Arrays.stream(javaFiles).map(f -> dir + f.getName());
+        }).map(s -> s.substring(5));    // remove first "java/"
     }
 
     private static Stream<String> getResourceDirsForProblem(String problemId, String category) {
@@ -67,7 +82,7 @@ class ProgpediaTests {
     }
 
     @ParameterizedTest
-    @MethodSource("acceptedResourceDirs")
+    @MethodSource("progpediaResourceDirs")
     void testProgpedia(String resourceDir) throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);

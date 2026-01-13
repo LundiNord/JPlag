@@ -113,6 +113,14 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
                 }
                 return new StringCharInclValue(newCertain, newMaybe);
             }
+            case "charAt" -> {
+                assert paramVars.size() == 1;
+                assert paramVars.getFirst() instanceof INumberValue;
+                return Value.valueFactory(Type.CHAR);
+            }
+            case "trim" -> {
+                return new StringCharInclValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

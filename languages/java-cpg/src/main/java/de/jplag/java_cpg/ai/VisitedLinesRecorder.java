@@ -72,7 +72,9 @@ public class VisitedLinesRecorder {
         alreadyDeadLines.addAll(deadLines);
     }
 
-    public void recordDetectedDeadLines(@NotNull Node node) {
+    public void recordDetectedDeadLines(Node node) {
+        if (node == null)
+            return;
         PhysicalLocation location = node.getLocation();
         if (location == null) {
             return;

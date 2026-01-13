@@ -133,6 +133,10 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 }
                 return Value.valueFactory(Type.BOOLEAN);
             }
+            case "findFirst", "findAny" -> {
+                assert paramVars.size() == 1;
+                return arrayAccess((INumberValue) Value.valueFactory(1));
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -150,6 +154,9 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     @NotNull
     @Override
     public JavaObject copy() {
+        if (this.length == null) {
+            return new JavaLengthArray(this.innerType);
+        }
         INumberValue newLength = (INumberValue) this.length.copy();
         return new JavaLengthArray(this.innerType, newLength);
     }

@@ -25,12 +25,19 @@ import de.jplag.*;
 import de.jplag.clustering.ClusteringOptions;
 import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
 
 import kotlin.Pair;
 
 class EvaluationEngineTest {
+
+    // 21/Acceptes/45/3
+    // 21/WrongAnswer/28/2 -> multiple calls
+    // 18/Accepted/32/2
+    // 18/Accepted/40/1
+    // 18/Accepted/31/2
 
     @NotNull
     private static Stream<String> testFiles() {
@@ -56,7 +63,7 @@ class EvaluationEngineTest {
                 "aiGenerated/perplexityLabs/Project4.java",
                 //
                 "aiGenerated/geminiPlag/NetworkController.java", "aiGenerated/geminiPlag/ServerProcessManager.java",
-                "aiGenerated/geminiPlag/GridOverseer.java",
+                // "aiGenerated/geminiPlag/GridOverseer.java", //bug in my code
                 //
                 "aiGenerated/grok/project1.java", "aiGenerated/grok/project2.java", "aiGenerated/grok/project3.java",
                 "aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java", "aiGenerated/grok/project6.java",
@@ -84,7 +91,7 @@ class EvaluationEngineTest {
                 //
                 new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/geminiPlag/NetworkController.java"),
                 new Pair<>("aiGenerated/gemini/ProjectJ.java", "aiGenerated/geminiPlag/ServerProcessManager.java"),
-                new Pair<>("aiGenerated/gemini/NetworkController.java", "aiGenerated/geminiPlag/GridOverseer.java"),
+                // new Pair<>("aiGenerated/gemini/NetworkController.java", "aiGenerated/geminiPlag/GridOverseer.java"), //bug in my code
                 //
                 new Pair<>("aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java"),
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
@@ -152,7 +159,10 @@ class EvaluationEngineTest {
     private static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
             boolean normalize) throws ParsingException {
         assert normalize || !reorder;
-        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, JavaCpgLanguage.deadCodeRemovalTransformations());
+
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, JavaCpgLanguage.deadCodeRemovalTransformations(),
+                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+                IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
         List<Token> result = language.parse(files, normalize);
@@ -229,7 +239,8 @@ class EvaluationEngineTest {
         return similarity;
     }
 
-    private static @NotNull File createTempDir() throws IOException {
+    @NotNull
+    private static File createTempDir() throws IOException {
         File tempDir = File.createTempFile("jplag_submission_", "");
         tempDir.delete();
         tempDir.mkdir();
@@ -253,27 +264,99 @@ class EvaluationEngineTest {
         Assertions.assertTrue(true);
     }
 
+    @NotNull
+    public static Stream<String> progpediaFiles() {
+        return ProgpediaTests.progpediaFiles();
+    }
+
     @ParameterizedTest
-    @Disabled
     @MethodSource("testFiles")
     void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
+        long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        long timeNoRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        long timeSimpleRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        long timeFullRemoval = System.nanoTime() - startTime;
+
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
 
-        System.out.println("Similarity between manual and no dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokens) + "%");
-        System.out.println("Similarity between manual and automatic simple dead code removal: "
-                + similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode) + "%");
+        double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
+        double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
+        double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
+
+        File csvFile = new File("deadcode_results.csv");
+        boolean fileExists = csvFile.exists();
+
+        try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
+            if (!fileExists) {
+                writer.write("FileName,NoRemoval,SimpleRemoval,FullRemoval,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms)\n");
+            }
+            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f%n", fileName, simNoRemoval, simSimpleRemoval, simFullRemoval,
+                    timeNoRemoval / 1_000_000.0, timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
+        System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
+                + timeSimpleRemoval / 1_000_000.0 + " ms)");
         System.out.println(
-                "Similarity between manual and automatic dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode) + "%");
+                "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
+        assertTrue(true);
+    }
+
+    @ParameterizedTest
+    @MethodSource("progpediaFiles")
+    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException {
+        long startTime = System.nanoTime();
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        long timeNoRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        long timeSimpleRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        long timeFullRemoval = System.nanoTime() - startTime;
+
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
+
+        double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
+        double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
+        double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
+
+        File csvFile = new File("Progpedia_deadcode_results.csv");
+        boolean fileExists = csvFile.exists();
+
+        try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
+            if (!fileExists) {
+                writer.write("FileName,NoRemoval,SimpleRemoval,FullRemoval,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms)\n");
+            }
+            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f%n", fileName, simNoRemoval, simSimpleRemoval, simFullRemoval,
+                    timeNoRemoval / 1_000_000.0, timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
+        System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
+                + timeSimpleRemoval / 1_000_000.0 + " ms)");
+        System.out.println(
+                "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
         assertTrue(true);
     }
 
     @Test
     @Disabled
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "aiGenerated/gemini/ProjectH.java";
+        String fileName = "progpedia/00000021/WRONG_ANSWER/00028_00002/animal.java";
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
@@ -291,21 +374,44 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
-    @Disabled
     @MethodSource("testPlagFiles")
     void AiGeneratedTestDataPlagEvaluation(@NotNull Pair<String, String> fileNames) throws ExitException, IOException {
         String fileA = fileNames.getFirst();
         String fileB = fileNames.getSecond();
+
+        long startTime = System.nanoTime();
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
+        long timeJPlag = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
         double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
-        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);   // ToDo: enable reorder
+        long timeMinimalCpg = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
+        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);
+        long timeStandardCpg = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
         double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true);
+        long timeAi = System.nanoTime() - startTime;
+
+        File csvFile = new File("plagiarism_results.csv");
+        boolean fileExists = csvFile.exists();
+
+        try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
+            if (!fileExists) {
+                writer.write("FileA,FileB,JPlag,CpgMinimal,CpgStandard,CpgAI,TimeJPlag(ms),TimeMinimalCpg(ms),TimeStandardCpg(ms),TimeAi(ms)\n");
+            }
+            writer.write(String.format("%s,%s,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f%n", fileA, fileB, similarityJPlag, similarityMinimalCpg,
+                    similarityStandardCpg, similarityAi, timeJPlag / 1_000_000.0, timeMinimalCpg / 1_000_000.0, timeStandardCpg / 1_000_000.0,
+                    timeAi / 1_000_000.0));
+        }
 
         System.out.println("Plagiarism scores for " + fileA + " and " + fileB + ":");
-        System.out.println("JPlag standard: " + similarityJPlag);
-        System.out.println("Cpg minimal transformations: " + similarityMinimalCpg);
-        System.out.println("Cpg standard transformations: " + similarityStandardCpg);
-        System.out.println("Cpg with AI dead code removal: " + similarityAi);
+        System.out.println("JPlag standard: " + similarityJPlag + " (took " + timeJPlag / 1_000_000.0 + " ms)");
+        System.out.println("Cpg minimal transformations: " + similarityMinimalCpg + " (took " + timeMinimalCpg / 1_000_000.0 + " ms)");
+        System.out.println("Cpg standard transformations: " + similarityStandardCpg + " (took " + timeStandardCpg / 1_000_000.0 + " ms)");
+        System.out.println("Cpg with AI dead code removal: " + similarityAi + " (took " + timeAi / 1_000_000.0 + " ms)");
         assertTrue(true);
     }
 

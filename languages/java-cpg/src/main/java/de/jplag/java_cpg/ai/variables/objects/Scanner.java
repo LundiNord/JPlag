@@ -62,6 +62,11 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 // We don't model Locale, so just return this
                 return this;
             }
+            case "useDelimiter" -> {
+                assert paramVars.size() == 1;
+                // We don't model Pattern, so just return this
+                return this;
+            }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in Scanner.");
         }
     }

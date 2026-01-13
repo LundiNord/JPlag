@@ -34,7 +34,7 @@ public class GridOverseer {
             // Technique: Indexed access loop changes the bytecode iteration pattern
             for (int j = 0; j < infrastructure.size(); j++) {
                 GridComponent component = infrastructure.get(j);
-                
+
                 // Technique: Logic Shifting. The controller no longer decides *if* // the device toggles, it just tells the device to "update".
                 // The probability logic is now hidden inside the object.
                 component.performCycle(entropySource);
@@ -61,7 +61,7 @@ public class GridOverseer {
             if (r.nextBoolean()) {
                 togglePower();
             }
-            
+
             if (isOnline) {
                 doWork();
             }
@@ -72,7 +72,7 @@ public class GridOverseer {
             // Technique: StringBuilder changes the compiled bytecode string handling
             StringBuilder sb = new StringBuilder();
             sb.append(" [INFO] ").append(tag).append(" is ");
-            sb.append(isOnline ? "ACTIVE" : "STANDBY");
+            sb.append(isOnline + "STANDBY");
             System.out.println(sb.toString());
         }
 
@@ -81,21 +81,25 @@ public class GridOverseer {
 
     // Implementation A
     static class PhotoComponent extends GridComponent {
-        public PhotoComponent(String s) { super(s); }
+        public PhotoComponent(String s) {
+            super(s);
+        }
 
         @Override
         protected void doWork() {
-             System.out.println("    -> Outputting visible spectrum light.");
+            System.out.println("    -> Outputting visible spectrum light.");
         }
     }
 
     // Implementation B
     static class ThermalComponent extends GridComponent {
-        public ThermalComponent(String s) { super(s); }
-        
+        public ThermalComponent(String s) {
+            super(s);
+        }
+
         @Override
         protected void doWork() {
-             System.out.println("    -> Adjusting ambient temperature.");
+            System.out.println("    -> Adjusting ambient temperature.");
         }
     }
 }

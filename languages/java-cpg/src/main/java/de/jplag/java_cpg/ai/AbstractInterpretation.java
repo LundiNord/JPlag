@@ -660,6 +660,9 @@ public class AbstractInterpretation {
                 valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
+            if (javaObject == null) {
+                System.out.println("Debug");
+            }
             result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
         } else {
             List<IValue> argumentList = new ArrayList<>();
@@ -773,10 +776,10 @@ public class AbstractInterpretation {
         boolean runElseBranch = true;
         Node thenBlock = ifStmt.getThenStatement(); // not always a block
         Node elseBlock = ifStmt.getElseStatement();
-        if (thenBlock == null) {
+        if (thenBlock == null || nextEOG.getFirst() instanceof DummyNeighbor) {
             runThenBranch = false;
         }
-        if (elseBlock == null) {
+        if (elseBlock == null || nextEOG.getLast() instanceof DummyNeighbor) {
             runElseBranch = false;
         }
         if (condition.getInformation() && !recordingChanges.isRecording()) {
@@ -872,7 +875,7 @@ public class AbstractInterpretation {
             return null;
         }
         if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch) && condition.getInformation())) {    // FixMe:
-                                                                                                                                            // stringAiComplex
+            // stringAiComplex
             // return in every branch
             valueStack.add(returnStorage.getLast());
             nextNode = new ReturnStatement();

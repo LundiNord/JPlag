@@ -133,6 +133,9 @@ public class IntIntervalValue extends Value implements INumberValue {
 
     @Override
     public void merge(@NotNull IValue other) {
+        if (!(other instanceof IntIntervalValue)) {
+            System.out.println("Debug");
+        }
         assert other instanceof IntIntervalValue;
         this.interval.merge(((IntIntervalValue) other).interval);
     }
