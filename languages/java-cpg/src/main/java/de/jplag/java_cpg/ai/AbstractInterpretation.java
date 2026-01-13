@@ -34,13 +34,6 @@ import de.jplag.java_cpg.transformation.operations.TransformationUtil;
  */
 public class AbstractInterpretation {
 
-    /**
-     * Helper: if we are recording changes for while loops.
-     */
-    private static boolean recordingChanges = false;
-    /**
-     *
-     */
     private final List<IValue> returnStorage;
     /**
      * Helper to detect recursive method calls.
@@ -51,6 +44,11 @@ public class AbstractInterpretation {
      */
     private final VisitedLinesRecorder visitedLinesRecorder;
     private final boolean removeDeadCode;
+    /**
+     * Helper: if we are recording changes for while loops.
+     */
+    @NotNull
+    private final RecordingChanges recordingChanges;
     /**
      * Helper stack to work around cpg limitations.
      */
@@ -78,8 +76,16 @@ public class AbstractInterpretation {
      * Helper counter for nested if-else statements because cpg does not provide enough information.
      */
     private int ifElseCounter = 0;
+    /**
+     * Helper to detect if we are currently in a constructor. ConstructExpressions behave differently inside constructors.
+     */
+    private boolean inConstructor = false;
 
     public AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder, boolean removeDeadCode) {
+        this(visitedLinesRecorder, removeDeadCode, new RecordingChanges(false));
+    }
+
+    private AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder, boolean removeDeadCode, @NotNull RecordingChanges recordingChanges) {
         variables = new VariableStore();
         nodeStack = new ArrayList<>();
         valueStack = new ArrayList<>();
@@ -88,6 +94,7 @@ public class AbstractInterpretation {
         lastVisitedMethod = new ArrayList<>();
         this.visitedLinesRecorder = visitedLinesRecorder;
         this.removeDeadCode = removeDeadCode;
+        this.recordingChanges = recordingChanges;
     }
 
     private static JavaObject createNewObject(@NotNull ConstructExpression ce) {
@@ -103,7 +110,7 @@ public class AbstractInterpretation {
         return newObject;
     }
 
-    public void setReleatedObject(@NotNull IJavaObject object) {
+    public void setRelatedObject(@NotNull IJavaObject object) {
         this.object = object;
     }
 
@@ -157,6 +164,7 @@ public class AbstractInterpretation {
         setupClass(rd, objectInstance);
         visitedLinesRecorder.recordFirstLineVisited(constructor);
         // Run constructor method
+        this.inConstructor = true;
         List<Node> eog = constructor.getNextEOG();
         if (eog.size() == 1) {
             variables.newScope();
@@ -172,6 +180,7 @@ public class AbstractInterpretation {
         } else {
             throw new IllegalStateException("Unexpected value: " + eog.size());
         }
+        this.inConstructor = false;
     }
 
     /**
@@ -203,7 +212,22 @@ public class AbstractInterpretation {
                 new Variable(de.jplag.java_cpg.ai.variables.objects.Random.getName(), new de.jplag.java_cpg.ai.variables.objects.Random()));
         this.object = objectInstance;
         visitedLinesRecorder.recordFirstLineVisited(rd);
-        for (FieldDeclaration fd : rd.getFields()) {
+        setupFieldDeclarations(rd, objectInstance);
+        RecordDeclaration currentClass = rd;
+        while (true) {
+            Set<RecordDeclaration> superClass = currentClass.getSuperTypeDeclarations();
+            if (superClass.isEmpty()) {
+                break;
+            }
+            assert superClass.size() == 1;
+            RecordDeclaration superRd = superClass.stream().findFirst().orElseThrow();
+            setupFieldDeclarations(superRd, objectInstance);
+            currentClass = superRd;
+        }
+    }
+
+    private void setupFieldDeclarations(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance) {
+        for (FieldDeclaration fd : rd.getFields()) {    // ToDo also do for super classes
             visitedLinesRecorder.recordLinesVisited(fd);
             Type type = fd.getType();
             Name name = fd.getName();
@@ -408,7 +432,31 @@ public class AbstractInterpretation {
                 return walkReturnStatement();
             }
             case ConstructExpression ce -> {
-                nodeStack.add(ce);
+                // inside Constructors, no NewExpression nodes come after ConstructExpression nodes
+                if (inConstructor && !(nextEOG.getFirst() instanceof NewExpression)) {
+                    ConstructorDeclaration constructor = ce.getConstructor();
+                    assert constructor != null;
+                    List<Node> eog = constructor.getNextEOG();
+                    if (!(eog.isEmpty())) { // Constructor has a body
+                        List<IValue> arguments = new ArrayList<>();
+                        if (!ce.getArguments().isEmpty()) {
+                            int size = ce.getArguments().size();
+                            for (int i = 0; i < size; i++) {
+                                arguments.add(valueStack.getLast());
+                                valueStack.removeLast();
+                                nodeStack.removeLast();
+                            }
+                        }
+                        Collections.reverse(arguments);
+                        for (int i = 0; i < constructor.getParameters().size(); i++) {
+                            variables.addVariable(
+                                    new Variable(new VariableName(constructor.getParameters().get(i).getName().toString()), arguments.get(i)));
+                        }
+                        graphWalker(eog.getFirst());
+                    }
+                } else {
+                    nodeStack.add(ce);
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -609,7 +657,7 @@ public class AbstractInterpretation {
                 // null value can happen: "if (opts.name == null || opts.name.isBlank())" where we dont strictly follow evaluation
                 // order.
                 valueStack.removeLast();
-                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode)));
+                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
             result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
@@ -634,7 +682,7 @@ public class AbstractInterpretation {
             assert !valueStack.isEmpty();
             if (valueStack.getLast() instanceof VoidValue) {
                 valueStack.removeLast();
-                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode)));
+                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
             result = javaObject.callMethod(memberName.getLocalName(), argumentList,
@@ -731,7 +779,7 @@ public class AbstractInterpretation {
         if (elseBlock == null) {
             runElseBranch = false;
         }
-        if (condition.getInformation() && !recordingChanges) {
+        if (condition.getInformation() && !recordingChanges.isRecording()) {
             if (condition.getValue()) {
                 runElseBranch = false;
                 if (ifStmt.getElseStatement() != null) {
@@ -823,7 +871,8 @@ public class AbstractInterpretation {
             ifElseCounter--;
             return null;
         }
-        if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch))) {
+        if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch) && condition.getInformation())) {    // FixMe:
+                                                                                                                                            // stringAiComplex
             // return in every branch
             valueStack.add(returnStorage.getLast());
             nextNode = new ReturnStatement();
@@ -900,7 +949,7 @@ public class AbstractInterpretation {
         valueStack.add(newObject);
         // run constructor
         if (classNode != null) {
-            AbstractInterpretation classAi = new AbstractInterpretation(visitedLinesRecorder, removeDeadCode);
+            AbstractInterpretation classAi = new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges);
             classAi.runClass((RecordDeclaration) classNode, newObject, arguments, Objects.requireNonNull(ce.getConstructor()));
         }
         nodeStack.add(ne);
@@ -927,7 +976,7 @@ public class AbstractInterpretation {
         valueStack.removeLast();
         nodeStack.removeLast();
         if (!condition.getInformation() || condition.getValue()) {  // run body if the condition is true or unknown
-            if (recordingChanges) {     // higher level loop wants to know which variables change
+            if (recordingChanges.isRecording()) {     // higher level loop wants to know which variables change
                 variables.recordChanges();
                 variables.newScope();
                 graphWalker(nextEOG.getFirst());
@@ -943,11 +992,11 @@ public class AbstractInterpretation {
                 this.variables = new VariableStore(variables);
                 variables.setEverythingUnknown();
                 variables.recordChanges();
-                AbstractInterpretation.recordingChanges = true;
+                recordingChanges.setRecording(true);
                 variables.newScope();
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
-                AbstractInterpretation.recordingChanges = false;
+                recordingChanges.setRecording(false);
                 Set<Variable> changedVariables = variables.stopRecordingChanges();
                 // 2: second loop run with only changed variables unknown
                 this.variables = new VariableStore(originalVariables);
@@ -963,7 +1012,7 @@ public class AbstractInterpretation {
                     variables.getVariable(variable.getName()).setToUnknown();
                 }
             }
-        } else if (!recordingChanges) {
+        } else if (!recordingChanges.isRecording()) {
             // Dead code detected, loop never runs
             if (removeDeadCode) {
                 TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
@@ -1006,7 +1055,7 @@ public class AbstractInterpretation {
         valueStack.removeLast();
         nodeStack.removeLast();
         if (!condition.getInformation() || condition.getValue()) {  // run body if the condition is true or unknown
-            if (recordingChanges) {     // higher level loop wants to know which variables change
+            if (recordingChanges.isRecording()) {     // higher level loop wants to know which variables change
                 variables.recordChanges();
                 variables.newScope();
                 graphWalker(nextEOG.getFirst());
@@ -1022,11 +1071,11 @@ public class AbstractInterpretation {
                 this.variables = new VariableStore(variables);
                 variables.setEverythingUnknown();
                 variables.recordChanges();
-                AbstractInterpretation.recordingChanges = true;
+                recordingChanges.setRecording(true);
                 variables.newScope();
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
-                AbstractInterpretation.recordingChanges = false;
+                recordingChanges.setRecording(false);
                 Set<Variable> changedVariables = variables.stopRecordingChanges();
                 // 2: second loop run with only changed variables unknown
                 this.variables = new VariableStore(originalVariables);
@@ -1072,7 +1121,7 @@ public class AbstractInterpretation {
                     }
                 }
             }
-        } else if (!recordingChanges) {
+        } else if (!recordingChanges.isRecording()) {
             // Dead code detected, loop never runs
             if (removeDeadCode) {
                 TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
@@ -1121,7 +1170,7 @@ public class AbstractInterpretation {
         Variable variable1 = new Variable(new VariableName(varName), collection.arrayAccess((INumberValue) Value.valueFactory(0)));
         variables.addVariable(variable1);
         if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
-            if (!recordingChanges) {
+            if (!recordingChanges.isRecording()) {
                 // Dead code detected, loop never runs
                 if (removeDeadCode) {
                     TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
@@ -1137,7 +1186,7 @@ public class AbstractInterpretation {
                 System.out.println("Dead code detected -> remove for each");
             }
         } else {
-            if (recordingChanges) {     // higher level loop wants to know which variables change
+            if (recordingChanges.isRecording()) {     // higher level loop wants to know which variables change
                 variables.recordChanges();
                 variables.newScope();
                 graphWalker(nextEOG.getFirst());
@@ -1153,11 +1202,11 @@ public class AbstractInterpretation {
                 this.variables = new VariableStore(variables);
                 variables.setEverythingUnknown();
                 variables.recordChanges();
-                AbstractInterpretation.recordingChanges = true;
+                recordingChanges.setRecording(true);
                 variables.newScope();
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
-                AbstractInterpretation.recordingChanges = false;
+                recordingChanges.setRecording(false);
                 Set<Variable> changedVariables = variables.stopRecordingChanges();
                 // 2: second loop run with only changed variables unknown
                 this.variables = new VariableStore(originalVariables);

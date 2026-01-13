@@ -38,7 +38,7 @@ public class JavaObject extends Value implements IJavaObject {
         super(Type.OBJECT);
         this.fields = new Scope();
         this.abstractInterpretation = abstractInterpretation;
-        abstractInterpretation.setReleatedObject(this);
+        abstractInterpretation.setRelatedObject(this);
     }
 
     public JavaObject() {

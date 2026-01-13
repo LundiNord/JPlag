@@ -96,7 +96,7 @@ class DeadCodeDetectionTest {
     }
 
     @NotNull
-    public static VisitedLinesRecorder getVisitedLinesRecorder(@NotNull AbstractInterpretation interpretation) {
+    private static VisitedLinesRecorder getVisitedLinesRecorder(@NotNull AbstractInterpretation interpretation) {
         try {
             java.lang.reflect.Field field = AbstractInterpretation.class.getDeclaredField("visitedLinesRecorder");
             field.setAccessible(true);

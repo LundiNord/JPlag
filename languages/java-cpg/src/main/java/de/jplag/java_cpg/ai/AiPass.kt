@@ -55,13 +55,13 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                         // Try removing from Translation Unit directly
                         val tuIndex = translationUnit.declarations.indexOf(recordDeclaration)
                         if (tuIndex > 0) {
-                            translationUnit.declarationEdges.removeAt(tuIndex - 1)
+                            translationUnit.declarationEdges.removeAt(tuIndex)
                         }
                         // Try removing from Namespaces
                         for (ns in translationUnit.declarations.filterIsInstance<NamespaceDeclaration>()) {
                             val nsIndex = ns.declarations.indexOf(recordDeclaration)
                             if (nsIndex > 0) {
-                                ns.declarations.removeAt(nsIndex - 1)
+                                ns.declarations.removeAt(nsIndex)
                             }
                         }
                         continue
@@ -70,7 +70,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                         if (checkIfCompletelyDead(method, visitedLinesRecorder) && removeDeadCode) {
                             println("Dead code (method) detected: ${method.name} in class ${recordDeclaration.name}")
                             val index = recordDeclaration.methods.indexOf(method)
-                            recordDeclaration.methodEdges.removeAt(index - 1)
+                            recordDeclaration.methodEdges.removeAt(index)
                         }
                     }
                     //inner classes
@@ -78,7 +78,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                         if (checkIfCompletelyDead(innerClass, visitedLinesRecorder) && removeDeadCode) {
                             println("Dead code (class) detected: ${recordDeclaration.name}")
                             val tuIndex = recordDeclaration.declarations.indexOf(innerClass)
-                            recordDeclaration.recordEdges.removeAt(tuIndex - 1)
+                            recordDeclaration.recordEdges.removeAt(tuIndex)
                         }
                     }
                 }
@@ -89,7 +89,6 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         //Debug
         val visitedLines: Set<Int> = visitedLinesRecorder.visitedLines.values.firstOrNull() ?: emptySet()
         val sortedVisitedLines = TreeSet<Int>(visitedLines)
-
         println("Abstract Interpretation code removal finished.")
     }
 

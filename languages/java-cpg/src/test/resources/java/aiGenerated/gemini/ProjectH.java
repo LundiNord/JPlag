@@ -71,7 +71,7 @@ public class SmartHomeHub {
 
         void toggle() {
             isOn = !isOn;
-            System.out.println(id + " is now " + (isOn ? "ON" : "OFF"));
+            System.out.println(id + " is now " + (isOn + "OFF"));
         }
 
         abstract void operate();

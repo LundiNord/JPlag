@@ -31,15 +31,6 @@ import de.jplag.options.JPlagOptions;
 import kotlin.Pair;
 
 class EvaluationEngineTest {
-    // Test 1: amount of dead code detected
-    // Test 2: plagiarism score accuracy
-    // run with and without dead code removal
-    // ToDo: assert that dead code removal does not remove non-dead code
-    // ToDo look at Project H, perplexityLabs 2
-    // maybe: tokensWithoutSimpleDeadCode: disable other graph normalizations except dead code removal
-    // claude: project 5 dead code
-    // gemini project L , comparator ; projectN, project Q
-    // network controller.java
 
     @NotNull
     private static Stream<String> testFiles() {
@@ -282,7 +273,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "aiGenerated/geminiPlag/NetworkController.java";
+        String fileName = "aiGenerated/gemini/ProjectH.java";
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);

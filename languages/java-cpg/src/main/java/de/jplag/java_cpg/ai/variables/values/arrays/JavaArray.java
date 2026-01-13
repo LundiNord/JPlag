@@ -453,6 +453,10 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 this.innerType = Type.VOID;
                 return Value.valueFactory(Type.LIST);
             }
+            case "collect" -> {
+                this.values = null;
+                return Value.valueFactory(Type.LIST);
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -485,12 +489,16 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     @Override
     public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {   // cannot merge different types
+        if (other instanceof VoidValue || other instanceof IJavaObject) {   // cannot merge different types
             other = new JavaArray();
         }
         JavaArray otherArray = (JavaArray) other;
         if (this.innerType == null && otherArray.innerType != null) {
             this.innerType = otherArray.innerType;
+        }
+        if (!(Objects.equals(this.innerType, otherArray.innerType))) {
+            this.values = null;
+            return;
         }
         assert Objects.equals(this.innerType, otherArray.innerType);
         if (this.values == null || otherArray.values == null || this.values.size() != otherArray.values.size()) {

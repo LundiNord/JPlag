@@ -32,19 +32,21 @@ class Student {
         this.courseId = courseId;
     }
 
+    //DeadCodeStart
     public String getName() {
         return name;
     }
+    //DeadCodeEnd
 
     public int getAge() {
         return age;
     }
 
+    //DeadCodeStart
     public String getCourseId() {
         return courseId;
     }
 
-    //DeadCodeStart
     public void setGrade(char grade) {
         // This method is never called
         System.out.println("Grade set to: " + grade);

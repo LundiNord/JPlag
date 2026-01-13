@@ -72,6 +72,7 @@ public class RPGBattleSystem {
     static class Paladin extends Character {
         Paladin(String n, int h) {
             super(n, h);
+            System.out.println("Test");
         }
 
         @Override

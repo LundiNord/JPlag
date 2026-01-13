@@ -384,7 +384,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
 
     @Override
     public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
+        if (other instanceof VoidValue || other instanceof IJavaObject) {
             contentRegex = new ArrayList<>();
             unknown = true;
             return;
