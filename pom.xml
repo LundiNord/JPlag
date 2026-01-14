@@ -85,31 +85,31 @@
         <version.emf.ecore-xmi>2.39.0</version.emf.ecore-xmi>
         <version.emf.ecore>2.44.0</version.emf.ecore>
         <version.emf>2.41.0</version.emf>
-        <version.icu-charset>78.1</version.icu-charset>
+        <version.icu-charset>78.2</version.icu-charset>
         <version.jackson>2.20.1</version.jackson>
         <version.jaxen>2.0.0</version.jaxen>
         <version.jdom>2.0.6.1</version.jdom>
         <version.jgrapht>1.5.2</version.jgrapht>
-        <version.junit>6.0.1</version.junit>
+        <version.junit>6.0.2</version.junit>
         <version.mockito>5.21.0</version.mockito>
         <version.picocli>4.7.7</version.picocli>
         <version.progressbar>0.10.1</version.progressbar>
         <version.record-builder>51</version.record-builder>
-        <version.scala>2.13.18</version.scala>
+        <version.scala>3.8.0</version.scala>
         <version.scalameta.suffix>2.13</version.scalameta.suffix>
-        <version.scalameta>4.14.2</version.scalameta>
+        <version.scalameta>4.14.4</version.scalameta>
         <version.slf4j>2.0.17</version.slf4j>
         <version.metainf>1.11</version.metainf>
 
         <!-- Plugin versions -->
         <version.plugin.antlr4>${version.antlr4}</version.plugin.antlr4>
         <version.plugin.build-helper>3.6.1</version.plugin.build-helper>
-        <version.plugin.checkstyle-puppycrawl>12.2.0</version.plugin.checkstyle-puppycrawl>
+        <version.plugin.checkstyle-puppycrawl>13.0.0</version.plugin.checkstyle-puppycrawl>
         <version.plugin.checkstyle>3.6.0</version.plugin.checkstyle>
         <version.plugin.jacoco>0.8.14</version.plugin.jacoco>
         <version.plugin.javacc>5.0.1</version.plugin.javacc>
-        <version.plugin.maven-central-publishing>0.9.0</version.plugin.maven-central-publishing>
-        <version.plugin.maven-exec>3.6.2</version.plugin.maven-exec>
+        <version.plugin.maven-central-publishing>0.10.0</version.plugin.maven-central-publishing>
+        <version.plugin.maven-exec>3.6.3</version.plugin.maven-exec>
         <version.plugin.maven-flatten>1.7.3</version.plugin.maven-flatten>
         <version.plugin.maven.assembly>3.8.0</version.plugin.maven.assembly>
         <version.plugin.maven.compiler>3.14.1</version.plugin.maven.compiler>
@@ -125,7 +125,7 @@
         <argLine/>
 
         <!-- The Revision of JPlag -->
-        <revision>6.3.0</revision>
+        <revision>7.0.0-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
