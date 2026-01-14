@@ -16,17 +16,23 @@ import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
  * Representation of the static java.util.Arrays class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Arrays.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Arrays.html">Oracle Docs</a>
  */
 public class Arrays extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "Arrays";
 
+    /**
+     * Representation of the static java.util.Arrays class.
+     */
     public Arrays() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.util.Arrays.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

@@ -27,6 +27,7 @@ public class BooleanValue extends Value implements IBooleanValue {
 
     /**
      * Creates a BooleanValue with exact information.
+     * @param value the boolean value
      */
     public BooleanValue(boolean value) {
         super(Type.BOOLEAN);

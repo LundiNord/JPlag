@@ -11,7 +11,12 @@ import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChars;
@@ -39,6 +44,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
 
     /**
      * A string value with exact information.
+     * @param value The exact string value, null for null.
      */
     public StringRegexValue(@Nullable String value) {
         super(Type.STRING);
@@ -55,6 +61,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
 
     /**
      * A string value with possible values.
+     * @param possibleValues The possible string values.
      */
     public StringRegexValue(@NotNull Set<String> possibleValues) {
         super(Type.STRING);

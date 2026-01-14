@@ -92,6 +92,9 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             }
             case "equals" -> {
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, new StringCharInclValue());
+                }
                 StringCharInclValue other = (StringCharInclValue) paramVars.getFirst();
                 if (!Objects.equals(this.certainContained, other.certainContained) && this.maybeContained.isEmpty()
                         && other.maybeContained.isEmpty()) {

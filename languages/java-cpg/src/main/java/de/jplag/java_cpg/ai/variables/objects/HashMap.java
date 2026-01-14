@@ -13,11 +13,27 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
+/**
+ * Representation of the java.util.HashMap class.
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html">Oracle Docs</a>
+ */
 public class HashMap extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "HashMap";
 
+    /**
+     * Representation of the java.util.HashMap class.
+     */
+    public HashMap() {
+        super();
+    }
+
+    /**
+     * @return The variable name representing java.util.HashMap.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

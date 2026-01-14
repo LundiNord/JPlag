@@ -34,6 +34,10 @@ public class JavaObject extends Value implements IJavaObject {
         this.abstractInterpretation = abstractInterpretation;
     }
 
+    /**
+     * Constructor for a Java object with an abstract interpretation engine and no info.
+     * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
+     */
     public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
         super(Type.OBJECT);
         this.fields = new Scope();
@@ -41,6 +45,9 @@ public class JavaObject extends Value implements IJavaObject {
         abstractInterpretation.setRelatedObject(this);
     }
 
+    /**
+     * Default constructor for a Java object with no abstract interpretation engine and no info.
+     */
     public JavaObject() {
         super(Type.OBJECT);
         this.fields = new Scope();
@@ -58,6 +65,7 @@ public class JavaObject extends Value implements IJavaObject {
     /**
      * @param methodName the name of the method to call.
      * @param paramVars the parameters to pass to the method.
+     * @param method the cpg method declaration of the method to call.
      * @return null if the method is not known.
      */
     public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
@@ -79,6 +87,11 @@ public class JavaObject extends Value implements IJavaObject {
         return result.getValue();
     }
 
+    /**
+     * Changes the value of an existing field variable in this object. If the field does not exist, it will be created.
+     * @param fieldName the name of the field to change.
+     * @param value the new value of the field.
+     */
     public void changeField(@NotNull String fieldName, IValue value) {
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
@@ -89,7 +102,7 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     /**
-     * Sets a new field variable in this object.
+     * @param field Sets a new field variable in this object.
      */
     public void setField(@NotNull Variable field) {
         this.fields.addVariable(field);

@@ -15,17 +15,23 @@ import de.jplag.java_cpg.ai.variables.values.VoidValue;
  * Representation of the java.io.PrintStream class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/PrintStream.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/PrintStream.html">Oracle Docs</a>
  */
 public class PrintStream extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.io";
     private static final java.lang.String NAME = "PrintStream";
 
+    /**
+     * Representation of the java.io.PrintStream class.
+     */
     public PrintStream() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.io.PrintStream.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

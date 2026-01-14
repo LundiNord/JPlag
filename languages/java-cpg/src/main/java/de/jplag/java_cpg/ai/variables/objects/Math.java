@@ -25,10 +25,16 @@ public class Math extends JavaObject implements ISpecialObject {
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "Math";
 
+    /**
+     * Representation of the static java.lang.Math class.
+     */
     public Math() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.lang.Math.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

@@ -1,6 +1,8 @@
 package de.jplag.java_cpg.transformation.matching.edges;
 
-import static de.jplag.java_cpg.transformation.matching.edges.IEdge.EdgeCategory.*;
+import static de.jplag.java_cpg.transformation.matching.edges.IEdge.EdgeCategory.ANALYTIC;
+import static de.jplag.java_cpg.transformation.matching.edges.IEdge.EdgeCategory.AST;
+import static de.jplag.java_cpg.transformation.matching.edges.IEdge.EdgeCategory.REFERENCE;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
 
@@ -18,7 +20,7 @@ public abstract class AEdge<T extends Node, R extends Node> implements IEdge<T, 
     private Class<R> relatedClass;
 
     /**
-     * Creates a new AEdge of the given category
+     * Creates a new AEdge of the given category.
      * @param category the category
      */
     protected AEdge(EdgeCategory category) {

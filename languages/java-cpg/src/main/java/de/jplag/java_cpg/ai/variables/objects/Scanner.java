@@ -24,10 +24,16 @@ public class Scanner extends JavaObject implements ISpecialObject {
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "Scanner";
 
+    /**
+     * Creates a new Scanner object representation.
+     */
     public Scanner() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.util.Scanner.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

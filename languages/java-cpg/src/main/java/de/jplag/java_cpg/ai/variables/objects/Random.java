@@ -16,17 +16,23 @@ import de.jplag.java_cpg.ai.variables.values.Value;
  * Representation of the static java.util.Random class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Random.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Random.html">Oracle Docs</a>
  */
 public class Random extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "Random";
 
+    /**
+     * Representation of the java.util.Random class.
+     */
     public Random() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.util.Random.
+     */
     @Pure
     @NotNull
     public static VariableName getName() {

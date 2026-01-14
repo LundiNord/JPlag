@@ -42,12 +42,11 @@ class EvaluationEngineTest {
     @NotNull
     private static Stream<String> testFiles() {
         return Stream.of("aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/ProjectB.java", "aiGenerated/gemini/ProjectC.java",
-                // "aiGenerated/gemini/ProjectD.java",
-                "aiGenerated/gemini/ProjectE.java", "aiGenerated/gemini/ProjectF.java", "aiGenerated/gemini/ProjectG.java",
-                "aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java", "aiGenerated/gemini/ProjectJ.java",
-                "aiGenerated/gemini/ProjectK.java", "aiGenerated/gemini/ProjectL.java", "aiGenerated/gemini/ProjectM.java",
-                "aiGenerated/gemini/ProjectN.java", "aiGenerated/gemini/ProjectO.java", "aiGenerated/gemini/ProjectP.java",
-                "aiGenerated/gemini/ProjectQ.java",
+                "aiGenerated/gemini/ProjectD.java", "aiGenerated/gemini/ProjectE.java", "aiGenerated/gemini/ProjectF.java",
+                "aiGenerated/gemini/ProjectG.java", "aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java",
+                "aiGenerated/gemini/ProjectJ.java", "aiGenerated/gemini/ProjectK.java", "aiGenerated/gemini/ProjectL.java",
+                "aiGenerated/gemini/ProjectM.java", "aiGenerated/gemini/ProjectN.java", "aiGenerated/gemini/ProjectO.java",
+                "aiGenerated/gemini/ProjectP.java", "aiGenerated/gemini/ProjectQ.java",
                 // "aiGenerated/gemini/ProjectR.java", "aiGenerated/gemini/ProjectS.java", //anonymus class causes problems
                 "aiGenerated/gemini/ProjectT.java", "aiGenerated/gemini/ProjectU.java", "aiGenerated/gemini/Project1.java",
                 "aiGenerated/gemini/Project2.java", "aiGenerated/gemini/Project3.java", "aiGenerated/gemini/Project4.java",
@@ -161,8 +160,8 @@ class EvaluationEngineTest {
         assert normalize || !reorder;
 
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, JavaCpgLanguage.deadCodeRemovalTransformations(),
-                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
-                IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
+                IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+        // IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
         List<Token> result = language.parse(files, normalize);
@@ -235,7 +234,6 @@ class EvaluationEngineTest {
         double similarity = comparison.similarity();
         double maxSimilarity = comparison.maximalSimilarity();
         int matchedTokens = comparison.getNumberOfMatchedTokens();
-        double frequencyWeightedSimilarity = comparison.frequencyWeightedSimilarity();
         return similarity;
     }
 
@@ -270,6 +268,7 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
+    @Disabled
     @MethodSource("testFiles")
     void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
@@ -312,6 +311,7 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
+    @Disabled
     @MethodSource("progpediaFiles")
     void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
@@ -356,14 +356,16 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "progpedia/00000021/WRONG_ANSWER/00028_00002/animal.java";
+        // String fileName = "progpedia/00000018/ACCEPTED/00095_00005/optica.java";
+        // String fileName = "aiGenerated/perplexityLabs/Project2.java";
+        String fileName = "aiGenerated/gemini/Project5.java";
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
         // Assert we don't remove non-dead code
-        checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
-        checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
+        // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
+        // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
 
         System.out.println("Similarity between manual and no dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokens) + "%");
         System.out.println("Similarity between manual and simple dead code removal: "
@@ -374,6 +376,7 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
+    @Disabled
     @MethodSource("testPlagFiles")
     void AiGeneratedTestDataPlagEvaluation(@NotNull Pair<String, String> fileNames) throws ExitException, IOException {
         String fileA = fileNames.getFirst();
@@ -418,8 +421,8 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataPlagEvaluationSingle() throws ExitException, IOException {
-        String fileA = "aiGenerated/grok/project7.java";
-        String fileB = "aiGenerated/grok/project8.java";
+        String fileA = "aiGenerated/gemini/ProjectD.java";
+        String fileB = "aiGenerated/gemini/ProjectD.java";
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
         double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
         double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);

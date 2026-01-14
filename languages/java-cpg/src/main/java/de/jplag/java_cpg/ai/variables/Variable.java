@@ -113,10 +113,16 @@ public class Variable {
         }
     }
 
+    /**
+     * @param changeRecorder the change recorder to add. It will be notified on value changes.
+     */
     public void addChangeRecorder(ChangeRecorder changeRecorder) {
         this.changeRecorders.add(changeRecorder);
     }
 
+    /**
+     * @return the last added change recorder. It is removed from this variable.
+     */
     public ChangeRecorder removeLastChangeRecorder() {
         assert !this.changeRecorders.isEmpty();
         return this.changeRecorders.removeLast();

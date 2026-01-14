@@ -1,7 +1,57 @@
 package de.jplag.java_cpg.token;
 
 import static de.jplag.SharedTokenType.FILE_END;
-import static de.jplag.java_cpg.token.CpgTokenType.*;
+import static de.jplag.java_cpg.token.CpgTokenType.ASSERT_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.ASSIGNMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.BREAK;
+import static de.jplag.java_cpg.token.CpgTokenType.CASE_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.CATCH_CLAUSE_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.CATCH_CLAUSE_END;
+import static de.jplag.java_cpg.token.CpgTokenType.CONSTRUCTOR_CALL;
+import static de.jplag.java_cpg.token.CpgTokenType.CONTINUE;
+import static de.jplag.java_cpg.token.CpgTokenType.DEFAULT_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.DO_WHILE_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.DO_WHILE_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.DO_WHILE_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.ELSE_BLOCK_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.ELSE_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.ENUM_DECL_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.ENUM_DECL_END;
+import static de.jplag.java_cpg.token.CpgTokenType.ENUM_ELEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.FIELD_DECL;
+import static de.jplag.java_cpg.token.CpgTokenType.FOR_BLOCK_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.FOR_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.FOR_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.GOTO_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.IF_BLOCK_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.IF_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.IF_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.INCLUDE;
+import static de.jplag.java_cpg.token.CpgTokenType.LAMBDA_EXPRESSION;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_BODY_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_BODY_END;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_CALL;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_DECL_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_PARAM;
+import static de.jplag.java_cpg.token.CpgTokenType.NEW_ARRAY;
+import static de.jplag.java_cpg.token.CpgTokenType.RECORD_DECL_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.RECORD_DECL_END;
+import static de.jplag.java_cpg.token.CpgTokenType.RETURN;
+import static de.jplag.java_cpg.token.CpgTokenType.SWITCH_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.SWITCH_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.SWITCH_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.SYNCHRONIZED_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.SYNCHRONIZED_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.SYNCHRONIZED_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.THROW;
+import static de.jplag.java_cpg.token.CpgTokenType.TRY_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.TRY_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.TRY_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.VARIABLE_DECL;
+import static de.jplag.java_cpg.token.CpgTokenType.WHILE_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.WHILE_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.WHILE_STATEMENT;
 
 import java.io.File;
 import java.util.Iterator;
@@ -10,9 +60,41 @@ import java.util.Objects;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.EnumConstantDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.EnumDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.IncludeDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.ParameterDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
+import de.fraunhofer.aisec.cpg.graph.statements.AssertStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.BreakStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CaseStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CatchClause;
+import de.fraunhofer.aisec.cpg.graph.statements.ContinueStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DefaultStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForEachStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.GotoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.SwitchStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.SynchronizedStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.TryStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.AssignExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConstructExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewArrayExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.jplag.Token;
 import de.jplag.TokenType;
 
@@ -74,18 +156,12 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
-    public void exit(TranslationUnitDeclaration translationUnitDeclaration) {
-        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), -1, -1, -1, translationUnitDeclaration.getName());
-    }
+    public void exit(Block block) {
+        TokenType blockEndToken = openBlocks.pop();
+        if (blockEndToken == BLOCK_END)
+            return;
 
-    @Override
-    public void exit(EnumDeclaration enumDeclaration) {
-        tokenConsumer.addToken(ENUM_DECL_END, enumDeclaration, true);
-    }
-
-    @Override
-    public void exit(RecordDeclaration recordDeclaration) {
-        tokenConsumer.addToken(RECORD_DECL_END, recordDeclaration, true);
+        tokenConsumer.addToken(blockEndToken, block, true);
     }
 
     @Override
@@ -99,69 +175,18 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
-    public void exit(Block block) {
-        TokenType blockEndToken = openBlocks.pop();
-        if (blockEndToken == BLOCK_END)
-            return;
-
-        tokenConsumer.addToken(blockEndToken, block, true);
-    }
-
-    private void expect(CpgTokenType opening, CpgTokenType closing) {
-        expectedBlocks.addFirst(new BlockTokens(opening, closing));
+    public void exit(EnumDeclaration enumDeclaration) {
+        tokenConsumer.addToken(ENUM_DECL_END, enumDeclaration, true);
     }
 
     @Override
-    public void visit(ConstructorDeclaration constructorDeclaration) {
-        // Constructor may be implicit standard constructor
-        tokenConsumer.addToken(METHOD_DECL_BEGIN, constructorDeclaration, false);
-        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
+    public void exit(RecordDeclaration recordDeclaration) {
+        tokenConsumer.addToken(RECORD_DECL_END, recordDeclaration, true);
     }
 
     @Override
-    public void visit(EnumConstantDeclaration enumConstantDeclaration) {
-        tokenConsumer.addToken(ENUM_ELEMENT, enumConstantDeclaration, false);
-    }
-
-    @Override
-    public void visit(EnumDeclaration enumDeclaration) {
-        tokenConsumer.addToken(ENUM_DECL_BEGIN, enumDeclaration, false);
-    }
-
-    @Override
-    public void visit(FieldDeclaration fieldDeclaration) {
-        tokenConsumer.addToken(FIELD_DECL, fieldDeclaration, false);
-    }
-
-    @Override
-    public void visit(IncludeDeclaration includeDeclaration) {
-        tokenConsumer.addToken(INCLUDE, includeDeclaration, false);
-    }
-
-    @Override
-    public void visit(MethodDeclaration methodDeclaration) {
-        tokenConsumer.addToken(METHOD_DECL_BEGIN, methodDeclaration, false);
-        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
-    }
-
-    @Override
-    public void visit(NewArrayExpression newArrayExpression) {
-        tokenConsumer.addToken(NEW_ARRAY, newArrayExpression, false);
-    }
-
-    @Override
-    public void visit(ParameterDeclaration parameterDeclaration) {
-        tokenConsumer.addToken(METHOD_PARAM, parameterDeclaration, false);
-    }
-
-    @Override
-    public void visit(RecordDeclaration recordDeclaration) {
-        tokenConsumer.addToken(RECORD_DECL_BEGIN, recordDeclaration, false);
-    }
-
-    @Override
-    public void visit(VariableDeclaration variableDeclaration) {
-        tokenConsumer.addToken(VARIABLE_DECL, variableDeclaration, false);
+    public void exit(TranslationUnitDeclaration translationUnitDeclaration) {
+        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), -1, -1, -1, translationUnitDeclaration.getName());
     }
 
     @Override
@@ -170,8 +195,30 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
+    public void visit(AssignExpression assignExpression) {
+        tokenConsumer.addToken(ASSIGNMENT, assignExpression, false);
+    }
+
+    @Override
+    public void visit(Block block) {
+        if (expectedBlocks.isEmpty()) {
+            // Do not add BLOCK_START and BLOCK_END, otherwise that is a vulnerability
+            openBlocks.addFirst(BLOCK_END);
+        } else {
+            BlockTokens blockTokens = expectedBlocks.pop();
+            tokenConsumer.addToken(blockTokens.opening, block, false);
+            openBlocks.addFirst(blockTokens.closing);
+        }
+    }
+
+    @Override
     public void visit(BreakStatement breakStatement) {
         tokenConsumer.addToken(BREAK, breakStatement, false);
+    }
+
+    @Override
+    public void visit(CallExpression callExpression) {
+        tokenConsumer.addToken(METHOD_CALL, callExpression, false);
     }
 
     @Override
@@ -182,6 +229,18 @@ public class CpgNodeListener extends ACpgNodeListener {
     @Override
     public void visit(CatchClause catchclause) {
         tokenConsumer.addToken(CATCH_CLAUSE_BEGIN, catchclause, false);
+    }
+
+    @Override
+    public void visit(ConstructExpression constructorCallExpression) {
+        tokenConsumer.addToken(CONSTRUCTOR_CALL, constructorCallExpression, false);
+    }
+
+    @Override
+    public void visit(ConstructorDeclaration constructorDeclaration) {
+        // Constructor may be the implicit standard constructor
+        tokenConsumer.addToken(METHOD_DECL_BEGIN, constructorDeclaration, false);
+        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
     }
 
     @Override
@@ -198,6 +257,21 @@ public class CpgNodeListener extends ACpgNodeListener {
     public void visit(DoStatement doStatement) {
         tokenConsumer.addToken(DO_WHILE_STATEMENT, doStatement, false);
         expect(DO_WHILE_BLOCK_START, DO_WHILE_BLOCK_END);
+    }
+
+    @Override
+    public void visit(EnumConstantDeclaration enumConstantDeclaration) {
+        tokenConsumer.addToken(ENUM_ELEMENT, enumConstantDeclaration, false);
+    }
+
+    @Override
+    public void visit(EnumDeclaration enumDeclaration) {
+        tokenConsumer.addToken(ENUM_DECL_BEGIN, enumDeclaration, false);
+    }
+
+    @Override
+    public void visit(FieldDeclaration fieldDeclaration) {
+        tokenConsumer.addToken(FIELD_DECL, fieldDeclaration, false);
     }
 
     @Override
@@ -233,8 +307,39 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
+    public void visit(IncludeDeclaration includeDeclaration) {
+        tokenConsumer.addToken(INCLUDE, includeDeclaration, false);
+    }
+
+    @Override
     public void visit(LambdaExpression lambdaExpression) {
         tokenConsumer.addToken(LAMBDA_EXPRESSION, lambdaExpression, false);
+    }
+
+    @Override
+    public void visit(MemberCallExpression memberCallExpression) {
+        tokenConsumer.addToken(METHOD_CALL, memberCallExpression, false);
+    }
+
+    @Override
+    public void visit(MethodDeclaration methodDeclaration) {
+        tokenConsumer.addToken(METHOD_DECL_BEGIN, methodDeclaration, false);
+        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
+    }
+
+    @Override
+    public void visit(NewArrayExpression newArrayExpression) {
+        tokenConsumer.addToken(NEW_ARRAY, newArrayExpression, false);
+    }
+
+    @Override
+    public void visit(ParameterDeclaration parameterDeclaration) {
+        tokenConsumer.addToken(METHOD_PARAM, parameterDeclaration, false);
+    }
+
+    @Override
+    public void visit(RecordDeclaration recordDeclaration) {
+        tokenConsumer.addToken(RECORD_DECL_BEGIN, recordDeclaration, false);
     }
 
     @Override
@@ -278,41 +383,18 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
+    public void visit(VariableDeclaration variableDeclaration) {
+        tokenConsumer.addToken(VARIABLE_DECL, variableDeclaration, false);
+    }
+
+    @Override
     public void visit(WhileStatement whileStatement) {
         tokenConsumer.addToken(WHILE_STATEMENT, whileStatement, false);
         expect(WHILE_BLOCK_START, WHILE_BLOCK_END);
     }
 
-    @Override
-    public void visit(AssignExpression assignExpression) {
-        tokenConsumer.addToken(ASSIGNMENT, assignExpression, false);
-    }
-
-    @Override
-    public void visit(Block block) {
-        if (expectedBlocks.isEmpty()) {
-            // Do not add BLOCK_START and BLOCK_END, otherwise that is a vulnerability
-            openBlocks.addFirst(BLOCK_END);
-        } else {
-            BlockTokens blockTokens = expectedBlocks.pop();
-            tokenConsumer.addToken(blockTokens.opening, block, false);
-            openBlocks.addFirst(blockTokens.closing);
-        }
-    }
-
-    @Override
-    public void visit(CallExpression callExpression) {
-        tokenConsumer.addToken(METHOD_CALL, callExpression, false);
-    }
-
-    @Override
-    public void visit(ConstructExpression constructorCallExpression) {
-        tokenConsumer.addToken(CONSTRUCTOR_CALL, constructorCallExpression, false);
-    }
-
-    @Override
-    public void visit(MemberCallExpression memberCallExpression) {
-        tokenConsumer.addToken(METHOD_CALL, memberCallExpression, false);
+    private void expect(CpgTokenType opening, CpgTokenType closing) {
+        expectedBlocks.addFirst(new BlockTokens(opening, closing));
     }
 
     private record BlockTokens(CpgTokenType opening, CpgTokenType closing) {

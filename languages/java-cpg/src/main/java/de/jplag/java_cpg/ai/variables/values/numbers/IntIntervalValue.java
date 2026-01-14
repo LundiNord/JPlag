@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
 /**
@@ -60,7 +61,7 @@ public class IntIntervalValue extends Value implements INumberValue {
         if (!(other instanceof INumberValue)) {
             other = new IntIntervalValue();
         }
-        IntIntervalValue otherValue = (IntIntervalValue) other;
+        IntIntervalValue otherValue = (IntIntervalValue) other; // ToDo: what if other float?
         switch (operator) {
             case "+" -> {
                 IntInterval newInterval = this.interval.copy().plus(otherValue.interval);
@@ -133,8 +134,8 @@ public class IntIntervalValue extends Value implements INumberValue {
 
     @Override
     public void merge(@NotNull IValue other) {
-        if (!(other instanceof IntIntervalValue)) {
-            System.out.println("Debug");
+        if (other instanceof VoidValue) {
+            other = new IntIntervalValue();
         }
         assert other instanceof IntIntervalValue;
         this.interval.merge(((IntIntervalValue) other).interval);

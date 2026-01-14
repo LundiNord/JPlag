@@ -24,10 +24,16 @@ public class System extends JavaObject implements ISpecialObject {
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "System";
 
+    /**
+     * Creates a new representation of the java.lang.System class.
+     */
     public System() {
         super();
     }
 
+    /**
+     * @return The variable name java.lang.System
+     */
     @Pure
     @NotNull
     public static VariableName getName() {

@@ -92,6 +92,7 @@ public class Scope {
 
     /**
      * Starts recording changes to all variables.
+     * @param changeRecorder the ChangeRecorder to notify on changes.
      */
     public void addChangeRecorder(@NotNull ChangeRecorder changeRecorder) {
         for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {

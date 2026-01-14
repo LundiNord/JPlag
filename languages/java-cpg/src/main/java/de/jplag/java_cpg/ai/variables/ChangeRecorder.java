@@ -12,6 +12,9 @@ public class ChangeRecorder {
 
     private final Set<Variable> changedVariables = new java.util.HashSet<>();
 
+    /**
+     * Creates a new ChangeRecorder.
+     */
     public ChangeRecorder() {
         // empty
     }
@@ -24,6 +27,9 @@ public class ChangeRecorder {
         changedVariables.add(variable);
     }
 
+    /**
+     * @return the set of changed variables.
+     */
     public Set<Variable> getChangedVariables() {
         return changedVariables;
     }

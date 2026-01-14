@@ -14,6 +14,9 @@ import de.jplag.java_cpg.ai.variables.values.string.StringValue;
  */
 public class VoidValue extends Value {
 
+    /**
+     * Creates a new Void typed value. Represents no value or completely unknown value.
+     */
     public VoidValue() {
         super(Type.VOID);
     }

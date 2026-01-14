@@ -28,6 +28,7 @@ public class CharSetValue extends Value implements ICharValue {
 
     /**
      * an exactly known char value.
+     * @param character the known character
      */
     public CharSetValue(char character) {
         super(Type.CHAR);
@@ -37,6 +38,7 @@ public class CharSetValue extends Value implements ICharValue {
 
     /**
      * a char value that can be one of the given characters.
+     * @param characters the possible characters
      */
     public CharSetValue(@NotNull Set<Character> characters) {
         super(Type.CHAR);

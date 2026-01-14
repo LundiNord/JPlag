@@ -7,7 +7,11 @@ import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
@@ -26,7 +30,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
         this.innerType = innerType;
     }
 
-    public JavaLengthArray(@NotNull Type innerType, @NotNull INumberValue length) {
+    public JavaLengthArray(Type innerType, @NotNull INumberValue length) {
         super(Type.ARRAY);
         this.innerType = innerType;
         this.length = length;
@@ -112,7 +116,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 assert paramVars.size() == 1;
                 return Value.valueFactory(Type.BOOLEAN);
             }
-            case "getLast" -> {
+            case "getLast", "findFirst", "findAny" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return arrayAccess((INumberValue) Value.valueFactory(1));
             }
@@ -132,10 +136,6 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                     return Value.valueFactory(length.getValue() == 0);
                 }
                 return Value.valueFactory(Type.BOOLEAN);
-            }
-            case "findFirst", "findAny" -> {
-                assert paramVars.size() == 1;
-                return arrayAccess((INumberValue) Value.valueFactory(1));
             }
             default -> throw new UnsupportedOperationException(methodName);
         }
@@ -174,7 +174,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
 
     @Override
     public void setToUnknown() {
-        length = null;
+        length = Value.getNewIntValue();
     }
 
     @Override

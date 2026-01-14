@@ -24,6 +24,7 @@ public enum Type {
     /**
      * @param cpgType CPG type to convert.
      * @return the corresponding Type enum.
+     * @throws IllegalArgumentException if the CPG type is not supported.
      */
     public static Type fromCpgType(@NotNull de.fraunhofer.aisec.cpg.graph.types.Type cpgType) {
         if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IntegerType.class) {

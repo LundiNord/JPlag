@@ -9,7 +9,12 @@ import org.jetbrains.annotations.Nullable;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
@@ -26,6 +31,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     /**
      * a Java Array with no information and undefined size.
+     * @param innerType the type of the array elements.
      */
     public JavaArray(Type innerType) {
         super(Type.ARRAY);
@@ -58,6 +64,8 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     /**
      * a Java Array with exact length and type information.
+     * @param length the length of the array; must contain information.
+     * @param innerType the type of the array elements.
      */
     public JavaArray(@NotNull INumberValue length, Type innerType) {
         super(Type.ARRAY);
@@ -82,6 +90,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
      * Access an element of the array.
      * @param index the index to access; does not have to contain information.
      * @return the superset of possible values at the given indexes.
+     * @throws UnsupportedOperationException if the inner type is not supported.
      */
     public IValue arrayAccess(INumberValue index) {
         if (values != null && index.getInformation()) {
@@ -108,6 +117,8 @@ public class JavaArray extends JavaObject implements IJavaArray {
 
     /**
      * Assign a value to a position in the array.
+     * @param index the index to assign to; does not have to contain information.
+     * @param value the value to assign.
      */
     public void arrayAssign(INumberValue index, IValue value) {
         if (values != null && index.getInformation()) {

@@ -1,6 +1,8 @@
 package de.jplag.java_cpg.transformation.matching.pattern;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
@@ -26,20 +28,6 @@ public abstract class GraphPatternImpl implements GraphPattern {
         return matches.stream().map(Match::copy).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    /**
-     * Gets the {@link Role} of the given {@link NodePattern}
-     * @param pattern the node pattern
-     * @return the role
-     */
-    public <T extends Node> Role getRole(NodePattern<T> pattern) {
-        return patternRegistry.getRole(pattern);
-    }
-
-    @Override
-    public <T extends Node> NodePattern<T> getPattern(Role role, Class<T> tClass) {
-        return patternRegistry.getPattern(role, tClass);
-    }
-
     @Override
     public NodePattern<Node> getPattern(Role role) {
         return patternRegistry.getPattern(role, Node.class);
@@ -55,6 +43,20 @@ public abstract class GraphPatternImpl implements GraphPattern {
         NodePattern<T> patternCopy = pattern.deepCopy();
         this.patternRegistry.put(roleName, patternCopy);
         return patternCopy;
+    }
+
+    @Override
+    public <T extends Node> NodePattern<T> getPattern(Role role, Class<T> tClass) {
+        return patternRegistry.getPattern(role, tClass);
+    }
+
+    /**
+     * Gets the {@link Role} of the given {@link NodePattern}
+     * @param pattern the node pattern
+     * @return the role
+     */
+    public <T extends Node> Role getRole(NodePattern<T> pattern) {
+        return patternRegistry.getRole(pattern);
     }
 
     /**

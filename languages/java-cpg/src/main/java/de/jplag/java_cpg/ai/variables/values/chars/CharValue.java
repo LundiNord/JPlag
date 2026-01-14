@@ -21,17 +21,28 @@ public class CharValue extends Value implements ICharValue {
     private char value;
     private boolean information;
 
+    /**
+     * an unknown char value.
+     */
     public CharValue() {
         super(Type.CHAR);
         this.information = false;
     }
 
+    /**
+     * an exactly known char value.
+     * @param value the known character
+     */
     public CharValue(char value) {
         super(Type.CHAR);
         this.information = true;
         this.value = value;
     }
 
+    /**
+     * a char value that can be one of the given characters.
+     * @param values the possible characters
+     */
     public CharValue(@NotNull Set<Character> values) {
         super(Type.CHAR);
         if (values.size() == 1) {

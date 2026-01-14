@@ -1,6 +1,10 @@
 package de.jplag.java_cpg.ai;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
@@ -9,17 +13,65 @@ import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.EnumConstantDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FunctionDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
 import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.statements.AssertStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.BreakStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CaseStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CatchClause;
+import de.fraunhofer.aisec.cpg.graph.statements.ContinueStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DefaultStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.EmptyStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForEachStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.SwitchStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.TryStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.AssignExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.BinaryOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.CastExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConditionalExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConstructExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ExpressionList;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.InitializerListExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Literal;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewArrayExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ProblemExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ShortCircuitOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.fraunhofer.aisec.cpg.graph.types.HasType;
 import de.fraunhofer.aisec.cpg.graph.types.PointerType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
@@ -81,6 +133,10 @@ public class AbstractInterpretation {
      */
     private boolean inConstructor = false;
 
+    /**
+     * @param visitedLinesRecorder Recorder for visited lines to detect dead methods/classes later.
+     * @param removeDeadCode Whether dead code should be removed after the interpretation.
+     */
     public AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder, boolean removeDeadCode) {
         this(visitedLinesRecorder, removeDeadCode, new RecordingChanges(false));
     }
@@ -110,6 +166,9 @@ public class AbstractInterpretation {
         return newObject;
     }
 
+    /**
+     * @param object the object this AI engine is currently interpreting.
+     */
     public void setRelatedObject(@NotNull IJavaObject object) {
         this.object = object;
     }
@@ -117,6 +176,7 @@ public class AbstractInterpretation {
     /**
      * Starts the abstract interpretation by running the main method.
      * @param tud TranslationUnitDeclaration graph node representing the whole program.
+     * @throws IllegalStateException if no main method is found.
      */
     public void runMain(@NotNull TranslationUnitDeclaration tud) {
         RecordDeclaration mainClas;
@@ -232,11 +292,18 @@ public class AbstractInterpretation {
             Type type = fd.getType();
             Name name = fd.getName();
             if (fd.getInitializer() == null) {      // no initial value
-                Variable newVar = new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type));
+                de.jplag.java_cpg.ai.variables.Type aiType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(type);
+                Variable newVar;
+                if (aiType == de.jplag.java_cpg.ai.variables.Type.ARRAY || aiType == de.jplag.java_cpg.ai.variables.Type.LIST) {
+                    de.jplag.java_cpg.ai.variables.Type innerType = de.jplag.java_cpg.ai.variables.Type
+                            .fromCpgType(((PointerType) type).getElementType());
+                    IJavaArray arrayValue = Value.getNewArayValue(innerType);
+                    newVar = new Variable(new VariableName(name.toString()), arrayValue);
+                } else {
+                    newVar = new Variable(new VariableName(name.toString()), aiType);
+                }
                 newVar.setInitialValue();
                 objectInstance.setField(newVar);
-                // objectInstance.setField(new Variable(new VariableName(name.toString()),
-                // de.jplag.java_cpg.ai.variables.Type.fromCpgType(type))); //ToDo array inner type lost here
             } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
                 if (fd.getInitializer() instanceof UnaryOperator unop) {
                     assert Objects.equals(unop.getOperatorCode(), "-");
@@ -660,9 +727,6 @@ public class AbstractInterpretation {
                 valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
-            if (javaObject == null) {
-                System.out.println("Debug");
-            }
             result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
         } else {
             List<IValue> argumentList = new ArrayList<>();
@@ -1287,6 +1351,8 @@ public class AbstractInterpretation {
     /**
      * Runs a method in this abstract interpretation engine context with the given name and parameters.
      * @param name the name of the method to run.
+     * @param paramVars the parameters to pass to the method.
+     * @param method the cpg method declaration to this method.
      * @return null if the method is not known.
      */
     public IValue runMethod(@NotNull String name, List<IValue> paramVars, @Nullable MethodDeclaration method) {
@@ -1296,15 +1362,22 @@ public class AbstractInterpretation {
             return new VoidValue();
         }
         lastVisitedMethod.add(method);
+        if (method == null) {
+            return null;
+        }
+        int numberOfCalls = method.getUsages().size();
+        if (numberOfCalls > 1) {
+            // method is called multiple times, set all variables to unknown
+            this.variables.setEverythingUnknown();
+            paramVars.forEach(IValue::setToUnknown);
+        }
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
         List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
         this.nodeStack = new ArrayList<>();
         this.valueStack = new ArrayList<>();
         this.lastVisitedLoopOrIf = new ArrayList<>();
-        if (method == null) {
-            return null;
-        }
+
         visitedLinesRecorder.recordFirstLineVisited(method);
         variables.newScope();
         if (paramVars != null) {

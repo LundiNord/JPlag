@@ -9,14 +9,24 @@ public class RecordingChanges {
 
     private boolean recording;
 
+    /**
+     * Constructor for RecordingChanges value holder.
+     * @param recordingChanges whether changes are being recorded.
+     */
     public RecordingChanges(boolean recordingChanges) {
         this.recording = recordingChanges;
     }
 
+    /**
+     * @return whether changes are being recorded.
+     */
     public boolean isRecording() {
         return recording;
     }
 
+    /**
+     * @param recordingChanges sets whether changes are being recorded.
+     */
     public void setRecording(boolean recordingChanges) {
         this.recording = recordingChanges;
     }

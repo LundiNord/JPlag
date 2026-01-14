@@ -1,6 +1,12 @@
 package de.jplag.java_cpg.visitor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -9,12 +15,20 @@ import org.jetbrains.annotations.NotNull;
 import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.FunctionDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
 import de.fraunhofer.aisec.cpg.graph.scopes.BlockScope;
 import de.fraunhofer.aisec.cpg.graph.scopes.LoopScope;
 import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
 import de.fraunhofer.aisec.cpg.graph.scopes.ValueDeclarationScope;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
+import de.fraunhofer.aisec.cpg.graph.statements.DoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker;
 import de.fraunhofer.aisec.cpg.processing.IStrategy;
@@ -38,6 +52,49 @@ public class NodeOrderStrategy implements IStrategy<Node> {
      */
     public NodeOrderStrategy() {
         // nothing to do yet
+    }
+
+    private static boolean isMainClass(RecordDeclaration recordDeclaration) {
+        return recordDeclaration.getMethods().stream().anyMatch(NodeOrderStrategy::isMainMethod);
+    }
+
+    private static Iterator<Node> walkMethod(MethodDeclaration methodDecl) {
+        if (!methodDecl.hasBody()) {
+            return Iterators.concat(methodDecl.getParameters().iterator());
+        }
+        return Iterators.concat(methodDecl.getParameters().iterator(), List.of(methodDecl.getBody()).iterator());
+    }
+
+    static boolean isMainMethod(FunctionDeclaration function) {
+        return function instanceof MethodDeclaration method && method.isStatic() && method.getName().getLocalName().equals("main")
+                && method.getReturnTypes().size() == 1 && method.getReturnTypes().getFirst().getTypeName().equals("void");
+    }
+
+    @NotNull
+    private static Iterator<Node> walkBlock(Block block) {
+        return block.getStatements().stream().map(TransformationUtil::getEntry).iterator();
+    }
+
+    /**
+     * Finds all child {@link Node}s of the given {@link Statement} in the order determined by the
+     * {@link NodeOrderStrategy}.
+     * @param statement the statement
+     * @return a list of all child nodes
+     */
+    public static List<Node> flattenStatement(Statement statement) {
+        List<Node> astChildren = SubgraphWalker.INSTANCE.flattenAST(statement);
+        NodeOrderStrategy strategy = new NodeOrderStrategy();
+        Node entry = TransformationUtil.getEntry(statement);
+
+        List<Node> nodes = new ArrayList<>(astChildren.size());
+        SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
+        walker.setStrategy(node -> Iterators.filter(strategy.getIterator(node), astChildren::contains));
+        walker.registerOnNodeVisit((node, parent) -> {
+            nodes.add(node);
+            return Unit.INSTANCE;
+        });
+        walker.iterate(entry);
+        return nodes;
     }
 
     @Override
@@ -86,10 +143,6 @@ public class NodeOrderStrategy implements IStrategy<Node> {
         return Iterators.concat(mainFiles.iterator(), otherFiles.iterator());
     }
 
-    private static boolean isMainClass(RecordDeclaration recordDeclaration) {
-        return recordDeclaration.getMethods().stream().anyMatch(NodeOrderStrategy::isMainMethod);
-    }
-
     private List<RecordDeclaration> getTopLevelRecords(Node node) {
         List<RecordDeclaration> result = new ArrayList<>();
         List<Node> declarations = new ArrayList<>(List.of(node));
@@ -116,45 +169,6 @@ public class NodeOrderStrategy implements IStrategy<Node> {
         return Iterators.concat(recordDecl.getFields().iterator(),
                 functions.stream().filter(m -> !Objects.isNull(m.getBody())).sorted(this::walkMethods).iterator(),
                 recordDecl.getTemplates().iterator(), recordDecl.getRecords().iterator());
-    }
-
-    private static Iterator<Node> walkMethod(MethodDeclaration methodDecl) {
-        if (!methodDecl.hasBody()) {
-            return Iterators.concat(methodDecl.getParameters().iterator());
-        }
-        return Iterators.concat(methodDecl.getParameters().iterator(), List.of(methodDecl.getBody()).iterator());
-    }
-
-    static boolean isMainMethod(FunctionDeclaration function) {
-        return function instanceof MethodDeclaration method && method.isStatic() && method.getName().getLocalName().equals("main")
-                && method.getReturnTypes().size() == 1 && method.getReturnTypes().getFirst().getTypeName().equals("void");
-    }
-
-    @NotNull
-    private static Iterator<Node> walkBlock(Block block) {
-        return block.getStatements().stream().map(TransformationUtil::getEntry).iterator();
-    }
-
-    /**
-     * Finds all child {@link Node}s of the given {@link Statement} in the order determined by the
-     * {@link NodeOrderStrategy}.
-     * @param statement the statement
-     * @return a list of all child nodes
-     */
-    public static List<Node> flattenStatement(Statement statement) {
-        List<Node> astChildren = SubgraphWalker.INSTANCE.flattenAST(statement);
-        NodeOrderStrategy strategy = new NodeOrderStrategy();
-        Node entry = TransformationUtil.getEntry(statement);
-
-        List<Node> nodes = new ArrayList<>(astChildren.size());
-        SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
-        walker.setStrategy(node -> Iterators.filter(strategy.getIterator(node), astChildren::contains));
-        walker.registerOnNodeVisit((node, parent) -> {
-            nodes.add(node);
-            return Unit.INSTANCE;
-        });
-        walker.iterate(entry);
-        return nodes;
     }
 
     private Iterator<Node> walkDoWhileStatement(DoStatement doStatement) {

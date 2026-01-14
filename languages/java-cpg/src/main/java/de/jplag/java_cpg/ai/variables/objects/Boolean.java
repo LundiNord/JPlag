@@ -15,17 +15,23 @@ import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
  * Representation of the static java.lang.Boolean class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Boolean.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Boolean.html">Oracle Docs</a>
  */
 public class Boolean extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "Boolean";
 
+    /**
+     * Representation of the static java.lang.Boolean class.
+     */
     public Boolean() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.lang.Boolean.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

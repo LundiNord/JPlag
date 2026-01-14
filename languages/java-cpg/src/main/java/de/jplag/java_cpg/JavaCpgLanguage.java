@@ -1,6 +1,26 @@
 package de.jplag.java_cpg;
 
-import static de.jplag.java_cpg.transformation.TransformationRepository.*;
+import static de.jplag.java_cpg.transformation.TransformationRepository.forStatementToWhileStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.ifWithNegatedConditionResolution;
+import static de.jplag.java_cpg.transformation.TransformationRepository.inlineSingleUseConstant;
+import static de.jplag.java_cpg.transformation.TransformationRepository.inlineSingleUseVariable;
+import static de.jplag.java_cpg.transformation.TransformationRepository.moveConstantToOnlyUsingClass;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyConstructor;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyDeclarationStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyRecord;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeGetterMethod;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeImplicitStandardConstructor;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryField;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryRecord;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeOptionalGetCall;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeOptionalOfCall;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeUnsupportedConstructor;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeUnsupportedMethod;
+import static de.jplag.java_cpg.transformation.TransformationRepository.wrapDoStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.wrapElseStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.wrapForStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.wrapThenStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.wrapWhileStatement;
 
 import java.io.File;
 import java.util.Arrays;
@@ -13,7 +33,11 @@ import org.kohsuke.MetaInfServices;
 import de.jplag.Language;
 import de.jplag.ParsingException;
 import de.jplag.Token;
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
@@ -35,14 +59,39 @@ public class JavaCpgLanguage implements Language {
         this.cpgAdapter = new CpgAdapter(true, true, true, allTransformations());
     }
 
+    /**
+     * Creates a new {@link JavaCpgLanguage}.
+     * @param removeDeadCode whether dead code should be removed
+     * @param detectDeadCode whether dead code should be detected
+     * @param reorder whether statements may be reordered
+     */
     public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder) {
         this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, allTransformations());
     }
 
+    /**
+     * Creates a new {@link JavaCpgLanguage}.
+     * @param removeDeadCode whether dead code should be removed
+     * @param detectDeadCode whether dead code should be detected
+     * @param reorder whether statements may be reordered
+     * @param transformations the code graph transformations to apply
+     */
     public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation[] transformations) {
         this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, transformations);
     }
 
+    /**
+     * Creates a new {@link JavaCpgLanguage}.
+     * @param removeDeadCode whether dead code should be removed
+     * @param detectDeadCode whether dead code should be detected
+     * @param reorder whether statements may be reordered
+     * @param transformations the code graph transformations to apply
+     * @param intAiType the AI type to use for integer values
+     * @param floatAiType the AI type to use for float values
+     * @param stringAiType the AI type to use for string values
+     * @param charAiType the AI type to use for char values
+     * @param arrayAiType the AI type to use for array values
+     */
     public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation[] transformations,
             IntAiType intAiType, FloatAiType floatAiType, StringAiType stringAiType, CharAiType charAiType, ArrayAiType arrayAiType) {
         this(removeDeadCode, detectDeadCode, reorder, transformations);

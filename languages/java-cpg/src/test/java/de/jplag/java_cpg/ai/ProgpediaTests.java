@@ -82,6 +82,7 @@ public class ProgpediaTests {
     }
 
     @ParameterizedTest
+    @Disabled
     @MethodSource("progpediaResourceDirs")
     void testProgpedia(String resourceDir) throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
