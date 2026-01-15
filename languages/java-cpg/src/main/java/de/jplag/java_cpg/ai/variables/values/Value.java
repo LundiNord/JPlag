@@ -1,18 +1,28 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaLengthArray;
 import de.jplag.java_cpg.ai.variables.values.chars.CharSetValue;
 import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.*;
+import de.jplag.java_cpg.ai.variables.values.numbers.FloatSetValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IntIntervalValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IntSetValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
@@ -91,6 +101,7 @@ public abstract class Value implements IValue {
      * Constructs a Value instance based on the provided type.
      * @param type the type of the value.
      * @return a Value instance corresponding to the specified type.
+     * @throws IllegalArgumentException if the type is unsupported.
      */
     @NotNull
     public static IValue valueFactory(@NotNull Type type) {
@@ -113,6 +124,7 @@ public abstract class Value implements IValue {
      * Value factory for when a value is known.
      * @param value the known value.
      * @return a {@link Value} instance representing the known value.
+     * @throws IllegalStateException if the value type is unsupported.
      */
     @NotNull
     public static IValue valueFactory(@Nullable Object value) {
@@ -145,6 +157,10 @@ public abstract class Value implements IValue {
 
     /**
      * Value factory for when a value could have multiple possible values.
+     * @param values the possible values.
+     * @param <T> The type of the values.
+     * @return a {@link Value} instance representing the possible values.
+     * @throws IllegalStateException if the set of values contains unsupported types.
      */
     @NotNull
     @SuppressWarnings("unchecked")
@@ -152,29 +168,38 @@ public abstract class Value implements IValue {
         assert !values.isEmpty();
         Object first = values.iterator().next();
         return switch (first) {
-            case String ignored -> getNewStringValue((Set<String>) values);
-            case Integer ignored -> getNewIntValue((Set<Integer>) values);
-            case Double ignored -> getNewFloatValue((Set<Double>) values);
-            case Character ignored -> getNewCharValue((Set<Character>) values);
+            case String _ -> getNewStringValue((Set<String>) values);
+            case Integer _ -> getNewIntValue((Set<Integer>) values);
+            case Double _ -> getNewFloatValue((Set<Double>) values);
+            case Character _ -> getNewCharValue((Set<Character>) values);
             default -> throw new IllegalStateException("Unexpected value type in list: " + first.getClass());
         };
     }
 
     /**
      * Value factory for when a value has lower/upper bounds.
+     * @param lowerBound the lower bound.
+     * @param upperBound the upper bound.
+     * @param <T> The type of the bounds.
+     * @return a {@link Value} instance representing the bounded value.
+     * @throws IllegalStateException if the bound types are unsupported.
      */
     @NotNull
     public static <T> IValue valueFactory(@NotNull T lowerBound, @NotNull T upperBound) {
         return switch (lowerBound) {
-            case String ignored -> throw new IllegalStateException("Strings dont have bounds");
-            case Integer ignored -> getNewIntValue((int) lowerBound, (int) upperBound);
-            case Double ignored -> getNewFloatValue((double) lowerBound, (double) upperBound);
+            case String _ -> throw new IllegalStateException("Strings dont have bounds");
+            case Integer _ -> getNewIntValue((int) lowerBound, (int) upperBound);
+            case Double _ -> getNewFloatValue((double) lowerBound, (double) upperBound);
             default -> throw new IllegalStateException("Unexpected value type in bound : " + lowerBound.getClass());
         };
     }
 
+    /**
+     * Creates a new integer value based on the configured AI type.
+     * @return a new integer value instance.
+     */
     @NotNull
-    private static Value getNewIntValue() {
+    public static INumberValue getNewIntValue() {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue();
             case DEFAULT -> new IntValue();
@@ -217,8 +242,13 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new float value based on the configured AI type.
+     * @param number the float number.
+     * @return a new float value instance.
+     */
     @NotNull
-    private static Value getNewFloatValue(double number) {
+    public static Value getNewFloatValue(double number) {
         return switch (usedFloatAiType) {
             case DEFAULT -> new FloatValue(number);
             case SET -> new FloatSetValue(number);
@@ -300,6 +330,11 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new array value with the specified inner type.
+     * @param innerType the type of the elements in the array.
+     * @return a new array value instance.
+     */
     @NotNull
     public static IJavaArray getNewArayValue(Type innerType) {
         return switch (usedArrayAiType) {
@@ -308,8 +343,38 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new array value with the specified values.
+     * @param values the values to initialize the array with.
+     * @return a new array value instance.
+     */
+    @NotNull
+    public static IJavaArray getNewArayValue(List<IValue> values) {
+        return switch (usedArrayAiType) {
+            case DEFAULT -> new JavaArray(values);
+            case LENGTH -> new JavaLengthArray(values);
+        };
+    }
+
+    /**
+     * Creates a new array value with the specified inner type and length.
+     * @param innerType the type of the elements in the array.
+     * @param length the length of the array.
+     * @return a new array value instance.
+     */
+    @NotNull
+    public static IJavaArray getNewArayValue(Type innerType, INumberValue length) {
+        return switch (usedArrayAiType) {
+            case DEFAULT -> new JavaArray(length, innerType);
+            case LENGTH -> new JavaLengthArray(innerType, length);
+        };
+    }
+
     // ------------------ End of Value Factories ------------------//
 
+    /**
+     * @return the type of this value.
+     */
     @NotNull
     public Type getType() {
         return type;
@@ -320,6 +385,7 @@ public abstract class Value implements IValue {
      * @param operator the operator.
      * @param other the other value.
      * @return the result value. VoidValue if the operation does not return a value.
+     * @throws UnsupportedOperationException if the operation is not supported between the two value types.
      */
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
@@ -329,6 +395,7 @@ public abstract class Value implements IValue {
      * Performs a unary operation on this value.
      * @param operator the operator.
      * @return the result value. VoidValue if the operation does not return a value.
+     * @throws IllegalArgumentException if the operation is not supported for this value type.
      */
     public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
@@ -367,6 +434,8 @@ public abstract class Value implements IValue {
 
     /**
      * Sets the position of this value in the array that contains it. Necessary to set before array assignments.
+     * @param array the array that contains this value.
+     * @param index the index of this value in the array.
      */
     public void setArrayPosition(@NotNull IJavaArray array, @NotNull INumberValue index) {
         this.arrayPosition = new Pair<>(array, index);

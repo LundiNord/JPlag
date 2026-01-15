@@ -50,6 +50,16 @@
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.jplag</groupId>
+            <artifactId>jplag</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.jplag</groupId>
+            <artifactId>java</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

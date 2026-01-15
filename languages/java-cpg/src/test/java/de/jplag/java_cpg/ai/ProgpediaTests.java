@@ -29,7 +29,7 @@ import de.jplag.java_cpg.ai.variables.values.Value;
  * @author ujiqk
  * @version 1.0
  */
-class ProgpediaTests {
+public class ProgpediaTests {
 
     @NotNull
     private static AbstractInterpretation interpretFromResource(String resourceDir) throws ParsingException, InterruptedException {
@@ -37,7 +37,7 @@ class ProgpediaTests {
         File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
         TranslationResult result = translate(submissionDirectories);
-        AbstractInterpretation interpretation = new AbstractInterpretation();
+        AbstractInterpretation interpretation = new AbstractInterpretation(new VisitedLinesRecorder(), true);
 
         assert result.getComponents().size() == 1;
         Component comp = result.getComponents().getFirst();
@@ -47,9 +47,26 @@ class ProgpediaTests {
     }
 
     @NotNull
-    private static Stream<String> acceptedResourceDirs() {
-        return Stream.of("00000006")
+    public static Stream<String> progpediaResourceDirs() {
+        return Stream
+                .of("00000006", "00000016", "00000018", "00000019", "00000021", "00000022", "00000023", "00000034", "00000035", "00000039",
+                        "00000042", "00000043", "00000045", "00000048", "00000053", "00000056")
                 .flatMap(problemId -> Stream.of("ACCEPTED", "WRONG_ANSWER").flatMap(category -> getResourceDirsForProblem(problemId, category)));
+    }
+
+    @NotNull
+    public static Stream<String> progpediaFiles() {
+        return progpediaResourceDirs().flatMap(dir -> {
+            ClassLoader classLoader = DeadCodeDetectionTest.class.getClassLoader();
+            java.net.URL url = classLoader.getResource(dir);
+            if (url == null)
+                return Stream.empty();
+            File directory = new File(url.getFile());
+            File[] javaFiles = directory.listFiles((d, name) -> name.endsWith(".java"));
+            if (javaFiles == null)
+                return Stream.empty();
+            return Arrays.stream(javaFiles).map(f -> dir + f.getName());
+        }).map(s -> s.substring(5));    // remove first "java/"
     }
 
     private static Stream<String> getResourceDirsForProblem(String problemId, String category) {
@@ -65,7 +82,8 @@ class ProgpediaTests {
     }
 
     @ParameterizedTest
-    @MethodSource("acceptedResourceDirs")
+    @Disabled
+    @MethodSource("progpediaResourceDirs")
     void testProgpedia(String resourceDir) throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
@@ -77,7 +95,7 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle() throws ParsingException, InterruptedException {
+    void testSingle1() throws ParsingException, InterruptedException {       // for(Node cursor=invert.top;cursor!=null;cursor=cursor.next)
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
@@ -88,22 +106,55 @@ class ProgpediaTests {
 
     @Test
     @Disabled
-    void testSingle2() throws ParsingException, InterruptedException {
+    void testSingle2() throws ParsingException, InterruptedException {  // for (int k=0, i=0; i<ns; i++) for (int j=i+1; j<ns; j++, k++)
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000016/ACCEPTED/00109_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00216_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }
 
     @Test
     @Disabled
-    void testSingle3() throws ParsingException, InterruptedException {
+    void testSingle3() throws ParsingException, InterruptedException {  // class has the same name as an array
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000018/ACCEPTED/00078_00001");
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/ACCEPTED/00072_00002");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
+
+    @Test
+    @Disabled
+    void testSingle4() throws ParsingException, InterruptedException {  // pesquisabinaria
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00142_00003");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
+
+    @Test
+    @Disabled
+    void testSingle5() throws ParsingException, InterruptedException {
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000048/ACCEPTED/00158_00001");
+        VariableStore variableStore = interpretation.getVariables();
+        assertNotNull(variableStore);
+    }
+
+    @Test
+    @Disabled
+    void testSingle6() throws ParsingException, InterruptedException {     // FixMe
+        Value.setUsedIntAiType(IntAiType.DEFAULT);
+        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
+        Value.setUsedStringAiType(StringAiType.DEFAULT);
+        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00196_00001");
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }

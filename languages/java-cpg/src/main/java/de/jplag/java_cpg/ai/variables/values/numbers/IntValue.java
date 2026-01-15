@@ -8,9 +8,16 @@ import org.jetbrains.annotations.NotNull;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
 
+/**
+ * Represents an integer value with optional exact information.
+ * @author ujiqk
+ * @version 1.0
+ */
 public class IntValue extends Value implements INumberValue {
 
     private int value;
@@ -24,18 +31,30 @@ public class IntValue extends Value implements INumberValue {
         information = false;
     }
 
+    /**
+     * Constructor for IntValue with exact information.
+     * @param value the integer value.
+     */
     public IntValue(int value) {
         super(Type.INT);
         this.value = value;
         information = true;
     }
 
+    /**
+     * Constructor for IntValue with exact information from a double value.
+     * @param value the integer value as double.
+     */
     public IntValue(double value) {
         super(Type.INT);
         this.value = (int) value;
         information = true;
     }
 
+    /**
+     * Constructor for IntValue with a set of possible values.
+     * @param possibleValues the set of possible integer values.
+     */
     public IntValue(@NotNull Set<Integer> possibleValues) {
         super(Type.INT);
         if (possibleValues.size() == 1) {
@@ -46,8 +65,14 @@ public class IntValue extends Value implements INumberValue {
         }
     }
 
+    /**
+     * Constructor for IntValue with a range.
+     * @param lowerBound the lower bound of the range.
+     * @param upperBound the upper bound of the range.
+     */
     public IntValue(int lowerBound, int upperBound) {
         super(Type.INT);
+        assert lowerBound <= upperBound;
         if (lowerBound == upperBound) {
             this.value = lowerBound;
             this.information = true;
@@ -69,6 +94,9 @@ public class IntValue extends Value implements INumberValue {
         return information;
     }
 
+    /**
+     * @return the exact value. Only valid if getInformation() returns true.
+     */
     public double getValue() {
         assert information;
         return value;
@@ -79,88 +107,109 @@ public class IntValue extends Value implements INumberValue {
         if (!(other instanceof INumberValue)) {
             other = new IntValue();
         }
-        assert other instanceof IntValue;
+        INumberValue otherNumber = (INumberValue) other;
         switch (operator) {
             case "+" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value + ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value + otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "<" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value < ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value < otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value > ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value > otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "-" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value - ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value - otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "!=" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value != ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value != otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "==" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value == ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value == otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "*" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value * ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value * otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "/" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(this.value / ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value / otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
             }
             case "<=" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value <= ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value <= otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">=" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new BooleanValue(this.value >= ((IntValue) other).getValue());
+                if (information && otherNumber.getInformation()) {
+                    return new BooleanValue(this.value >= otherNumber.getValue());
                 } else {
                     return new BooleanValue();
                 }
             }
             case "max" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(Math.max(this.value, ((IntValue) other).getValue()));
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(Math.max(this.value, otherNumber.getValue()));
                 } else {
                     return new IntValue();
                 }
             }
             case "min" -> {
-                if (information && ((IntValue) other).getInformation()) {
-                    return new IntValue(Math.min(this.value, ((IntValue) other).getValue()));
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(Math.min(this.value, otherNumber.getValue()));
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "%" -> {
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value % otherNumber.getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
+            case ">>" -> {
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value >> (int) otherNumber.getValue());
+                } else {
+                    return new IntValue();
+                }
+            }
+            case "<<" -> {
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue(this.value << (int) otherNumber.getValue());
                 } else {
                     return new IntValue();
                 }
@@ -205,6 +254,13 @@ public class IntValue extends Value implements INumberValue {
                     return new IntValue();
                 }
             }
+            case "sin" -> {
+                if (information) {
+                    return Value.valueFactory(Math.sin(this.value));
+                } else {
+                    return Value.valueFactory(Type.FLOAT);
+                }
+            }
             default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
@@ -221,9 +277,25 @@ public class IntValue extends Value implements INumberValue {
             this.information = false;
             return;
         }
-        assert other instanceof IntValue;
-        IntValue otherInt = (IntValue) other;
-        if (this.information && otherInt.information && this.value == otherInt.value) {
+        if (other instanceof JavaObject javaObject) {   // could be an Integer object
+            if (javaObject.accessField("value") instanceof IntValue intValue) {
+                other = intValue;
+            } else {
+                this.information = false;
+                return;
+            }
+        }
+        if (other instanceof CharValue charValue) {   // cannot merge different types
+            if (information && charValue.getInformation() && this.value == charValue.getValue()) {
+                // keep information
+            } else {
+                this.information = false;
+            }
+            return;
+        }
+        assert other instanceof INumberValue;
+        INumberValue otherInt = (INumberValue) other;
+        if (this.information && otherInt.getInformation() && this.value == otherInt.getValue()) {
             // keep information
         } else {
             this.information = false;

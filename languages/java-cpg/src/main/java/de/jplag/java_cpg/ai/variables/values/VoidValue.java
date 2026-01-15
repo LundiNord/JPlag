@@ -14,6 +14,9 @@ import de.jplag.java_cpg.ai.variables.values.string.StringValue;
  */
 public class VoidValue extends Value {
 
+    /**
+     * Creates a new Void typed value. Represents no value or completely unknown value.
+     */
     public VoidValue() {
         super(Type.VOID);
     }
@@ -24,13 +27,16 @@ public class VoidValue extends Value {
             case "==", ">", "<", ">=", "<=", "!=" -> {
                 return new BooleanValue();
             }
-            case "+", "-", "*" -> {
+            case "+", "-", "*", "/" -> {
                 return switch (other) {
                     case IntValue ignored -> new IntValue();
                     case FloatValue ignored -> new FloatValue();
                     case StringValue ignored -> new StringValue();
                     default -> new VoidValue();
                 };
+            }
+            case "&", "^" -> {
+                return new VoidValue();
             }
             default -> throw new UnsupportedOperationException("Operator " + operator + " not supported for VoidValue.");
         }
@@ -42,7 +48,7 @@ public class VoidValue extends Value {
             case "!" -> {
                 return new BooleanValue();
             }
-            case "--", "++" -> {
+            case "--", "++", "abs", "+", "-" -> {
                 return new VoidValue();
             }
             default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());

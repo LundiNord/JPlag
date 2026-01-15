@@ -7,8 +7,14 @@ package de.jplag.java_cpg.ai.variables.values;
  */
 public interface IBooleanValue {
 
+    /**
+     * @return if the boolean value is known.
+     */
     boolean getInformation();
 
+    /**
+     * @return the boolean value if it is known.
+     */
     boolean getValue();
 
 }

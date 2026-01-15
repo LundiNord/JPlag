@@ -12,9 +12,19 @@ import de.fraunhofer.aisec.cpg.graph.Node;
 import de.jplag.java_cpg.transformation.matching.edges.CpgEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgMultiEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgNthEdge;
-import de.jplag.java_cpg.transformation.matching.pattern.*;
+import de.jplag.java_cpg.transformation.matching.pattern.GraphPattern;
+import de.jplag.java_cpg.transformation.matching.pattern.Match;
+import de.jplag.java_cpg.transformation.matching.pattern.MultiGraphPattern;
+import de.jplag.java_cpg.transformation.matching.pattern.NodePattern;
+import de.jplag.java_cpg.transformation.matching.pattern.SimpleGraphPattern;
 import de.jplag.java_cpg.transformation.matching.pattern.relation.Relation;
-import de.jplag.java_cpg.transformation.operations.*;
+import de.jplag.java_cpg.transformation.operations.CreateNodeOperation;
+import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
+import de.jplag.java_cpg.transformation.operations.GraphOperation;
+import de.jplag.java_cpg.transformation.operations.InsertOperation;
+import de.jplag.java_cpg.transformation.operations.RemoveOperation;
+import de.jplag.java_cpg.transformation.operations.ReplaceOperation;
+import de.jplag.java_cpg.transformation.operations.SetOperation;
 
 /**
  * This saves all information related to a transformation on a graph.
@@ -30,7 +40,7 @@ public interface GraphTransformation {
     void apply(Match match, TranslationContext ctx);
 
     /**
-     * Gets the {@link ExecutionOrder} for this {@link GraphTransformation}
+     * Gets the {@link ExecutionOrder} for this {@link GraphTransformation}.
      * @return the execution order
      */
     ExecutionOrder getExecutionOrder();
@@ -126,24 +136,6 @@ public interface GraphTransformation {
             apply(match, concreteOperations, ctx);
         }
 
-        /**
-         * Applies the given list of {@link GraphOperation}s to the {@link Match}, following the structure of the
-         * {@link NodePattern}.
-         * @param match the match of the graph transformations source pattern to the concrete CPG
-         * @param operations the list of transformations to apply
-         * @param ctx the translation context of the current translation
-         */
-        protected void apply(Match match, List<GraphOperation> operations, TranslationContext ctx) {
-            for (GraphOperation op : operations) {
-                try {
-                    op.resolveAndApply(match, ctx);
-                } catch (RuntimeException e) {
-                    throw new TransformationException(e);
-                }
-            }
-            DummyNeighbor.getInstance().clear();
-        }
-
         @Override
         public ExecutionOrder getExecutionOrder() {
             return this.executionOrder;
@@ -162,6 +154,24 @@ public interface GraphTransformation {
         @Override
         public GraphPattern getSourcePattern() {
             return sourcePattern;
+        }
+
+        /**
+         * Applies the given list of {@link GraphOperation}s to the {@link Match}, following the structure of the
+         * {@link NodePattern}.
+         * @param match the match of the graph transformations source pattern to the concrete CPG
+         * @param operations the list of transformations to apply
+         * @param ctx the translation context of the current translation
+         */
+        protected void apply(Match match, List<GraphOperation> operations, TranslationContext ctx) {
+            for (GraphOperation op : operations) {
+                try {
+                    op.resolveAndApply(match, ctx);
+                } catch (RuntimeException e) {
+                    throw new TransformationException(e);
+                }
+            }
+            DummyNeighbor.getInstance().clear();
         }
 
         private List<GraphOperation> instantiate(List<GraphOperation> operations, Match match) {

@@ -32,7 +32,8 @@ public final class TransformationUtil {
      * @param astRoot the root of the sub-AST
      * @return the EOG {@link SubgraphWalker.Border} of the AST
      */
-    public static SubgraphWalker.Border getEogBorders(Node astRoot) {
+    @NotNull
+    public static SubgraphWalker.Border getEogBorders(@NotNull Node astRoot) {
         SubgraphWalker.Border result;
         if (astRoot instanceof Block block && !block.getStatements().isEmpty() && block.getNextEOG().isEmpty() && block.getPrevEOG().isEmpty()) {
             result = new SubgraphWalker.Border();
@@ -54,11 +55,8 @@ public final class TransformationUtil {
                     exit = exit.getNextEOG().getFirst();
                 result.setExits(List.of(exit));
             }
-
         }
-
         checkBorder(astRoot, result);
-
         return result;
     }
 

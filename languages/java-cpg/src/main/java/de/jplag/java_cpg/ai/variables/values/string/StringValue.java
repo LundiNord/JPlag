@@ -4,8 +4,15 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
@@ -31,6 +38,7 @@ public class StringValue extends JavaObject implements IStringValue {
 
     /**
      * A string value with exact information.
+     * @param value the string value
      */
     public StringValue(String value) {
         super(Type.STRING);
@@ -45,7 +53,7 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -134,6 +142,38 @@ public class StringValue extends JavaObject implements IStringValue {
                 }
                 return array;
             }
+            case "concat" -> {   // public String concat(String str)
+                assert paramVars.size() == 1;
+                StringValue str = (StringValue) paramVars.getFirst();
+                if (information && str.getInformation()) {
+                    return new StringValue(this.value + str.getValue());
+                } else {
+                    return new StringValue();
+                }
+            }
+            case "substring" -> {   // public String substring(int beginIndex, int endIndex)
+                assert paramVars.size() == 2;
+                INumberValue beginIndexValue = (INumberValue) paramVars.get(0);
+                INumberValue endIndexValue = (INumberValue) paramVars.get(1);
+                if (information && beginIndexValue.getInformation() && endIndexValue.getInformation()) {
+                    int beginIndex = (int) beginIndexValue.getValue();
+                    int endIndex = (int) endIndexValue.getValue();
+                    if (beginIndex < 0 || endIndex > value.length() || beginIndex > endIndex) {
+                        return new VoidValue();
+                    }
+                    return new StringValue(this.value.substring(beginIndex, endIndex));
+                } else {
+                    return new StringValue();
+                }
+            }
+            case "trim" -> {   // public String trim()
+                assert paramVars == null || paramVars.isEmpty();
+                if (information) {
+                    return new StringValue(this.value.trim());
+                } else {
+                    return new StringValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -166,12 +206,37 @@ public class StringValue extends JavaObject implements IStringValue {
             } else {
                 return new StringValue();
             }
+        } else if (operator.equals("+") && other instanceof BooleanValue boolValue) {
+            if (information && boolValue.getInformation()) {
+                return new StringValue(this.value + boolValue.getValue());
+            } else {
+                return new StringValue();
+            }
         } else if (operator.equals("==") && other instanceof NullValue) {
             if (information) {
                 return Value.valueFactory(this.value == null);
             } else {
                 return Value.valueFactory(Type.BOOLEAN);
             }
+        } else if (operator.equals("!=") && other instanceof NullValue) {
+            if (information) {
+                return Value.valueFactory(this.value != null);
+            } else {
+                return Value.valueFactory(Type.BOOLEAN);
+            }
+        } else if (operator.equals("==") && other instanceof IStringValue otherString) {
+            if (information && otherString.getInformation()) {
+                return Value.valueFactory(java.util.Objects.equals(this.value, otherString.getValue()));
+            } else {
+                return Value.valueFactory(Type.BOOLEAN);
+            }
+        } else if (operator.equals("+") && other instanceof IJavaObject javaObject) {
+            // case: JavaObject with toString method
+            IValue toStringResult = javaObject.callMethod("toString", List.of(), null);
+            if (toStringResult instanceof IStringValue otherStringFromObject && information && otherStringFromObject.getInformation()) {
+                return new StringValue(this.value + otherStringFromObject.getValue());
+            }
+            return new StringValue();
         }
         throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
     }
@@ -211,10 +276,16 @@ public class StringValue extends JavaObject implements IStringValue {
         value = null;
     }
 
+    /**
+     * @return true if the string value has definite information (i.e., a known value), false otherwise.
+     */
     public boolean getInformation() {
         return information;
     }
 
+    /**
+     * @return if known, the string value.
+     */
     public String getValue() {
         assert information;
         return value;

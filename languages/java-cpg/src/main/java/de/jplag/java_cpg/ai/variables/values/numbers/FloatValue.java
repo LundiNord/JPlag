@@ -27,12 +27,21 @@ public class FloatValue extends Value implements INumberValue {
         information = false;
     }
 
+    /**
+     * Constructor for FloatValue with exact information.
+     * @param value the float value.
+     */
     public FloatValue(double value) {
         super(Type.FLOAT);
         this.value = value;
         information = true;
     }
 
+    /**
+     * Constructor for FloatValue with a range.
+     * @param lowerBound the lower bound of the range.
+     * @param upperBound the upper bound of the range.
+     */
     public FloatValue(double lowerBound, double upperBound) {
         super(Type.FLOAT);
         assert lowerBound <= upperBound;
@@ -44,6 +53,10 @@ public class FloatValue extends Value implements INumberValue {
         }
     }
 
+    /**
+     * Constructor for FloatValue with a set of possible values.
+     * @param values the set of possible float values.
+     */
     public FloatValue(@NotNull Set<Double> values) {
         super(Type.FLOAT);
         if (values.size() == 1) {
@@ -58,14 +71,6 @@ public class FloatValue extends Value implements INumberValue {
         super(Type.FLOAT);
         this.value = value;
         this.information = information;
-    }
-
-    @Deprecated // replaced by unaryOperation?
-    public FloatValue abs() {
-        if (information) {
-            return new FloatValue(Math.abs(value));
-        }
-        return new FloatValue();
     }
 
     /**
@@ -88,7 +93,7 @@ public class FloatValue extends Value implements INumberValue {
         if (other instanceof VoidValue) {
             return new VoidValue();
         }
-        assert other instanceof FloatValue || other instanceof IntValue;
+        assert other instanceof INumberValue;
         switch (operator) {
             case "+" -> {
                 if (information && ((INumberValue) other).getInformation()) {
@@ -118,6 +123,13 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue();
                 }
             }
+            case "==" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new BooleanValue(this.value == ((INumberValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             case "!=" -> {
                 if (information && ((INumberValue) other).getInformation()) {
                     return new BooleanValue(this.value != ((INumberValue) other).getValue());
@@ -130,6 +142,34 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue(this.value * ((INumberValue) other).getValue());
                 } else {
                     return new FloatValue();
+                }
+            }
+            case "/" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new FloatValue(this.value / ((INumberValue) other).getValue());
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "pow" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new FloatValue(Math.pow(this.value, ((INumberValue) other).getValue()));
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "<=" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new BooleanValue(this.value <= ((INumberValue) other).getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case ">=" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new BooleanValue(this.value >= ((INumberValue) other).getValue());
+                } else {
+                    return new BooleanValue();
                 }
             }
             default -> throw new UnsupportedOperationException(
@@ -157,6 +197,13 @@ public class FloatValue extends Value implements INumberValue {
                     return new FloatValue();
                 }
             }
+            case "sqrt" -> {
+                if (information) {
+                    return new FloatValue(Math.sqrt(this.value));
+                } else {
+                    return new FloatValue();
+                }
+            }
             default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
@@ -169,6 +216,10 @@ public class FloatValue extends Value implements INumberValue {
 
     @Override
     public void merge(@NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            this.information = false;
+            return;
+        }
         assert other instanceof FloatValue;
         FloatValue otherFloat = (FloatValue) other;
         if (this.information && otherFloat.information && this.value == otherFloat.value) {

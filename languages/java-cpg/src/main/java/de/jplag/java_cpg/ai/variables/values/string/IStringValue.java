@@ -11,8 +11,14 @@ import de.jplag.java_cpg.ai.variables.values.IJavaObject;
  */
 public interface IStringValue extends IJavaObject {
 
+    /**
+     * @return true if the string value has definite information (i.e., a known value), false otherwise.
+     */
     boolean getInformation();
 
+    /**
+     * @return if known, the string value.
+     */
     @Nullable
     String getValue();
 

@@ -11,6 +11,9 @@ import de.jplag.java_cpg.ai.variables.Type;
  */
 public class NullValue extends Value {
 
+    /**
+     * Constructs a new NullValue.
+     */
     public NullValue() {
         super(Type.NULL);
     }

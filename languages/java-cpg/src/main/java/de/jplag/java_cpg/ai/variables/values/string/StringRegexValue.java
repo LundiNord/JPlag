@@ -9,8 +9,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChars;
@@ -38,6 +44,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
 
     /**
      * A string value with exact information.
+     * @param value The exact string value, null for null.
      */
     public StringRegexValue(@Nullable String value) {
         super(Type.STRING);
@@ -54,6 +61,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
 
     /**
      * A string value with possible values.
+     * @param possibleValues The possible string values.
      */
     public StringRegexValue(@NotNull Set<String> possibleValues) {
         super(Type.STRING);
@@ -90,7 +98,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -383,7 +391,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
 
     @Override
     public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
+        if (other instanceof VoidValue || other instanceof IJavaObject) {
             contentRegex = new ArrayList<>();
             unknown = true;
             return;
@@ -413,7 +421,9 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         }
         if (this.contentRegex.size() < otherString.contentRegex.size()) {
             for (int i = minLength; i < maxLength; i++) {
-                this.contentRegex.add(RegexItem.merge(null, otherString.contentRegex.get(i)));
+                RegexItem otherRegx = otherString.contentRegex.get(i);
+                otherRegx.merge(null);
+                this.contentRegex.add(otherRegx);
             }
         } else {
             for (int i = minLength; i < maxLength; i++) {
@@ -453,16 +463,45 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         return regexList;
     }
 
+    /**
+     * @return true if the string value has definite information (i.e., a known value), false otherwise.
+     */
     public boolean getInformation() {
-        // ToDo
-        return false;
+        if (unknown) {
+            return false;
+        }
+        if (contentRegex == null) {
+            return true; // null is a definite value
+        }
+        for (RegexItem item : contentRegex) {
+            if (item instanceof RegexChars) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    /**
+     * @return if known, the string value.
+     */
     public String getValue() {
         assert getInformation();
-        return null;
+        if (contentRegex == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (RegexItem item : contentRegex) {
+            if (item instanceof RegexChar regexChar) {
+                sb.append(regexChar.getContent());
+            }
+        }
+        return sb.toString();
     }
 
+    /**
+     * Should only be used in tests!
+     * @return the regex representation of the string content. Null if the string is null.
+     */
     @Nullable
     @TestOnly
     public List<RegexItem> getContentRegex() {

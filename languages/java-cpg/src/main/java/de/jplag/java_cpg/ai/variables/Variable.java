@@ -20,16 +20,31 @@ public class Variable {
     private IValue value;
     private List<ChangeRecorder> changeRecorders = new ArrayList<>();
 
+    /**
+     * A variable is a named value.
+     * @param name the name of this variable.
+     * @param value the value of this variable.
+     */
     public Variable(@NotNull VariableName name, @NotNull IValue value) {
         this.name = name;
         this.value = value;
     }
 
+    /**
+     * A variable is a named value.
+     * @param string the name of this variable.
+     * @param value the value of this variable.
+     */
     public Variable(@NotNull String string, @NotNull IValue value) {
         this.name = new VariableName(string);
         this.value = value;
     }
 
+    /**
+     * A variable is a named value.
+     * @param name the name of this variable.
+     * @param type the type of this variable; the initial value will be created based on the type.
+     */
     public Variable(@NotNull VariableName name, @NotNull Type type) {
         this.name = name;
         this.value = Value.valueFactory(type);
@@ -83,7 +98,7 @@ public class Variable {
      * @param value the variable whose content will be merged into this one; must have the same name.
      */
     public void merge(@NotNull Variable value) {
-        assert this.changeRecorders == value.changeRecorders;
+        assert this.changeRecorders.equals(value.changeRecorders);
         assert value.name.equals(this.name);
         this.value.merge(value.value);
     }
@@ -113,10 +128,16 @@ public class Variable {
         }
     }
 
+    /**
+     * @param changeRecorder the change recorder to add. It will be notified on value changes.
+     */
     public void addChangeRecorder(ChangeRecorder changeRecorder) {
         this.changeRecorders.add(changeRecorder);
     }
 
+    /**
+     * @return the last added change recorder. It is removed from this variable.
+     */
     public ChangeRecorder removeLastChangeRecorder() {
         assert !this.changeRecorders.isEmpty();
         return this.changeRecorders.removeLast();

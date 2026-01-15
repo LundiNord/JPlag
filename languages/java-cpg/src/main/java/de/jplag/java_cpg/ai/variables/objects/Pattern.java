@@ -5,6 +5,7 @@ import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
@@ -14,17 +15,23 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
  * Representation of the java.util.regex.Pattern class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">Oracle Docs</a>
  */
 public class Pattern extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.util.regex";
     private static final java.lang.String NAME = "Pattern";
 
+    /**
+     * Representation of the java.util.regex.Pattern class.
+     */
     public Pattern() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.util.regex.Pattern.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {
@@ -32,7 +39,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "matches" -> {
                 assert paramVars.size() == 2;

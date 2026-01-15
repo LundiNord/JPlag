@@ -2,7 +2,11 @@ package de.jplag.java_cpg.transformation.matching.pattern;
 
 import static de.jplag.java_cpg.transformation.matching.pattern.PatternUtil.desc;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -96,6 +100,13 @@ public class Match implements Comparable<Match> {
     }
 
     @Override
+    public int hashCode() {
+        int result = pattern.hashCode();
+        result = 31 * result + parent.hashCode();
+        return result;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
@@ -125,10 +136,9 @@ public class Match implements Comparable<Match> {
     }
 
     @Override
-    public int hashCode() {
-        int result = pattern.hashCode();
-        result = 31 * result + parent.hashCode();
-        return result;
+    public String toString() {
+        return getFullID().stream().map(Object::toString).collect(Collectors.joining("."))
+                + (getRepresentingNode() == null ? "" : "[%s]".formatted(desc(getRepresentingNode())));
     }
 
     /**
@@ -235,12 +245,6 @@ public class Match implements Comparable<Match> {
         this.patternToNode.put(concreteRoot, parent);
     }
 
-    @Override
-    public String toString() {
-        return getFullID().stream().map(Object::toString).collect(Collectors.joining("."))
-                + (getRepresentingNode() == null ? "" : "[%s]".formatted(desc(getRepresentingNode())));
-    }
-
     /**
      * Saves the data related to a concrete occurrence of a {@link WildcardGraphPattern}.
      * @param <R> the concrete type of the child, specified by the edge
@@ -259,6 +263,11 @@ public class Match implements Comparable<Match> {
         }
 
         @Override
+        public int hashCode() {
+            return Objects.hash(parentPattern, edge);
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if (obj == this)
                 return true;
@@ -269,17 +278,12 @@ public class Match implements Comparable<Match> {
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(parentPattern, edge);
+        public String toString() {
+            return "WildcardMatch[" + "parentPattern=" + parentPattern + ", " + "edge=" + edge + ']';
         }
 
         public GraphOperation instantiateGraphOperation(BiFunction<NodePattern<? extends T>, CpgEdge<T, R>, GraphOperation> factoryMethod) {
             return factoryMethod.apply(this.parentPattern, this.edge);
-        }
-
-        @Override
-        public String toString() {
-            return "WildcardMatch[" + "parentPattern=" + parentPattern + ", " + "edge=" + edge + ']';
         }
 
     }
@@ -294,6 +298,11 @@ public class Match implements Comparable<Match> {
         }
 
         @Override
+        public int hashCode() {
+            return Objects.hash(parent, edge);
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if (obj == this)
                 return true;
@@ -301,11 +310,6 @@ public class Match implements Comparable<Match> {
                 return false;
             var that = (EdgeMapKey) obj;
             return Objects.equals(this.parent, that.parent) && Objects.equals(this.edge, that.edge);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(parent, edge);
         }
 
         @Override

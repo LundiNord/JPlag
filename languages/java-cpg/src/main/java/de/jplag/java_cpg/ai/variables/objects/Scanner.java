@@ -5,6 +5,7 @@ import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
@@ -23,10 +24,16 @@ public class Scanner extends JavaObject implements ISpecialObject {
     private static final java.lang.String PATH = "java.util";
     private static final java.lang.String NAME = "Scanner";
 
+    /**
+     * Creates a new Scanner object representation.
+     */
     public Scanner() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.util.Scanner.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {
@@ -34,7 +41,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "nextLine", "next" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -44,15 +51,28 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return new VoidValue();
             }
-            case "nextInt" -> {
+            case "nextInt", "nextLong" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.INT);
             }
-            case "hasNextInt", "hasNext" -> {
+            case "nextDouble", "nextFloat" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(Type.FLOAT);
+            }
+            case "hasNextInt", "hasNext", "hasNextLine" -> {
                 assert paramVars == null || paramVars.isEmpty() || (paramVars.size() == 1 && paramVars.get(0).getType() == Type.STRING);
                 return Value.valueFactory(Type.BOOLEAN);
             }
-
+            case "useLocale" -> {
+                assert paramVars.size() == 1;
+                // We don't model Locale, so just return this
+                return this;
+            }
+            case "useDelimiter" -> {
+                assert paramVars.size() == 1;
+                // We don't model Pattern, so just return this
+                return this;
+            }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in Scanner.");
         }
     }

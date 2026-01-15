@@ -61,6 +61,11 @@ public class Scope {
     public void merge(@NotNull Scope otherScope) {
         // assert: both scopes contain the same variables with potentially different values
         for (Map.Entry<VariableName, Variable> entry : otherScope.variables.entrySet()) {
+            if (!(this.variables.containsKey(entry.getKey()))) {
+                // can happen if the object is null in one branch but assigned in other
+                entry.getValue().setToUnknown();
+                continue;
+            }
             assert this.variables.containsKey(entry.getKey());
             this.variables.get(entry.getKey()).merge(entry.getValue());
         }
@@ -77,7 +82,7 @@ public class Scope {
     }
 
     /**
-     * Sets all variables to their initial value. Initial value depends on the variable type.
+     * Sets all variables to their initial value. The initial value depends on the variable type.
      */
     public void setEverythingInitialValue() {
         for (Variable variable : variables.values()) {
@@ -87,6 +92,7 @@ public class Scope {
 
     /**
      * Starts recording changes to all variables.
+     * @param changeRecorder the ChangeRecorder to notify on changes.
      */
     public void addChangeRecorder(@NotNull ChangeRecorder changeRecorder) {
         for (Map.Entry<VariableName, Variable> entry : variables.entrySet()) {

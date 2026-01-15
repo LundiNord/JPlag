@@ -6,21 +6,44 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 
+/**
+ * Interval implementation for Integer values.
+ * @author ujiqk
+ * @version 1.0
+ */
 public class IntInterval extends Interval<Integer> {
 
+    /**
+     * The maximum value for Integer intervals.
+     */
     public static final int MAX_VALUE = Integer.MAX_VALUE;
+    /**
+     * The minimum value for Integer intervals.
+     */
     public static final int MIN_VALUE = Integer.MIN_VALUE;
 
+    /**
+     * Creates a new Integer interval representing the whole range of Integer values.
+     */
     public IntInterval() {
         this.lowerBound = MIN_VALUE;
         this.upperBound = MAX_VALUE;
     }
 
+    /**
+     * Creates a new Integer interval representing a single number.
+     * @param number the number
+     */
     public IntInterval(int number) {
         this.lowerBound = number;
         this.upperBound = number;
     }
 
+    /**
+     * Creates a new Integer interval with the given bounds.
+     * @param lowerBound the lower bound.
+     * @param upperBound the upper bound.
+     */
     public IntInterval(int lowerBound, int upperBound) {
         assert lowerBound <= upperBound;
         this.lowerBound = lowerBound;

@@ -13,6 +13,10 @@ public class VariableName {
     private final String localName;
     private final String path;
 
+    /**
+     * Creates a new VariableName by splitting the given name into a path and local name.
+     * @param name the full variable name, potentially including path segments separated by dots.
+     */
     public VariableName(@NotNull String name) {
         String[] names = name.split("\\.");
         if (names.length > 1) {
@@ -24,19 +28,23 @@ public class VariableName {
         }
     }
 
+    /**
+     * @return the local name of the variable (without a path).
+     */
     public String getLocalName() {
         return localName;
     }
 
+    /**
+     * @return the path of the variable.
+     */
     public String getPath() {
         return path;
     }
 
     @Override
     public int hashCode() {
-        int result = localName.hashCode();
-        // result = 31 * result + path.hashCode();
-        return result;
+        return localName.hashCode();
     }
 
     @Override
@@ -45,7 +53,6 @@ public class VariableName {
             return false;
 
         VariableName that = (VariableName) o;
-        // return localName.equals(that.localName) && path.equals(that.path);
         return localName.equals(that.localName);
     }
 

@@ -12,9 +12,33 @@ import java.util.function.Consumer;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FunctionDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.ParameterDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.ValueDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
+import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.AssignExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.BinaryOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.fraunhofer.aisec.cpg.graph.types.FunctionType;
 import de.fraunhofer.aisec.cpg.graph.types.IncompleteType;
 import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
@@ -27,15 +51,6 @@ import de.jplag.java_cpg.transformation.matching.pattern.WildcardGraphPattern;
  * A constant class containing relevant {@link IEdge} objects.
  */
 public class Edges {
-    /**
-     * A {@link Map} to retrieve all {@link IEdge}s with a specific source type.
-     */
-    private static final Map<Class<?>, List<IEdge<?, ?>>> edgesBySourceType;
-    /**
-     * A {@link Map} to retrieve all {@link IEdge}s with a specific target type.
-     */
-    private static final Map<Class<?>, List<IEdge<?, ?>>> edgesByTargetType;
-
     public static final CpgEdge<AssignExpression, Expression> ASSIGN_EXPRESSION__LHS = CpgEdge.listValued(AssignExpression::getLhs,
             AssignExpression::setLhs);
     public static final CpgEdge<AssignExpression, Expression> ASSIGN_EXPRESSION__RHS = CpgEdge.listValued(AssignExpression::getRhs,
@@ -95,7 +110,6 @@ public class Edges {
     public static final CpgAttributeEdge<Declaration, String> NODE__LOCAL_NAME = new CpgAttributeEdge<>(EdgeUtil::getLocalName, null);
     public static final CpgAttributeEdge<MethodDeclaration, String> METHOD_DECLARATION__LOCAL_NAME = new CpgAttributeEdge<>(EdgeUtil::getLocalName,
             null);
-
     public static final CpgEdge<ObjectType, RecordDeclaration> OBJECT_TYPE__RECORD_DECLARATION = new CpgEdge<>(ObjectType::getRecordDeclaration,
             ObjectType::setRecordDeclaration, REFERENCE);
     public static final CpgMultiEdge<RecordDeclaration, FieldDeclaration> RECORD_DECLARATION__FIELDS = CpgMultiEdge
@@ -129,10 +143,17 @@ public class Edges {
             WhileStatement::setStatement);
     public static final CpgEdge<WhileStatement, Expression> WHILE_STATEMENT__CONDITION = new CpgEdge<>(WhileStatement::getCondition,
             WhileStatement::setCondition);
-
     public static final CpgEdge<DoStatement, Statement> DO_STATEMENT__STATEMENT = new CpgEdge<>(DoStatement::getStatement, DoStatement::setStatement);
     public static final CpgEdge<DoStatement, Expression> DO_STATEMENT__CONDITION = new CpgEdge<>(DoStatement::getCondition,
             DoStatement::setCondition);
+    /**
+     * A {@link Map} to retrieve all {@link IEdge}s with a specific source type.
+     */
+    private static final Map<Class<?>, List<IEdge<?, ?>>> edgesBySourceType;
+    /**
+     * A {@link Map} to retrieve all {@link IEdge}s with a specific target type.
+     */
+    private static final Map<Class<?>, List<IEdge<?, ?>>> edgesByTargetType;
 
     static {
         edgesBySourceType = new HashMap<>();
@@ -198,6 +219,7 @@ public class Edges {
      * Gets the list of edges with the given node class as target.
      * @param tClass the target node class
      * @param <R> the related node type
+     * @param consumer a consumer to process the edges
      */
     public static <R extends Node> void getEdgesToType(Class<R> tClass, Consumer<IEdge<? extends Node, ? super R>> consumer) {
         Class<? super R> type = tClass;

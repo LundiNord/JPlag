@@ -6,21 +6,44 @@ import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 
+/**
+ * Interval implementation for Double values.
+ * @author ujiqk
+ * @version 1.0
+ */
 public class DoubleInterval extends Interval<Double> {
 
+    /**
+     * The maximum value for Double intervals.
+     */
     public static final double MAX_VALUE = Double.MAX_VALUE;
+    /**
+     * The minimum value for Double intervals.
+     */
     public static final double MIN_VALUE = -Double.MAX_VALUE;
 
+    /**
+     * Creates a new Double interval representing the whole range of Double values.
+     */
     public DoubleInterval() {
         this.lowerBound = MIN_VALUE;
         this.upperBound = MAX_VALUE;
     }
 
+    /**
+     * Creates a new Double interval representing a single number.
+     * @param number the number
+     */
     public DoubleInterval(double number) {
         this.lowerBound = number;
         this.upperBound = number;
     }
 
+    /**
+     * Creates a new Double interval with the given bounds.
+     * @param lowerBound the lower bound.
+     * @param upperBound the upper bound.
+     */
     public DoubleInterval(double lowerBound, double upperBound) {
         assert lowerBound <= upperBound;
         this.lowerBound = lowerBound;

@@ -37,7 +37,7 @@ public class MatchingTest extends AbstractJavaCpgLanguageTest {
     <T extends Node> void testMatch(String filename, Class<T> rootType, SimpleGraphPattern<T> pattern) throws InterruptedException {
         File file = new File(baseDirectory, filename);
         try {
-            CpgAdapter cpgAdapter = new CpgAdapter();
+            CpgAdapter cpgAdapter = new CpgAdapter(false, false, true);
             cpgAdapter.clearTransformations();
             TranslationResult graph = cpgAdapter.translate(Set.of(file));
             CpgIsomorphismDetector detector = new CpgIsomorphismDetector();

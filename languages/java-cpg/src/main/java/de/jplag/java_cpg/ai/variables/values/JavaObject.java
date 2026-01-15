@@ -5,30 +5,49 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.AbstractInterpretation;
 import de.jplag.java_cpg.ai.variables.Scope;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
+import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
 /**
- * A Java object in the abstract interpretation. All big data types are also objects (arrays, collections, maps, etc.).
+ * A Java object instance in the abstract interpretation. All big data types are also objects (arrays, collections,
+ * maps, etc.).
  * @author ujiqk
  * @version 1.0
  */
 public class JavaObject extends Value implements IJavaObject {
 
     // ToDo: save type of the object (class name)
-    private final Scope fields;
+    @Nullable
+    private Scope fields;       // fields == null => object null
     @Nullable
     private AbstractInterpretation abstractInterpretation;  // the abstract interpretation engine for this object
 
-    private JavaObject(@NotNull Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
+    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
         super(Type.OBJECT);
         this.fields = fields;
         this.abstractInterpretation = abstractInterpretation;
     }
 
+    /**
+     * Constructor for a Java object with an abstract interpretation engine and no info.
+     * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
+     */
+    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
+        super(Type.OBJECT);
+        this.fields = new Scope();
+        this.abstractInterpretation = abstractInterpretation;
+        abstractInterpretation.setRelatedObject(this);
+    }
+
+    /**
+     * Default constructor for a Java object with no abstract interpretation engine and no info.
+     */
     public JavaObject() {
         super(Type.OBJECT);
         this.fields = new Scope();
@@ -46,13 +65,14 @@ public class JavaObject extends Value implements IJavaObject {
     /**
      * @param methodName the name of the method to call.
      * @param paramVars the parameters to pass to the method.
+     * @param method the cpg method declaration of the method to call.
      * @return null if the method is not known.
      */
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
         if (abstractInterpretation == null) {
             return new VoidValue();
         }
-        return abstractInterpretation.runMethod(methodName, paramVars);
+        return abstractInterpretation.runMethod(methodName, paramVars, method);
     }
 
     /**
@@ -67,6 +87,11 @@ public class JavaObject extends Value implements IJavaObject {
         return result.getValue();
     }
 
+    /**
+     * Changes the value of an existing field variable in this object. If the field does not exist, it will be created.
+     * @param fieldName the name of the field to change.
+     * @param value the new value of the field.
+     */
     public void changeField(@NotNull String fieldName, IValue value) {
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
@@ -77,7 +102,7 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     /**
-     * Sets a new field variable in this object.
+     * @param field Sets a new field variable in this object.
      */
     public void setField(@NotNull Variable field) {
         this.fields.addVariable(field);
@@ -109,6 +134,23 @@ public class JavaObject extends Value implements IJavaObject {
                     return new BooleanValue();
                 }
             }
+            case "+" -> {
+                if (other instanceof IStringValue stringValue) {
+                    // case: JavaObject with toString method
+                    IValue toStringResult = this.callMethod("toString", List.of(), null);
+                    if (toStringResult instanceof IStringValue stringFromObject && stringValue.getInformation()
+                            && stringFromObject.getInformation()) {
+                        return new StringValue(stringValue.getValue() + stringFromObject.getValue());
+                    }
+                    return new StringValue();
+                } else {
+                    throw new UnsupportedOperationException(
+                            "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+                }
+            }
+            case "instanceof" -> {
+                return new BooleanValue();
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
@@ -117,6 +159,9 @@ public class JavaObject extends Value implements IJavaObject {
     @NotNull
     @Override
     public JavaObject copy() {
+        if (fields == null) {
+            return new JavaObject(null, this.abstractInterpretation);
+        }
         return new JavaObject(new Scope(this.fields), this.abstractInterpretation);
     }
 
@@ -126,18 +171,26 @@ public class JavaObject extends Value implements IJavaObject {
             setToUnknown();
             return;
         }
+        if (fields == null || ((JavaObject) other).fields == null) {
+            fields = new Scope();
+            return;
+        }
         this.fields.merge(((JavaObject) other).fields);
-        assert java.util.Objects.equals(this.abstractInterpretation, ((JavaObject) other).abstractInterpretation);
     }
 
     @Override
     public void setToUnknown() {
-        fields.setEverythingUnknown();
+        if (fields != null) {
+            fields.setEverythingUnknown();
+        }
     }
 
     @Override
     public void setInitialValue() {
-        fields.setEverythingInitialValue();
+        if (fields != null) {
+            fields.setEverythingUnknown();
+        }
+        fields = null;
     }
 
 }

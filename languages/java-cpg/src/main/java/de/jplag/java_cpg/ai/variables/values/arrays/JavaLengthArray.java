@@ -5,30 +5,61 @@ import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
+/**
+ * Represents a Java array by its length and inner type.
+ * @author ujiqk
+ */
 public class JavaLengthArray extends JavaObject implements IJavaArray {
 
     private final Type innerType;
     private INumberValue length;
 
+    /**
+     * Creates a new JavaLengthArray with an unknown inner type and length.
+     */
     public JavaLengthArray() {
         super(Type.ARRAY);
         this.innerType = Type.UNKNOWN;
     }
 
+    /**
+     * Creates a new JavaLengthArray with the given inner type and unknown length.
+     * @param innerType The inner type of the array.
+     */
     public JavaLengthArray(@NotNull Type innerType) {
         super(Type.ARRAY);
         this.innerType = innerType;
     }
 
-    private JavaLengthArray(@NotNull Type innerType, @NotNull INumberValue length) {
+    /**
+     * Creates a new JavaLengthArray with the given inner type and length.
+     * @param innerType The inner type of the array.
+     * @param length The length of the array.
+     */
+    public JavaLengthArray(Type innerType, @NotNull INumberValue length) {
         super(Type.ARRAY);
         this.innerType = innerType;
         this.length = length;
+    }
+
+    /**
+     * Creates a new JavaLengthArray with the inner type and length derived from the given values.
+     * @param values The values to derive the inner type and length from.
+     */
+    public JavaLengthArray(@NotNull List<IValue> values) {
+        super(Type.ARRAY);
+        this.innerType = values.getFirst().getType();
+        this.length = (INumberValue) Value.valueFactory(values.size());
     }
 
     @Override
@@ -55,7 +86,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -105,7 +136,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 assert paramVars.size() == 1;
                 return Value.valueFactory(Type.BOOLEAN);
             }
-            case "getLast" -> {
+            case "getLast", "findFirst", "findAny" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return arrayAccess((INumberValue) Value.valueFactory(1));
             }
@@ -143,6 +174,9 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     @NotNull
     @Override
     public JavaObject copy() {
+        if (this.length == null) {
+            return new JavaLengthArray(this.innerType);
+        }
         INumberValue newLength = (INumberValue) this.length.copy();
         return new JavaLengthArray(this.innerType, newLength);
     }
@@ -160,7 +194,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
 
     @Override
     public void setToUnknown() {
-        length = null;
+        length = Value.getNewIntValue();
     }
 
     @Override

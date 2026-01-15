@@ -1,6 +1,10 @@
 package de.jplag.java_cpg.ai.variables;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +41,9 @@ public class VariableStore {
         scopes.add(new Scope());
     }
 
+    /**
+     * @param variable the variable to add to the current scope.
+     */
     public void addVariable(Variable variable) {
         scopes.get(currentScopeIndex).addVariable(variable);
     }
@@ -89,11 +96,17 @@ public class VariableStore {
         return getVariable(new VariableName(name));
     }
 
+    /**
+     * Creates a new scope on top of the current one.
+     */
     public void newScope() {
         scopes.add(new Scope());
         currentScopeIndex++;
     }
 
+    /**
+     * Removes the current scope.
+     */
     public void removeScope() {
         if (currentScopeIndex > 0) {
             scopes.remove(currentScopeIndex);

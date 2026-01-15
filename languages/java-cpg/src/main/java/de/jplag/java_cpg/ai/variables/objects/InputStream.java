@@ -5,25 +5,34 @@ import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Representation of the java.io.InputStream class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html">Oracle Docs</a>
  */
 public class InputStream extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.io";
     private static final java.lang.String NAME = "InputStream";
 
+    /**
+     * Representation of the java.io.InputStream class.
+     */
     public InputStream() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.io.InputStream.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {
@@ -31,8 +40,15 @@ public class InputStream extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
+            case "read" -> {
+                if (paramVars == null || paramVars.isEmpty()) {
+                    return Value.valueFactory(Type.INT);
+                } else {
+                    throw new UnsupportedOperationException("InputStream.read() with parameters is not supported");
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

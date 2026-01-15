@@ -5,6 +5,8 @@ import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -15,17 +17,23 @@ import de.jplag.java_cpg.ai.variables.values.string.StringValue;
  * Representation of the static java.lang.System class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/System.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/System.html">Oracle Docs</a>
  */
 public class System extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "System";
 
+    /**
+     * Creates a new representation of the java.lang.System class.
+     */
     public System() {
         super();
     }
 
+    /**
+     * @return The variable name java.lang.System
+     */
     @Pure
     @NotNull
     public static VariableName getName() {
@@ -33,11 +41,18 @@ public class System extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "lineSeparator" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return new StringValue("\n");
+            }
+            case "exit" -> {
+                throw new UnsupportedOperationException("System.exit() called");
+            }
+            case "currentTimeMillis" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(Type.INT);
             }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
         }

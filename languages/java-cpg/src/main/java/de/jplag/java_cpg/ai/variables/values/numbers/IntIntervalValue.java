@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
 /**
@@ -19,21 +20,37 @@ public class IntIntervalValue extends Value implements INumberValue {
 
     private final IntInterval interval;
 
+    /**
+     * a IntIntervalValue with no information.
+     */
     public IntIntervalValue() {
         super(Type.INT);
         interval = new IntInterval();
     }
 
+    /**
+     * Constructor for IntIntervalValue which value is between given bounds.
+     * @param lowerBound the lower bound.
+     * @param upperBound the upper bound.
+     */
     public IntIntervalValue(int lowerBound, int upperBound) {
         super(Type.INT);
         interval = new IntInterval(lowerBound, upperBound);
     }
 
+    /**
+     * Constructor for IntIntervalValue with exact information.
+     * @param number the integer value.
+     */
     public IntIntervalValue(int number) {
         super(Type.INT);
         interval = new IntInterval(number);
     }
 
+    /**
+     * Constructor for IntIntervalValue which value is a set of possible values.
+     * @param possibleValues the set of possible integer values.
+     */
     public IntIntervalValue(@NotNull Set<Integer> possibleValues) {
         super(Type.INT);
         java.util.List<Integer> values = possibleValues.stream().toList();
@@ -60,7 +77,7 @@ public class IntIntervalValue extends Value implements INumberValue {
         if (!(other instanceof INumberValue)) {
             other = new IntIntervalValue();
         }
-        IntIntervalValue otherValue = (IntIntervalValue) other;
+        IntIntervalValue otherValue = (IntIntervalValue) other; // ToDo: what if other float?
         switch (operator) {
             case "+" -> {
                 IntInterval newInterval = this.interval.copy().plus(otherValue.interval);
@@ -133,6 +150,9 @@ public class IntIntervalValue extends Value implements INumberValue {
 
     @Override
     public void merge(@NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            other = new IntIntervalValue();
+        }
         assert other instanceof IntIntervalValue;
         this.interval.merge(((IntIntervalValue) other).interval);
     }

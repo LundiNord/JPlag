@@ -5,19 +5,50 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.AbstractInterpretation;
 import de.jplag.java_cpg.ai.variables.Variable;
 
+/**
+ * Interface for Java object representations in the abstract interpretation.
+ * @author ujiqk
+ * @version 1.0
+ */
 public interface IJavaObject extends IValue {
 
-    IValue callMethod(@NotNull String methodName, List<IValue> paramVars);
+    /**
+     * Calls a method on this object. The method is performed inside the abstract interpretation of this object.
+     * @param methodName the name of the method to call.
+     * @param paramVars the parameters to pass to the method.
+     * @param method the cpg method declaration node.
+     * @return the return value of the method.
+     */
+    IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method);
 
+    /**
+     * Accesses a field of this object.
+     * @param fieldName the name of the field to access.
+     * @return the value of the field.
+     */
     IValue accessField(@NotNull String fieldName);
 
+    /**
+     * Changes a field of this object.
+     * @param fieldName the name of the field to change.
+     * @param value the new value of the field.
+     */
     void changeField(@NotNull String fieldName, IValue value);
 
+    /**
+     * Sets the variable representing this object field.
+     * @param field the variable representing this object field.
+     */
     void setField(@NotNull Variable field);
 
+    /**
+     * Sets the abstract interpretation this object belongs to.
+     * @param abstractInterpretation the abstract interpretation this object belongs to.
+     */
     void setAbstractInterpretation(@Nullable AbstractInterpretation abstractInterpretation);
 
 }

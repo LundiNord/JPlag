@@ -4,6 +4,8 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Boolean value representation with a possible lack of information.
@@ -25,6 +27,7 @@ public class BooleanValue extends Value implements IBooleanValue {
 
     /**
      * Creates a BooleanValue with exact information.
+     * @param value the boolean value
      */
     public BooleanValue(boolean value) {
         super(Type.BOOLEAN);
@@ -59,6 +62,13 @@ public class BooleanValue extends Value implements IBooleanValue {
         if (other instanceof VoidValue) {
             return new BooleanValue();
         }
+        if (other instanceof IStringValue stringValue && operator.equals("+")) {
+            if (this.getInformation()) {
+                return stringValue.binaryOperation(operator, other);
+            } else {
+                return Value.valueFactory(Type.STRING);
+            }
+        }
         BooleanValue otherBool = (BooleanValue) other;
         switch (operator) {
             case "||" -> {
@@ -89,8 +99,30 @@ public class BooleanValue extends Value implements IBooleanValue {
                     return new BooleanValue();
                 }
             }
+            case "&" -> {
+                if (this.getInformation() && otherBool.getInformation()) {
+                    return new BooleanValue(this.getValue() & otherBool.getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        }
+    }
+
+    @Pure
+    @Override
+    public Value unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            case "!" -> {
+                if (information) {
+                    return new BooleanValue(!value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }
 
@@ -104,6 +136,22 @@ public class BooleanValue extends Value implements IBooleanValue {
     public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue) {
             this.information = false;
+            return;
+        }
+        if (other instanceof INumberValue numberValue) {    // 1 and 0 to boolean conversion
+            if (this.information && numberValue.getInformation()) {
+                if (numberValue.getValue() == 0) {
+                    if (this.value) {
+                        this.information = false;
+                    }
+                } else {
+                    if (!this.value) {
+                        this.information = false;
+                    }
+                }
+            } else {
+                this.information = false;
+            }
             return;
         }
         assert other instanceof BooleanValue;
@@ -124,21 +172,6 @@ public class BooleanValue extends Value implements IBooleanValue {
     public void setInitialValue() {
         value = false;
         information = true;
-    }
-
-    @Pure
-    @Override
-    public Value unaryOperation(@NotNull String operator) {
-        switch (operator) {
-            case "!" -> {
-                if (information) {
-                    return new BooleanValue(!value);
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
-        }
     }
 
 }

@@ -71,7 +71,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val parentInfo = mutableMapOf<Node, ParentInfo>()
         val movableStatements = getMovableStatements(root, null, parentInfo)
 
-        val finalState = stateSafe[root] ?: throw TransformationException("EOG traversion did not reach the start - cannot sort statements")
+        val finalState = stateSafe[root]
+            ?: throw TransformationException("EOG traverse did not reach the start - cannot sort statements")
 
         /*
          * Sets DFG edges between statements
@@ -282,8 +283,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val walker = SubgraphWalker.IterativeGraphWalker()
         walker.strategy = Strategy::EOG_FORWARD
         var found = false
-        walker.registerOnNodeVisit{
-            node, _ -> if (node == b) found = true }
+        walker.registerOnNodeVisit { node, _ -> if (node == b) found = true }
         walker.iterate(a)
         return found
     }
@@ -302,6 +302,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             .distinct()
 
         irrelevantStatements.forEach {
+            if (parentInfo[it]?.parent == null) {
+                System.err.println("Parent info missing for ${desc(it)}, skipping removal of this irrelevant statement")
+                return
+            }
             val block = parentInfo[it]?.parent as Block
             val index = block.statements.indexOf(it)
             val cpgNthEdge: CpgNthEdge<Block, Statement> = CpgNthEdge(BLOCK__STATEMENTS, index)

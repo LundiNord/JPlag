@@ -46,12 +46,12 @@ class DeadCodeDetectionTest {
         File submissionsRoot = new File(Objects.requireNonNull(classLoader.getResource(resourceDir)).getFile());
         Set<File> submissionDirectories = Set.of(submissionsRoot);
         TranslationResult result = translate(submissionDirectories);
-        AbstractInterpretation interpretation = new AbstractInterpretation();
+        AbstractInterpretation interpretation = new AbstractInterpretation(new VisitedLinesRecorder(), true);
 
         Component comp = result.getComponents().getFirst();
         for (TranslationUnitDeclaration translationUnit : comp.getTranslationUnits()) {
             Assertions.assertNotNull(translationUnit.getName().getParent());
-            if (translationUnit.getName().getParent().getLocalName().endsWith("Main")) {
+            if (translationUnit.getName().getParent().getLocalName().endsWith("Main") || comp.getTranslationUnits().size() == 1) {
                 interpretation.runMain(translationUnit);
             }
         }
@@ -81,6 +81,29 @@ class DeadCodeDetectionTest {
     @NotNull
     private static <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
+    }
+
+    @NotNull
+    private static java.net.URI getURI(@NotNull AbstractInterpretation interpretation, @NotNull String fileName) {
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        var nonVisited = recorder.getNonVisitedLines();
+        for (var uri : nonVisited.keySet()) {
+            if (uri.getPath().endsWith(fileName)) {
+                return uri;
+            }
+        }
+        throw new RuntimeException("URI not found for " + fileName);
+    }
+
+    @NotNull
+    private static VisitedLinesRecorder getVisitedLinesRecorder(@NotNull AbstractInterpretation interpretation) {
+        try {
+            java.lang.reflect.Field field = AbstractInterpretation.class.getDeclaredField("visitedLinesRecorder");
+            field.setAccessible(true);
+            return (VisitedLinesRecorder) field.get(interpretation);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -260,7 +283,6 @@ class DeadCodeDetectionTest {
      * simple enum test
      */
     @Test
-    @Disabled
     void testEnum() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
         JavaObject main = getMainObject(interpretation);
@@ -288,9 +310,6 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/set");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        // assertEquals(1, ((INumberValue) main.accessField("result")).getValue()); //ToDo
-        // assertEquals(true, ((BooleanValue) main.accessField("result")).getValue());
-        // assertEquals(2, ((INumberValue) main.accessField("result")).getValue());
     }
 
     /**
@@ -386,8 +405,8 @@ class DeadCodeDetectionTest {
     /**
      * simple test for ConditionalExpressions (a?b:c).
      */
-    @Disabled
     @Test
+    @Disabled
     void testConditional() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
@@ -477,6 +496,54 @@ class DeadCodeDetectionTest {
         assertFalse(((INumberValue) main.accessField("result")).getInformation());          // x
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());          // y
         assertEquals(25, ((INumberValue) main.accessField("result3")).getValue()); // z
+    }
+
+    @Test
+    void testDeadCode2() throws ParsingException, InterruptedException {    // code after return
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode2");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 9, 9));
+    }
+
+    @Test
+    void testDeadCode3() throws ParsingException, InterruptedException {    // unused method
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode3");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 10, 12));
+    }
+
+    @Test
+    void testDeadCode5() throws ParsingException, InterruptedException {    // dead class
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode5");
+        JavaObject main = getMainObject(interpretation);
+        assertEquals(1, ((INumberValue) main.accessField("result")).getValue());
+
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        // DeadClass on lines 11-15
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 11, 15));
+    }
+
+    @Test
+    void testDeadCode11() throws ParsingException, InterruptedException {    // dead code in constructor and dead class
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/deadCode11");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
+        VisitedLinesRecorder recorder = getVisitedLinesRecorder(interpretation);
+        // DeadClass on lines 20-32
+        assertTrue(recorder.checkIfCompletelyDead(getURI(interpretation, "Main.java"), 20, 32));
+    }
+
+    @Test
+    void testInheritance() throws ParsingException, InterruptedException {
+        AbstractInterpretation interpretation = interpretFromResource("java/ai/inheritance");
+        JavaObject main = getMainObject(interpretation);
+        assertNotNull(main);
     }
 
 }

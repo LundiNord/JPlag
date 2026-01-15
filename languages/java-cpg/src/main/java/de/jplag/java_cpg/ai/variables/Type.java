@@ -24,6 +24,7 @@ public enum Type {
     /**
      * @param cpgType CPG type to convert.
      * @return the corresponding Type enum.
+     * @throws IllegalArgumentException if the CPG type is not supported.
      */
     public static Type fromCpgType(@NotNull de.fraunhofer.aisec.cpg.graph.types.Type cpgType) {
         if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IntegerType.class) {
@@ -38,6 +39,11 @@ public enum Type {
             return ARRAY;   // in java pointer types are used only for arrays
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.FloatingPointType.class) {
             return FLOAT;
+        } else if ((cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IncompleteType.class && cpgType.getName().getLocalName().equals("void"))
+                || cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.UnknownType.class) {
+            return VOID;
+        } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ParameterizedType.class) {
+            return VOID;    // ToDo: should be changed to UNKNOWN everywhere
         } else {
             throw new IllegalArgumentException("Unsupported CPG type: " + cpgType);
         }

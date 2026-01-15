@@ -9,10 +9,21 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class RegexItem {
 
-    public static RegexItem merge(RegexItem one, @NotNull RegexItem two) {
+    /**
+     * Merges two regex items.
+     * @param one the first regex item.
+     * @param two the second regex item.
+     * @return the merged regex item.
+     */
+    public static RegexItem merge(@NotNull RegexItem one, @NotNull RegexItem two) {
         return one.merge(two);
     }
 
+    /**
+     * Merges this regex item with another regex item.
+     * @param other the other regex item.
+     * @return the merged regex item.
+     */
     public abstract RegexItem merge(RegexItem other);
 
 }

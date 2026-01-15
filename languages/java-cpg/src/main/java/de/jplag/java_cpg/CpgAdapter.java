@@ -9,13 +9,34 @@ import java.util.concurrent.ExecutionException;
 
 import org.jetbrains.annotations.NotNull;
 
-import de.fraunhofer.aisec.cpg.*;
+import de.fraunhofer.aisec.cpg.ConfigurationException;
+import de.fraunhofer.aisec.cpg.InferenceConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationManager;
+import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
-import de.fraunhofer.aisec.cpg.passes.*;
+import de.fraunhofer.aisec.cpg.passes.ControlDependenceGraphPass;
+import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
+import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
+import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
+import de.fraunhofer.aisec.cpg.passes.ImportResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
+import de.fraunhofer.aisec.cpg.passes.Pass;
+import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
+import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
+import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeResolver;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.ai.AiPass;
-import de.jplag.java_cpg.passes.*;
+import de.jplag.java_cpg.passes.AstTransformationPass;
+import de.jplag.java_cpg.passes.CpgTransformationPass;
+import de.jplag.java_cpg.passes.DfgSortPass;
+import de.jplag.java_cpg.passes.FixAstPass;
+import de.jplag.java_cpg.passes.PrepareTransformationPass;
+import de.jplag.java_cpg.passes.TokenizationPass;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase;
 
@@ -27,22 +48,31 @@ import kotlin.reflect.KClass;
  */
 public class CpgAdapter {
 
+    private final boolean removeDeadCode;
+    private final boolean detectDeadCode;
     private List<Token> tokenList;
     private boolean reorderingEnabled = true;
 
     /**
      * Constructs a new CpgAdapter.
      * @param transformations a list of {@link GraphTransformation}s
+     * @param removeDeadCode whether dead code should be removed
+     * @param detectDeadCode whether dead code should be detected
+     * @param reorder whether statements may be reordered
      */
-    public CpgAdapter(GraphTransformation... transformations) {
+    public CpgAdapter(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation... transformations) {
         addTransformations(transformations);
+        this.removeDeadCode = removeDeadCode;
+        this.detectDeadCode = detectDeadCode;
+        setReorderingEnabled(reorder);
     }
 
-    List<Token> adapt(Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
+    List<Token> adapt(@NotNull Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
         assert !files.isEmpty();
         tokenList = null;
         if (!normalize) {
             clearTransformations();
+            addTransformations(JavaCpgLanguage.minimalTransformations());
             setReorderingEnabled(false);
         }
         // TokenizationPass sets tokenList
@@ -54,7 +84,7 @@ public class CpgAdapter {
      * Adds a transformation at the end of its respective ATransformationPass.
      * @param transformation a {@link GraphTransformation}
      */
-    public void addTransformation(GraphTransformation transformation) {
+    public void addTransformation(@NotNull GraphTransformation transformation) {
         switch (transformation.getPhase()) {
             case OBLIGATORY -> PrepareTransformationPass.registerTransformation(transformation);
             case AST_TRANSFORM -> AstTransformationPass.registerTransformation(transformation);
@@ -78,6 +108,7 @@ public class CpgAdapter {
         CpgTransformationPass.clearTransformations();
     }
 
+    @NotNull
     private <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
     }
@@ -94,6 +125,7 @@ public class CpgAdapter {
         InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
         TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
+        AiPass.AiPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
@@ -104,15 +136,17 @@ public class CpgAdapter {
                     AstTransformationPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
                     DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
 
-            if (!reorderingEnabled)
+            if (!reorderingEnabled) {
                 passClasses.remove(DfgSortPass.class);
+            }
+            if (!detectDeadCode && !removeDeadCode) {
+                passClasses.remove(AiPass.class);
+            }
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }
             translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
-        } catch (ConfigurationException e) {
-            throw new ParsingException(List.copyOf(files).getFirst(), e);
-        } catch (ExecutionException e) {
+        } catch (ConfigurationException | ExecutionException e) {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
         return translationResult;

@@ -1,6 +1,10 @@
 package de.jplag.java_cpg.ai;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
@@ -9,21 +13,69 @@ import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.EnumConstantDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FunctionDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
 import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.statements.AssertStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.BreakStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CaseStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CatchClause;
+import de.fraunhofer.aisec.cpg.graph.statements.ContinueStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DefaultStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.EmptyStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForEachStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.SwitchStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.TryStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.AssignExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.BinaryOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.CastExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConditionalExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConstructExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ExpressionList;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.InitializerListExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Literal;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewArrayExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ProblemExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ShortCircuitOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.fraunhofer.aisec.cpg.graph.types.HasType;
 import de.fraunhofer.aisec.cpg.graph.types.PointerType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
+import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
 
 /**
@@ -34,19 +86,21 @@ import de.jplag.java_cpg.transformation.operations.TransformationUtil;
  */
 public class AbstractInterpretation {
 
+    private final List<IValue> returnStorage;
+    /**
+     * Helper to detect recursive method calls.
+     */
+    private final List<Node> lastVisitedMethod;
+    /**
+     * Recorder for visited lines to detect dead methods/classes later.
+     */
+    private final VisitedLinesRecorder visitedLinesRecorder;
+    private final boolean removeDeadCode;
     /**
      * Helper: if we are recording changes for while loops.
      */
-    private static boolean recordingChanges = false;
-    /**
-     * the methods available for the associated class.
-     */
     @NotNull
-    private final HashMap<String, MethodDeclaration> methods;
-    /**
-     *
-     */
-    private final List<IValue> returnStorage;
+    private final RecordingChanges recordingChanges;
     /**
      * Helper stack to work around cpg limitations.
      */
@@ -74,19 +128,55 @@ public class AbstractInterpretation {
      * Helper counter for nested if-else statements because cpg does not provide enough information.
      */
     private int ifElseCounter = 0;
+    /**
+     * Helper to detect if we are currently in a constructor. ConstructExpressions behave differently inside constructors.
+     */
+    private boolean inConstructor = false;
 
-    public AbstractInterpretation() {
+    /**
+     * @param visitedLinesRecorder Recorder for visited lines to detect dead methods/classes later.
+     * @param removeDeadCode Whether dead code should be removed after the interpretation.
+     */
+    public AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder, boolean removeDeadCode) {
+        this(visitedLinesRecorder, removeDeadCode, new RecordingChanges(false));
+    }
+
+    private AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder, boolean removeDeadCode, @NotNull RecordingChanges recordingChanges) {
         variables = new VariableStore();
         nodeStack = new ArrayList<>();
         valueStack = new ArrayList<>();
-        methods = new HashMap<>();
         lastVisitedLoopOrIf = new ArrayList<>();
         returnStorage = new ArrayList<>();
+        lastVisitedMethod = new ArrayList<>();
+        this.visitedLinesRecorder = visitedLinesRecorder;
+        this.removeDeadCode = removeDeadCode;
+        this.recordingChanges = recordingChanges;
+    }
+
+    private static JavaObject createNewObject(@NotNull ConstructExpression ce) {
+        JavaObject newObject;
+        String name = ce.getType().getName().toString();
+        name = name.split("<")[0]; // remove generics
+        switch (name) {
+            case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+            case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
+            case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue" -> newObject = new JavaArray();
+            default -> newObject = new JavaObject();
+        }
+        return newObject;
+    }
+
+    /**
+     * @param object the object this AI engine is currently interpreting.
+     */
+    public void setRelatedObject(@NotNull IJavaObject object) {
+        this.object = object;
     }
 
     /**
      * Starts the abstract interpretation by running the main method.
      * @param tud TranslationUnitDeclaration graph node representing the whole program.
+     * @throws IllegalStateException if no main method is found.
      */
     public void runMain(@NotNull TranslationUnitDeclaration tud) {
         RecordDeclaration mainClas;
@@ -102,18 +192,14 @@ public class AbstractInterpretation {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("No RecordDeclaration with public static main method found in translation unit"));
         } else {
-            throw new IllegalStateException("Unexpected number of classes or namespaces in translation unit");
+            throw new IllegalStateException("Unexpected number of classes or namespaces in translation unit generated by cpg");
         }
         JavaObject mainClassVar = new JavaObject();
         setupClass(mainClas, mainClassVar);
         assert mainClas.getMethods().stream().map(MethodDeclaration::getName).filter(x -> x.getLocalName().equals("main")).count() == 1;
         for (MethodDeclaration md : mainClas.getMethods()) {
-            if (!md.getName().getLocalName().equals("main")) {
-                methods.put(md.getName().getLocalName(), md);
-            }
-        }
-        for (MethodDeclaration md : mainClas.getMethods()) {
             if (md.getName().getLocalName().equals("main")) {
+                visitedLinesRecorder.recordFirstLineVisited(md);
                 // Run main method
                 List<Node> eog = md.getNextEOG();
                 assert eog.size() == 1;
@@ -133,24 +219,28 @@ public class AbstractInterpretation {
      * @param objectInstance the object instance that should represent the class.
      * @param constructorArgs the arguments for the constructor.
      */
-    private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs) {
+    private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs,
+            @NotNull ConstructorDeclaration constructor) {
         setupClass(rd, objectInstance);
+        visitedLinesRecorder.recordFirstLineVisited(constructor);
         // Run constructor method
-        ConstructorDeclaration constr = rd.getConstructors().getFirst();    // ToDo what if multiple constructors?
-        List<Node> eog = constr.getNextEOG();
+        this.inConstructor = true;
+        List<Node> eog = constructor.getNextEOG();
         if (eog.size() == 1) {
             variables.newScope();
-            assert constr.getParameters().size() == constructorArgs.size();
+            assert constructor.getParameters().size() == constructorArgs.size();
             for (int i = 0; i < constructorArgs.size(); i++) {
-                variables.addVariable(new Variable(new VariableName(constr.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
+                variables
+                        .addVariable(new Variable(new VariableName(constructor.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
             }
             graphWalker(eog.getFirst());
             variables.removeScope();
-        } else if (eog.isEmpty()) { // empty constructor
-            return;
+        } else if (eog.isEmpty()) {
+            // empty constructor -> return
         } else {
             throw new IllegalStateException("Unexpected value: " + eog.size());
         }
+        this.inConstructor = false;
     }
 
     /**
@@ -160,7 +250,6 @@ public class AbstractInterpretation {
      */
     @Impure
     private void setupClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance) {
-        assert !rd.getConstructors().isEmpty();
         objectInstance.setAbstractInterpretation(this);
         variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
         variables.setThisName(new VariableName(rd.getName().toString()));
@@ -179,38 +268,52 @@ public class AbstractInterpretation {
                 new Variable(de.jplag.java_cpg.ai.variables.objects.Arrays.getName(), new de.jplag.java_cpg.ai.variables.objects.Arrays()));
         variables.addVariable(
                 new Variable(de.jplag.java_cpg.ai.variables.objects.Pattern.getName(), new de.jplag.java_cpg.ai.variables.objects.Pattern()));
+        variables.addVariable(
+                new Variable(de.jplag.java_cpg.ai.variables.objects.Random.getName(), new de.jplag.java_cpg.ai.variables.objects.Random()));
         this.object = objectInstance;
-        for (MethodDeclaration md : rd.getMethods()) {
-            methods.put(md.getName().getLocalName(), md);
+        visitedLinesRecorder.recordFirstLineVisited(rd);
+        setupFieldDeclarations(rd, objectInstance);
+        RecordDeclaration currentClass = rd;
+        while (true) {
+            Set<RecordDeclaration> superClass = currentClass.getSuperTypeDeclarations();
+            if (superClass.isEmpty()) {
+                break;
+            }
+            assert superClass.size() == 1;
+            RecordDeclaration superRd = superClass.stream().findFirst().orElseThrow();
+            setupFieldDeclarations(superRd, objectInstance);
+            currentClass = superRd;
         }
-        for (FieldDeclaration fd : rd.getFields()) {
+    }
+
+    private void setupFieldDeclarations(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance) {
+        for (FieldDeclaration fd : rd.getFields()) {    // ToDo also do for super classes
+            visitedLinesRecorder.recordLinesVisited(fd);
             Type type = fd.getType();
             Name name = fd.getName();
             if (fd.getInitializer() == null) {      // no initial value
-                Variable newVar = new Variable(new VariableName(name.toString()), de.jplag.java_cpg.ai.variables.Type.fromCpgType(type));
+                de.jplag.java_cpg.ai.variables.Type aiType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(type);
+                Variable newVar;
+                if (aiType == de.jplag.java_cpg.ai.variables.Type.ARRAY || aiType == de.jplag.java_cpg.ai.variables.Type.LIST) {
+                    de.jplag.java_cpg.ai.variables.Type innerType = de.jplag.java_cpg.ai.variables.Type
+                            .fromCpgType(((PointerType) type).getElementType());
+                    IJavaArray arrayValue = Value.getNewArayValue(innerType);
+                    newVar = new Variable(new VariableName(name.toString()), arrayValue);
+                } else {
+                    newVar = new Variable(new VariableName(name.toString()), aiType);
+                }
                 newVar.setInitialValue();
                 objectInstance.setField(newVar);
-                // objectInstance.setField(new Variable(new VariableName(name.toString()),
-                // de.jplag.java_cpg.ai.variables.Type.fromCpgType(type))); //ToDo array inner type lost here
-            } else if (!(fd.getInitializer() instanceof ProblemExpression)) {   // ToDo: simplify
-                if (fd.getInitializer() instanceof Literal<?> literal) {
-                    IValue value = Value.valueFactory(literal.getValue());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), value));
-                } else if (fd.getInitializer() instanceof NewExpression) {
-                    IJavaObject newObject = (IJavaObject) graphWalker(fd.getNextEOG().getFirst());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), newObject));
-                } else if (fd.getInitializer() instanceof InitializerListExpression || fd.getInitializer() instanceof NewArrayExpression) {
-                    IJavaArray list = (IJavaArray) graphWalker(fd.getNextEOG().getFirst());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), list));
-                } else if (fd.getInitializer() instanceof MemberCallExpression) {
-                    IValue result = graphWalker(fd.getNextEOG().getFirst());
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
-                } else if (fd.getInitializer() instanceof UnaryOperator unop) {
+            } else if (!(fd.getInitializer() instanceof ProblemExpression)) {
+                if (fd.getInitializer() instanceof UnaryOperator unop) {
                     assert Objects.equals(unop.getOperatorCode(), "-");
                     IValue value = graphWalker(fd.getNextEOG().getFirst());
+                    assert value != null;
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
                 } else {
-                    throw new IllegalStateException("Unexpected declaration: " + fd.getInitializer());
+                    IValue result = graphWalker(fd.getNextEOG().getFirst());
+                    assert result != null;
+                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
                 }
             }
         }
@@ -224,16 +327,17 @@ public class AbstractInterpretation {
      */
     @Nullable
     private IValue graphWalker(@NotNull Node node) {
+        if (node instanceof FieldDeclaration || node instanceof RecordDeclaration) {
+            IValue value = valueStack.getLast();
+            valueStack.removeLast();
+            nodeStack.removeLast();
+            return value;   // return so that the class setup method can use the graph walker
+        }
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
-        // System.out.println(node);
+        visitedLinesRecorder.recordLinesVisited(node);
+        System.out.println(node);
         switch (node) {
-            case FieldDeclaration fd -> {
-                IValue value = valueStack.getLast();
-                valueStack.removeLast();
-                nodeStack.removeLast();
-                return value;   // return so that the class setup method can use the graph walker
-            }
             case VariableDeclaration vd -> {
                 nodeStack.add(vd);
                 assert nextEOG.size() == 1;
@@ -242,43 +346,20 @@ public class AbstractInterpretation {
             case Literal<?> l -> {  // adds its value to the value stack
                 nodeStack.add(l);
                 valueStack.add(Value.valueFactory(l.getValue()));
+                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                    IValue value = valueStack.getLast();
+                    valueStack.removeLast();
+                    return value;
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
             case MemberExpression me -> {
-                if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
-                    if (!(valueStack.getLast() instanceof IJavaObject)) {
-                        nodeStack.removeLast();
-                        nodeStack.add(me);
-                        valueStack.removeLast();    // remove object reference
-                        valueStack.add(new VoidValue());
-                    } else {
-                        assert valueStack.getLast() instanceof IJavaObject;
-                        nodeStack.removeLast();
-                        // like Reference
-                        nodeStack.add(me);
-                        assert me.getName().getParent() != null;
-                        IJavaObject javaObject = (IJavaObject) valueStack.getLast();
-                        valueStack.removeLast();    // remove object reference
-                        IValue result = javaObject.accessField(me.getName().getLocalName());
-                        result.setParentObject(javaObject);
-                        valueStack.add(result);
-                    }
-                } else if (me.getRefersTo() instanceof MethodDeclaration) {
-                    nodeStack.removeLast();
-                    nodeStack.add(me);
-                } else {
-                    // unknown
-                    // look at last item on value stack
+                walkMemberExpression(me);
+                if (nextEOG.isEmpty()) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
-                    if (value instanceof VoidValue) {
-                        valueStack.removeLast();    // remove object reference
-                        valueStack.add(new JavaObject());
-                    } else {
-                        throw new IllegalStateException("Unexpected value: " + value);
-                    }
-                    nodeStack.removeLast();
-                    nodeStack.add(me);
+                    valueStack.removeLast();
+                    return value;
                 }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
@@ -304,82 +385,20 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case SubscriptExpression se -> {    // adds its value to the value stack
-                assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference
-                        || nodeStack.getLast() instanceof BinaryOperator || nodeStack.getLast() instanceof MemberCallExpression
-                        || nodeStack.getLast() instanceof UnaryOperator || nodeStack.getLast() instanceof SubscriptExpression;
-                assert !valueStack.isEmpty();
-                if ((valueStack.getLast() instanceof VoidValue)) {
-                    valueStack.removeLast();
-                    valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT));
-                }
-                INumberValue indexLiteral = (INumberValue) valueStack.getLast();
-                valueStack.removeLast();    // remove index value
-                assert indexLiteral != null;
-                IValue ref = valueStack.getLast();
-                valueStack.removeLast();    // remove array reference
-                if (!(ref instanceof IJavaArray)) {
-                    // array might not be initialized yet
-                    ref = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.ARRAY);
-                }
-                IValue result = ((IJavaArray) ref).arrayAccess(indexLiteral);
-                result.setArrayPosition((IJavaArray) ref, indexLiteral);
-                valueStack.add(result);
-                nodeStack.removeLast();
-                nodeStack.removeLast();
-                nodeStack.add(se);
-                assert nextEOG.size() == 1;
-                nextNode = nextEOG.getFirst();
-            }
+            case SubscriptExpression se -> nextNode = walkSubscriptExpression(se);
             case MemberCallExpression mce -> {  // adds its value to the value stack
-                IValue result;
-                if (mce.getArguments().isEmpty()) {     // no arguments
-                    assert nodeStack.getLast() instanceof MemberExpression;
-                    Name memberName = (nodeStack.getLast()).getName();
-                    if (valueStack.getLast() instanceof VoidValue || valueStack.getLast() instanceof NullValue) {
-                        // null value can happen: "if (opts.name == null || opts.name.isBlank())" where we dont strictly follow evaluation
-                        // order.
-                        valueStack.removeLast();
-                        valueStack.add(new JavaObject());
-                    }
-                    JavaObject javaObject = (JavaObject) valueStack.getLast();
-                    result = javaObject.callMethod(memberName.getLocalName(), null);
-                } else {
-                    List<IValue> argumentList = new ArrayList<>();
-                    for (int i = 0; i < mce.getArguments().size(); i++) {
-                        if (mce.getArguments().get(i) instanceof ProblemExpression) {
-                            continue;
-                        }
-                        argumentList.add(valueStack.getLast());
-                        nodeStack.removeLast();
-                        valueStack.removeLast();
-                    }
-                    Collections.reverse(argumentList);
-                    assert nodeStack.getLast() instanceof MemberExpression;
-                    Name memberName = (nodeStack.getLast()).getName();
-                    assert memberName.getParent() != null;
-                    assert !valueStack.isEmpty();
-                    if (valueStack.getLast() instanceof VoidValue) {
-                        valueStack.removeLast();
-                        valueStack.add(new JavaObject());
-                    }
-                    JavaObject javaObject = (JavaObject) valueStack.getLast();         // for now only one parameter
-                    result = javaObject.callMethod(memberName.getLocalName(), argumentList);
-                }
-                valueStack.removeLast();    // remove object reference
-                if (result == null) {       // if method reference isn't known
-                    result = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType()));
-                }
-                valueStack.add(result);
-                nodeStack.removeLast();
-                nodeStack.add(mce);
+                walkMemberCallExpression(mce);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
                 }
-                assert nextEOG.size() == 1;
-                nextNode = nextEOG.getFirst();
+                if (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator) {
+                    nextNode = nextEOG.getFirst();
+                } else {
+                    assert nextEOG.size() == 1;
+                    nextNode = nextEOG.getFirst();
+                }
             }
             case DeclarationStatement ds -> {
                 for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
@@ -404,60 +423,8 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case AssignExpression ae -> {
-                assert !valueStack.isEmpty();
-                if (ae.getLhs().getFirst() instanceof SubscriptExpression se) {
-                    assert ae.getLhs().size() == 1;
-                    IValue newValue = valueStack.getLast();
-                    valueStack.removeLast();
-                    IValue oldValue = valueStack.getLast();
-                    // sometimes the value of assign is used after, so don't remove it
-                    oldValue.getArrayPosition().component1().arrayAssign(oldValue.getArrayPosition().component2(), newValue);
-                } else {
-                    Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
-                    if (variable == null || nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression) { // class access
-                        IJavaObject classVal;
-                        if (nodeStack.get(nodeStack.size() - 2).getName().getParent() == null) {    // this class
-                            classVal = variables.getThisObject();
-                        } else {
-                            assert nodeStack.get(nodeStack.size() - 2).getName().getParent() != null;
-                            // VariableName className = new VariableName(nodeStack.get(nodeStack.size() - 2).getName().getParent().toString());
-                            classVal = valueStack.get(valueStack.size() - 2).getParentObject(); // FixMe valueStack is not merged
-                            // classVal = (JavaObject) variables.getVariable(className).getValue();
-                        }
-                        classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
-                    } else {
-                        variable.setValue(valueStack.getLast());
-                    }
-                    nodeStack.removeLast();
-                    // sometimes the value of assign is used after, so don't remove it
-                }
-                assert nextEOG.size() == 1;
-                nextNode = nextEOG.getFirst();
-            }
-            case ShortCircuitOperator scop -> {
-                assert scop.getPrevEOG().size() == 2;
-                if (valueStack.get(valueStack.size() - 2) instanceof VoidValue) {
-                    valueStack.set(valueStack.size() - 2, new BooleanValue());
-                }
-                BooleanValue value1 = (BooleanValue) valueStack.get(valueStack.size() - 2);
-                if (valueStack.getLast() instanceof VoidValue) {
-                    valueStack.removeLast();
-                    valueStack.add(new BooleanValue());
-                }
-                BooleanValue value2 = (BooleanValue) valueStack.getLast();
-                valueStack.removeLast();
-                valueStack.removeLast();
-                if (Objects.equals(scop.getOperatorCode(), "||")) {
-                    valueStack.add(value1.binaryOperation("||", value2));
-                } else if (Objects.equals(scop.getOperatorCode(), "&&")) {
-                    valueStack.add(value1.binaryOperation("&&", value2));
-                } else {
-                    throw new UnsupportedOperationException(scop.getOperatorCode() + " is not supported in ShortCircuitOperator");
-                }
-                assert nextEOG.size() == 1 || nextEOG.size() == 2;
-                nextNode = nextEOG.getFirst();
-            }
+            case AssignExpression ae -> nextNode = walkAssignExpression(ae);
+            case ShortCircuitOperator scop -> nextNode = walkShortCircuitOperator(scop);
             case BinaryOperator bop -> {
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 String operator = bop.getOperatorCode();
@@ -482,154 +449,22 @@ public class AbstractInterpretation {
                 nodeStack.add(uop);
                 valueStack.removeLast();
                 valueStack.add(result);
-                assert nextEOG.size() == 1;
+                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
             case IfStatement ifStmt -> {
-                // detect infinite loops when no Block inserted by cpg
-                if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ifStmt)) {
-                    nodeStack.add(null);
+                nextNode = walkIfStatement(ifStmt);
+                if (nextNode == null) {
                     return null;
-                }
-                lastVisitedLoopOrIf.addLast(ifStmt);
-                if (valueStack.getLast() instanceof VoidValue) {
-                    valueStack.removeLast();
-                    valueStack.add(new BooleanValue());
-                }
-                assert valueStack.getLast() instanceof BooleanValue;
-                BooleanValue condition = (BooleanValue) valueStack.getLast();
-                valueStack.removeLast();
-                boolean runThenBranch = true;
-                boolean runElseBranch = true;
-                if (ifStmt.getThenStatement() == null) {
-                    runThenBranch = false;
-                }
-                if (ifStmt.getElseStatement() == null) {
-                    runElseBranch = false;
-                }
-                if (condition.getInformation() && !recordingChanges) {
-                    if (condition.getValue()) {
-                        runElseBranch = false;
-                        if (ifStmt.getElseStatement() != null) {
-                            // Dead code detected -> remove else branch
-                            TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
-                            ifStmt.setElseStatement(null);
-                            System.out.println("Dead code detected -> remove else branch");
-                        }
-                    } else {
-                        runThenBranch = false;
-                        // Dead code detected
-                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                        ifStmt.setThenStatement(null);
-                        if (ifStmt.getElseStatement() == null) {
-                            TransformationUtil.disconnectFromPredecessor(ifStmt);
-                            assert ifStmt.getScope() != null;
-                            Block containingBlock = (Block) ifStmt.getScope().getAstNode();
-                            assert containingBlock != null;
-                            List<Statement> statements = containingBlock.getStatements();
-                            statements.remove(ifStmt);
-                            containingBlock.setStatements(statements);
-                        }
-                        System.out.println("Dead code detected -> remove then branch");
-                    }
-                }
-                nodeStack.removeLast();     // remove condition
-                assert nextEOG.size() == 2;
-                VariableStore originalVariables = variables;
-                VariableStore thenVariables = new VariableStore(variables);
-                VariableStore elseVariables = new VariableStore(variables);
-                // then statement
-                if (runThenBranch) {
-                    // if (runElseBranch) {
-                    // variables = thenVariables;
-                    // this.object = variables.getThisObject();
-                    // }
-                    variables.newScope();
-                    graphWalker(nextEOG.getFirst());
-                    variables.removeScope();
-                    if (nodeStack.getLast() == null) {
-                        nodeStack.add(nextEOG.getLast());
-                    }
-                }
-                // else statement
-                if (runElseBranch) {
-                    if (ifStmt.getElseStatement() instanceof IfStatement) {  // this loop is a loop with if else
-                        ifElseCounter++;
-                    }
-                    if (runThenBranch) {
-                        variables = elseVariables;
-                        this.object = variables.getThisObject();
-                    }
-                    variables.newScope();
-                    graphWalker(nextEOG.getLast());
-                    variables.removeScope();
-                    if (nodeStack.getLast() == null) {
-                        nodeStack.add(nextEOG.getFirst());
-                    }
-                }
-                // merge branches
-                if (runThenBranch && runElseBranch) {
-                    // originalVariables.merge(thenVariables);
-                    originalVariables.merge(elseVariables);
-                } else if (runThenBranch) {
-                    if (!condition.getInformation()) {
-                        originalVariables.merge(thenVariables);
-                        nodeStack.add(nextEOG.getLast());
-                    } else {   // only then branch is run
-                        //
-                    }
-                } else if (runElseBranch) {
-                    if (!condition.getInformation()) {
-                        originalVariables.merge(elseVariables);
-                    } else {    // only else branch is run
-                        //
-                    }
-                } else {    // no branch is run
-                    nodeStack.add(nextEOG.getLast());
-                }
-                this.object = variables.getThisObject(); // Update object reference
-                nextNode = nodeStack.getLast();
-                lastVisitedLoopOrIf.remove(ifStmt);
-                if (ifElseCounter > 0) {
-                    ifElseCounter--;
-                    return null;
-                }
-                if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch))) {
-                    // return in every branch
-                    valueStack.add(returnStorage.getLast());
-                    nextNode = new ReturnStatement();
                 }
             }
-            case SwitchStatement sw -> {    // ToDo delete dead Code in switch
-                assert !valueStack.isEmpty();
-                int branches = nextEOG.size();
-                VariableStore originalVariables = new VariableStore(variables);
-                VariableStore result = null;
-                nodeStack.removeLast();
-                for (Node branch : nextEOG) {
-                    variables = new VariableStore(originalVariables);
-                    this.object = variables.getThisObject();
-                    variables.newScope();
-                    graphWalker(branch);
-                    variables.removeScope();
-                    if (result == null) {
-                        result = variables;
-                    } else {
-                        result.merge(variables);
-                    }
-                }
-                variables = result;
-                this.object = variables.getThisObject();
-                nextNode = nodeStack.getLast();
-                if (nextNode instanceof Block block) {  // scoped switch statements have an extra block
-                    assert block.getNextEOG().size() == 1;
-                    nextNode = block.getNextEOG().getFirst();
-                }
+            case SwitchStatement sw -> {
+                nextNode = walkSwitchStatement(sw);
                 if (nextNode == null) {
                     return new VoidValue(); // ToDo: function return (CropArea:31)
                 }
             }
-            case CaseStatement cs -> {
+            case CaseStatement _ -> {
                 IValue caseValue = valueStack.getLast();
                 IValue switchValue = valueStack.getLast();
                 if (!Objects.equals(caseValue, switchValue)) {
@@ -638,7 +473,7 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case DefaultStatement ds -> {
+            case DefaultStatement _ -> {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
@@ -660,65 +495,41 @@ public class AbstractInterpretation {
                     }
                 }
             }
-            case ReturnStatement ret -> {
-                IValue result;
-                if (valueStack.isEmpty()) {
-                    result = new VoidValue();
-                } else {
-                    result = valueStack.getLast();
-                    valueStack.removeLast();
-                }
-                // if (!lastVisitedLoopOrIf.isEmpty() && storeReturns) {
-                if (!lastVisitedLoopOrIf.isEmpty()) {
-                    // we are inside a loop or if statement
-                    returnStorage.addLast(result);
-                } else {
-                    // merge other returns
-                    for (IValue value : returnStorage) {
-                        result.merge(value);
-                    }
-                    returnStorage.clear();
-                }
-                nodeStack.add(null);
-                return result;
+            case ReturnStatement _ -> {
+                return walkReturnStatement();
             }
             case ConstructExpression ce -> {
-                nodeStack.add(ce);
+                // inside Constructors, no NewExpression nodes come after ConstructExpression nodes
+                if (inConstructor && !(nextEOG.getFirst() instanceof NewExpression)) {
+                    ConstructorDeclaration constructor = ce.getConstructor();
+                    assert constructor != null;
+                    List<Node> eog = constructor.getNextEOG();
+                    if (!(eog.isEmpty())) { // Constructor has a body
+                        List<IValue> arguments = new ArrayList<>();
+                        if (!ce.getArguments().isEmpty()) {
+                            int size = ce.getArguments().size();
+                            for (int i = 0; i < size; i++) {
+                                arguments.add(valueStack.getLast());
+                                valueStack.removeLast();
+                                nodeStack.removeLast();
+                            }
+                        }
+                        Collections.reverse(arguments);
+                        for (int i = 0; i < constructor.getParameters().size(); i++) {
+                            variables.addVariable(
+                                    new Variable(new VariableName(constructor.getParameters().get(i).getName().toString()), arguments.get(i)));
+                        }
+                        graphWalker(eog.getFirst());
+                    }
+                } else {
+                    nodeStack.add(ce);
+                }
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
             case NewExpression ne -> {
-                Declaration classNode = ((ConstructExpression) nodeStack.getLast()).getInstantiates();
-                List<IValue> arguments = new ArrayList<>();
-                ConstructExpression ce = (ConstructExpression) nodeStack.getLast();
-                nodeStack.removeLast(); // remove ConstructExpression
-                if (!ce.getArguments().isEmpty()) {
-                    int size = ce.getArguments().size();
-                    for (int i = 0; i < size; i++) {
-                        arguments.add(valueStack.getLast());
-                        valueStack.removeLast();
-                        nodeStack.removeLast();
-                    }
-                }
-                Collections.reverse(arguments);
-                JavaObject newObject;
-                String name = ce.getType().getName().toString();
-                name = name.split("<")[0]; // remove generics
-                switch (name) {
-                    case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
-                    case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
-                    case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList" -> newObject = new JavaArray();
-                    default -> newObject = new JavaObject();
-                }
-                valueStack.add(newObject);
-                // run constructor
-                if (classNode != null) {
-                    AbstractInterpretation classAi = new AbstractInterpretation();
-                    classAi.runClass((RecordDeclaration) classNode, newObject, arguments);
-                }
-                //
-                nodeStack.add(ne);
-                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                walkNewExpression(ne);
+                if (nextEOG.isEmpty() || nextEOG.getFirst() instanceof DummyNeighbor) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
@@ -726,243 +537,23 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case WhileStatement ws -> {     // FixMe: evaluate condition again after record changes
-                assert nextEOG.size() == 2;
-                // detect infinite loops when no Block inserted by cpg
-                if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
-                    nodeStack.add(null);
+            case WhileStatement ws -> {
+                nextNode = walkWhileStatement(ws);
+                if (nextNode == null) {
                     return null;
-                }
-                lastVisitedLoopOrIf.addLast(ws);
-                // evaluate condition
-                assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
-                BooleanValue condition = (BooleanValue) valueStack.getLast();
-                valueStack.removeLast();
-                nodeStack.removeLast();
-                if (!condition.getInformation() || condition.getValue()) {  // run body if the condition is true or unknown
-                    if (recordingChanges) {     // higher level loop wants to know which variables change
-                        variables.recordChanges();
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        Set<Variable> changedVariables = variables.stopRecordingChanges();
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                    } else {
-                        VariableStore originalVariables = this.variables;
-                        // 1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record
-                        // changes
-                        this.variables = new VariableStore(variables);
-                        variables.setEverythingUnknown();
-                        variables.recordChanges();
-                        AbstractInterpretation.recordingChanges = true;
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        AbstractInterpretation.recordingChanges = false;
-                        Set<Variable> changedVariables = variables.stopRecordingChanges();
-                        // 2: second loop run with only changed variables unknown
-                        this.variables = new VariableStore(originalVariables);
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        // 3: restore variables and set changed variables to unknown
-                        this.variables = originalVariables;
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                    }
-                } else if (!recordingChanges) {
-                    // Dead code detected, loop never runs
-                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                    TransformationUtil.disconnectFromPredecessor(ws);
-                    assert ws.getScope() != null;
-                    Block containingBlock = (Block) ws.getScope().getAstNode();
-                    assert containingBlock != null;
-                    List<Statement> statements = containingBlock.getStatements();
-                    statements.remove(ws);
-                    containingBlock.setStatements(statements);
-                    System.out.println("Dead code detected -> remove while");
-                }
-                // continue with next node after while
-                lastVisitedLoopOrIf.removeLast();
-                nextNode = nextEOG.getLast();
-                if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
-                    // return in every branch
-                    valueStack.add(returnStorage.getLast());
-                    nextNode = new ReturnStatement();
                 }
             }
             case ForStatement ws -> {
-                // ToDo: combine with while
-                assert nextEOG.size() == 2;
-                // detect infinite loops when no Block inserted by cpg
-                if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
-                    nodeStack.add(null);
+                nextNode = walkForStatement(ws);
+                if (nextNode == null) {
                     return null;
-                }
-                lastVisitedLoopOrIf.addLast(ws);
-                // evaluate condition
-                assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
-                BooleanValue condition = (BooleanValue) valueStack.getLast();
-                valueStack.removeLast();
-                nodeStack.removeLast();
-                if (!condition.getInformation() || condition.getValue()) {  // run body if the condition is true or unknown
-                    if (recordingChanges) {     // higher level loop wants to know which variables change
-                        variables.recordChanges();
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        Set<Variable> changedVariables = variables.stopRecordingChanges();
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                    } else {
-                        VariableStore originalVariables = this.variables;
-                        // 1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record
-                        // changes
-                        this.variables = new VariableStore(variables);
-                        variables.setEverythingUnknown();
-                        variables.recordChanges();
-                        AbstractInterpretation.recordingChanges = true;
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        AbstractInterpretation.recordingChanges = false;
-                        Set<Variable> changedVariables = variables.stopRecordingChanges();
-                        // 2: second loop run with only changed variables unknown
-                        this.variables = new VariableStore(originalVariables);
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                        // for loop special: iteration variable also unknown
-                        if (ws.getIterationStatement() != null) {
-                            Variable iterVar = variables
-                                    .getVariable(new VariableName(((UnaryOperator) ws.getIterationStatement()).getInput().getName().toString()));
-                            if (iterVar != null) {
-                                iterVar.setToUnknown();
-                            }
-                        }
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        // 3: restore variables and set changed variables to unknown
-                        this.variables = originalVariables;
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                        // for loop special: iteration variable also unknown
-                        if (ws.getIterationStatement() != null) {
-                            Variable iterVar = variables
-                                    .getVariable(new VariableName(((UnaryOperator) ws.getIterationStatement()).getInput().getName().toString()));
-                            if (iterVar != null) {
-                                iterVar.setToUnknown();
-                            }
-                        }
-                    }
-                } else if (!recordingChanges) {
-                    // Dead code detected, loop never runs
-                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                    TransformationUtil.disconnectFromPredecessor(ws);
-                    assert ws.getScope() != null;
-                    Block containingBlock = (Block) ws.getScope().getAstNode();
-                    assert containingBlock != null;
-                    List<Statement> statements = containingBlock.getStatements();
-                    statements.remove(ws);
-                    containingBlock.setStatements(statements);
-                    System.out.println("Dead code detected -> remove for");
-                }
-                // continue with next node after while
-                lastVisitedLoopOrIf.removeLast();
-                nextNode = nextEOG.getLast();
-                if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
-                    // return in every branch
-                    valueStack.add(returnStorage.getLast());
-                    nextNode = new ReturnStatement();
                 }
             }
             case ForEachStatement fes -> {
-                assert nextEOG.size() == 2;
-                if (!lastVisitedLoopOrIf.isEmpty() && fes == lastVisitedLoopOrIf.getLast()) {
-                    nodeStack.add(null);
+                nextNode = walkForEachStatement(fes);
+                if (nextNode == null) {
                     return null;
                 }
-                lastVisitedLoopOrIf.addLast(fes);
-                assert !valueStack.isEmpty();
-                if (valueStack.getLast() instanceof VoidValue) {
-                    valueStack.removeLast();
-                    valueStack.add(new JavaArray());
-                }
-                JavaArray collection = (JavaArray) valueStack.getLast();
-                // ToDo: set right variable value
-                valueStack.removeLast();
-                assert fes.getVariable() != null;
-                String varName = (fes.getVariable().getDeclarations().getFirst()).getName().toString();
-                Variable variable1 = new Variable(new VariableName(varName), collection.arrayAccess((INumberValue) Value.valueFactory(0)));
-                variables.addVariable(variable1);
-                if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
-                    if (!recordingChanges) {
-                        // Dead code detected, loop never runs
-                        TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
-                        TransformationUtil.disconnectFromPredecessor(fes);
-                        assert fes.getScope() != null;
-                        Block containingBlock = (Block) fes.getScope().getAstNode();
-                        assert containingBlock != null;
-                        List<Statement> statements = containingBlock.getStatements();
-                        statements.remove(fes);
-                        containingBlock.setStatements(statements);
-                        System.out.println("Dead code detected -> remove for each");
-                    }
-                } else {   // ToDo: unify with other loops
-                    if (recordingChanges) {     // higher level loop wants to know which variables change
-                        variables.recordChanges();
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        Set<Variable> changedVariables = variables.stopRecordingChanges();
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                    } else {
-                        VariableStore originalVariables = this.variables;
-                        // 1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record
-                        // changes
-                        this.variables = new VariableStore(variables);
-                        variables.setEverythingUnknown();
-                        variables.recordChanges();
-                        AbstractInterpretation.recordingChanges = true;
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        AbstractInterpretation.recordingChanges = false;
-                        Set<Variable> changedVariables = variables.stopRecordingChanges();
-                        // 2: second loop run with only changed variables unknown
-                        this.variables = new VariableStore(originalVariables);
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                        variables.newScope();
-                        graphWalker(nextEOG.getFirst());
-                        variables.removeScope();
-                        // 3: restore variables and set changed variables to unknown
-                        this.variables = originalVariables;
-                        for (Variable variable : changedVariables) {
-                            variables.getVariable(variable.getName()).setToUnknown();
-                        }
-                    }
-                }
-                // continue with the next node after for each
-                lastVisitedLoopOrIf.removeLast();
-                nextNode = nextEOG.getLast();
-                // if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
-                // //return in every branch
-                // valueStack.add(returnStorage.getLast());
-                // nextNode = new ReturnStatement();
-                // }
             }
             case InitializerListExpression ile -> {
                 assert !ile.getInitializers().isEmpty();
@@ -985,60 +576,40 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case NewArrayExpression nae -> {
-                // either dimension or initializer is present
-                if (!nae.getDimensions().isEmpty()) {
-                    INumberValue dimension;
-                    if (valueStack.getLast() instanceof VoidValue) {
-                        dimension = (INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT);
-                    } else {
-                        dimension = (INumberValue) valueStack.getLast();
-                    }
-                    valueStack.removeLast();
-                    // recover inner type
-                    de.jplag.java_cpg.ai.variables.Type innerType = null;
-                    if (((HasType) nae.getTypeObservers().iterator().next()).getType() instanceof PointerType pointerType) {
-                        innerType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(pointerType.elementType);
-                    }
-                    valueStack.add(new JavaArray(dimension, innerType));
-                } else if (nae.getInitializer() != null) {
-                    if (nae.getPrevEOG().getFirst() instanceof InitializerListExpression) {
-                        // initializer has already been processed
-                        assert valueStack.getLast() instanceof JavaArray;
-                        assert nodeStack.getLast() instanceof InitializerListExpression;
-                    } else {
-                        throw new IllegalStateException("Unexpected value: " + nae);
-                    }
-                } else {
-                    throw new IllegalStateException("Unexpected value: " + nae);
-                }
-                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                walkNewArrayExpression(nae);
+                if (nextEOG.isEmpty() || nextEOG.getFirst() instanceof RecordDeclaration) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
                     valueStack.removeLast();
                     return value;
                 }
+                nodeStack.add(nae);
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case ConditionalExpression ce -> {
+            case ConditionalExpression _ -> {
                 assert nextEOG.size() == 2;
+                if (valueStack.getLast() instanceof VoidValue) {
+                    valueStack.removeLast();
+                    valueStack.add(new BooleanValue());
+                }
                 BooleanValue condition = (BooleanValue) valueStack.getLast();
                 valueStack.removeLast();
                 nodeStack.removeLast();
                 // paths have no block statements at the end
                 // ToDo
-                nextNode = nextEOG.getLast();
+                throw new IllegalArgumentException("ConditionalExpression not supported yet");
             }
-            case BreakStatement bs -> {
+            case BreakStatement _ -> {
                 assert nextEOG.size() == 1;
                 nodeStack.add(nextEOG.getFirst());
                 return null;
             }
-            case CatchClause cc -> {
+            case CatchClause _ -> {
                 // nothing for now
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case TryStatement ts -> {
+            case TryStatement _ -> {
                 // ignore for now
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
@@ -1051,33 +622,727 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case EmptyStatement es -> {
+            case EmptyStatement _ -> {
                 // occurs, for example, when while loop body is empty
                 assert nextEOG.size() == 1;
                 return null;
             }
-            case ExpressionList el -> {
+            case ExpressionList _ -> {
                 // indicates the end of an expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
+            case CastExpression _ -> {
+                // ignore casts for now as java types are not tracked precisely yet
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
+            case AssertStatement _ -> {
+                // ignore for now, is technically dead code
+                assert nextEOG.size() == 1;
+                nextNode = nextEOG.getFirst();
+            }
+            case ContinueStatement _ -> throw new IllegalStateException("ContinueStatement not supported yet");
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
         assert nextNode != null;
         return graphWalker(nextNode);
     }
 
-    @Deprecated
-    private JavaObject createEnum(EnumDeclaration enumDeclaration) {
-        JavaObject enumObject = new JavaObject();
-        int i = 0;
-        for (EnumConstantDeclaration ec : enumDeclaration.getEntries()) {
-            enumObject.setField(new Variable(new VariableName(ec.getName().toString()), new IntValue(i)));
-            i++;
+    private void walkMemberExpression(@NotNull MemberExpression me) {
+        if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
+            if (valueStack.getLast() instanceof IJavaObject javaObject) {
+                assert valueStack.getLast() instanceof IJavaObject;
+                nodeStack.removeLast();
+                // like Reference
+                nodeStack.add(me);
+                assert me.getName().getParent() != null;
+                valueStack.removeLast();    // remove object reference
+                IValue result = javaObject.accessField(me.getName().getLocalName());
+                result.setParentObject(javaObject);
+                valueStack.add(result);
+            } else {
+                nodeStack.removeLast();
+                nodeStack.add(me);
+                valueStack.removeLast();    // remove object reference
+                Value result = new VoidValue();
+                result.setParentObject((IJavaObject) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.OBJECT));
+                valueStack.add(result);
+            }
+        } else if (me.getRefersTo() instanceof MethodDeclaration) {
+            nodeStack.removeLast();
+            nodeStack.add(me);
+        } else {
+            // unknown
+            // look at last item on value stack
+            IValue value = valueStack.getLast();
+            if (value instanceof VoidValue) {
+                valueStack.removeLast();    // remove object reference
+                valueStack.add(new JavaObject());
+            } else {
+                throw new IllegalStateException("Unexpected value: " + value);
+            }
+            nodeStack.removeLast();
+            nodeStack.add(me);
         }
-        return enumObject;
     }
 
+    private Node walkSubscriptExpression(@NotNull SubscriptExpression se) { // adds its value to the value stack
+        assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference || nodeStack.getLast() instanceof BinaryOperator
+                || nodeStack.getLast() instanceof MemberCallExpression || nodeStack.getLast() instanceof UnaryOperator
+                || nodeStack.getLast() instanceof SubscriptExpression;
+        assert !valueStack.isEmpty();
+        if ((valueStack.getLast() instanceof VoidValue)) {
+            valueStack.removeLast();
+            valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT));
+        }
+        INumberValue indexLiteral = (INumberValue) valueStack.getLast();
+        valueStack.removeLast();    // remove index value
+        assert indexLiteral != null;
+        IValue ref = valueStack.getLast();
+        valueStack.removeLast();    // remove array reference
+        if (!(ref instanceof IJavaArray)) {
+            // array might not be initialized yet
+            ref = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.ARRAY);
+        }
+        IValue result = ((IJavaArray) ref).arrayAccess(indexLiteral);
+        result.setArrayPosition((IJavaArray) ref, indexLiteral);
+        valueStack.add(result);
+        nodeStack.removeLast();
+        nodeStack.removeLast();
+        nodeStack.add(se);
+        assert se.getNextEOG().size() == 1 || (se.getNextEOG().size() == 2 && se.getNextEOG().getLast() instanceof ShortCircuitOperator);
+        return se.getNextEOG().getFirst();
+    }
+
+    private void walkMemberCallExpression(@NotNull MemberCallExpression mce) { // adds its value to the value stack
+        IValue result;
+        if (mce.getArguments().isEmpty()) {     // no arguments
+            MemberExpression me = (MemberExpression) nodeStack.getLast();
+            Name memberName = me.getName();
+            if (valueStack.getLast() instanceof VoidValue || valueStack.getLast() instanceof NullValue) {
+                // null value can happen: "if (opts.name == null || opts.name.isBlank())" where we dont strictly follow evaluation
+                // order.
+                valueStack.removeLast();
+                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
+            }
+            JavaObject javaObject = (JavaObject) valueStack.getLast();
+            result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
+        } else {
+            List<IValue> argumentList = new ArrayList<>();
+            for (int i = 0; i < mce.getArguments().size(); i++) {
+                if (mce.getArguments().get(i) instanceof ProblemExpression) {
+                    continue;
+                }
+                argumentList.add(valueStack.getLast());
+                nodeStack.removeLast();
+                valueStack.removeLast();
+            }
+            Collections.reverse(argumentList);
+            while (!(nodeStack.getLast() instanceof MemberExpression me)) {
+                // necessary for calls like g.inserirLigacao(v1,almax>=lmin && acmax>=cmin && ahmax>=hmin,v2);
+                // where the arguments contain operations
+                nodeStack.removeLast();
+            }
+            Name memberName = me.getName();
+            assert memberName.getParent() != null;
+            assert !valueStack.isEmpty();
+            if (valueStack.getLast() instanceof VoidValue) {
+                valueStack.removeLast();
+                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
+            }
+            JavaObject javaObject = (JavaObject) valueStack.getLast();
+            result = javaObject.callMethod(memberName.getLocalName(), argumentList,
+                    (!mce.getInvokes().isEmpty()) ? (MethodDeclaration) mce.getInvokes().getLast() : null);
+        }
+        valueStack.removeLast();    // remove object reference
+        if (result == null) {       // if method reference isn't known
+            result = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType()));
+        }
+        valueStack.add(result);
+        nodeStack.removeLast();
+        nodeStack.add(mce);
+    }
+
+    private Node walkAssignExpression(@NotNull AssignExpression ae) {
+        assert !valueStack.isEmpty();
+        if (ae.getLhs().getFirst() instanceof SubscriptExpression) {
+            assert ae.getLhs().size() == 1;
+            IValue newValue = valueStack.getLast();
+            valueStack.removeLast();
+            IValue oldValue = valueStack.getLast();
+            // sometimes the value of assign is used after, so don't remove it
+            oldValue.getArrayPosition().component1().arrayAssign(oldValue.getArrayPosition().component2(), newValue);
+        } else {
+            Variable variable = variables.getVariable((nodeStack.get(nodeStack.size() - 2)).getName().toString());
+            if (variable == null || nodeStack.get(nodeStack.size() - 2) instanceof MemberExpression) { // class access
+                IJavaObject classVal;
+                if (nodeStack.get(nodeStack.size() - 2).getName().getParent() == null) {    // this class
+                    classVal = variables.getThisObject();
+                } else {
+                    assert nodeStack.get(nodeStack.size() - 2).getName().getParent() != null;
+                    classVal = valueStack.get(valueStack.size() - 2).getParentObject();
+                }
+                assert classVal != null;
+                classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
+            } else {
+                variable.setValue(valueStack.getLast());
+            }
+            nodeStack.removeLast();
+            // sometimes the value of assign is used after, so don't remove it
+        }
+        assert ae.getNextEOG().size() == 1;
+        return ae.getNextEOG().getFirst();
+    }
+
+    private Node walkShortCircuitOperator(@NotNull ShortCircuitOperator scop) {
+        assert scop.getPrevEOG().size() == 2;
+        if (valueStack.get(valueStack.size() - 2) instanceof VoidValue) {
+            valueStack.set(valueStack.size() - 2, new BooleanValue());
+        }
+        BooleanValue value1 = (BooleanValue) valueStack.get(valueStack.size() - 2);
+        if (valueStack.getLast() instanceof VoidValue) {
+            valueStack.removeLast();
+            valueStack.add(new BooleanValue());
+        }
+        BooleanValue value2 = (BooleanValue) valueStack.getLast();
+        valueStack.removeLast();
+        valueStack.removeLast();
+        if (Objects.equals(scop.getOperatorCode(), "||")) {
+            valueStack.add(value1.binaryOperation("||", value2));
+        } else if (Objects.equals(scop.getOperatorCode(), "&&")) {
+            valueStack.add(value1.binaryOperation("&&", value2));
+        } else {
+            throw new UnsupportedOperationException(scop.getOperatorCode() + " is not supported in ShortCircuitOperator");
+        }
+        assert scop.getNextEOG().size() == 1 || scop.getNextEOG().size() == 2;
+        return scop.getNextEOG().getFirst();
+    }
+
+    @Nullable
+    private Node walkIfStatement(@NotNull IfStatement ifStmt) {
+        Node nextNode;
+        List<Node> nextEOG = ifStmt.getNextEOG();
+        // detect infinite loops when no Block inserted by cpg
+        if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ifStmt)) {
+            nodeStack.add(null);
+            return null;
+        }
+        lastVisitedLoopOrIf.addLast(ifStmt);
+        if (valueStack.getLast() instanceof VoidValue) {
+            valueStack.removeLast();
+            valueStack.add(new BooleanValue());
+        }
+        assert valueStack.getLast() instanceof BooleanValue;
+        BooleanValue condition = (BooleanValue) valueStack.getLast();
+        valueStack.removeLast();
+        boolean runThenBranch = true;
+        boolean runElseBranch = true;
+        Node thenBlock = ifStmt.getThenStatement(); // not always a block
+        Node elseBlock = ifStmt.getElseStatement();
+        if (thenBlock == null || nextEOG.getFirst() instanceof DummyNeighbor) {
+            runThenBranch = false;
+        }
+        if (elseBlock == null || nextEOG.getLast() instanceof DummyNeighbor) {
+            runElseBranch = false;
+        }
+        if (condition.getInformation() && !recordingChanges.isRecording()) {
+            if (condition.getValue()) {
+                runElseBranch = false;
+                if (ifStmt.getElseStatement() != null) {
+                    System.out.println("Dead code detected -> remove else branch");
+                    visitedLinesRecorder.recordLinesVisited(ifStmt.getElseStatement());
+                }
+                if (ifStmt.getElseStatement() != null && removeDeadCode) {
+                    // Dead code detected -> remove else branch
+                    TransformationUtil.disconnectFromPredecessor(nextEOG.getLast());
+                    ifStmt.setElseStatement(null);
+                }
+            } else {
+                runThenBranch = false;
+                // Dead code detected
+                System.out.println("Dead code detected -> remove then branch");
+                visitedLinesRecorder.recordDetectedDeadLines(ifStmt.getThenStatement());
+                if (ifStmt.getElseStatement() == null) {
+                    visitedLinesRecorder.recordDetectedDeadLines(ifStmt);
+                }
+                if (removeDeadCode) {
+                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                    ifStmt.setThenStatement(null);
+                    if (ifStmt.getElseStatement() == null) {
+                        TransformationUtil.disconnectFromPredecessor(ifStmt);
+                        assert ifStmt.getScope() != null;
+                        Block containingBlock = (Block) ifStmt.getScope().getAstNode();
+                        assert containingBlock != null;
+                        List<Statement> statements = containingBlock.getStatements();
+                        statements.remove(ifStmt);
+                        containingBlock.setStatements(statements);
+                    }
+                }
+            }
+        }
+        nodeStack.removeLast();     // remove condition
+        assert nextEOG.size() == 2;
+        VariableStore originalVariables = variables;
+        VariableStore thenVariables = new VariableStore(variables);
+        VariableStore elseVariables = new VariableStore(variables);
+        // then statement
+        if (runThenBranch) {
+            variables.newScope();
+            graphWalker(nextEOG.getFirst());
+            variables.removeScope();
+            if (nodeStack.getLast() == null && elseBlock != null && ifStmt.getElseStatement() == null && !elseBlock.getNextEOG().isEmpty()) {
+                // special case for dead else branch
+                assert elseBlock.getNextEOG().size() == 1;
+                nodeStack.add(elseBlock.getNextEOG().getFirst());
+            }
+            if (nodeStack.isEmpty() || nodeStack.getLast() == null) {
+                nodeStack.add(nextEOG.getLast());
+            }
+        }
+        // else statement
+        if (runElseBranch) {
+            if (ifStmt.getElseStatement() instanceof IfStatement) {  // this loop is a loop with if else
+                ifElseCounter++;
+            }
+            if (runThenBranch) {
+                variables = elseVariables;
+                this.object = variables.getThisObject();
+            }
+            variables.newScope();
+            graphWalker(nextEOG.getLast());
+            variables.removeScope();
+            if (nodeStack.getLast() == null) {
+                nodeStack.add(nextEOG.getFirst());
+            }
+        }
+        // merge branches
+        if (runThenBranch && runElseBranch) {
+            originalVariables.merge(elseVariables);
+        } else if (runThenBranch) {
+            if (!condition.getInformation()) {
+                thenVariables.merge(originalVariables);
+                nodeStack.add(nextEOG.getLast());
+            }
+        } else if (runElseBranch) {
+            if (!condition.getInformation()) {
+                originalVariables.merge(elseVariables);
+            }
+        } else {    // no branch is run
+            nodeStack.add(nextEOG.getLast());
+        }
+        this.object = variables.getThisObject(); // Update object reference
+        nextNode = nodeStack.getLast();
+        lastVisitedLoopOrIf.remove(ifStmt);
+        if (ifElseCounter > 0) {
+            ifElseCounter--;
+            return null;
+        }
+        if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch) && condition.getInformation())) {    // FixMe:
+            // stringAiComplex
+            // return in every branch
+            valueStack.add(returnStorage.getLast());
+            nextNode = new ReturnStatement();
+        }
+        return nextNode;
+    }
+
+    private IValue walkReturnStatement() {
+        IValue result;
+        if (valueStack.isEmpty()) {
+            result = new VoidValue();
+        } else {
+            result = valueStack.getLast();
+            valueStack.removeLast();
+        }
+        if (!lastVisitedLoopOrIf.isEmpty()) {
+            // we are inside a loop or if statement
+            returnStorage.addLast(result);
+        } else {
+            // merge other returns
+            for (IValue value : returnStorage) {
+                result.merge(value);
+            }
+            returnStorage.clear();
+        }
+        nodeStack.add(null);
+        return result;
+    }
+
+    private Node walkSwitchStatement(@NotNull SwitchStatement sw) { // ToDo delete dead Code in switch
+        Node nextNode;
+        assert !valueStack.isEmpty();
+        int branches = sw.getNextEOG().size();
+        VariableStore originalVariables = new VariableStore(variables);
+        VariableStore result = null;
+        nodeStack.removeLast();
+        for (Node branch : sw.getNextEOG()) {
+            variables = new VariableStore(originalVariables);
+            this.object = variables.getThisObject();
+            variables.newScope();
+            graphWalker(branch);
+            variables.removeScope();
+            if (result == null) {
+                result = variables;
+            } else {
+                result.merge(variables);
+            }
+        }
+        variables = result;
+        this.object = variables.getThisObject();
+        nextNode = nodeStack.getLast();
+        if (nextNode instanceof Block block) {  // scoped switch statements have an extra block
+            assert block.getNextEOG().size() == 1;
+            nextNode = block.getNextEOG().getFirst();
+        }
+        return nextNode;
+    }
+
+    private void walkNewExpression(@NotNull NewExpression ne) {
+        Declaration classNode = ((ConstructExpression) nodeStack.getLast()).getInstantiates();
+        List<IValue> arguments = new ArrayList<>();
+        ConstructExpression ce = (ConstructExpression) nodeStack.getLast();
+        nodeStack.removeLast(); // remove ConstructExpression
+        if (!ce.getArguments().isEmpty()) {
+            int size = ce.getArguments().size();
+            for (int i = 0; i < size; i++) {
+                arguments.add(valueStack.getLast());
+                valueStack.removeLast();
+                nodeStack.removeLast();
+            }
+        }
+        Collections.reverse(arguments);
+        JavaObject newObject = createNewObject(ce);
+        valueStack.add(newObject);
+        // run constructor
+        if (classNode != null) {
+            AbstractInterpretation classAi = new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges);
+            classAi.runClass((RecordDeclaration) classNode, newObject, arguments, Objects.requireNonNull(ce.getConstructor()));
+        }
+        nodeStack.add(ne);
+    }
+
+    @Nullable
+    private Node walkWhileStatement(@NotNull WhileStatement ws) {
+        Node nextNode;
+        List<Node> nextEOG = ws.getNextEOG();
+        assert nextEOG.size() == 2;
+        // detect infinite loops when no Block inserted by cpg
+        if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
+            nodeStack.add(null);
+            return null;
+        }
+        lastVisitedLoopOrIf.addLast(ws);
+        // evaluate condition
+        if (valueStack.getLast() instanceof VoidValue) {
+            valueStack.removeLast();
+            valueStack.add(new BooleanValue());
+        }
+        assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
+        BooleanValue condition = (BooleanValue) valueStack.getLast();
+        valueStack.removeLast();
+        nodeStack.removeLast();
+        if (!condition.getInformation() || condition.getValue()) {  // run body if the condition is true or unknown
+            if (recordingChanges.isRecording()) {     // higher level loop wants to know which variables change
+                variables.recordChanges();
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                Set<Variable> changedVariables = variables.stopRecordingChanges();
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+            } else {
+                VariableStore originalVariables = this.variables;
+                // 1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record
+                // changes
+                this.variables = new VariableStore(variables);
+                variables.setEverythingUnknown();
+                variables.recordChanges();
+                recordingChanges.setRecording(true);
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                recordingChanges.setRecording(false);
+                Set<Variable> changedVariables = variables.stopRecordingChanges();
+                // 2: second loop run with only changed variables unknown
+                this.variables = new VariableStore(originalVariables);
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                // 3: restore variables and set changed variables to unknown
+                this.variables = originalVariables;
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+            }
+        } else if (!recordingChanges.isRecording()) {
+            // Dead code detected, loop never runs
+            if (removeDeadCode) {
+                TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                TransformationUtil.disconnectFromPredecessor(ws);
+                assert ws.getScope() != null;
+                Block containingBlock = (Block) ws.getScope().getAstNode();
+                assert containingBlock != null;
+                List<Statement> statements = containingBlock.getStatements();
+                statements.remove(ws);
+                containingBlock.setStatements(statements);
+            }
+            visitedLinesRecorder.recordDetectedDeadLines(ws);
+            System.out.println("Dead code detected -> remove while");
+        }
+        // continue with next node after while
+        lastVisitedLoopOrIf.removeLast();
+        nextNode = nextEOG.getLast();
+        if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
+            // return in every branch
+            valueStack.add(returnStorage.getLast());
+            nextNode = new ReturnStatement();
+        }
+        return nextNode;
+    }
+
+    @Nullable
+    private Node walkForStatement(@NotNull ForStatement ws) {
+        Node nextNode;
+        List<Node> nextEOG = ws.getNextEOG();
+        assert nextEOG.size() == 2;
+        // detect infinite loops when no Block inserted by cpg
+        if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
+            nodeStack.add(null);
+            return null;
+        }
+        lastVisitedLoopOrIf.addLast(ws);
+        // evaluate condition
+        assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
+        BooleanValue condition = (BooleanValue) valueStack.getLast();
+        valueStack.removeLast();
+        nodeStack.removeLast();
+        if (!condition.getInformation() || condition.getValue()) {  // run body if the condition is true or unknown
+            if (recordingChanges.isRecording()) {     // higher level loop wants to know which variables change
+                variables.recordChanges();
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                Set<Variable> changedVariables = variables.stopRecordingChanges();
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+            } else {
+                VariableStore originalVariables = this.variables;
+                // 1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record
+                // changes
+                this.variables = new VariableStore(variables);
+                variables.setEverythingUnknown();
+                variables.recordChanges();
+                recordingChanges.setRecording(true);
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                recordingChanges.setRecording(false);
+                Set<Variable> changedVariables = variables.stopRecordingChanges();
+                // 2: second loop run with only changed variables unknown
+                this.variables = new VariableStore(originalVariables);
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+                // for loop special: iteration variable also unknown
+                if (ws.getIterationStatement() != null) {
+                    Variable iterVar;
+                    if (ws.getIterationStatement() instanceof UnaryOperator unaryOperator) {
+                        iterVar = variables.getVariable(new VariableName(unaryOperator.getInput().getName().toString()));
+                    } else if (ws.getIterationStatement() instanceof AssignExpression assignExpression) {
+                        assert assignExpression.getLhs().size() == 1;
+                        iterVar = variables.getVariable(new VariableName(assignExpression.getLhs().getFirst().getName().toString()));
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                    if (iterVar != null) {
+                        iterVar.setToUnknown();
+                    }
+                }
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                // 3: restore variables and set changed variables to unknown
+                this.variables = originalVariables;
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+                // for loop special: iteration variable also unknown
+                if (ws.getIterationStatement() != null) {
+                    Variable iterVar;
+                    if (ws.getIterationStatement() instanceof UnaryOperator unaryOperator) {
+                        iterVar = variables.getVariable(new VariableName(unaryOperator.getInput().getName().toString()));
+                    } else if (ws.getIterationStatement() instanceof AssignExpression assignExpression) {
+                        assert assignExpression.getLhs().size() == 1;
+                        iterVar = variables.getVariable(new VariableName(assignExpression.getLhs().getFirst().getName().toString()));
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                    if (iterVar != null) {
+                        iterVar.setToUnknown();
+                    }
+                }
+            }
+        } else if (!recordingChanges.isRecording()) {
+            // Dead code detected, loop never runs
+            if (removeDeadCode) {
+                TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                TransformationUtil.disconnectFromPredecessor(ws);
+                assert ws.getScope() != null;
+                Block containingBlock = (Block) ws.getScope().getAstNode();
+                assert containingBlock != null;
+                List<Statement> statements = containingBlock.getStatements();
+                statements.remove(ws);
+                containingBlock.setStatements(statements);
+            }
+            visitedLinesRecorder.recordDetectedDeadLines(ws);
+            System.out.println("Dead code detected -> remove for");
+        }
+        // continue with next node after while
+        lastVisitedLoopOrIf.removeLast();
+        nextNode = nextEOG.getLast();
+        if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
+            // return in every branch
+            valueStack.add(returnStorage.getLast());
+            nextNode = new ReturnStatement();
+        }
+        return nextNode;
+    }
+
+    @Nullable
+    private Node walkForEachStatement(@NotNull ForEachStatement fes) {
+        Node nextNode;
+        List<Node> nextEOG = fes.getNextEOG();
+        assert nextEOG.size() == 2;
+        if (!lastVisitedLoopOrIf.isEmpty() && fes == lastVisitedLoopOrIf.getLast()) {
+            nodeStack.add(null);
+            return null;
+        }
+        lastVisitedLoopOrIf.addLast(fes);
+        assert !valueStack.isEmpty();
+        if (valueStack.getLast() instanceof VoidValue) {
+            valueStack.removeLast();
+            valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.ARRAY));
+        }
+        IJavaArray collection = (IJavaArray) valueStack.getLast();
+        // ToDo: set right variable value
+        valueStack.removeLast();
+        assert fes.getVariable() != null;
+        String varName = (fes.getVariable().getDeclarations().getFirst()).getName().toString();
+        Variable variable1 = new Variable(new VariableName(varName), collection.arrayAccess((INumberValue) Value.valueFactory(0)));
+        variables.addVariable(variable1);
+        if (collection.accessField("length") instanceof INumberValue length && length.getInformation() && (length.getValue() == 0)) {
+            if (!recordingChanges.isRecording()) {
+                // Dead code detected, loop never runs
+                if (removeDeadCode) {
+                    TransformationUtil.disconnectFromPredecessor(nextEOG.getFirst());
+                    TransformationUtil.disconnectFromPredecessor(fes);
+                    assert fes.getScope() != null;
+                    Block containingBlock = (Block) fes.getScope().getAstNode();
+                    assert containingBlock != null;
+                    List<Statement> statements = containingBlock.getStatements();
+                    statements.remove(fes);
+                    containingBlock.setStatements(statements);
+                }
+                visitedLinesRecorder.recordDetectedDeadLines(fes);
+                System.out.println("Dead code detected -> remove for each");
+            }
+        } else {
+            if (recordingChanges.isRecording()) {     // higher level loop wants to know which variables change
+                variables.recordChanges();
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                Set<Variable> changedVariables = variables.stopRecordingChanges();
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+            } else {
+                VariableStore originalVariables = this.variables;
+                // 1: first loop run: detect variables that change in loop -> run loop with completely unknown variables + record
+                // changes
+                this.variables = new VariableStore(variables);
+                variables.setEverythingUnknown();
+                variables.recordChanges();
+                recordingChanges.setRecording(true);
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                recordingChanges.setRecording(false);
+                Set<Variable> changedVariables = variables.stopRecordingChanges();
+                // 2: second loop run with only changed variables unknown
+                this.variables = new VariableStore(originalVariables);
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+                variables.newScope();
+                graphWalker(nextEOG.getFirst());
+                variables.removeScope();
+                // 3: restore variables and set changed variables to unknown
+                this.variables = originalVariables;
+                for (Variable variable : changedVariables) {
+                    variables.getVariable(variable.getName()).setToUnknown();
+                }
+            }
+        }
+        // continue with the next node after for each
+        lastVisitedLoopOrIf.removeLast();
+        nextNode = nextEOG.getLast();
+        return nextNode;
+    }
+
+    private void walkNewArrayExpression(@NotNull NewArrayExpression nae) {
+        // either dimension or initializer is present
+        if (!nae.getDimensions().isEmpty()) {
+            List<INumberValue> dimensions = new ArrayList<>();
+            for (int i = 0; i < nae.getDimensions().size(); i++) {
+                if (valueStack.getLast() instanceof VoidValue) {
+                    dimensions.add((INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT));
+                } else {
+                    dimensions.add((INumberValue) valueStack.getLast());
+                }
+                valueStack.removeLast();
+                nodeStack.removeLast();
+            }
+            // recover inner type
+            de.jplag.java_cpg.ai.variables.Type innerType = null;
+            if (((HasType) nae.getTypeObservers().iterator().next()).getType() instanceof PointerType pointerType) {
+                innerType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(pointerType.elementType);
+            }
+            IJavaArray newArray = Value.getNewArayValue(innerType, dimensions.getFirst());
+            for (int i = 1; i < nae.getDimensions().size(); i++) {  // multi-dimensional arrays
+                List<IJavaArray> innerArrays = new ArrayList<>();
+                INumberValue dimension = dimensions.get(i - 1);
+                if (dimension.getInformation()) {
+                    for (int j = 0; j < dimension.getValue(); j++) {
+                        innerArrays.add(Value.getNewArayValue(innerType));
+                    }
+                } else {
+                    // Dimension is unknown, create an array with unknown contents
+                    innerArrays.add(Value.getNewArayValue(innerType));
+                }
+                newArray = new JavaArray(innerArrays.stream().map(a -> (IValue) a).toList());
+            }
+            valueStack.add(newArray);
+        } else if (nae.getInitializer() != null) {
+            if (nae.getPrevEOG().getFirst() instanceof InitializerListExpression) {
+                // initializer has already been processed
+                assert valueStack.getLast() instanceof JavaArray;
+                assert nodeStack.getLast() instanceof InitializerListExpression;
+            } else {
+                throw new IllegalStateException("Unexpected value: " + nae);
+            }
+        } else {
+            throw new IllegalStateException("Unexpected value: " + nae);
+        }
+    }
+
+    @NotNull
     @TestOnly
     protected VariableStore getVariables() {
         return variables;
@@ -1086,32 +1351,47 @@ public class AbstractInterpretation {
     /**
      * Runs a method in this abstract interpretation engine context with the given name and parameters.
      * @param name the name of the method to run.
+     * @param paramVars the parameters to pass to the method.
+     * @param method the cpg method declaration to this method.
      * @return null if the method is not known.
      */
-    public IValue runMethod(@NotNull String name, List<IValue> paramVars) {
+    public IValue runMethod(@NotNull String name, List<IValue> paramVars, @Nullable MethodDeclaration method) {
+        if (lastVisitedMethod.contains(method)) {
+            // recursive call detected
+            this.variables.setEverythingUnknown();
+            return new VoidValue();
+        }
+        lastVisitedMethod.add(method);
+        if (method == null) {
+            return null;
+        }
+        int numberOfCalls = method.getUsages().size();
+        if (numberOfCalls > 1) {
+            // method is called multiple times, set all variables to unknown
+            this.variables.setEverythingUnknown();
+            paramVars.forEach(IValue::setToUnknown);
+        }
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
         List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
         this.nodeStack = new ArrayList<>();
         this.valueStack = new ArrayList<>();
         this.lastVisitedLoopOrIf = new ArrayList<>();
-        MethodDeclaration md = methods.get(name);
-        if (md == null) {
-            return null;
-        }
+
+        visitedLinesRecorder.recordFirstLineVisited(method);
         variables.newScope();
         if (paramVars != null) {
-            assert md.getParameters().size() == paramVars.size();
+            assert method.getParameters().size() == paramVars.size();
             for (int i = 0; i < paramVars.size(); i++) {
-                variables.addVariable(new Variable(new VariableName(md.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
+                variables.addVariable(new Variable(new VariableName(method.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
             }
         } else {
-            assert md.getParameters().isEmpty();
+            assert method.getParameters().isEmpty();
         }
         IValue result;
-        assert md.getNextEOG().size() <= 1;
-        if (md.getNextEOG().size() == 1) {
-            result = graphWalker(md.getNextEOG().getFirst());
+        assert method.getNextEOG().size() <= 1;
+        if (method.getNextEOG().size() == 1) {
+            result = graphWalker(method.getNextEOG().getFirst());
         } else {
             result = new VoidValue();
         }
@@ -1119,6 +1399,7 @@ public class AbstractInterpretation {
         this.nodeStack = oldNodeStack;      // restore stack
         this.valueStack = oldValueStack;
         this.lastVisitedLoopOrIf = oldLastVisitedLoopOrIf;
+        lastVisitedMethod.removeLast();
         return result;
     }
 

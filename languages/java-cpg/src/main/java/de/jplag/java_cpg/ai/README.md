@@ -2,8 +2,10 @@
 
 For debug, please run with `-ea` JVM flag.
 
-**For now a lot of method have a default switch case that throws an exception.
+**For now a lot of methods have a default switch case that throws an exception.
 They will later be replaced with a default case that sets the value to unknown and returns an unknown value.**
+
+All inputted code must be syntactically correct Java code that compiles without errors.
 
 ## Build
 
@@ -20,6 +22,9 @@ see [ToDos](./ToDo.md) for supported and unsupported features.
 ## Explicitly not supported language features
 
 - exception flow is not modeled
+- System.exit calls are not supported
+- Continues and breaks in loops are not supported
+- Iterators are not supported
 
 see [ToDos](./ToDo.md) for supported and unsupported features.
 

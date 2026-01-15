@@ -12,10 +12,17 @@ public class RegexChars extends RegexItem {
     // null: represents an empty-non existent char
     private final List<Character> content;
 
+    /**
+     * Constructor for {@link RegexChars}.
+     * @param content the list of characters; null represents an empty-non-existent char.
+     */
     public RegexChars(List<Character> content) {
         this.content = content;
     }
 
+    /**
+     * @return the list of characters; null represents an empty-non-existent char.
+     */
     public List<Character> getContent() {
         return content;
     }
@@ -39,6 +46,9 @@ public class RegexChars extends RegexItem {
         }
     }
 
+    /**
+     * @return whether this regex item can represent an empty string.
+     */
     public boolean canBeEmpty() {
         for (Character c : content) {
             if (c == null) {

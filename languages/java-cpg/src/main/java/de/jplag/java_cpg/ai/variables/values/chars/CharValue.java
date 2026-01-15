@@ -8,6 +8,8 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Char value representation that can hold a single char value or be unknown.
@@ -19,17 +21,28 @@ public class CharValue extends Value implements ICharValue {
     private char value;
     private boolean information;
 
+    /**
+     * an unknown char value.
+     */
     public CharValue() {
         super(Type.CHAR);
         this.information = false;
     }
 
+    /**
+     * an exactly known char value.
+     * @param value the known character
+     */
     public CharValue(char value) {
         super(Type.CHAR);
         this.information = true;
         this.value = value;
     }
 
+    /**
+     * a char value that can be one of the given characters.
+     * @param values the possible characters
+     */
     public CharValue(@NotNull Set<Character> values) {
         super(Type.CHAR);
         if (values.size() == 1) {
@@ -68,6 +81,29 @@ public class CharValue extends Value implements ICharValue {
                     return new BooleanValue();
                 }
             }
+            case "+" -> {
+                if (other instanceof CharValue otherCharValue) {
+                    if (this.information && otherCharValue.information) {
+                        return new CharValue((char) (this.value + otherCharValue.value));
+                    } else {
+                        return new CharValue();
+                    }
+                }
+                IStringValue otherStringValue = (IStringValue) other;
+                if (this.information && otherStringValue.getInformation()) {
+                    return Value.valueFactory(this.value + otherStringValue.getValue());
+                } else {
+                    return Value.valueFactory(Type.STRING);
+                }
+            }
+            case "-" -> {
+                CharValue otherCharValue = (CharValue) other;
+                if (this.information && otherCharValue.information) {
+                    return new CharValue((char) (this.value - otherCharValue.value));
+                } else {
+                    return new CharValue();
+                }
+            }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
         }
     }
@@ -87,13 +123,27 @@ public class CharValue extends Value implements ICharValue {
 
     @Override
     public void merge(@NotNull IValue other) {
-        assert other instanceof CharValue;
-        CharValue otherCharValue = (CharValue) other;
-        if (!otherCharValue.information) {
-            this.information = false;
-        } else if (this.information) {
-            if (this.value != otherCharValue.value) {
-                this.information = false;
+        switch (other) {
+            case CharValue otherCharValue -> {
+                if (!otherCharValue.information) {
+                    this.information = false;
+                } else if (this.information) {
+                    if (this.value != otherCharValue.value) {
+                        this.information = false;
+                    }
+                }
+            }
+            case INumberValue otherNumberValue -> {
+                if (!otherNumberValue.getInformation()) {
+                    this.information = false;
+                } else if (this.information) {
+                    if (this.value != (char) otherNumberValue.getValue()) {
+                        this.information = false;
+                    }
+                }
+            }
+            default -> {
+                throw new IllegalArgumentException("Cannot merge " + getType() + " with " + other.getType());
             }
         }
     }
@@ -115,7 +165,7 @@ public class CharValue extends Value implements ICharValue {
     }
 
     @Override
-    public char getValue() {
+    public double getValue() {
         assert getInformation();
         return this.value;
     }
