@@ -20,21 +20,37 @@ public class IntIntervalValue extends Value implements INumberValue {
 
     private final IntInterval interval;
 
+    /**
+     * a IntIntervalValue with no information.
+     */
     public IntIntervalValue() {
         super(Type.INT);
         interval = new IntInterval();
     }
 
+    /**
+     * Constructor for IntIntervalValue which value is between given bounds.
+     * @param lowerBound the lower bound.
+     * @param upperBound the upper bound.
+     */
     public IntIntervalValue(int lowerBound, int upperBound) {
         super(Type.INT);
         interval = new IntInterval(lowerBound, upperBound);
     }
 
+    /**
+     * Constructor for IntIntervalValue with exact information.
+     * @param number the integer value.
+     */
     public IntIntervalValue(int number) {
         super(Type.INT);
         interval = new IntInterval(number);
     }
 
+    /**
+     * Constructor for IntIntervalValue which value is a set of possible values.
+     * @param possibleValues the set of possible integer values.
+     */
     public IntIntervalValue(@NotNull Set<Integer> possibleValues) {
         super(Type.INT);
         java.util.List<Integer> values = possibleValues.stream().toList();

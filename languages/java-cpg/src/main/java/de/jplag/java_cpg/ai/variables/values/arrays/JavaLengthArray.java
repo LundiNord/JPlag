@@ -15,28 +15,48 @@ import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
+/**
+ * Represents a Java array by its length and inner type.
+ * @author ujiqk
+ */
 public class JavaLengthArray extends JavaObject implements IJavaArray {
 
     private final Type innerType;
     private INumberValue length;
 
+    /**
+     * Creates a new JavaLengthArray with an unknown inner type and length.
+     */
     public JavaLengthArray() {
         super(Type.ARRAY);
         this.innerType = Type.UNKNOWN;
     }
 
+    /**
+     * Creates a new JavaLengthArray with the given inner type and unknown length.
+     * @param innerType The inner type of the array.
+     */
     public JavaLengthArray(@NotNull Type innerType) {
         super(Type.ARRAY);
         this.innerType = innerType;
     }
 
+    /**
+     * Creates a new JavaLengthArray with the given inner type and length.
+     * @param innerType The inner type of the array.
+     * @param length The length of the array.
+     */
     public JavaLengthArray(Type innerType, @NotNull INumberValue length) {
         super(Type.ARRAY);
         this.innerType = innerType;
         this.length = length;
     }
 
-    public JavaLengthArray(List<IValue> values) {
+    /**
+     * Creates a new JavaLengthArray with the inner type and length derived from the given values.
+     * @param values The values to derive the inner type and length from.
+     */
+    public JavaLengthArray(@NotNull List<IValue> values) {
         super(Type.ARRAY);
         this.innerType = values.getFirst().getType();
         this.length = (INumberValue) Value.valueFactory(values.size());

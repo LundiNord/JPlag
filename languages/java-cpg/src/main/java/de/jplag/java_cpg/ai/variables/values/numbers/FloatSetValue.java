@@ -11,8 +11,16 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
 
+/**
+ * Float value represented as a set of intervals.
+ * @author ujiqk
+ * @version 1.0
+ */
 public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
 
+    /**
+     * Default constructor c Float value represented as a set of intervals with no information.
+     */
     public FloatSetValue() {
         super(Type.FLOAT);
         values.add(new DoubleInterval());
@@ -22,11 +30,19 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
         super(Type.FLOAT, values);
     }
 
+    /**
+     * Constructor for FloatSetValue that is known to be a single number.
+     * @param number the single float number
+     */
     public FloatSetValue(double number) {
         super(Type.FLOAT);
         values.add(new DoubleInterval(number));
     }
 
+    /**
+     * Constructor for FloatSetValue that is known to be one of the possible numbers.
+     * @param possibleNumbers the possible float numbers
+     */
     public FloatSetValue(@NotNull Set<Double> possibleNumbers) {
         super(Type.INT);
         values = new TreeSet<>();
@@ -34,6 +50,11 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
         values.add(new DoubleInterval());
     }
 
+    /**
+     * Constructor for FloatSetValue that is known to be within a certain range.
+     * @param lowerBound the lower bound of the range
+     * @param upperBound the upper bound of the range
+     */
     public FloatSetValue(double lowerBound, double upperBound) {
         super(Type.INT);
         values.add(new DoubleInterval(lowerBound, upperBound));
@@ -67,7 +88,8 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
     }
 
     /**
-     * Used for testing.
+     * Use for testing purposes only.
+     * @return the set of intervals representing the float value.
      */
     @TestOnly
     public SortedSet<DoubleInterval> getIntervals() {

@@ -463,16 +463,45 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         return regexList;
     }
 
+    /**
+     * @return true if the string value has definite information (i.e., a known value), false otherwise.
+     */
     public boolean getInformation() {
-        // ToDo
-        return false;
+        if (unknown) {
+            return false;
+        }
+        if (contentRegex == null) {
+            return true; // null is a definite value
+        }
+        for (RegexItem item : contentRegex) {
+            if (item instanceof RegexChars) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    /**
+     * @return if known, the string value.
+     */
     public String getValue() {
         assert getInformation();
-        return null;
+        if (contentRegex == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (RegexItem item : contentRegex) {
+            if (item instanceof RegexChar regexChar) {
+                sb.append(regexChar.getContent());
+            }
+        }
+        return sb.toString();
     }
 
+    /**
+     * Should only be used in tests!
+     * @return the regex representation of the string content. Null if the string is null.
+     */
     @Nullable
     @TestOnly
     public List<RegexItem> getContentRegex() {

@@ -276,10 +276,16 @@ public class StringValue extends JavaObject implements IStringValue {
         value = null;
     }
 
+    /**
+     * @return true if the string value has definite information (i.e., a known value), false otherwise.
+     */
     public boolean getInformation() {
         return information;
     }
 
+    /**
+     * @return if known, the string value.
+     */
     public String getValue() {
         assert information;
         return value;

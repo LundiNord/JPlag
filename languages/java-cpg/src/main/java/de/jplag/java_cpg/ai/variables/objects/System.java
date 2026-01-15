@@ -17,7 +17,7 @@ import de.jplag.java_cpg.ai.variables.values.string.StringValue;
  * Representation of the static java.lang.System class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/System.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/System.html">Oracle Docs</a>
  */
 public class System extends JavaObject implements ISpecialObject {
 

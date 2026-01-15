@@ -13,6 +13,11 @@ import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
 
+/**
+ * Represents an integer value with optional exact information.
+ * @author ujiqk
+ * @version 1.0
+ */
 public class IntValue extends Value implements INumberValue {
 
     private int value;
@@ -26,18 +31,30 @@ public class IntValue extends Value implements INumberValue {
         information = false;
     }
 
+    /**
+     * Constructor for IntValue with exact information.
+     * @param value the integer value.
+     */
     public IntValue(int value) {
         super(Type.INT);
         this.value = value;
         information = true;
     }
 
+    /**
+     * Constructor for IntValue with exact information from a double value.
+     * @param value the integer value as double.
+     */
     public IntValue(double value) {
         super(Type.INT);
         this.value = (int) value;
         information = true;
     }
 
+    /**
+     * Constructor for IntValue with a set of possible values.
+     * @param possibleValues the set of possible integer values.
+     */
     public IntValue(@NotNull Set<Integer> possibleValues) {
         super(Type.INT);
         if (possibleValues.size() == 1) {
@@ -48,8 +65,14 @@ public class IntValue extends Value implements INumberValue {
         }
     }
 
+    /**
+     * Constructor for IntValue with a range.
+     * @param lowerBound the lower bound of the range.
+     * @param upperBound the upper bound of the range.
+     */
     public IntValue(int lowerBound, int upperBound) {
         super(Type.INT);
+        assert lowerBound <= upperBound;
         if (lowerBound == upperBound) {
             this.value = lowerBound;
             this.information = true;
@@ -71,6 +94,9 @@ public class IntValue extends Value implements INumberValue {
         return information;
     }
 
+    /**
+     * @return the exact value. Only valid if getInformation() returns true.
+     */
     public double getValue() {
         assert information;
         return value;

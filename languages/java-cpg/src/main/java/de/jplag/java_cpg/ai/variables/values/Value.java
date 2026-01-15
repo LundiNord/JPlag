@@ -101,6 +101,7 @@ public abstract class Value implements IValue {
      * Constructs a Value instance based on the provided type.
      * @param type the type of the value.
      * @return a Value instance corresponding to the specified type.
+     * @throws IllegalArgumentException if the type is unsupported.
      */
     @NotNull
     public static IValue valueFactory(@NotNull Type type) {
@@ -123,6 +124,7 @@ public abstract class Value implements IValue {
      * Value factory for when a value is known.
      * @param value the known value.
      * @return a {@link Value} instance representing the known value.
+     * @throws IllegalStateException if the value type is unsupported.
      */
     @NotNull
     public static IValue valueFactory(@Nullable Object value) {
@@ -156,6 +158,7 @@ public abstract class Value implements IValue {
     /**
      * Value factory for when a value could have multiple possible values.
      * @param values the possible values.
+     * @param <T> The type of the values.
      * @return a {@link Value} instance representing the possible values.
      * @throws IllegalStateException if the set of values contains unsupported types.
      */
@@ -175,6 +178,11 @@ public abstract class Value implements IValue {
 
     /**
      * Value factory for when a value has lower/upper bounds.
+     * @param lowerBound the lower bound.
+     * @param upperBound the upper bound.
+     * @param <T> The type of the bounds.
+     * @return a {@link Value} instance representing the bounded value.
+     * @throws IllegalStateException if the bound types are unsupported.
      */
     @NotNull
     public static <T> IValue valueFactory(@NotNull T lowerBound, @NotNull T upperBound) {
@@ -186,6 +194,10 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new integer value based on the configured AI type.
+     * @return a new integer value instance.
+     */
     @NotNull
     public static INumberValue getNewIntValue() {
         return switch (usedIntAiType) {
@@ -230,6 +242,11 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new float value based on the configured AI type.
+     * @param number the float number.
+     * @return a new float value instance.
+     */
     @NotNull
     public static Value getNewFloatValue(double number) {
         return switch (usedFloatAiType) {
@@ -313,6 +330,11 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new array value with the specified inner type.
+     * @param innerType the type of the elements in the array.
+     * @return a new array value instance.
+     */
     @NotNull
     public static IJavaArray getNewArayValue(Type innerType) {
         return switch (usedArrayAiType) {
@@ -321,6 +343,11 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new array value with the specified values.
+     * @param values the values to initialize the array with.
+     * @return a new array value instance.
+     */
     @NotNull
     public static IJavaArray getNewArayValue(List<IValue> values) {
         return switch (usedArrayAiType) {
@@ -329,6 +356,12 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new array value with the specified inner type and length.
+     * @param innerType the type of the elements in the array.
+     * @param length the length of the array.
+     * @return a new array value instance.
+     */
     @NotNull
     public static IJavaArray getNewArayValue(Type innerType, INumberValue length) {
         return switch (usedArrayAiType) {

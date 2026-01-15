@@ -13,15 +13,27 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
+/**
+ * Representation of the static java.lang.Integer class.
+ * @author ujiqk
+ * @version 1.0
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html">Oracle Docs</a>
+ */
 public class Integer extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "Integer";
 
+    /**
+     * Representation of the static java.lang.Integer class.
+     */
     public Integer() {
         super();
     }
 
+    /**
+     * @return The variable name representing java.lang.Integer.
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

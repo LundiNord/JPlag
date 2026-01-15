@@ -27,12 +27,21 @@ public class FloatValue extends Value implements INumberValue {
         information = false;
     }
 
+    /**
+     * Constructor for FloatValue with exact information.
+     * @param value the float value.
+     */
     public FloatValue(double value) {
         super(Type.FLOAT);
         this.value = value;
         information = true;
     }
 
+    /**
+     * Constructor for FloatValue with a range.
+     * @param lowerBound the lower bound of the range.
+     * @param upperBound the upper bound of the range.
+     */
     public FloatValue(double lowerBound, double upperBound) {
         super(Type.FLOAT);
         assert lowerBound <= upperBound;
@@ -44,6 +53,10 @@ public class FloatValue extends Value implements INumberValue {
         }
     }
 
+    /**
+     * Constructor for FloatValue with a set of possible values.
+     * @param values the set of possible float values.
+     */
     public FloatValue(@NotNull Set<Double> values) {
         super(Type.FLOAT);
         if (values.size() == 1) {
@@ -58,14 +71,6 @@ public class FloatValue extends Value implements INumberValue {
         super(Type.FLOAT);
         this.value = value;
         this.information = information;
-    }
-
-    @Deprecated // replaced by unaryOperation?
-    public FloatValue abs() {
-        if (information) {
-            return new FloatValue(Math.abs(value));
-        }
-        return new FloatValue();
     }
 
     /**

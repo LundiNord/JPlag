@@ -11,8 +11,16 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
+/**
+ * Integer value represented as a set of intervals.
+ * @author ujiqk
+ * @version 1.0
+ */
 public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
 
+    /**
+     * Integer value represented as a set of intervals with no information.
+     */
     public IntSetValue() {
         super(Type.INT);
         values.add(new IntInterval());
@@ -22,11 +30,19 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
         super(Type.INT, values);
     }
 
+    /**
+     * Constructor for IntSetValue that is known to be a single number.
+     * @param number the single integer number
+     */
     public IntSetValue(int number) {
         super(Type.INT);
         values.add(new IntInterval(number));
     }
 
+    /**
+     * Constructor for IntSetValue that is known to be one of the possible numbers.
+     * @param possibleNumbers the possible integer numbers
+     */
     public IntSetValue(@NotNull Set<Integer> possibleNumbers) {
         super(Type.INT);
         values = new TreeSet<>();
@@ -34,6 +50,11 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
         values.add(new IntInterval());
     }
 
+    /**
+     * Constructor for IntSetValue that is known to be within a certain range.
+     * @param lowerBound the lower bound of the range
+     * @param upperBound the upper bound of the range
+     */
     public IntSetValue(int lowerBound, int upperBound) {
         super(Type.INT);
         values.add(new IntInterval(lowerBound, upperBound));
@@ -67,7 +88,8 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
     }
 
     /**
-     * Used for testing.
+     * Use for testing only!
+     * @return the set of intervals representing the integer value.
      */
     @TestOnly
     public SortedSet<IntInterval> getIntervals() {

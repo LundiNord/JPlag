@@ -25,8 +25,14 @@ import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 public class StringCharInclValue extends JavaObject implements IStringValue {
 
     // String=null <--> certainContained=null
+    /**
+     * Characters that are definitely contained in the string. Null if string is null.
+     */
     @Nullable
     Set<Character> certainContained;
+    /**
+     * Characters that may be contained in the string.
+     */
     Set<Character> maybeContained;
 
     /**
@@ -38,6 +44,10 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
         maybeContained = allCharactersSet();
     }
 
+    /**
+     * Constructor for StringCharInclValue with exact information.
+     * @param value the string value.
+     */
     public StringCharInclValue(@Nullable String value) {
         super(Type.STRING);
         maybeContained = new HashSet<>();
@@ -51,6 +61,10 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
         }
     }
 
+    /**
+     * Constructor for StringCharInclValue with possible values.
+     * @param possibleValues the set of possible string values.
+     */
     public StringCharInclValue(@NotNull Set<String> possibleValues) {
         super(Type.STRING);
         certainContained = new HashSet<>();
@@ -218,11 +232,17 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
         return charSet;
     }
 
+    /**
+     * @return true if the string value has definite information (i.e., a known value), false otherwise.
+     */
     public boolean getInformation() {
         // always false since order is never known
         return false;
     }
 
+    /**
+     * @return if known, the string value.
+     */
     public String getValue() {
         assert getInformation();
         return null;
@@ -230,6 +250,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
 
     /**
      * Only for testing purposes.
+     * @return set of certainly contained characters.
      */
     @Nullable
     @TestOnly
@@ -239,6 +260,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
 
     /**
      * Only for testing purposes.
+     * @return set of maybe contained characters.
      */
     @TestOnly
     public Set<Character> getMaybeContained() {

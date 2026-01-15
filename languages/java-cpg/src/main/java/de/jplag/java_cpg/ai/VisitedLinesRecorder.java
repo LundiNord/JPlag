@@ -24,12 +24,18 @@ public class VisitedLinesRecorder {
     private final Map<URI, Set<Integer>> possibleLines;
     private final Map<URI, Set<Integer>> detectedDeadLines;
 
+    /**
+     * Creates a new VisitedLinesRecorder.
+     */
     public VisitedLinesRecorder() {
         visitedLines = new HashMap<>();
         possibleLines = new HashMap<>();
         detectedDeadLines = new HashMap<>();
     }
 
+    /**
+     * @param node record lines visited in the given node
+     */
     public void recordLinesVisited(@NotNull Node node) {
         PhysicalLocation location = node.getLocation();
         if (location == null) {
@@ -47,6 +53,9 @@ public class VisitedLinesRecorder {
         possibleLines.computeIfAbsent(uri, this::countLinesInFile);
     }
 
+    /**
+     * @param node record first line visited in the given node
+     */
     public void recordFirstLineVisited(@NotNull Node node) {
         PhysicalLocation location = node.getLocation();
         if (location == null) {
@@ -61,6 +70,12 @@ public class VisitedLinesRecorder {
         possibleLines.computeIfAbsent(uri, this::countLinesInFile);
     }
 
+    /**
+     * Records that lines are detected to be dead code.
+     * @param uri the file URI
+     * @param startLine the start line of the dead code region (inclusive)
+     * @param endLine the end line of the dead code region (inclusive)
+     */
     public void recordDetectedDeadLines(@NotNull URI uri, int startLine, int endLine) {
         assert startLine <= endLine;
         assert startLine >= 0;
@@ -72,6 +87,10 @@ public class VisitedLinesRecorder {
         alreadyDeadLines.addAll(deadLines);
     }
 
+    /**
+     * Records that lines are detected to be dead code.
+     * @param node the node representing the dead code region
+     */
     public void recordDetectedDeadLines(Node node) {
         if (node == null)
             return;
@@ -85,6 +104,9 @@ public class VisitedLinesRecorder {
         recordDetectedDeadLines(uri, startLine, endLine);
     }
 
+    /**
+     * @return a map of URIs to sets of line numbers that have not been visited
+     */
     @NotNull
     @Pure
     @TestOnly
@@ -101,6 +123,13 @@ public class VisitedLinesRecorder {
         return nonVisitedLines;
     }
 
+    /**
+     * Checks if the given lines in the file are completely dead (not visited).
+     * @param uri the file URI
+     * @param startLine the start line of the region (inclusive)
+     * @param endLine the end line of the region (inclusive)
+     * @return true if all lines in the given range are not visited, false otherwise
+     */
     @Pure
     public boolean checkIfCompletelyDead(@NotNull URI uri, int startLine, int endLine) {
         if (startLine == -1 || endLine == -1) {
@@ -131,11 +160,9 @@ public class VisitedLinesRecorder {
         return lines;
     }
 
-    @TestOnly
-    public Map<URI, Set<Integer>> getDetectedDeadLines() {
-        return detectedDeadLines;
-    }
-
+    /**
+     * @return the map of visited lines. For testing purposes only.
+     */
     @TestOnly
     public Map<URI, Set<Integer>> getVisitedLines() {
         return visitedLines;

@@ -15,17 +15,23 @@ import de.jplag.java_cpg.ai.variables.values.string.StringValue;
  * Representation of the static java.lang.String class.
  * @author ujiqk
  * @version 1.0
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html">Oracle Docs</a></a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html">Oracle Docs</a>
  */
 public class String extends JavaObject implements ISpecialObject {
 
     private static final java.lang.String PATH = "java.lang";
     private static final java.lang.String NAME = "String";
 
+    /**
+     * Creates a new representation of the java.lang.String class.
+     */
     public String() {
         super();
     }
 
+    /**
+     * @return The variable name java.lang.String
+     */
     @NotNull
     @Pure
     public static VariableName getName() {

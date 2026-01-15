@@ -12,10 +12,17 @@ public class RegexChar extends RegexItem {
 
     private final char content;
 
+    /**
+     * Constructor for {@link RegexChar}.
+     * @param content the character.
+     */
     public RegexChar(char content) {
         this.content = content;
     }
 
+    /**
+     * @return the character.
+     */
     public char getContent() {
         return content;
     }
