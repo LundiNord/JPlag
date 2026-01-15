@@ -1,6 +1,13 @@
 package de.jplag.java_cpg.transform;
 
-import static de.jplag.java_cpg.transformation.TransformationRepository.*;
+import static de.jplag.java_cpg.transformation.TransformationRepository.forStatementToWhileStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.ifWithNegatedConditionResolution;
+import static de.jplag.java_cpg.transformation.TransformationRepository.inlineSingleUseVariable;
+import static de.jplag.java_cpg.transformation.TransformationRepository.moveConstantToOnlyUsingClass;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyDeclarationStatement;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryField;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryRecord;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeUnusedVariableDeclaration;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +44,7 @@ public class PlagiarismDetectionTest {
 
     @BeforeAll
     public static void setUpOnce() {
-        language = new JavaCpgLanguage();
+        language = new JavaCpgLanguage(false, false, true);
         baseDirectory = BASE_PATH.toFile();
     }
 

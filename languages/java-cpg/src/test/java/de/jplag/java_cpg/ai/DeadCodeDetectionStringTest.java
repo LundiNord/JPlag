@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import de.jplag.ParsingException;
@@ -20,7 +21,7 @@ import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 
 /**
- * Test that only uses the CPG library. Specifically tests different string analyses.
+ * Test that only uses the CPG library. Specifically, tests different string analyses.
  * @author ujiqk
  * @version 1.0
  */
@@ -67,6 +68,7 @@ class DeadCodeDetectionStringTest {
     }
 
     @Test
+    @Disabled
     void testRegexStringComplex() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);

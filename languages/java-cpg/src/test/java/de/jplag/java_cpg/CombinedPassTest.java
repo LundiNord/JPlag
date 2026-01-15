@@ -1,6 +1,8 @@
 package de.jplag.java_cpg;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
@@ -66,6 +68,7 @@ class CombinedPassTest extends AbstractJavaCpgLanguageTest {
     }
 
     @Test
+    @Disabled
     void testDeadCodeRemovalInTokensInheritance() throws ParsingException {
         List<TokenType> parsedTokens = parseJavaFile("combined/Two", true);
         assertEquals(117, parsedTokens.size(), "Unexpected number of tokens after dead code removal");

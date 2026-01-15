@@ -287,7 +287,7 @@ public class AbstractInterpretation {
     }
 
     private void setupFieldDeclarations(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance) {
-        for (FieldDeclaration fd : rd.getFields()) {    // ToDo also do for super classes
+        for (FieldDeclaration fd : rd.getFields()) {
             visitedLinesRecorder.recordLinesVisited(fd);
             Type type = fd.getType();
             Name name = fd.getName();
@@ -336,7 +336,6 @@ public class AbstractInterpretation {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         visitedLinesRecorder.recordLinesVisited(node);
-        System.out.println(node);
         switch (node) {
             case VariableDeclaration vd -> {
                 nodeStack.add(vd);
