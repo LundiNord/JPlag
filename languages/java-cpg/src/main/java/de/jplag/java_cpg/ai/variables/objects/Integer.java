@@ -50,7 +50,7 @@ public class Integer extends JavaObject implements ISpecialObject {
                     case IStringValue str -> {
                         return str.callMethod("parseInt", paramVars, null);
                     }
-                    case VoidValue ignored -> {
+                    case VoidValue _ -> {
                         return VoidValue.valueFactory(Type.INT);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);

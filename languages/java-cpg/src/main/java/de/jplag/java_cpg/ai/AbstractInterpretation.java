@@ -46,6 +46,7 @@ import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.CastExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConditionalExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConstructExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.ExpressionList;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.InitializerListExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
@@ -86,7 +87,6 @@ import de.jplag.java_cpg.transformation.operations.TransformationUtil;
  */
 public class AbstractInterpretation {
 
-    private final List<IValue> returnStorage;
     /**
      * Helper to detect recursive method calls.
      */
@@ -95,12 +95,13 @@ public class AbstractInterpretation {
      * Recorder for visited lines to detect dead methods/classes later.
      */
     private final VisitedLinesRecorder visitedLinesRecorder;
-    private final boolean removeDeadCode;
     /**
      * Helper: if we are recording changes for while loops.
      */
     @NotNull
     private final RecordingChanges recordingChanges;
+    private List<IValue> returnStorage;
+    private boolean removeDeadCode;
     /**
      * Helper stack to work around cpg limitations.
      */
@@ -495,8 +496,8 @@ public class AbstractInterpretation {
                     }
                 }
             }
-            case ReturnStatement _ -> {
-                return walkReturnStatement();
+            case ReturnStatement rs -> {
+                return walkReturnStatement(rs);
             }
             case ConstructExpression ce -> {
                 // inside Constructors, no NewExpression nodes come after ConstructExpression nodes
@@ -943,13 +944,15 @@ public class AbstractInterpretation {
             // return in every branch
             valueStack.add(returnStorage.getLast());
             nextNode = new ReturnStatement();
+            ((ReturnStatement) nextNode).setReturnValue(new Expression() {
+            });
         }
         return nextNode;
     }
 
-    private IValue walkReturnStatement() {
-        IValue result;
-        if (valueStack.isEmpty()) {
+    private IValue walkReturnStatement(@NotNull ReturnStatement rs) {
+        final IValue result;
+        if (rs.getReturnValues().isEmpty() || valueStack.isEmpty()) {
             result = new VoidValue();
         } else {
             result = valueStack.getLast();
@@ -1061,6 +1064,8 @@ public class AbstractInterpretation {
                 variables.recordChanges();
                 recordingChanges.setRecording(true);
                 variables.newScope();
+                List<IValue> returnStorageBefore = returnStorage;
+                returnStorage = new ArrayList<>();
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
                 recordingChanges.setRecording(false);
@@ -1071,6 +1076,7 @@ public class AbstractInterpretation {
                     variables.getVariable(variable.getName()).setToUnknown();
                 }
                 variables.newScope();
+                returnStorage = returnStorageBefore;
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
                 // 3: restore variables and set changed variables to unknown
@@ -1101,6 +1107,8 @@ public class AbstractInterpretation {
             // return in every branch
             valueStack.add(returnStorage.getLast());
             nextNode = new ReturnStatement();
+            ((ReturnStatement) nextNode).setReturnValue(new Expression() {
+            });
         }
         return nextNode;
     }
@@ -1140,6 +1148,8 @@ public class AbstractInterpretation {
                 variables.recordChanges();
                 recordingChanges.setRecording(true);
                 variables.newScope();
+                List<IValue> returnStorageBefore = returnStorage;
+                returnStorage = new ArrayList<>();
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
                 recordingChanges.setRecording(false);
@@ -1165,6 +1175,7 @@ public class AbstractInterpretation {
                     }
                 }
                 variables.newScope();
+                returnStorage = returnStorageBefore;
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
                 // 3: restore variables and set changed variables to unknown
@@ -1210,6 +1221,8 @@ public class AbstractInterpretation {
             // return in every branch
             valueStack.add(returnStorage.getLast());
             nextNode = new ReturnStatement();
+            ((ReturnStatement) nextNode).setReturnValue(new Expression() {
+            });
         }
         return nextNode;
     }
@@ -1271,6 +1284,8 @@ public class AbstractInterpretation {
                 variables.recordChanges();
                 recordingChanges.setRecording(true);
                 variables.newScope();
+                List<IValue> returnStorageBefore = returnStorage;
+                returnStorage = new ArrayList<>();
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
                 recordingChanges.setRecording(false);
@@ -1281,6 +1296,7 @@ public class AbstractInterpretation {
                     variables.getVariable(variable.getName()).setToUnknown();
                 }
                 variables.newScope();
+                returnStorage = returnStorageBefore;
                 graphWalker(nextEOG.getFirst());
                 variables.removeScope();
                 // 3: restore variables and set changed variables to unknown
@@ -1366,10 +1382,11 @@ public class AbstractInterpretation {
             return null;
         }
         int numberOfCalls = method.getUsages().size();
+        boolean removeDeadCodeBackup = this.removeDeadCode;
         if (numberOfCalls > 1) {
-            // method is called multiple times, set all variables to unknown
-            this.variables.setEverythingUnknown();
-            paramVars.forEach(IValue::setToUnknown);
+            // method is called multiple times
+            removeDeadCode = false;
+            // ToDo: collect dead code in this methods and only remove if dead in all calls
         }
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
@@ -1396,6 +1413,7 @@ public class AbstractInterpretation {
             result = new VoidValue();
         }
         variables.removeScope();
+        this.removeDeadCode = removeDeadCodeBackup;
         this.nodeStack = oldNodeStack;      // restore stack
         this.valueStack = oldValueStack;
         this.lastVisitedLoopOrIf = oldLastVisitedLoopOrIf;

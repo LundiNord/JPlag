@@ -20,7 +20,7 @@ import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 
 /**
- * Test that only uses the CPG library. Specifically tests different string analyses.
+ * Test that only uses the CPG library. Specifically, tests different string analyses.
  * @author ujiqk
  * @version 1.0
  */
@@ -34,7 +34,7 @@ class DeadCodeDetectionStringTest {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.CHAR_INCLUSION);
-        AbstractInterpretation interpretation = interpretFromResource("java/ai/string");
+        final AbstractInterpretation interpretation = interpretFromResource("java/ai/string");
         JavaObject main = getMainObject(interpretation);
         assertEquals(new HashSet<>(Set.of(' ', 'D', 'e', 'h', 'J', 'l', ',', 'n', 'o')),
                 ((StringCharInclValue) main.accessField("result")).getCertainContained());
