@@ -172,7 +172,7 @@ public class AbstractInterpretation {
      */
     public void setRelatedObject(@NotNull IJavaObject object) {
         this.object = object;
-        // this.variables.s
+        this.variables.setThisObject(object);
     }
 
     /**
@@ -254,6 +254,7 @@ public class AbstractInterpretation {
         objectInstance.setAbstractInterpretation(this);
         variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
         variables.setThisName(new VariableName(rd.getName().toString()));
+        variables.setThisObject(objectInstance);
         variables.addVariable(
                 new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
@@ -458,8 +459,14 @@ public class AbstractInterpretation {
                 nodeStack.add(uop);
                 valueStack.removeLast();
                 valueStack.add(result);
-                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
-                nextNode = nextEOG.getFirst();
+                if (nextEOG.isEmpty()) {      // when throw is the last statement in a block
+                    nextNode = new ReturnStatement();
+                    ((ReturnStatement) nextNode).setReturnValue(new Expression() {
+                    });
+                } else {
+                    assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
+                    nextNode = nextEOG.getFirst();
+                }
             }
             case IfStatement ifStmt -> {
                 nextNode = walkIfStatement(ifStmt);
@@ -1260,6 +1267,10 @@ public class AbstractInterpretation {
             valueStack.removeLast();
             valueStack.add(Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.ARRAY));
         }
+        if (!(valueStack.getLast() instanceof IJavaArray)) {
+            System.out.println("Debug");
+        }
+        assert valueStack.getLast() instanceof IJavaArray : "Expected array value in for each, but got: " + valueStack.getLast();
         IJavaArray collection = (IJavaArray) valueStack.getLast();
         // ToDo: set right variable value
         valueStack.removeLast();

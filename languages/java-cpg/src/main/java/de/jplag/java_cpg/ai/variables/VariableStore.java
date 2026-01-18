@@ -7,7 +7,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 
@@ -20,7 +22,9 @@ public class VariableStore {
 
     private final ArrayList<Scope> scopes = new ArrayList<>();
     private int currentScopeIndex = 0;
+    @Deprecated
     private VariableName thisObject;
+    private IJavaObject thisObjectInstance;
 
     /**
      * Copy constructor. Performs deep copy down the values.
@@ -32,6 +36,7 @@ public class VariableStore {
             this.scopes.add(new Scope(p));
         }
         thisObject = variableStore.thisObject;
+        thisObjectInstance = getThisObjectFromName();
     }
 
     /**
@@ -55,10 +60,8 @@ public class VariableStore {
         this.thisObject = thisName;
     }
 
-    /**
-     * @return the {@link JavaObject} this variable store is associated with, or null if not set.
-     */
-    public JavaObject getThisObject() {
+    @Nullable
+    private IJavaObject getThisObjectFromName() {
         if (thisObject == null) {
             return null;
         }
@@ -67,18 +70,36 @@ public class VariableStore {
             return null;
         }
         IValue value = variable.getValue();
-        if (value instanceof JavaObject javaObject) {
+        if (value instanceof IJavaObject javaObject) {
             return javaObject;
         }
         return null;
     }
 
     /**
-     * Sets the "this" object variable.
-     * @param name the name of the variable representing "this".
+     * @return the {@link IJavaObject} this variable store is associated with, or null if not set.
      */
-    public void setThisObject(@NotNull VariableName name) {
-        this.thisObject = name;
+    public IJavaObject getThisObject() {
+        // if (thisObject == null) {
+        // return null;
+        // }
+        // Variable variable = getVariable(thisObject);
+        // if (variable == null) {
+        // return null;
+        // }
+        // IValue value = variable.getValue();
+        // if (value instanceof JavaObject javaObject) {
+        // return javaObject;
+        // }
+        // return null;
+        return thisObjectInstance;
+    }
+
+    /**
+     * @param object the {@link IJavaObject} instance representing "this".
+     */
+    public void setThisObject(@NotNull IJavaObject object) {
+        this.thisObjectInstance = object;
     }
 
     /**

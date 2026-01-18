@@ -88,6 +88,14 @@ public class HashMap extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 2;
                 return new VoidValue();
             }
+            case "replace" -> {
+                assert paramVars.size() == 2 || paramVars.size() == 3;
+                return new VoidValue();
+            }
+            case "replaceAll" -> {
+                assert paramVars.size() == 1;
+                return new VoidValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

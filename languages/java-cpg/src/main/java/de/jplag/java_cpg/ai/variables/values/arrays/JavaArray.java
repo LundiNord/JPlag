@@ -194,7 +194,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     throw new UnsupportedOperationException("add with " + paramVars.size() + " parameters is not supported");
                 }
             }
-            case "stream" -> {
+            case "stream", "toArray" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return this;
             }
@@ -474,7 +474,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 assert paramVars == null || paramVars.isEmpty();
                 return this.copy();
             }
-            case "filter" -> {
+            case "filter", "collect" -> {
                 this.values = null;
                 return Value.valueFactory(Type.LIST);
             }
@@ -489,10 +489,6 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "forEach" -> {
                 this.values = null;
                 this.innerType = Type.VOID;
-                return Value.valueFactory(Type.LIST);
-            }
-            case "collect" -> {
-                this.values = null;
                 return Value.valueFactory(Type.LIST);
             }
             default -> throw new UnsupportedOperationException(methodName);

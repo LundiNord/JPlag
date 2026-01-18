@@ -104,13 +104,22 @@ public class StringValue extends JavaObject implements IStringValue {
                 }
             }
             case "split" -> {   // public String[] split(String regex)
-                assert paramVars.size() == 1;
+                assert paramVars.size() == 1 || paramVars.size() == 2;
                 StringValue regexValue = (StringValue) paramVars.getFirst();
                 if (!information || !regexValue.getInformation()) {
                     return Value.getNewArayValue(Type.STRING);
                 }
                 assert regexValue.getValue() != null && value != null;
-                String[] parts = value.split(regexValue.getValue());
+                String[] parts;
+                if (paramVars.size() == 1) {
+                    parts = value.split(regexValue.getValue());
+                } else {
+                    INumberValue limitValue = (INumberValue) paramVars.get(1);
+                    if (!limitValue.getInformation()) {
+                        return Value.getNewArayValue(Type.STRING);
+                    }
+                    parts = value.split(regexValue.getValue(), (int) limitValue.getValue());
+                }
                 IJavaArray array = Value.getNewArayValue(Type.STRING);
                 for (int i = 0; i < parts.length; i++) {
                     array.arrayAssign((INumberValue) Value.valueFactory(i), new StringValue(parts[i]));

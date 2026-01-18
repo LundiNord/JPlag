@@ -80,6 +80,7 @@ public class JavaObject extends Value implements IJavaObject {
      * @return the value of the field or VoidValue if the field does not exist.
      */
     public IValue accessField(@NotNull String fieldName) {
+        assert fields != null;
         Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
             return new VoidValue();
