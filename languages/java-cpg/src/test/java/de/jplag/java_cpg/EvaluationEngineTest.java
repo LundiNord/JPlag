@@ -1,7 +1,9 @@
 package de.jplag.java_cpg;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
-import static de.jplag.options.JPlagOptions.*;
+import static de.jplag.options.JPlagOptions.DEFAULT_SHOWN_COMPARISONS;
+import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_METRIC;
+import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_THRESHOLD;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -21,11 +23,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.jplag.*;
+import de.jplag.JPlag;
+import de.jplag.JPlagComparison;
+import de.jplag.JPlagResult;
+import de.jplag.Language;
+import de.jplag.ParsingException;
+import de.jplag.Token;
 import de.jplag.clustering.ClusteringOptions;
 import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.ProgpediaTests;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
 
@@ -158,7 +170,6 @@ class EvaluationEngineTest {
     private static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
             boolean normalize) throws ParsingException {
         assert normalize || !reorder;
-
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, JavaCpgLanguage.deadCodeRemovalTransformations(),
                 IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
         // IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
@@ -267,6 +278,25 @@ class EvaluationEngineTest {
         return ProgpediaTests.progpediaFiles();
     }
 
+    @NotNull
+    public static Stream<String> kitGenFiles() {
+        List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/BoardGame/insert", "kit_DONT_COMMIT/BoardGame/refactor",
+                "kit_DONT_COMMIT/TicTacToe/human", "kit_DONT_COMMIT/TicTacToe/insert", "kit_DONT_COMMIT/TicTacToe/refactor",
+                "kit_DONT_COMMIT/TicTacToe/gpt", "kit_DONT_COMMIT/TicTacToe/gptobf");
+        return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
+                .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
+                .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath());
+    }
+
+    @NotNull
+    public static Stream<String> kitHumanFiles() {
+        List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/TicTacToe/human",
+                "kit_DONT_COMMIT/ws2223-Sheet4TaskA-perseverance", "kit_DONT_COMMIT/ws2425-Sheet3TaskA-dotsandboxes");
+        return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
+                .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
+                .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath());
+    }
+
     @ParameterizedTest
     @Disabled
     @MethodSource("testFiles")
@@ -307,6 +337,68 @@ class EvaluationEngineTest {
                 + timeSimpleRemoval / 1_000_000.0 + " ms)");
         System.out.println(
                 "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
+        assertTrue(true);
+    }
+
+    @ParameterizedTest
+    @Disabled
+    @MethodSource("kitHumanFiles")
+    void KitDeadCodeEvaluation(String fileName) throws ParsingException {
+        long startTime = System.nanoTime();
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        long timeNoRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        long timeSimpleRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        long timeFullRemoval = System.nanoTime() - startTime;
+
+        double simSimpleRemoval = similarity(tokens, tokensWithoutSimpleDeadCode);
+        double simFullRemoval = similarity(tokens, tokensWithoutDeadCode);
+
+        File csvFile = new File("Progpedia_deadcode_results.csv");
+        boolean fileExists = csvFile.exists();
+
+        try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
+            if (!fileExists) {
+                writer.write("FileName,SimpleRemoval,FullRemoval,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms)\n");
+            }
+            writer.write(String.format("%s,%.4f,%.4f,%.2f,%.2f,%.2f%n", fileName, simSimpleRemoval, simFullRemoval, timeNoRemoval / 1_000_000.0,
+                    timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
+                + timeSimpleRemoval / 1_000_000.0 + " ms)");
+        System.out.println(
+                "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
+        assertTrue(true);
+    }
+
+    @Test
+    @Disabled
+    void KitDeadCodeEvaluationSingle() throws ParsingException {
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm118";
+        long startTime = System.nanoTime();
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        long timeNoRemoval = System.nanoTime() - startTime;
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        long timeSimpleRemoval = System.nanoTime() - startTime;
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        long timeFullRemoval = System.nanoTime() - startTime;
+        double simSimpleRemoval = similarity(tokens, tokensWithoutSimpleDeadCode);
+        double simFullRemoval = similarity(tokens, tokensWithoutDeadCode);
+        System.out.println("Time no removal: " + timeNoRemoval / 1_000_000.0 + " ms");
+        System.out.println("Similarity between no and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
+                + timeSimpleRemoval / 1_000_000.0 + " ms)");
+        System.out.println(
+                "Similarity between no and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
         assertTrue(true);
     }
 

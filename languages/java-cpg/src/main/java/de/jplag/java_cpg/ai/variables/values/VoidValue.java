@@ -24,14 +24,14 @@ public class VoidValue extends Value {
     @Override
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         switch (operator) {
-            case "==", ">", "<", ">=", "<=", "!=" -> {
+            case "==", ">", "<", ">=", "<=", "!=", "instanceof" -> {
                 return new BooleanValue();
             }
             case "+", "-", "*", "/" -> {
                 return switch (other) {
-                    case IntValue ignored -> new IntValue();
-                    case FloatValue ignored -> new FloatValue();
-                    case StringValue ignored -> new StringValue();
+                    case IntValue _ -> new IntValue();
+                    case FloatValue _ -> new FloatValue();
+                    case StringValue _ -> new StringValue();
                     default -> new VoidValue();
                 };
             }

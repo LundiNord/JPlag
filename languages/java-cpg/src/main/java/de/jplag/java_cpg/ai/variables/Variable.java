@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
@@ -95,12 +96,20 @@ public class Variable {
     /**
      * Merge content from another variable into this variable. The provided variable must have the same name as this
      * variable. The actual merge behavior is delegated to the underlying {@link Value} implementation.
-     * @param value the variable whose content will be merged into this one; must have the same name.
+     * @param other the variable whose content will be merged into this one; must have the same name.
      */
-    public void merge(@NotNull Variable value) {
-        assert this.changeRecorders.equals(value.changeRecorders);
-        assert value.name.equals(this.name);
-        this.value.merge(value.value);
+    public void merge(@NotNull Variable other) {
+        assert this.changeRecorders.equals(other.changeRecorders);
+        assert other.name.equals(this.name);
+        if (this.value instanceof NullValue) {
+            if (other.value instanceof NullValue) {
+                // both are null, nothing to do
+            } else {
+                assert this.value instanceof IJavaObject;
+                this.value = Value.valueFactory(Type.OBJECT);
+            }
+        }
+        this.value.merge(other.value);
     }
 
     /**

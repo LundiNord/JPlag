@@ -74,6 +74,14 @@ public class VariableStore {
     }
 
     /**
+     * Sets the "this" object variable.
+     * @param name the name of the variable representing "this".
+     */
+    public void setThisObject(@NotNull VariableName name) {
+        this.thisObject = name;
+    }
+
+    /**
      * @param name the name of the variable to retrieve.
      * @return the variable with the given name or null if it does not exist.
      */

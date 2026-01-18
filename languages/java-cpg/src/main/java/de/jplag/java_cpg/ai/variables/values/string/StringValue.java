@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -174,6 +175,15 @@ public class StringValue extends JavaObject implements IStringValue {
                     return new StringValue();
                 }
             }
+            case "matches" -> {   // public boolean matches(String regex)
+                assert paramVars.size() == 1;
+                StringValue regexValue = (StringValue) paramVars.getFirst();
+                if (information && regexValue.getInformation()) {
+                    return Value.valueFactory(this.value.matches(Objects.requireNonNull(regexValue.getValue())));
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -249,12 +259,12 @@ public class StringValue extends JavaObject implements IStringValue {
 
     @Override
     public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
+        if (other instanceof VoidValue || other instanceof NullValue) {
             this.information = false;
             this.value = null;
             return;
         }
-        assert other instanceof StringValue;
+        assert other instanceof StringValue : "Cannot merge " + this.getClass() + " with " + other.getClass();
         StringValue otherString = (StringValue) other;
         if (this.information && otherString.information && java.util.Objects.equals(this.value, otherString.value)) {
             // keep value

@@ -39,7 +39,10 @@ public class NullValue extends Value {
 
     @Override
     public void merge(@NotNull IValue other) {
-        // do nothing
+        if (!(other instanceof NullValue)) {
+            throw new IllegalStateException();
+        }
+        assert other instanceof NullValue;  // other cases are handled in Variable.merge()
     }
 
     @Override

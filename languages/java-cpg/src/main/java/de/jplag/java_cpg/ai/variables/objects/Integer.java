@@ -10,7 +10,9 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
@@ -52,6 +54,23 @@ public class Integer extends JavaObject implements ISpecialObject {
                     }
                     case VoidValue _ -> {
                         return VoidValue.valueFactory(Type.INT);
+                    }
+                    default -> throw new IllegalStateException("Unexpected value: " + value);
+                }
+            }
+            case "toString" -> {
+                assert paramVars.size() == 1;
+                IValue value = paramVars.getFirst();
+                switch (value) {
+                    case INumberValue intValue -> {
+                        if (intValue.getInformation()) {
+                            return Value.valueFactory(java.lang.Double.toString(intValue.getValue()));
+                        } else {
+                            return Value.valueFactory(Type.STRING);
+                        }
+                    }
+                    case VoidValue _ -> {
+                        return Value.valueFactory(Type.STRING);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }

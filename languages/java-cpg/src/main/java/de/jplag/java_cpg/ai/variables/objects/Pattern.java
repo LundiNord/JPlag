@@ -42,8 +42,11 @@ public class Pattern extends JavaObject implements ISpecialObject {
     public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
             case "matches" -> {
-                assert paramVars.size() == 2;
                 return new BooleanValue();
+            }
+            case "compile", "matcher" -> {
+                assert paramVars.size() == 1 || paramVars.size() == 2;
+                return new Pattern();
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

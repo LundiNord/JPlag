@@ -172,6 +172,7 @@ public class AbstractInterpretation {
      */
     public void setRelatedObject(@NotNull IJavaObject object) {
         this.object = object;
+        // this.variables.s
     }
 
     /**
@@ -209,7 +210,6 @@ public class AbstractInterpretation {
                 graphWalker(eog.getFirst());
                 variables.removeScope();
             }
-
         }
         // ignore include declaration for now
     }
@@ -366,6 +366,9 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case Reference ref -> {     // adds its value to the value stack
+                if (this.object == null) {
+                    System.out.println("Debug");
+                }
                 if (ref.getName().getLocalName().equals("this")) {
                     valueStack.add(this.object);
                 } else {
@@ -438,6 +441,11 @@ public class AbstractInterpretation {
                 valueStack.removeLast();
                 valueStack.removeLast();
                 valueStack.add(result);
+                if (nextEOG.isEmpty()) {    // when used as a field initializer
+                    IValue value = valueStack.getLast();
+                    valueStack.removeLast();
+                    return value;
+                }
                 assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
@@ -566,8 +574,7 @@ public class AbstractInterpretation {
                     arguments.add(valueStack.getLast());
                     valueStack.removeLast();
                 }
-                assert arguments.stream().map(IValue::getType).distinct().count() == 1;
-                IJavaArray list = new JavaArray(arguments);
+                IJavaArray list = Value.getNewArayValue(arguments);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
                     return list;
                 }
@@ -728,7 +735,12 @@ public class AbstractInterpretation {
                 valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
-            result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
+            if (mce.getInvokes().isEmpty()) {   // CPG sometimes cannot find the method declaration
+                System.out.println("Warning: Method declaration for " + memberName.getLocalName() + " not found in CPG.");
+                result = new VoidValue();
+            } else {
+                result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
+            }
         } else {
             List<IValue> argumentList = new ArrayList<>();
             for (int i = 0; i < mce.getArguments().size(); i++) {
@@ -751,6 +763,9 @@ public class AbstractInterpretation {
             if (valueStack.getLast() instanceof VoidValue) {
                 valueStack.removeLast();
                 valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
+            }
+            if (!(valueStack.getLast() instanceof JavaObject)) {
+                System.out.println("Debug");
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
             result = javaObject.callMethod(memberName.getLocalName(), argumentList,
@@ -951,7 +966,7 @@ public class AbstractInterpretation {
     }
 
     private IValue walkReturnStatement(@NotNull ReturnStatement rs) {
-        final IValue result;
+        IValue result;
         if (rs.getReturnValues().isEmpty() || valueStack.isEmpty()) {
             result = new VoidValue();
         } else {
@@ -964,6 +979,9 @@ public class AbstractInterpretation {
         } else {
             // merge other returns
             for (IValue value : returnStorage) {
+                if (result instanceof NullValue) {
+                    result = new JavaObject();
+                }
                 result.merge(value);
             }
             returnStorage.clear();

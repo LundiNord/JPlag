@@ -41,6 +41,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     /**
      * a Java Array with exact information.
      * @param values the values of the array in the correct order.
+     * @throws UnsupportedOperationException if the inner type is not supported.
      */
     public JavaArray(@NotNull List<IValue> values) {
         super(Type.ARRAY);
@@ -49,8 +50,33 @@ public class JavaArray extends JavaObject implements IJavaArray {
             this.values = values;
             return;
         }
-        assert values.stream().map(IValue::getType).distinct().count() == 1;
-        this.innerType = values.getFirst().getType();
+        this.innerType = Type.VOID;
+        for (IValue value : values) {
+            if (this.innerType != Type.VOID) {
+                assert value.getType() == this.innerType;
+                continue;
+            }
+            if (value.getType() != Type.VOID) {
+                this.innerType = value.getType();
+            }
+        }
+        for (IValue value : values) {   // exchange void values with unknown values of the inner type
+            if (value.getType() == Type.VOID) {
+                switch (this.innerType) {
+                    case INT -> value = Value.valueFactory(Type.INT);
+                    case BOOLEAN -> value = new BooleanValue();
+                    case STRING -> value = Value.valueFactory(Type.STRING);
+                    case OBJECT -> value = new JavaObject();
+                    case ARRAY, LIST -> value = new JavaArray();
+                    case FLOAT -> value = Value.valueFactory(Type.FLOAT);
+                    case CHAR -> value = Value.valueFactory(Type.CHAR);
+                    case VOID -> {
+                    }
+                    default -> throw new UnsupportedOperationException("Array of type " + this.innerType + " not supported");
+                }
+            }
+
+        }
         this.values = values;
     }
 
@@ -111,6 +137,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case ARRAY, LIST -> new JavaArray();
             case FLOAT -> Value.valueFactory(Type.FLOAT);
             case CHAR -> Value.valueFactory(Type.CHAR);
+            case VOID -> new VoidValue();
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
         };
     }
