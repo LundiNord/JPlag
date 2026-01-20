@@ -37,13 +37,12 @@ public class JavaObject extends Value implements IJavaObject {
     /**
      * Constructor for a Java object with an abstract interpretation engine and no info.
      * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
-     * @param name the name of the variable representing this object. ANONYMOUS_THIS_NAME when used in an anonymous class.
      */
-    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation, @NotNull VariableName name) {
+    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
         super(Type.OBJECT);
         this.fields = new Scope();
         this.abstractInterpretation = abstractInterpretation;
-        abstractInterpretation.setRelatedObject(this, name);
+        abstractInterpretation.setRelatedObject(this);
     }
 
     /**
@@ -95,6 +94,7 @@ public class JavaObject extends Value implements IJavaObject {
      * @param value the new value of the field.
      */
     public void changeField(@NotNull String fieldName, IValue value) {
+        assert fields != null;
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
             fields.addVariable(new Variable(fieldName, value));
@@ -107,6 +107,7 @@ public class JavaObject extends Value implements IJavaObject {
      * @param field Sets a new field variable in this object.
      */
     public void setField(@NotNull Variable field) {
+        assert this.fields != null;
         this.fields.addVariable(field);
     }
 
@@ -117,6 +118,14 @@ public class JavaObject extends Value implements IJavaObject {
      */
     public void setAbstractInterpretation(@Nullable AbstractInterpretation abstractInterpretation) {
         this.abstractInterpretation = abstractInterpretation;
+        if (abstractInterpretation != null) {
+            abstractInterpretation.setRelatedObject(this);
+        }
+    }
+
+    @Override
+    public boolean hasAbstractInterpretation() {
+        return this.abstractInterpretation != null;
     }
 
     @Override
@@ -190,7 +199,7 @@ public class JavaObject extends Value implements IJavaObject {
     @Override
     public void setInitialValue() {
         if (fields != null) {
-            fields.setEverythingUnknown();
+            fields.setEverythingInitialValue();
         }
         fields = null;
     }

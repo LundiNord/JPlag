@@ -178,7 +178,7 @@ public class AbstractInterpretation {
     /**
      * @param object the object this AI engine is currently interpreting.
      */
-    public void setRelatedObject(@NotNull IJavaObject object, VariableName relatedClassName) {
+    public void setRelatedObject(@NotNull IJavaObject object) {
         this.object = object;
     }
 
@@ -578,16 +578,21 @@ public class AbstractInterpretation {
                 }
             }
             case InitializerListExpression ile -> {
-                assert !ile.getInitializers().isEmpty();
-                assert valueStack.size() >= ile.getInitializers().size();
-                assert nodeStack.size() >= ile.getInitializers().size();
-                List<IValue> arguments = new ArrayList<>();
-                for (int i = 0; i < ile.getInitializers().size(); i++) {
-                    nodeStack.removeLast();
-                    arguments.add(valueStack.getLast());
-                    valueStack.removeLast();
+                IJavaArray list;
+                if (ile.getInitializers().stream().anyMatch(ProblemExpression.class::isInstance)) { // catch cpg issues
+                    list = Value.getNewArayValue();
+                } else {
+                    assert !ile.getInitializers().isEmpty();
+                    assert valueStack.size() >= ile.getInitializers().size();
+                    assert nodeStack.size() >= ile.getInitializers().size();
+                    List<IValue> arguments = new ArrayList<>();
+                    for (int i = 0; i < ile.getInitializers().size(); i++) {
+                        nodeStack.removeLast();
+                        arguments.add(valueStack.getLast());
+                        valueStack.removeLast();
+                    }
+                    list = Value.getNewArayValue(arguments);
                 }
-                IJavaArray list = Value.getNewArayValue(arguments);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
                     return list;
                 }
@@ -620,11 +625,11 @@ public class AbstractInterpretation {
                 // ToDo
                 throw new IllegalArgumentException("ConditionalExpression not supported yet");
             }
-            case BreakStatement _ -> {
-                assert nextEOG.size() == 1;
-                nodeStack.add(nextEOG.getFirst());
-                return null;
-            }
+            // case BreakStatement _ -> {
+            // assert nextEOG.size() == 1;
+            // nodeStack.add(nextEOG.getFirst());
+            // return null;
+            // }
             case CatchClause _ -> {
                 // nothing for now
                 assert nextEOG.size() == 1;
@@ -664,6 +669,7 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case ContinueStatement _ -> throw new IllegalStateException("ContinueStatement not supported yet");
+            case BreakStatement _ -> throw new IllegalStateException("BreakStatement not supported yet");
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
         assert nextNode != null;
@@ -745,14 +751,18 @@ public class AbstractInterpretation {
                 // null value can happen: "if (opts.name == null || opts.name.isBlank())" where we dont strictly follow evaluation
                 // order.
                 valueStack.removeLast();
-                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME),
-                        ANONYMOUS_THIS_NAME));
+                valueStack
+                        .add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME)));
             }
-            JavaObject javaObject = (JavaObject) valueStack.getLast();
+            IJavaObject javaObject = (JavaObject) valueStack.getLast();
             if (mce.getInvokes().isEmpty()) {   // CPG sometimes cannot find the method declaration
                 System.out.println("Warning: Method declaration for " + memberName.getLocalName() + " not found in CPG.");
                 result = new VoidValue();
             } else {
+                if (!javaObject.hasAbstractInterpretation()) {
+                    javaObject.setAbstractInterpretation(
+                            new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME));
+                }
                 result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast());
             }
         } else {
@@ -776,13 +786,17 @@ public class AbstractInterpretation {
             assert !valueStack.isEmpty();
             if (valueStack.getLast() instanceof VoidValue) {
                 valueStack.removeLast();
-                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME),
-                        ANONYMOUS_THIS_NAME));
+                valueStack
+                        .add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME)));
             }
             if (!(valueStack.getLast() instanceof JavaObject)) {
                 System.out.println("Debug");
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
+            if (!javaObject.hasAbstractInterpretation()) {
+                javaObject.setAbstractInterpretation(
+                        new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME));
+            }
             result = javaObject.callMethod(memberName.getLocalName(), argumentList,
                     (!mce.getInvokes().isEmpty()) ? (MethodDeclaration) mce.getInvokes().getLast() : null);
         }

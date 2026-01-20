@@ -41,7 +41,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
     @Override
     public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
-            case "matches" -> {
+            case "matches", "find" -> {
                 return new BooleanValue();
             }
             case "compile", "matcher" -> {

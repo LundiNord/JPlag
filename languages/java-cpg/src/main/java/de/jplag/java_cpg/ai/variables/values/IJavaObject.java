@@ -51,4 +51,9 @@ public interface IJavaObject extends IValue {
      */
     void setAbstractInterpretation(@Nullable AbstractInterpretation abstractInterpretation);
 
+    /**
+     * @return true if this object has an abstract interpretation assigned.
+     */
+    boolean hasAbstractInterpretation();
+
 }

@@ -88,6 +88,12 @@ public class CharValue extends Value implements ICharValue {
                     } else {
                         return new CharValue();
                     }
+                } else if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return Value.getNewIntValue((char) (this.value + (char) numberValue.getValue()));
+                    } else {
+                        return Value.valueFactory(Type.INT);
+                    }
                 }
                 IStringValue otherStringValue = (IStringValue) other;
                 if (this.information && otherStringValue.getInformation()) {
@@ -102,6 +108,36 @@ public class CharValue extends Value implements ICharValue {
                     return new CharValue((char) (this.value - otherCharValue.value));
                 } else {
                     return new CharValue();
+                }
+            }
+            case "<" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value < numberValue.getValue());
+                    } else {
+                        return new BooleanValue();
+                    }
+                }
+                CharValue otherCharValue = (CharValue) other;
+                if (this.information && otherCharValue.information) {
+                    return new BooleanValue(this.value < otherCharValue.value);
+                } else {
+                    return new BooleanValue();
+                }
+            }
+            case ">" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value > numberValue.getValue());
+                    } else {
+                        return new BooleanValue();
+                    }
+                }
+                CharValue otherCharValue = (CharValue) other;
+                if (this.information && otherCharValue.information) {
+                    return new BooleanValue(this.value > otherCharValue.value);
+                } else {
+                    return new BooleanValue();
                 }
             }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());

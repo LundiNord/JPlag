@@ -208,7 +208,7 @@ public abstract class Value implements IValue {
     }
 
     @NotNull
-    private static Value getNewIntValue(int number) {
+    protected static INumberValue getNewIntValue(int number) {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue(number);
             case DEFAULT -> new IntValue(number);
@@ -322,8 +322,12 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new array value based on the configured AI type.
+     * @return a new array value instance.
+     */
     @NotNull
-    private static Value getNewArayValue() {
+    public static IJavaArray getNewArayValue() {
         return switch (usedArrayAiType) {
             case DEFAULT -> new JavaArray();
             case LENGTH -> new JavaLengthArray();

@@ -36,7 +36,8 @@ public class VariableStore {
     public VariableStore(@NotNull VariableStore variableStore) {
         this.currentScopeIndex = variableStore.currentScopeIndex;
         for (Scope p : variableStore.scopes) {
-            this.scopes.add(new Scope(p));
+            this.scopes.add(new Scope(p));          // ToDo: here is a bug: if a object a stores an object b in its field and b stores a in its field
+                                                    // a stackoverflow will occur
         }
         thisObject = variableStore.thisObject;
         assert thisObject != null;

@@ -161,14 +161,24 @@ public class StringValue extends JavaObject implements IStringValue {
                     return new StringValue();
                 }
             }
-            case "substring" -> {   // public String substring(int beginIndex, int endIndex)
-                assert paramVars.size() == 2;
+            case "substring" -> {   // public String substring(int beginIndex, int endIndex) || public String substring(int beginIndex)
+                assert paramVars.size() == 2 || paramVars.size() == 1;
                 INumberValue beginIndexValue = (INumberValue) paramVars.get(0);
-                INumberValue endIndexValue = (INumberValue) paramVars.get(1);
+                INumberValue endIndexValue;
+                if (paramVars.size() == 1) {
+                    if (value == null) {
+                        endIndexValue = Value.getNewIntValue();
+                    } else {
+                        endIndexValue = Value.getNewIntValue(value.length());
+                    }
+                } else {
+                    endIndexValue = (INumberValue) paramVars.get(1);
+                }
                 if (information && beginIndexValue.getInformation() && endIndexValue.getInformation()) {
                     int beginIndex = (int) beginIndexValue.getValue();
                     int endIndex = (int) endIndexValue.getValue();
                     if (beginIndex < 0 || endIndex > value.length() || beginIndex > endIndex) {
+                        assert false;
                         return new VoidValue();
                     }
                     return new StringValue(this.value.substring(beginIndex, endIndex));
@@ -202,6 +212,31 @@ public class StringValue extends JavaObject implements IStringValue {
                     return new StringValue(this.value.repeat(count));
                 } else {
                     return new StringValue();
+                }
+            }
+            case "toUpperCase" -> {   // public String toUpperCase()
+                assert paramVars == null || paramVars.isEmpty();
+                if (information) {
+                    return new StringValue(this.value.toUpperCase());
+                } else {
+                    return new StringValue();
+                }
+            }
+            case "stripTrailing" -> {   // public String stripTrailing()
+                assert paramVars == null || paramVars.isEmpty();
+                if (information) {
+                    return new StringValue(this.value.stripTrailing());
+                } else {
+                    return new StringValue();
+                }
+            }
+            case "equalsIgnoreCase" -> {   // public boolean equalsIgnoreCase(String anotherString)
+                assert paramVars.size() == 1;
+                StringValue other = (StringValue) paramVars.getFirst();
+                if (information && other.getInformation()) {
+                    return Value.valueFactory(this.value.equalsIgnoreCase(other.getValue()));
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
                 }
             }
             default -> throw new UnsupportedOperationException(methodName);

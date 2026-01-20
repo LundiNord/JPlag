@@ -65,6 +65,11 @@ public class Arrays extends JavaObject implements ISpecialObject {
             case "asList" -> {      // <T> List<T> asList(T... a)
                 return Value.getNewArayValue(paramVars);
             }
+            case "stream" -> {      // <T> Stream<T> stream(T[] array)
+                assert paramVars.size() == 1;
+                JavaArray array = (JavaArray) paramVars.getFirst();
+                return array.callMethod(methodName, List.of(), null);
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

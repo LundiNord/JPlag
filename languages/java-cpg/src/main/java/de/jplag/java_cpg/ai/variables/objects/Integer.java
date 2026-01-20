@@ -45,7 +45,7 @@ public class Integer extends JavaObject implements ISpecialObject {
     @Override
     public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
         switch (methodName) {
-            case "parseInt" -> {
+            case "parseInt", "valueOf" -> {
                 assert paramVars.size() == 1;
                 IValue value = paramVars.getFirst();
                 switch (value) {
@@ -53,7 +53,7 @@ public class Integer extends JavaObject implements ISpecialObject {
                         return str.callMethod("parseInt", paramVars, null);
                     }
                     case VoidValue _ -> {
-                        return VoidValue.valueFactory(Type.INT);
+                        return Value.valueFactory(Type.INT);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }

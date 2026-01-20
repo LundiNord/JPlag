@@ -9,6 +9,8 @@ import de.jplag.java_cpg.ai.variables.values.IJavaObject;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * A variable is a named value.
@@ -105,8 +107,13 @@ public class Variable {
             if (other.value instanceof NullValue) {
                 // both are null, nothing to do
             } else {
-                assert this.value instanceof IJavaObject;
-                this.value = Value.valueFactory(Type.OBJECT);
+                if (other.value instanceof IStringValue) {
+                    this.value = Value.valueFactory(Type.STRING);
+                } else if (other.value instanceof IJavaArray) {
+                    this.value = Value.valueFactory(Type.ARRAY);
+                } else if (other.value instanceof IJavaObject) {
+                    this.value = Value.valueFactory(Type.OBJECT);
+                }
             }
         }
         this.value.merge(other.value);
