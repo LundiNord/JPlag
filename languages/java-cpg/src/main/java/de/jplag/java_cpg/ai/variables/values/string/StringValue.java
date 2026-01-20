@@ -193,6 +193,17 @@ public class StringValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
             }
+            case "repeat" -> {   // public String repeat(int count)
+                assert paramVars.size() == 1;
+                INumberValue countValue = (INumberValue) paramVars.getFirst();
+                if (information && countValue.getInformation()) {
+                    int count = (int) countValue.getValue();
+                    assert count >= 0;
+                    return new StringValue(this.value.repeat(count));
+                } else {
+                    return new StringValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

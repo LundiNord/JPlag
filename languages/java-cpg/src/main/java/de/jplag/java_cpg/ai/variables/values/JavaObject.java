@@ -37,12 +37,13 @@ public class JavaObject extends Value implements IJavaObject {
     /**
      * Constructor for a Java object with an abstract interpretation engine and no info.
      * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
+     * @param name the name of the variable representing this object. ANONYMOUS_THIS_NAME when used in an anonymous class.
      */
-    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
+    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation, @NotNull VariableName name) {
         super(Type.OBJECT);
         this.fields = new Scope();
         this.abstractInterpretation = abstractInterpretation;
-        abstractInterpretation.setRelatedObject(this);
+        abstractInterpretation.setRelatedObject(this, name);
     }
 
     /**

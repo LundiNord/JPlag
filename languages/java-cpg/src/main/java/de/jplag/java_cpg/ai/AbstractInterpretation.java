@@ -1,5 +1,7 @@
 package de.jplag.java_cpg.ai;
 
+import static de.jplag.java_cpg.ai.variables.VariableStore.ANONYMOUS_THIS_NAME;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -154,6 +156,12 @@ public class AbstractInterpretation {
         this.recordingChanges = recordingChanges;
     }
 
+    private AbstractInterpretation(VisitedLinesRecorder visitedLinesRecorder, boolean removeDeadCode, @NotNull RecordingChanges recordingChanges,
+            @NotNull VariableName relatedClassName) {
+        this(visitedLinesRecorder, removeDeadCode, recordingChanges);
+        variables.setThisName(relatedClassName);
+    }
+
     private static JavaObject createNewObject(@NotNull ConstructExpression ce) {
         JavaObject newObject;
         String name = ce.getType().getName().toString();
@@ -170,9 +178,8 @@ public class AbstractInterpretation {
     /**
      * @param object the object this AI engine is currently interpreting.
      */
-    public void setRelatedObject(@NotNull IJavaObject object) {
+    public void setRelatedObject(@NotNull IJavaObject object, VariableName relatedClassName) {
         this.object = object;
-        this.variables.setThisObject(object);
     }
 
     /**
@@ -254,7 +261,6 @@ public class AbstractInterpretation {
         objectInstance.setAbstractInterpretation(this);
         variables.addVariable(new Variable(new VariableName(rd.getName().toString()), objectInstance));
         variables.setThisName(new VariableName(rd.getName().toString()));
-        variables.setThisObject(objectInstance);
         variables.addVariable(
                 new Variable(de.jplag.java_cpg.ai.variables.objects.System.getName(), new de.jplag.java_cpg.ai.variables.objects.System()));
         variables.addVariable(new Variable(de.jplag.java_cpg.ai.variables.objects.Math.getName(), new de.jplag.java_cpg.ai.variables.objects.Math()));
@@ -375,7 +381,7 @@ public class AbstractInterpretation {
                 } else {
                     Variable variable = variables.getVariable(new VariableName(ref.getName().toString()));
                     if (variable != null) {
-                        valueStack.add(variables.getVariable(new VariableName(ref.getName().toString())).getValue());
+                        valueStack.add(Objects.requireNonNull(variables.getVariable(new VariableName(ref.getName().toString()))).getValue());
                     } else if (object.accessField(ref.getName().toString()) != null) { // sometimes cpg does not insert "this".
                         IValue value = object.accessField(ref.getName().toString());
                         if (value.getType() == de.jplag.java_cpg.ai.variables.Type.VOID) {  // value isn't known
@@ -739,7 +745,8 @@ public class AbstractInterpretation {
                 // null value can happen: "if (opts.name == null || opts.name.isBlank())" where we dont strictly follow evaluation
                 // order.
                 valueStack.removeLast();
-                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
+                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME),
+                        ANONYMOUS_THIS_NAME));
             }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
             if (mce.getInvokes().isEmpty()) {   // CPG sometimes cannot find the method declaration
@@ -769,7 +776,8 @@ public class AbstractInterpretation {
             assert !valueStack.isEmpty();
             if (valueStack.getLast() instanceof VoidValue) {
                 valueStack.removeLast();
-                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges)));
+                valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME),
+                        ANONYMOUS_THIS_NAME));
             }
             if (!(valueStack.getLast() instanceof JavaObject)) {
                 System.out.println("Debug");
@@ -1322,7 +1330,9 @@ public class AbstractInterpretation {
                 // 2: second loop run with only changed variables unknown
                 this.variables = new VariableStore(originalVariables);
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    if (variables.getVariable(variable.getName()) != null) {
+                        variables.getVariable(variable.getName()).setToUnknown();
+                    }
                 }
                 variables.newScope();
                 returnStorage = returnStorageBefore;
@@ -1331,7 +1341,9 @@ public class AbstractInterpretation {
                 // 3: restore variables and set changed variables to unknown
                 this.variables = originalVariables;
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    if (variables.getVariable(variable.getName()) != null) {
+                        variables.getVariable(variable.getName()).setToUnknown();
+                    }
                 }
             }
         }

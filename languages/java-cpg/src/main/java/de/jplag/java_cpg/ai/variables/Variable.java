@@ -148,6 +148,9 @@ public class Variable {
      * @return the last added change recorder. It is removed from this variable.
      */
     public ChangeRecorder removeLastChangeRecorder() {
+        if (changeRecorders.isEmpty()) {
+            int x = 0;
+        }
         assert !this.changeRecorders.isEmpty();
         return this.changeRecorders.removeLast();
     }
