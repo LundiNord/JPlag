@@ -27,6 +27,7 @@
 - [ ] if always true → remove condition
 - [x] remove empty methods and their method calls
 - [ ] hard: remove useless loops ← runs only once
+- [ ] do while loops
 
 ## Edge Cases to Test
 

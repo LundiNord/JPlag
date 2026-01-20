@@ -239,13 +239,24 @@ public class StringValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
             }
+            case "replace" -> {   // public String replace(CharSequence target, CharSequence replacement)
+                assert paramVars.size() == 2;
+                StringValue target = (StringValue) paramVars.getFirst();
+                StringValue replacement = (StringValue) paramVars.getLast();
+                if (information && target.getInformation() && replacement.getInformation()) {
+                    return new StringValue(
+                            this.value.replace(Objects.requireNonNull(target.getValue()), Objects.requireNonNull(replacement.getValue())));
+                } else {
+                    return new StringValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
 
     @Override
     public Value accessField(@NotNull String fieldName) {
-        throw new UnsupportedOperationException("Access field not supported in StringValue");
+        throw new UnsupportedOperationException("Access field not supported in StringValue (" + fieldName + ")");
     }
 
     @Override

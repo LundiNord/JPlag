@@ -241,7 +241,10 @@ public class AbstractInterpretation {
                 variables
                         .addVariable(new Variable(new VariableName(constructor.getParameters().get(i).getName().toString()), constructorArgs.get(i)));
             }
+            boolean removeDeadCodeBackup = this.removeDeadCode;
+            removeDeadCode = false; // do not remove dead code inside constructors as we do not have usage information
             graphWalker(eog.getFirst());
+            removeDeadCode = removeDeadCodeBackup;
             variables.removeScope();
         } else if (eog.isEmpty()) {
             // empty constructor -> return
@@ -369,7 +372,7 @@ public class AbstractInterpretation {
                     valueStack.removeLast();
                     return value;
                 }
-                assert nextEOG.size() == 1;
+                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
             case Reference ref -> {     // adds its value to the value stack
@@ -625,11 +628,6 @@ public class AbstractInterpretation {
                 // ToDo
                 throw new IllegalArgumentException("ConditionalExpression not supported yet");
             }
-            // case BreakStatement _ -> {
-            // assert nextEOG.size() == 1;
-            // nodeStack.add(nextEOG.getFirst());
-            // return null;
-            // }
             case CatchClause _ -> {
                 // nothing for now
                 assert nextEOG.size() == 1;
@@ -828,6 +826,9 @@ public class AbstractInterpretation {
                     assert nodeStack.get(nodeStack.size() - 2).getName().getParent() != null;
                     classVal = valueStack.get(valueStack.size() - 2).getParentObject();
                 }
+                if (classVal == null) {
+                    System.out.println("Debug");
+                }
                 assert classVal != null;
                 classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
             } else {
@@ -853,6 +854,10 @@ public class AbstractInterpretation {
         BooleanValue value2 = (BooleanValue) valueStack.getLast();
         valueStack.removeLast();
         valueStack.removeLast();
+        if (scop.getNextEOG().size() == 1 && scop.getNextEOG().getFirst() instanceof AssignExpression) {
+            nodeStack.removeLast();
+            nodeStack.removeLast();
+        }
         if (Objects.equals(scop.getOperatorCode(), "||")) {
             valueStack.add(value1.binaryOperation("||", value2));
         } else if (Objects.equals(scop.getOperatorCode(), "&&")) {
@@ -1204,7 +1209,9 @@ public class AbstractInterpretation {
                 // 2: second loop run with only changed variables unknown
                 this.variables = new VariableStore(originalVariables);
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    if (variables.getVariable(variable.getName()) != null) {
+                        variables.getVariable(variable.getName()).setToUnknown();
+                    }
                 }
                 // for loop special: iteration variable also unknown
                 if (ws.getIterationStatement() != null) {
@@ -1228,7 +1235,9 @@ public class AbstractInterpretation {
                 // 3: restore variables and set changed variables to unknown
                 this.variables = originalVariables;
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    if (variables.getVariable(variable.getName()) != null) {
+                        variables.getVariable(variable.getName()).setToUnknown();
+                    }
                 }
                 // for loop special: iteration variable also unknown
                 if (ws.getIterationStatement() != null) {

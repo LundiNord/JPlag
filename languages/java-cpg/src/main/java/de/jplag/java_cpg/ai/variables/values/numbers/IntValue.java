@@ -214,6 +214,13 @@ public class IntValue extends Value implements INumberValue {
                     return new IntValue();
                 }
             }
+            case "pow" -> {
+                if (information && otherNumber.getInformation()) {
+                    return new IntValue((int) Math.pow(this.value, otherNumber.getValue()));
+                } else {
+                    return new IntValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
