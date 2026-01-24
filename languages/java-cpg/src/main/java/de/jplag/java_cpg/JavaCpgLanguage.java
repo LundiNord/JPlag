@@ -56,7 +56,7 @@ public class JavaCpgLanguage implements Language {
      * Creates a new {@link JavaCpgLanguage}.
      */
     public JavaCpgLanguage() {
-        this.cpgAdapter = new CpgAdapter(true, true, true, allTransformations());
+        this.cpgAdapter = new CpgAdapter(true, true, true, true, allTransformations());
     }
 
     /**
@@ -64,9 +64,11 @@ public class JavaCpgLanguage implements Language {
      * @param removeDeadCode whether dead code should be removed
      * @param detectDeadCode whether dead code should be detected
      * @param reorder whether statements may be reordered
+     * @param removeSimpleDeadCode whether dead code should be removed in the DFG sort pass, reordering has to be enabled
+     * for this to matter
      */
-    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder) {
-        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, allTransformations());
+    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, boolean removeSimpleDeadCode) {
+        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, allTransformations());
     }
 
     /**
@@ -75,9 +77,12 @@ public class JavaCpgLanguage implements Language {
      * @param detectDeadCode whether dead code should be detected
      * @param reorder whether statements may be reordered
      * @param transformations the code graph transformations to apply
+     * @param removeSimpleDeadCode whether dead code should be removed in the DFG sort pass, reordering has to be enabled
+     * for this to matter
      */
-    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation[] transformations) {
-        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, transformations);
+    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, boolean removeSimpleDeadCode,
+            GraphTransformation[] transformations) {
+        this.cpgAdapter = new CpgAdapter(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, transformations);
     }
 
     /**
@@ -85,6 +90,8 @@ public class JavaCpgLanguage implements Language {
      * @param removeDeadCode whether dead code should be removed
      * @param detectDeadCode whether dead code should be detected
      * @param reorder whether statements may be reordered
+     * @param removeSimpleDeadCode whether dead code should be removed in the DFG sort pass, reordering has to be enabled
+     * for this to matter
      * @param transformations the code graph transformations to apply
      * @param intAiType the AI type to use for integer values
      * @param floatAiType the AI type to use for float values
@@ -92,9 +99,10 @@ public class JavaCpgLanguage implements Language {
      * @param charAiType the AI type to use for char values
      * @param arrayAiType the AI type to use for array values
      */
-    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation[] transformations,
-            IntAiType intAiType, FloatAiType floatAiType, StringAiType stringAiType, CharAiType charAiType, ArrayAiType arrayAiType) {
-        this(removeDeadCode, detectDeadCode, reorder, transformations);
+    public JavaCpgLanguage(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, boolean removeSimpleDeadCode,
+            GraphTransformation[] transformations, IntAiType intAiType, FloatAiType floatAiType, StringAiType stringAiType, CharAiType charAiType,
+            ArrayAiType arrayAiType) {
+        this(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, transformations);
         Value.setUsedIntAiType(intAiType);
         Value.setUsedFloatAiType(floatAiType);
         Value.setUsedStringAiType(stringAiType);

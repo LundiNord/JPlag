@@ -39,7 +39,7 @@ public class CreateTransformTest extends AbstractJavaCpgLanguageTest {
     void createTransformTest(String fileName, GraphTransformation transformation)
             throws ParsingException, InterruptedException, ConfigurationException {
         Set<File> files = Set.of(new File(baseDirectory, fileName));
-        CpgAdapter cpgAdapter = new CpgAdapter(false, false, true);
+        CpgAdapter cpgAdapter = new CpgAdapter(false, false, true, true);
         cpgAdapter.clearTransformations();
         TranslationResult graph = cpgAdapter.translate(files);
 

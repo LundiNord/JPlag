@@ -168,10 +168,11 @@ class EvaluationEngineTest {
 
     @NotNull
     private static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
-            boolean normalize) throws ParsingException {
+            boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
-        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, JavaCpgLanguage.deadCodeRemovalTransformations(),
-                IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
+                JavaCpgLanguage.deadCodeRemovalTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
+                ArrayAiType.DEFAULT);
         // IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
@@ -181,7 +182,8 @@ class EvaluationEngineTest {
     }
 
     @NotNull
-    private static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder) throws ParsingException {
+    private static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
+            throws ParsingException {
         try {
             File originalFile = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
             File tempFile = File.createTempFile("jplag_temp_", ".java");
@@ -202,7 +204,7 @@ class EvaluationEngineTest {
             }
             reader.close();
             writer.close();
-            JavaCpgLanguage language = new JavaCpgLanguage(false, false, reorder);
+            JavaCpgLanguage language = new JavaCpgLanguage(false, false, reorder, removeSimpleDeadCode);
             List<Token> result = language.parse(Set.of(tempFile), false);
             result.removeLast(); // remove EOF token
             return result;
@@ -212,8 +214,8 @@ class EvaluationEngineTest {
     }
 
     private static double getJPlagCpgPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean removeDeadCode, boolean detectDeadCode,
-            boolean reorder, boolean normalize) throws ExitException, IOException {
-        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder);
+            boolean reorder, boolean normalize, boolean removeSimpleDeadCode) throws ExitException, IOException {
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode);
         return getJPlagScore(fileNameA, fileNameB, normalize, language);
     }
 
@@ -302,18 +304,18 @@ class EvaluationEngineTest {
     @MethodSource("testFiles")
     void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
-        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
         long timeSimpleRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         long timeFullRemoval = System.nanoTime() - startTime;
 
-        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
 
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
@@ -345,15 +347,15 @@ class EvaluationEngineTest {
     @MethodSource("kitHumanFiles")
     void KitDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
-        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
         long timeSimpleRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         long timeFullRemoval = System.nanoTime() - startTime;
 
         double simSimpleRemoval = similarity(tokens, tokensWithoutSimpleDeadCode);
@@ -382,15 +384,15 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/ws2425-Sheet3TaskA-dotsandboxes/submission038";
+        String fileName = "kit_DONT_COMMIT/ws2223-Sheet4TaskA-perseverance/submission7";
         long startTime = System.nanoTime();
-        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, true, true, false);
         long timeSimpleRemoval = System.nanoTime() - startTime;
         startTime = System.nanoTime();
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         long timeFullRemoval = System.nanoTime() - startTime;
         double simSimpleRemoval = similarity(tokens, tokensWithoutSimpleDeadCode);
         double simFullRemoval = similarity(tokens, tokensWithoutDeadCode);
@@ -407,18 +409,18 @@ class EvaluationEngineTest {
     @MethodSource("progpediaFiles")
     void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
-        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
         long timeSimpleRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         long timeFullRemoval = System.nanoTime() - startTime;
 
-        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
 
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
@@ -451,10 +453,10 @@ class EvaluationEngineTest {
         // String fileName = "progpedia/00000018/ACCEPTED/00095_00005/optica.java";
         // String fileName = "aiGenerated/perplexityLabs/Project2.java";
         String fileName = "aiGenerated/gemini/Project5.java";
-        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false);
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true);
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true);
-        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false);
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
         // Assert we don't remove non-dead code
         // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
@@ -479,15 +481,15 @@ class EvaluationEngineTest {
         long timeJPlag = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
+        double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false, false);
         long timeMinimalCpg = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);
+        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true, false);
         long timeStandardCpg = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true);
+        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true, false);
         long timeAi = System.nanoTime() - startTime;
 
         File csvFile = new File("plagiarism_results.csv");
@@ -516,9 +518,9 @@ class EvaluationEngineTest {
         String fileA = "aiGenerated/gemini/ProjectD.java";
         String fileB = "aiGenerated/gemini/ProjectD.java";
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
-        double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false);
-        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true);
-        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true);
+        double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false, false);
+        double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true, false);
+        double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true, false);
 
         System.out.println("Plagiarism scores for " + fileA + " and " + fileB + ":");
         System.out.println("JPlag standard: " + similarityJPlag);

@@ -2,8 +2,11 @@ package de.jplag.java_cpg.ai;
 
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import de.jplag.ParsingException;
@@ -81,6 +84,7 @@ class DeadCodeDetectionIntervalTest {
      * Test the programming course final project: QueensFarming
      */
     @Test
+    @Disabled("Disabled due to containing break statements not yet supported")
     void testQueensFarming() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");

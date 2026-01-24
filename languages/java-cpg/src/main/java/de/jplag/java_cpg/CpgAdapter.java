@@ -49,6 +49,7 @@ import kotlin.reflect.KClass;
 public class CpgAdapter {
 
     private final boolean removeDeadCode;
+    private final boolean removeSimpleDeadCode;
     private final boolean detectDeadCode;
     private List<Token> tokenList;
     private boolean reorderingEnabled = true;
@@ -58,12 +59,16 @@ public class CpgAdapter {
      * @param transformations a list of {@link GraphTransformation}s
      * @param removeDeadCode whether dead code should be removed
      * @param detectDeadCode whether dead code should be detected
+     * @param removeSimpleDeadCode whether dead code should be removed in the DFG sort pass, reordering has to be enabled
+     * for this to matter
      * @param reorder whether statements may be reordered
      */
-    public CpgAdapter(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, GraphTransformation... transformations) {
+    public CpgAdapter(boolean removeDeadCode, boolean detectDeadCode, boolean reorder, boolean removeSimpleDeadCode,
+            GraphTransformation... transformations) {
         addTransformations(transformations);
         this.removeDeadCode = removeDeadCode;
         this.detectDeadCode = detectDeadCode;
+        this.removeSimpleDeadCode = removeSimpleDeadCode;
         setReorderingEnabled(reorder);
     }
 
@@ -126,6 +131,7 @@ public class CpgAdapter {
         TranslationResult translationResult;
         TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
         AiPass.AiPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
+        DfgSortPass.DfgSortPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeSimpleDeadCode);
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());

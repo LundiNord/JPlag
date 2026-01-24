@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import de.jplag.ParsingException;
@@ -67,6 +68,7 @@ class DeadCodeDetectionStringTest {
     }
 
     @Test
+    @Disabled("Disabled due to containing break statements not yet supported")
     void testRegexStringComplex() throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);

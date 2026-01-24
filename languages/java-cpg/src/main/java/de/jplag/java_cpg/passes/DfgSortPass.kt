@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 /**
- * This pass sorts independent statements, removes statement that can be (conservatively) determined as useless, and builds
+ * This pass sorts independent statements, removes statements that can be (conservatively) determined as useless, and builds
  * the DFG. The original DFG of the CPG library is reset.
  */
 @DependsOn(EvaluationOrderGraphPass::class)
@@ -98,14 +98,13 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         // Restore map:
         parentInfo.entries.toList().forEach { parentInfo[it.key] = it.value }
 
-
         /*
          *  Sets DFG edges between statements that contain dfg-related statements in inner blocks
-         *  e.g. DeclarationStatement --> WhileStatement using the declared variable
+         *  e.g., DeclarationStatement --> WhileStatement using the declared variable
          */
         extractTransitiveDependencies(relevantStatements, parentInfo)
 
-        // loop dependencies are only needed to determine relevant statements, but disturb the reordering
+        // loop dependencies are only needed to determine relevant statements but disturb the reordering
         relevantStatements.forEach {
             it.prevDFGEdges.removeIf { edge ->
                 relevantStatements.indexOf(edge.start) == -1 || edge.getProperty(
@@ -119,12 +118,11 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         }
 
         reorderStatements(essentialNodesOut, relevantStatements, parentInfo, root.body as Block)
-
     }
 
     private fun extractTransitiveDependencies(
-        relevantStatements: MutableList<Node>,
-        parentInfo: MutableMap<Node, ParentInfo>,
+        relevantStatements: List<Node>,
+        parentInfo: Map<Node, ParentInfo>,
     ) {
         val depth = { node: Node -> parentInfo[node]?.depth ?: 0 }
         val parent = { node: Node -> parentInfo[node]?.parent ?: node }
@@ -138,7 +136,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val dfgPredecessor = edge.start
             val statement = edge.end
 
-            var properties: MutableMap<Properties, Any?>
+            var properties: Map<Properties, Any?>
             val (predBlock, stmtBlock, name) = getSiblingAncestors(dfgPredecessor, statement, depth, parent)
 
             // no self-dependencies
@@ -147,7 +145,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             if (stmtBlock is ReturnStatement || locationBefore(predBlock, stmtBlock)) {
                 if (stmtBlock in predBlock.nextDFG) return@forEach
                 // write-read dependency
-                properties = mutableMapOf(Pair(Properties.NAME, name))
+                properties = mapOf(Pair(Properties.NAME, name))
                 predBlock.addNextDFG(stmtBlock)
             } else {
                 // the name is used to filter these edges out later
@@ -159,7 +157,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     predBlock.addNextDFG(stmtBlock)
                 }
                 // read-write dependency
-                properties = mutableMapOf(Pair(Properties.NAME, name))
+                properties = mapOf(Pair(Properties.NAME, name))
                 stmtBlock.addNextDFG(predBlock)
             }
         }
@@ -168,7 +166,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     private fun analyzeDfg(
         variableData: MutableMap<Declaration, VariableData>,
         movableStatements: List<Statement>,
-        parentInfo: MutableMap<Node, ParentInfo>,
+        parentInfo: Map<Node, ParentInfo>,
     ) {
 
         val depth = { node: Node -> parentInfo[node]?.depth ?: 0 }
@@ -180,7 +178,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
         val referenceParentStatement = allReferences
             .associateWith { ref ->
-                // find parent statement with the greatest depth -> immediate parent statement
+                // find the parent statement with the greatest depth -> immediate parent statement
                 val parentStatements = movableStatements.filter { subtreeNodes[it]?.contains(ref) ?: false }
                 val immediateParent = parentStatements.maxByOrNull { depth(it) }
                 immediateParent
@@ -297,6 +295,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         statements: List<Statement>,
         parentInfo: MutableMap<Node, ParentInfo>,
     ) {
+        if (!removeDeadCode) return
+
         val irrelevantStatements = statements.filter { it !in relevantStatements }
             .filter { parentInfo[it]?.parent is Block }
             .distinct()
@@ -374,7 +374,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             // insert before last element
             if (done.isNotEmpty()) {
 
-                // Implicit return statement has no location, but should remain the last element
+                // Implicit return statement has no location but should remain the last element
                 val newSuccessor = done[0]
                 if (!TransformationUtil.isAstSuccessor(element, newSuccessor)) {
                     TransformationUtil.insertBefore(element, newSuccessor)
@@ -440,8 +440,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     }
 
     private fun extractRelevantStatements(
-        essentialNodesOut: MutableList<Statement>,
-        parentInfo: MutableMap<Node, ParentInfo>,
+        essentialNodesOut: List<Statement>,
+        parentInfo: Map<Node, ParentInfo>,
     ): MutableList<Node> {
         val relevantNodes: MutableSet<Node> = mutableSetOf()
 
@@ -489,12 +489,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
             else -> false
         }
-
     }
 
     private fun isLocal(node: Node, reference: Node): Boolean {
         return node.location != null && node.location!!.artifactLocation == reference.location?.artifactLocation
-
     }
 
     private fun extractEssentialNodes(
@@ -726,7 +724,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         return if (tokens1.hasNext()) 1;
         else if (tokens2.hasNext()) -1;
         else 0
-
     }
 
 
@@ -750,7 +747,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     statement.statements.flatMap { getMovableStatements(it, statement, parentInfo, depth + 1) }
                         .toMutableList()
                 if (parent is Block) {
-                    // inner block without control statement that would enforce it
+                    // inner block without a control statement that would enforce it
                     result.add(statement)
                 }
                 result
@@ -827,10 +824,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 listOf(statement)
             }
 
-
             // only here to create entry in parentInfo
             else -> listOf()
-
         }
         if (parent != null) {
             parentInfo[statement] = ParentInfo(parent, depth)
@@ -855,7 +850,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
             // NewExpression is AssignmentHolder, but not usable for this analysis
             is NewExpression -> {}
-
 
             is AssignmentHolder -> {
                 if (node is VariableDeclaration && node.initializer == null) {
@@ -908,7 +902,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         state.registerAssignment(assignment, node)
     }
 
-
     override fun cleanup() {
     }
 
@@ -919,7 +912,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         constructor()
 
         constructor(copyMap: Map<Declaration, VariableData>) : super(copyMap)
-
 
         override fun get(key: Declaration): VariableData {
             return super.computeIfAbsent(key) { VariableData() }
@@ -947,7 +939,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             if (reference.refersTo !is ValueDeclaration || reference.refersTo is FunctionDeclaration) return false
             return this[reference.refersTo]?.register(reference) ?: false
         }
-
     }
 
     /**
@@ -1017,6 +1008,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         override fun hashCode(): Int {
             return javaClass.hashCode()
         }
-
     }
+
+    companion object DfgSortPassCompanion {
+        var removeDeadCode: Boolean = true
+    }
+
 }

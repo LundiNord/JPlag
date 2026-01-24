@@ -39,7 +39,7 @@ public class MatchingTest extends AbstractJavaCpgLanguageTest {
             throws InterruptedException, ParsingException, ConfigurationException {
         File file = new File(baseDirectory, filename);
 
-        CpgAdapter cpgAdapter = new CpgAdapter(false, false, true);
+        CpgAdapter cpgAdapter = new CpgAdapter(false, false, true, true);
         cpgAdapter.clearTransformations();
         TranslationResult graph = cpgAdapter.translate(Set.of(file));
         CpgIsomorphismDetector detector = new CpgIsomorphismDetector();
