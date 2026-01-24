@@ -399,9 +399,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     .map { it as Statement }
                     .toList()
             worklist.addAll(newElements)
-
         }
-        assert(done.size == relevantStatementsInThisBlock.size && done.containsAll(relevantStatementsInThisBlock))
+        assert(done.size == relevantStatementsInThisBlock.size && done.containsAll(relevantStatementsInThisBlock)) {
+            "Not all relevant statements were processed in reorderStatements: done=${done.size}, relevant=${relevantStatementsInThisBlock.size}"
+        }
 
         parent.statementEdges.clear()
         done.forEach { parent.addStatement(it) }

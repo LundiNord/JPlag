@@ -43,6 +43,7 @@ import de.jplag.options.JPlagOptions;
 
 import kotlin.Pair;
 
+@Disabled("Only for manual evaluation of dead code removal and plagiarism detection")
 class EvaluationEngineTest {
 
     // 21/Acceptes/45/3
@@ -342,6 +343,28 @@ class EvaluationEngineTest {
         assertTrue(true);
     }
 
+    @Test
+    @Disabled
+    void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
+        // String fileName = "progpedia/00000018/ACCEPTED/00095_00005/optica.java";
+        // String fileName = "aiGenerated/perplexityLabs/Project2.java";
+        String fileName = "aiGenerated/gemini/Project5.java";
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
+        // Assert we don't remove non-dead code
+        // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
+        // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
+
+        System.out.println("Similarity between manual and no dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokens) + "%");
+        System.out.println("Similarity between manual and simple dead code removal: "
+                + similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode) + "%");
+        System.out
+                .println("Similarity between manual and dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode) + "%");
+        assertTrue(true);
+    }
+
     @ParameterizedTest
     @Disabled
     @MethodSource("kitHumanFiles")
@@ -413,14 +436,14 @@ class EvaluationEngineTest {
         long timeNoRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, true, true, true);
         long timeSimpleRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, true, true, true);
         long timeFullRemoval = System.nanoTime() - startTime;
 
-        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, true, false);
 
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
@@ -444,28 +467,6 @@ class EvaluationEngineTest {
                 + timeSimpleRemoval / 1_000_000.0 + " ms)");
         System.out.println(
                 "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
-        assertTrue(true);
-    }
-
-    @Test
-    @Disabled
-    void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        // String fileName = "progpedia/00000018/ACCEPTED/00095_00005/optica.java";
-        // String fileName = "aiGenerated/perplexityLabs/Project2.java";
-        String fileName = "aiGenerated/gemini/Project5.java";
-        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
-        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
-        // Assert we don't remove non-dead code
-        // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
-        // checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
-
-        System.out.println("Similarity between manual and no dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokens) + "%");
-        System.out.println("Similarity between manual and simple dead code removal: "
-                + similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode) + "%");
-        System.out
-                .println("Similarity between manual and dead code removal: " + similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode) + "%");
         assertTrue(true);
     }
 
