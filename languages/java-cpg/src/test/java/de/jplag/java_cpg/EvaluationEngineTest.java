@@ -34,8 +34,10 @@ import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
 import de.jplag.java_cpg.ai.ArrayAiType;
 import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.CpgErrorException;
 import de.jplag.java_cpg.ai.FloatAiType;
 import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.ProgpediaTests;
 import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.merging.MergingOptions;
@@ -45,12 +47,6 @@ import kotlin.Pair;
 
 @Disabled("Only for manual evaluation of dead code removal and plagiarism detection")
 class EvaluationEngineTest {
-
-    // 21/Acceptes/45/3
-    // 21/WrongAnswer/28/2 -> multiple calls
-    // 18/Accepted/32/2
-    // 18/Accepted/40/1
-    // 18/Accepted/31/2
 
     @NotNull
     private static Stream<String> testFiles() {
@@ -189,6 +185,14 @@ class EvaluationEngineTest {
             File originalFile = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
             File tempFile = File.createTempFile("jplag_temp_", ".java");
             tempFile.deleteOnExit();
+            if (originalFile.isDirectory()) {
+                // If it's a directory, find and process Java files inside
+                File[] javaFiles = originalFile.listFiles((dir, name) -> name.endsWith(".java"));
+                if (javaFiles == null || javaFiles.length == 0) {
+                    throw new ParsingException(originalFile, "No Java files found in directory");
+                }
+                originalFile = javaFiles[0]; // Use the first Java file
+            }
             BufferedReader reader = new BufferedReader(new FileReader(originalFile));
             java.io.PrintWriter writer = new java.io.PrintWriter(tempFile);
             String line;
@@ -210,7 +214,7 @@ class EvaluationEngineTest {
             result.removeLast(); // remove EOF token
             return result;
         } catch (IOException e) {
-            throw new ParsingException(new File(BASE_PATH.toFile().getAbsolutePath(), fileName), e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -436,14 +440,37 @@ class EvaluationEngineTest {
         long timeNoRemoval = System.nanoTime() - startTime;
 
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, true, true, true);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
         long timeSimpleRemoval = System.nanoTime() - startTime;
 
+        boolean javaLanguageFeatureNotSupported = false;
+        boolean cpgErrorException = false;
         startTime = System.nanoTime();
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, true, true, true);
+        List<Token> tokensWithoutDeadCode;
+        try {
+            tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+        } catch (JavaLanguageFeatureNotSupportedException _) {
+            tokensWithoutDeadCode = new ArrayList<>();
+            javaLanguageFeatureNotSupported = true;
+        } catch (CpgErrorException _) {
+            tokensWithoutDeadCode = new ArrayList<>();
+            cpgErrorException = true;
+        } catch (Exception e) {
+            Throwable one = e.getCause();
+            Throwable two = one.getCause();
+            if (two instanceof CpgErrorException) {
+                tokensWithoutDeadCode = new ArrayList<>();
+                cpgErrorException = true;
+            } else if (two instanceof JavaLanguageFeatureNotSupportedException) {
+                tokensWithoutDeadCode = new ArrayList<>();
+                javaLanguageFeatureNotSupported = true;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
         long timeFullRemoval = System.nanoTime() - startTime;
 
-        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, true, false);
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
 
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
@@ -454,13 +481,46 @@ class EvaluationEngineTest {
 
         try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
             if (!fileExists) {
-                writer.write("FileName,NoRemoval,SimpleRemoval,FullRemoval,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms)\n");
+                writer.write(
+                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException\n");
             }
-            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f%n", fileName, simNoRemoval, simSimpleRemoval, simFullRemoval,
-                    timeNoRemoval / 1_000_000.0, timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0));
+            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b%n", fileName, simNoRemoval, simSimpleRemoval, simFullRemoval,
+                    timeNoRemoval / 1_000_000.0, timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0, javaLanguageFeatureNotSupported,
+                    cpgErrorException));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println("Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
+        System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
+                + timeSimpleRemoval / 1_000_000.0 + " ms)");
+        System.out.println(
+                "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
+        assertTrue(true);
+    }
+
+    @Test
+    @Disabled
+    void ProgpediaDeadCodeEvaluationSingle() throws ParsingException {
+        String fileName = "progpedia/00000021/WRONG_ANSWER/00028_00002/";
+
+        long startTime = System.nanoTime();
+        List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
+        long timeNoRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
+        long timeSimpleRemoval = System.nanoTime() - startTime;
+
+        startTime = System.nanoTime();
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+        long timeFullRemoval = System.nanoTime() - startTime;
+
+        List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
+
+        double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
+        double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
+        double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
 
         System.out.println("Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
         System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "

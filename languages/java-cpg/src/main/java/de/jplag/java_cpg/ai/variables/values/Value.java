@@ -112,7 +112,11 @@ public abstract class Value implements IValue {
             case OBJECT -> new JavaObject();
             case VOID -> new VoidValue();
             case ARRAY, LIST -> getNewArayValue();
-            case NULL -> new NullValue();
+            case NULL -> {
+                JavaObject obj = new JavaObject();
+                obj.setInitialValue();
+                yield obj;
+            }
             case FLOAT -> getNewFloatValue();
             case FUNCTION -> new FunctionValue();
             case CHAR -> getNewCharValue();
@@ -129,7 +133,9 @@ public abstract class Value implements IValue {
     @NotNull
     public static IValue valueFactory(@Nullable Object value) {
         if (value == null) {
-            return new NullValue();
+            IJavaObject obj = new JavaObject();
+            obj.setInitialValue();
+            return obj;
         }
         switch (value) {
             case String s -> {

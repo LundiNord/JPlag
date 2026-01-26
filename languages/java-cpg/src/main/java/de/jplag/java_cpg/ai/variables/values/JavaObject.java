@@ -80,6 +80,9 @@ public class JavaObject extends Value implements IJavaObject {
      * @return the value of the field or VoidValue if the field does not exist.
      */
     public IValue accessField(@NotNull String fieldName) {
+        if (fields == null) {
+            return new VoidValue(); // ToDo: is this correct?
+        }
         assert fields != null;
         Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
@@ -94,6 +97,11 @@ public class JavaObject extends Value implements IJavaObject {
      * @param value the new value of the field.
      */
     public void changeField(@NotNull String fieldName, IValue value) {
+        if (fields == null) {
+            // reset information
+            fields = new Scope();   // ToDo: is this correct?
+            return;
+        }
         assert fields != null;
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
@@ -182,6 +190,9 @@ public class JavaObject extends Value implements IJavaObject {
             setToUnknown();
             return;
         }
+        if (fields == null && ((JavaObject) other).fields == null) {
+            return;
+        }
         if (fields == null || ((JavaObject) other).fields == null) {
             fields = new Scope();
             return;
@@ -193,6 +204,8 @@ public class JavaObject extends Value implements IJavaObject {
     public void setToUnknown() {
         if (fields != null) {
             fields.setEverythingUnknown();
+        } else {
+            fields = new Scope();
         }
     }
 
