@@ -196,6 +196,9 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             }
             case "equals" -> {
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                }
                 StringRegexValue other = (StringRegexValue) paramVars.getFirst();
                 if (this.unknown || other.unknown) {
                     return Value.valueFactory(Type.BOOLEAN);
@@ -324,7 +327,9 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 }
                 return new StringRegexValue(sub, false);
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            default -> {
+                return new StringRegexValue();
+            }
         }
     }
 
@@ -380,7 +385,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 return Value.valueFactory(Type.BOOLEAN);
             }
         }
-        throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        return new StringRegexValue();
     }
 
     @NotNull

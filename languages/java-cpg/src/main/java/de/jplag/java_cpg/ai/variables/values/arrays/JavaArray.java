@@ -16,7 +16,6 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
 /**
  * A Java Array representation. Java arrays are objects. Lists are modeled as Java arrays.
@@ -164,7 +163,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return new StringValue();
+                return Value.getNewStringValue();
             }
             case "add" -> {
                 if (paramVars.size() == 1) {

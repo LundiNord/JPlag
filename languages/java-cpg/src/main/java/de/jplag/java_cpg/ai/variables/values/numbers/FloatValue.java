@@ -14,7 +14,7 @@ import de.jplag.java_cpg.ai.variables.values.VoidValue;
 /**
  * Represents a floating point value with optional exact information.
  */
-public class FloatValue extends Value implements INumberValue {
+public class FloatValue extends Value implements INumberValue, IFloatNumber {
 
     private double value;
     private boolean information;    // whether exact information is available

@@ -12,7 +12,6 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
 /**
  * A Java object instance in the abstract interpretation. All big data types are also objects (arrays, collections,
@@ -159,9 +158,9 @@ public class JavaObject extends Value implements IJavaObject {
                     IValue toStringResult = this.callMethod("toString", List.of(), null);
                     if (toStringResult instanceof IStringValue stringFromObject && stringValue.getInformation()
                             && stringFromObject.getInformation()) {
-                        return new StringValue(stringValue.getValue() + stringFromObject.getValue());
+                        return Value.getNewStringValue(stringValue.getValue() + stringFromObject.getValue());
                     }
-                    return new StringValue();
+                    return Value.getNewStringValue();
                 } else {
                     throw new UnsupportedOperationException(
                             "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());

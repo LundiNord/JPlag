@@ -89,6 +89,7 @@ import de.jplag.java_cpg.transformation.operations.TransformationUtil;
  */
 public class AbstractInterpretation {
 
+    private static int visitedNodesCounter = 0;
     /**
      * Helper to detect recursive method calls.
      */
@@ -349,7 +350,8 @@ public class AbstractInterpretation {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         visitedLinesRecorder.recordLinesVisited(node);
-        System.out.println(node);
+        visitedNodesCounter++;
+        System.out.println(visitedNodesCounter + " " + node);
         switch (node) {
             case VariableDeclaration vd -> {
                 nodeStack.add(vd);
@@ -1414,6 +1416,9 @@ public class AbstractInterpretation {
                     }
                 } else {
                     // Dimension is unknown, create an array with unknown contents
+                    if (innerType == null) {
+                        System.out.println("Debug");
+                    }
                     innerArrays.add(Value.getNewArayValue(innerType));
                 }
                 newArray = new JavaArray(innerArrays.stream().map(a -> (IValue) a).toList());

@@ -55,6 +55,11 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
             other = createInstance(new TreeSet<>());
         }
         NumberSetValue<T, I> otherValue = (NumberSetValue<T, I>) other;
+        if (this.values.isEmpty() || otherValue.values.isEmpty()) {
+            NumberSetValue<T, I> result = createInstance(new TreeSet<>());
+            result.setToUnknown();
+            return result;
+        }
         switch (operator) {
             case "+" -> {
                 TreeSet<I> newValues = new TreeSet<>();
@@ -206,24 +211,12 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 newValue.mergeOverlappingIntervals();
                 return newValue;
             }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> {
+                NumberSetValue<T, I> result = createInstance(new TreeSet<>());
+                result.setToUnknown();
+                return result;
+            }
         }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void merge(@NotNull IValue other) {
-        assert other.getClass().equals(this.getClass());
-        TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
-        this.values.addAll(otherValues);
-        mergeOverlappingIntervals();
-    }
-
-    @Override
-    public void setToUnknown() {
-        values = new TreeSet<>();
-        values.add(createFullInterval());
     }
 
     @Override
@@ -255,8 +248,27 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 newValue.mergeOverlappingIntervals();
                 return newValue;
             }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> {
+                NumberSetValue<T, I> result = createInstance(new TreeSet<>());
+                result.setToUnknown();
+                return result;
+            }
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void merge(@NotNull IValue other) {
+        assert other.getClass().equals(this.getClass()) : "Cannot merge different value types" + this.getClass() + " and " + other.getClass();
+        TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
+        this.values.addAll(otherValues);
+        mergeOverlappingIntervals();
+    }
+
+    @Override
+    public void setToUnknown() {
+        values = new TreeSet<>();
+        values.add(createFullInterval());
     }
 
     protected void mergeOverlappingIntervals() {

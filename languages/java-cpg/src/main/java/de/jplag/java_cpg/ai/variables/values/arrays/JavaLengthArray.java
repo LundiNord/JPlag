@@ -13,7 +13,6 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
 /**
  * Represents a Java array by its length and inner type.
@@ -90,7 +89,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return new StringValue();
+                return Value.getNewStringValue();
             }
             case "add" -> {
                 if (paramVars.size() == 1) {
@@ -157,7 +156,9 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 }
                 return Value.valueFactory(Type.BOOLEAN);
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            default -> {
+                return new JavaLengthArray();
+            }
         }
     }
 
@@ -167,7 +168,9 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             case "length" -> {
                 return this.length;
             }
-            default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported for JavaArray");
+            default -> {
+                return new JavaLengthArray();
+            }
         }
     }
 

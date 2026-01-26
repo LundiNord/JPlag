@@ -3,9 +3,9 @@ package de.jplag.java_cpg.ai.variables.values;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IFloatNumber;
+import de.jplag.java_cpg.ai.variables.values.numbers.IIntNumber;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Void typed value. Represents no value or completely unknown value.
@@ -29,9 +29,9 @@ public class VoidValue extends Value {
             }
             case "+", "-", "*", "/" -> {
                 return switch (other) {
-                    case IntValue _ -> new IntValue();
-                    case FloatValue _ -> new FloatValue();
-                    case StringValue _ -> new StringValue();
+                    case IIntNumber _ -> Value.valueFactory(Type.INT);
+                    case IFloatNumber _ -> Value.valueFactory(Type.FLOAT);
+                    case IStringValue _ -> Value.valueFactory(Type.STRING);
                     default -> new VoidValue();
                 };
             }

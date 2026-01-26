@@ -1,12 +1,17 @@
 package de.jplag.java_cpg.ai.variables.values.chars;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.numbers.IFloatNumber;
+import de.jplag.java_cpg.ai.variables.values.numbers.IIntNumber;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Char value representation that can hold a set of possible char values or be unknown.
@@ -53,6 +58,83 @@ public class CharSetValue extends Value implements ICharValue {
         super(Type.CHAR);
         this.maybeContained = maybeContained;
         this.information = information;
+    }
+
+    @Override
+    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
+        switch (operator) {
+            case "!=" -> {
+                CharSetValue otherCharValue = (CharSetValue) other;
+                if (!this.information || !otherCharValue.information) {
+                    return new BooleanValue();
+                }
+                for (char c1 : this.maybeContained) {     // true if disjoint
+                    for (char c2 : otherCharValue.maybeContained) {
+                        if (c1 == c2) {
+                            return new BooleanValue(false);
+                        }
+                    }
+                }
+                return new BooleanValue(true);
+            }
+            case "==" -> {
+                CharSetValue otherCharValue = (CharSetValue) other;
+                if (!this.information || !otherCharValue.information) {
+                    return new BooleanValue();
+                }
+                if (this.maybeContained.size() == 1 && otherCharValue.maybeContained.size() == 1) {
+                    if (this.maybeContained.iterator().next().equals(otherCharValue.maybeContained.iterator().next())) {
+                        return new BooleanValue(true);
+                    }
+                }
+                return new BooleanValue(false);
+            }
+            case "-" -> {
+                CharSetValue otherCharValue = (CharSetValue) other;
+                if (this.information && otherCharValue.information) {
+                    Set<Character> maybeContainedCopy = Set.copyOf(this.maybeContained);
+                    Set<Character> otherMaybeContained = otherCharValue.maybeContained;
+                    Set<Character> result = new HashSet<>();
+                    for (char c1 : maybeContainedCopy) {
+                        for (char c2 : otherMaybeContained) {
+                            result.add((char) (c1 - c2));
+                        }
+                    }
+                    return new CharSetValue(result);
+                } else {
+                    return new CharSetValue();
+                }
+            }
+            case "+" -> {
+                if (other instanceof IIntNumber || other instanceof IFloatNumber) {
+                    return new CharSetValue();
+                } else if (other instanceof IStringValue) {
+                    return Value.valueFactory(Type.STRING);
+                }
+                CharSetValue otherCharValue = (CharSetValue) other;
+                if (this.information && otherCharValue.information) {
+                    Set<Character> maybeContainedCopy = Set.copyOf(this.maybeContained);
+                    Set<Character> otherMaybeContained = otherCharValue.maybeContained;
+                    Set<Character> result = new HashSet<>();
+                    for (char c1 : maybeContainedCopy) {
+                        for (char c2 : otherMaybeContained) {
+                            result.add((char) (c1 + c2));
+                        }
+                    }
+                    return new CharSetValue(result);
+                } else {
+                    return new CharSetValue();
+                }
+            }
+            default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType() + " and " + other.getType());
+        }
+    }
+
+    @Override
+    public IValue unaryOperation(@NotNull String operator) {
+        switch (operator) {
+            default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+        }
     }
 
     @NotNull

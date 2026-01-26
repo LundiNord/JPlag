@@ -135,10 +135,9 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
                 assert paramVars.getFirst() instanceof INumberValue;
                 return Value.valueFactory(Type.CHAR);
             }
-            case "trim" -> {
+            default -> {
                 return new StringCharInclValue();
             }
-            default -> throw new UnsupportedOperationException(methodName);
         }
     }
 
@@ -153,7 +152,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             return new StringCharInclValue();
         }
         if (operator.equals("+") && other instanceof INumberValue inumbervalue) {
-            if (inumbervalue.getInformation()) {        // ToDo: what to do with intervals?
+            if (inumbervalue.getInformation()) {
                 Set<Character> newCertain = certainContained == null ? null : new HashSet<>(certainContained);
                 assert newCertain != null;
                 newCertain.addAll(doubleToCharSet(inumbervalue.getValue()));
@@ -169,7 +168,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             newMaybe.addAll(stringValue.maybeContained);
             return new StringCharInclValue(newCertain, newMaybe);
         }
-        throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        return new StringCharInclValue();
     }
 
     @NotNull
@@ -185,7 +184,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             this.maybeContained = allCharactersSet();
             return;
         }
-        assert other instanceof StringCharInclValue;
+        assert other instanceof StringCharInclValue : "Cannot merge " + getType() + " with " + other.getType();
         StringCharInclValue otherString = (StringCharInclValue) other;
         if (this.certainContained == null || otherString.certainContained == null) {
             this.certainContained = null;

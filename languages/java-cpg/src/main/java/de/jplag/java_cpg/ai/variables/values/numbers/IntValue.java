@@ -18,7 +18,7 @@ import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
  * @author ujiqk
  * @version 1.0
  */
-public class IntValue extends Value implements INumberValue {
+public class IntValue extends Value implements INumberValue, IIntNumber {
 
     private int value;
     private boolean information;    // whether exact information is available

@@ -6,12 +6,12 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
 /**
  * Representation of the static java.lang.System class.
@@ -45,10 +45,10 @@ public class System extends JavaObject implements ISpecialObject {
         switch (methodName) {
             case "lineSeparator" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return new StringValue("\n");
+                return Value.getNewStringValue("\n");
             }
             case "exit" -> {
-                throw new UnsupportedOperationException("System.exit() called");
+                throw new JavaLanguageFeatureNotSupportedException("System.exit() called");
             }
             case "currentTimeMillis" -> {
                 assert paramVars == null || paramVars.isEmpty();

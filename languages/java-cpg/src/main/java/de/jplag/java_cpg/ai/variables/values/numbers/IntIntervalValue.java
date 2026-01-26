@@ -16,7 +16,7 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
  * @author ujiqk
  * @version 1.0
  */
-public class IntIntervalValue extends Value implements INumberValue {
+public class IntIntervalValue extends Value implements INumberValue, IIntNumber {
 
     private final IntInterval interval;
 
@@ -113,8 +113,9 @@ public class IntIntervalValue extends Value implements INumberValue {
                 IntInterval newInterval = this.interval.copy().divided(otherValue.interval);
                 return new IntIntervalValue(newInterval);
             }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> {
+                return new IntIntervalValue();
+            }
         }
     }
 
@@ -138,7 +139,9 @@ public class IntIntervalValue extends Value implements INumberValue {
                 IntInterval newInterval = this.interval.copy().abs();
                 return new IntIntervalValue(newInterval);
             }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> {
+                return new IntIntervalValue();
+            }
         }
     }
 

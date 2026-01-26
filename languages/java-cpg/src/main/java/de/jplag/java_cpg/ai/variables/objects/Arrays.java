@@ -10,7 +10,7 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
+import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 
 /**
  * Representation of the static java.util.Arrays class.
@@ -44,22 +44,22 @@ public class Arrays extends JavaObject implements ISpecialObject {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars.size() == 1;
-                JavaArray array = (JavaArray) paramVars.getFirst();
+                IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod("toString", List.of(), null);
             }
             case "fill" -> {        // void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
                 assert paramVars.size() == 2 || paramVars.size() == 4;
-                JavaArray array = (JavaArray) paramVars.getFirst();
+                IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod("fill", paramVars.subList(1, paramVars.size()), null);
             }
             case "sort" -> {        // void sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
                 assert paramVars.size() == 1 || paramVars.size() == 3 || paramVars.size() == 2;
-                JavaArray array = (JavaArray) paramVars.getFirst();
+                IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod("sort", paramVars.subList(1, paramVars.size()), null);
             }
             case "copyOfRange" -> { // int[] copyOfRange(int[] original, int from, int to)
                 assert paramVars.size() == 3;
-                JavaArray array = (JavaArray) paramVars.getFirst();
+                IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod("copyOfRange", paramVars.subList(1, paramVars.size()), null);
             }
             case "asList" -> {      // <T> List<T> asList(T... a)
@@ -67,7 +67,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
             }
             case "stream" -> {      // <T> Stream<T> stream(T[] array)
                 assert paramVars.size() == 1;
-                JavaArray array = (JavaArray) paramVars.getFirst();
+                IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod(methodName, List.of(), null);
             }
             default -> throw new UnsupportedOperationException(methodName);

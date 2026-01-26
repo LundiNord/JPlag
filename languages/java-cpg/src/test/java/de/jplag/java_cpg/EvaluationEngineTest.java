@@ -168,9 +168,10 @@ class EvaluationEngineTest {
             boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
-                JavaCpgLanguage.deadCodeRemovalTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
-                ArrayAiType.DEFAULT);
-        // IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
+                JavaCpgLanguage.deadCodeRemovalTransformations(),
+                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+                // IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
+                IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.LENGTH);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
         List<Token> result = language.parse(files, normalize);
@@ -282,7 +283,12 @@ class EvaluationEngineTest {
 
     @NotNull
     public static Stream<String> progpediaFiles() {
-        return ProgpediaTests.progpediaFiles();
+        // warm up with 6 files
+        List<String> warmups = List.of("progpedia/00000006/ACCEPTED/00218_00001/CigarrasTontas.java",
+                "progpedia/00000006/ACCEPTED/00076_00001/Main.java", "progpedia/00000006/ACCEPTED/00005_00001/CigarrasTontas.java",
+                "progpedia/00000006/ACCEPTED/00118_00002/Cigarras.java", "progpedia/00000006/ACCEPTED/00046_00002/cigarras.java",
+                "progpedia/00000006/ACCEPTED/00133_00001/Cigarras.java", "progpedia/00000021/WRONG_ANSWER/00168_00002/encomenda.java");
+        return Stream.concat(warmups.stream(), ProgpediaTests.progpediaFiles());
     }
 
     @NotNull
@@ -434,7 +440,8 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled
     @MethodSource("progpediaFiles")
-    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException {
+    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup, remove prints below for real
+                                                                                // evaluation
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -445,6 +452,7 @@ class EvaluationEngineTest {
 
         boolean javaLanguageFeatureNotSupported = false;
         boolean cpgErrorException = false;
+        boolean runtimeError = false;
         startTime = System.nanoTime();
         List<Token> tokensWithoutDeadCode;
         try {
@@ -465,6 +473,8 @@ class EvaluationEngineTest {
                 tokensWithoutDeadCode = new ArrayList<>();
                 javaLanguageFeatureNotSupported = true;
             } else {
+                runtimeError = true;
+                tokensWithoutDeadCode = new ArrayList<>();
                 throw new RuntimeException(e);
             }
         }
@@ -475,18 +485,21 @@ class EvaluationEngineTest {
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
+        double removedSimpleTokens = tokens.size() - tokensWithoutSimpleDeadCode.size();
+        double removedFullTokens = tokens.size() - tokensWithoutDeadCode.size();
+        double removedManualTokens = tokens.size() - tokensWithoutDeadCodeManual.size();
 
         File csvFile = new File("Progpedia_deadcode_results.csv");
         boolean fileExists = csvFile.exists();
-
         try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
             if (!fileExists) {
                 writer.write(
-                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException\n");
+                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,RemovedSimpleTokens,RemovedFullTokens,RemovedManualTokens,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException,RuntimeException\n");
             }
-            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b%n", fileName, simNoRemoval, simSimpleRemoval, simFullRemoval,
-                    timeNoRemoval / 1_000_000.0, timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0, javaLanguageFeatureNotSupported,
-                    cpgErrorException));
+            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b,%b%n", fileName, simNoRemoval, simSimpleRemoval,
+                    simFullRemoval, removedSimpleTokens, removedFullTokens, removedManualTokens, timeNoRemoval / 1_000_000.0,
+                    timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0, javaLanguageFeatureNotSupported, cpgErrorException,
+                    runtimeError));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -502,7 +515,11 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void ProgpediaDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "progpedia/00000021/WRONG_ANSWER/00028_00002/";
+        // String fileName = "progpedia/00000021/ACCEPTED/00062_00002"; //1741
+        // String fileName = "progpedia/00000021/WRONG_ANSWER/00168_00002"; //very long runtime //3865
+        // String fileName = "progpedia/00000021/ACCEPTED/00049_00007"; //761
+        // String fileName = "progpedia/00000039/ACCEPTED/00027_00004"; //2085
+        String fileName = "progpedia/00000006/ACCEPTED/00016_00001";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

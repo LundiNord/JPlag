@@ -16,7 +16,7 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
  * @author ujiqk
  * @version 1.0
  */
-public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
+public class IntSetValue extends NumberSetValue<Integer, IntInterval> implements IIntNumber {
 
     /**
      * Integer value represented as a set of intervals with no information.

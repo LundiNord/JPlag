@@ -277,8 +277,12 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new string value based on the configured AI type.
+     * @return a new string value instance without information.
+     */
     @NotNull
-    private static Value getNewStringValue() {
+    public static Value getNewStringValue() {
         return switch (usedStringAiType) {
             case DEFAULT -> new StringValue();
             case CHAR_INCLUSION -> new StringCharInclValue();
@@ -286,8 +290,13 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new string value based on the configured AI type.
+     * @param value the string value.
+     * @return a new string value instance.
+     */
     @NotNull
-    private static Value getNewStringValue(String value) {
+    public static Value getNewStringValue(String value) {
         return switch (usedStringAiType) {
             case DEFAULT -> new StringValue(value);
             case CHAR_INCLUSION -> new StringCharInclValue(value);
@@ -347,6 +356,9 @@ public abstract class Value implements IValue {
      */
     @NotNull
     public static IJavaArray getNewArayValue(Type innerType) {
+        if (innerType == null) {
+            innerType = Type.UNKNOWN;
+        }
         return switch (usedArrayAiType) {
             case DEFAULT -> new JavaArray(innerType);
             case LENGTH -> new JavaLengthArray(innerType);

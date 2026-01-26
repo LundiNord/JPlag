@@ -16,7 +16,7 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
  * @author ujiqk
  * @version 1.0
  */
-public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
+public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implements IFloatNumber {
 
     /**
      * Default constructor c Float value represented as a set of intervals with no information.
