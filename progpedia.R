@@ -46,16 +46,19 @@ p2 <- ggplot(time_data, aes(x = Method, y = Time, fill = Method)) +
 data <- data %>%
   mutate(
     JavaLanguageFeatureNotSupported = as.logical(JavaLanguageFeatureNotSupported),
-    CpgErrorException = as.logical(CpgErrorException)
+    CpgErrorException = as.logical(CpgErrorException),
+    RuntimeException = as.logical(RuntimeException)
   )
 error_summary <- data %>%
   summarise(JavaNotSupported = sum(JavaLanguageFeatureNotSupported),
             CpgErrors = sum(CpgErrorException),
+            RuntimeErrors = sum(RuntimeException),
             NoErrors = sum(!JavaLanguageFeatureNotSupported & !CpgErrorException)) %>%
   pivot_longer(everything(), names_to = "ErrorType", values_to = "Count") %>%
   mutate(ErrorType = case_when(
     ErrorType == "JavaNotSupported" ~ "Java feature not supported",
     ErrorType == "CpgErrors" ~ "CPG error",
+    ErrorType == "RuntimeErrors" ~ "Runtime exception",
     ErrorType == "NoErrors" ~ "No error",
     TRUE ~ ErrorType
   ))
@@ -97,3 +100,40 @@ summary_stats <- similarity_data %>%
   )
 
 print(summary_stats)
+
+
+#7: Create box plot for removed tokens
+removed_tokens_data <- data %>%
+  select(FileName, RemovedSimpleTokens, RemovedFullTokens) %>%
+  pivot_longer(cols = c(RemovedSimpleTokens, RemovedFullTokens),
+               names_to = "Method",
+               values_to = "RemovedTokens") %>%
+  mutate(Method = case_when(
+    Method == "RemovedSimpleTokens" ~ "SimpleRemoval",
+    Method == "RemovedFullTokens" ~ "FullRemoval",
+    TRUE ~ Method
+  ))
+
+p_tokens <- ggplot(removed_tokens_data, aes(x = Method, y = RemovedTokens, fill = Method)) +
+  geom_boxplot() +
+  labs(title = "Removed Tokens Comparison by Method",
+       x = "Dead Code Removal Method",
+       y = "Number of Removed Tokens") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+print(p_tokens)
+
+ggsave("removed_tokens_boxplot.pdf", p_tokens, width = 8, height = 6)
+
+tokens_summary <- removed_tokens_data %>%
+  group_by(Method) %>%
+  summarise(
+    Mean = mean(RemovedTokens, na.rm = TRUE),
+    Median = median(RemovedTokens, na.rm = TRUE),
+    SD = sd(RemovedTokens, na.rm = TRUE),
+    Min = min(RemovedTokens, na.rm = TRUE),
+    Max = max(RemovedTokens, na.rm = TRUE)
+  )
+
+print(tokens_summary)
