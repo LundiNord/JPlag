@@ -1,7 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +49,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         super(Type.STRING);
         if (value == null) {
             contentRegex = null;
+            unknown = false;
             return;
         }
         unknown = false;
@@ -328,7 +328,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 return new StringRegexValue(sub, false);
             }
             default -> {
-                return new StringRegexValue();
+                return new VoidValue();
             }
         }
     }
@@ -344,11 +344,14 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             return new StringRegexValue();
         }
         if (operator.equals("+") && other instanceof INumberValue inumbervalue) {
-            assert this.contentRegex != null;
             if (this.unknown || !inumbervalue.getInformation()) {
                 this.unknown = true;
                 return new StringRegexValue(null, true);
             }
+            if (this.contentRegex == null) {
+                System.out.println("Debug");
+            }
+            assert this.contentRegex != null;
             List<RegexItem> newContentRegex = new ArrayList<>(contentRegex);
             appendAtPos(newContentRegex, doubleToRegex(inumbervalue.getValue()), contentRegex.size() - 1);
             for (int i = contentRegex.size() - 1; i >= 0; i--) {
@@ -360,11 +363,13 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             }
             return new StringRegexValue(newContentRegex, false);
         } else if (operator.equals("+") && other instanceof StringRegexValue stringValue) {
-            if (this.contentRegex == null || stringValue.contentRegex == null) {
-                return new StringRegexValue(null, false);
-            }
             if (this.unknown || stringValue.unknown) {
                 this.unknown = true;
+                return new StringRegexValue(null, true);
+            }
+            if (this.contentRegex == null && stringValue.contentRegex == null) {
+                return new StringRegexValue(null, false);
+            } else if (this.contentRegex == null || stringValue.contentRegex == null) {
                 return new StringRegexValue(null, true);
             }
             // put at the end of each possible list end (without empty chars)
@@ -385,7 +390,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 return Value.valueFactory(Type.BOOLEAN);
             }
         }
-        return new StringRegexValue();
+        return new VoidValue();
     }
 
     @NotNull
@@ -447,15 +452,6 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     public void setInitialValue() {
         this.contentRegex = null;
         unknown = false;
-    }
-
-    @NotNull
-    private Set<Character> allCharactersSet() {
-        Set<Character> allChars = new HashSet<>();
-        for (char c = Character.MIN_VALUE; c < Character.MAX_VALUE; c++) {
-            allChars.add(c);
-        }
-        return allChars;
     }
 
     @NotNull

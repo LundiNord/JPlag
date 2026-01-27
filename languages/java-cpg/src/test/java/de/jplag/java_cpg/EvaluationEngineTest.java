@@ -168,10 +168,10 @@ class EvaluationEngineTest {
             boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
-                JavaCpgLanguage.deadCodeRemovalTransformations(),
-                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
-                // IntAiType.INTERVALS, FloatAiType.SET, StringAiType.CHAR_INCLUSION, CharAiType.SET, ArrayAiType.LENGTH);
-                IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.LENGTH);
+                JavaCpgLanguage.deadCodeRemovalTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
+                ArrayAiType.DEFAULT);
+        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+        // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
         List<Token> result = language.parse(files, normalize);
@@ -516,10 +516,17 @@ class EvaluationEngineTest {
     @Disabled
     void ProgpediaDeadCodeEvaluationSingle() throws ParsingException {
         // String fileName = "progpedia/00000021/ACCEPTED/00062_00002"; //1741
-        // String fileName = "progpedia/00000021/WRONG_ANSWER/00168_00002"; //very long runtime //3865
+        // String fileName = "progpedia/00000021/WRONG_ANSWER/00168_00002"; //very long runtime //3865 , 35/ACCEPTED/00031_00002
+        // is faster
         // String fileName = "progpedia/00000021/ACCEPTED/00049_00007"; //761
         // String fileName = "progpedia/00000039/ACCEPTED/00027_00004"; //2085
-        String fileName = "progpedia/00000006/ACCEPTED/00016_00001";
+        // String fileName = "progpedia/00000019/WRONG_ANSWER/00183_00001"; //stack overflow
+        // String fileName = "progpedia/00000035/ACCEPTED/00197_00006"; //stack overflow
+
+        // String fileName = "progpedia/00000043/ACCEPTED/00156_00001";
+        // String fileName = "progpedia/00000043/ACCEPTED/00154_00008";
+
+        String fileName = "progpedia/00000019/ACCEPTED/00000_00002";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

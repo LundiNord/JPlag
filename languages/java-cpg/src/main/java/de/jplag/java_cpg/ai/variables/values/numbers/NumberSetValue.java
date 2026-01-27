@@ -10,7 +10,10 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.Interval;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Abstract base class for numeric values represented as sets of intervals.
@@ -51,14 +54,17 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
     @Override
     @SuppressWarnings("unchecked")
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
-        if (!(other instanceof NumberSetValue)) {
+        if (other instanceof VoidValue || other instanceof ICharValue) {
             other = createInstance(new TreeSet<>());
+        } else if (other instanceof IStringValue stringValue) {
+            return stringValue.binaryOperation(operator, this);
+        }
+        if (!(other instanceof NumberSetValue<?, ?>)) {
+            System.out.println("Debug");
         }
         NumberSetValue<T, I> otherValue = (NumberSetValue<T, I>) other;
         if (this.values.isEmpty() || otherValue.values.isEmpty()) {
-            NumberSetValue<T, I> result = createInstance(new TreeSet<>());
-            result.setToUnknown();
-            return result;
+            return new VoidValue();
         }
         switch (operator) {
             case "+" -> {
@@ -212,9 +218,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 return newValue;
             }
             default -> {
-                NumberSetValue<T, I> result = createInstance(new TreeSet<>());
-                result.setToUnknown();
-                return result;
+                return new VoidValue();
             }
         }
     }
@@ -249,9 +253,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 return newValue;
             }
             default -> {
-                NumberSetValue<T, I> result = createInstance(new TreeSet<>());
-                result.setToUnknown();
-                return result;
+                return new VoidValue();
             }
         }
     }
@@ -259,6 +261,10 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
     @Override
     @SuppressWarnings("unchecked")
     public void merge(@NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            this.setToUnknown();
+            return;
+        }
         assert other.getClass().equals(this.getClass()) : "Cannot merge different value types" + this.getClass() + " and " + other.getClass();
         TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
         this.values.addAll(otherValues);

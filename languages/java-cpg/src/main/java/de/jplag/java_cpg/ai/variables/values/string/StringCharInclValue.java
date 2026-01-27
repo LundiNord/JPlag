@@ -136,7 +136,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
                 return Value.valueFactory(Type.CHAR);
             }
             default -> {
-                return new StringCharInclValue();
+                return new VoidValue();
             }
         }
     }
@@ -168,7 +168,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             newMaybe.addAll(stringValue.maybeContained);
             return new StringCharInclValue(newCertain, newMaybe);
         }
-        return new StringCharInclValue();
+        return new VoidValue();
     }
 
     @NotNull

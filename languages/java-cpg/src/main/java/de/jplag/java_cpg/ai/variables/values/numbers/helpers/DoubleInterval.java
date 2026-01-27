@@ -50,6 +50,22 @@ public class DoubleInterval extends Interval<Double> {
         this.upperBound = upperBound;
     }
 
+    /**
+     * Safely extracts the lower bound as a double value. Handles both Double and Integer intervals due to type erasure.
+     */
+    @Pure
+    private static double getLowerBound(@NotNull final Interval<Double> interval) {
+        return ((Number) interval.lowerBound).doubleValue();
+    }
+
+    /**
+     * Safely extracts the upper bound as a double value. Handles both Double and Integer intervals due to type erasure.
+     */
+    @Pure
+    private static double getUpperBound(@NotNull final Interval<Double> interval) {
+        return ((Number) interval.upperBound).doubleValue();
+    }
+
     @Override
     public boolean getInformation() {
         return lowerBound.equals(upperBound);
@@ -75,26 +91,26 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public DoubleInterval plus(@NotNull Interval<Double> other) {
-        double lo = lowerBound + other.lowerBound;
-        double hi = upperBound + other.upperBound;
+        double lo = lowerBound + getLowerBound(other);
+        double hi = upperBound + getUpperBound(other);
         return new DoubleInterval(lo, hi);
     }
 
     @Pure
     @Override
     public DoubleInterval minus(@NotNull Interval<Double> other) {
-        double lo = lowerBound - other.upperBound;
-        double hi = upperBound - other.lowerBound;
+        double lo = lowerBound - getUpperBound(other);
+        double hi = upperBound - getLowerBound(other);
         return new DoubleInterval(lo, hi);
     }
 
     @Pure
     @Override
     public DoubleInterval times(@NotNull Interval<Double> other) {
-        double p1 = lowerBound * other.lowerBound;
-        double p2 = lowerBound * other.upperBound;
-        double p3 = upperBound * other.lowerBound;
-        double p4 = upperBound * other.upperBound;
+        double p1 = lowerBound * getLowerBound(other);
+        double p2 = lowerBound * getUpperBound(other);
+        double p3 = upperBound * getLowerBound(other);
+        double p4 = upperBound * getUpperBound(other);
         double lo = Math.min(Math.min(p1, p2), Math.min(p3, p4));
         double hi = Math.max(Math.max(p1, p2), Math.max(p3, p4));
         return new DoubleInterval(lo, hi);
@@ -103,13 +119,13 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public DoubleInterval divided(@NotNull Interval<Double> other) {
-        if (other.lowerBound <= 0 && other.upperBound >= 0) {
+        if (getLowerBound(other) <= 0 && getUpperBound(other) >= 0) {
             return new DoubleInterval(MIN_VALUE, MAX_VALUE);
         }
-        double p1 = lowerBound / other.lowerBound;
-        double p2 = lowerBound / other.upperBound;
-        double p3 = upperBound / other.lowerBound;
-        double p4 = upperBound / other.upperBound;
+        double p1 = lowerBound / getLowerBound(other);
+        double p2 = lowerBound / getUpperBound(other);
+        double p3 = upperBound / getLowerBound(other);
+        double p4 = upperBound / getUpperBound(other);
         double lo = Math.min(Math.min(p1, p2), Math.min(p3, p4));
         double hi = Math.max(Math.max(p1, p2), Math.max(p3, p4));
         return new DoubleInterval(lo, hi);

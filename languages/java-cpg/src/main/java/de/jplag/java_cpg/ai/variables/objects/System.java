@@ -12,6 +12,8 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 
 /**
  * Representation of the static java.lang.System class.
@@ -47,12 +49,18 @@ public class System extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.getNewStringValue("\n");
             }
-            case "exit" -> {
-                throw new JavaLanguageFeatureNotSupportedException("System.exit() called");
-            }
+            case "exit" -> throw new JavaLanguageFeatureNotSupportedException("System.exit() called");
+
             case "currentTimeMillis" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.INT);
+            }
+            case "arraycopy" -> {   // void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)
+                IJavaArray srcArray = (IJavaArray) paramVars.getFirst();
+                IJavaArray destArray = (IJavaArray) paramVars.get(2);
+                srcArray.setToUnknown();
+                destArray.setToUnknown();
+                return new VoidValue();
             }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
         }

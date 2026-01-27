@@ -9,6 +9,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IFloatNumber;
 import de.jplag.java_cpg.ai.variables.values.numbers.IIntNumber;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
@@ -38,7 +39,8 @@ public class CharSetValue extends Value implements ICharValue {
     public CharSetValue(char character) {
         super(Type.CHAR);
         this.information = true;
-        this.maybeContained = Set.of(character);
+        this.maybeContained = new HashSet<>();
+        this.maybeContained.add(character);
     }
 
     /**
@@ -126,14 +128,18 @@ public class CharSetValue extends Value implements ICharValue {
                     return new CharSetValue();
                 }
             }
-            default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType() + " and " + other.getType());
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 
     @Override
     public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
-            default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 
@@ -145,6 +151,10 @@ public class CharSetValue extends Value implements ICharValue {
 
     @Override
     public void merge(@NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            setToUnknown();
+            return;
+        }
         CharSetValue otherCharValue = (CharSetValue) other;
         if (!otherCharValue.information) {
             this.information = false;
@@ -161,7 +171,8 @@ public class CharSetValue extends Value implements ICharValue {
     @Override
     public void setInitialValue() {
         this.information = true;
-        this.maybeContained = Set.of(DEFAULT_VALUE);
+        this.maybeContained = new HashSet<>();
+        this.maybeContained.add(DEFAULT_VALUE);
     }
 
     @Override

@@ -76,7 +76,6 @@ import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
-import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
 import de.jplag.java_cpg.transformation.operations.TransformationUtil;
@@ -163,14 +162,15 @@ public class AbstractInterpretation {
         variables.setThisName(relatedClassName);
     }
 
-    private static JavaObject createNewObject(@NotNull ConstructExpression ce) {
-        JavaObject newObject;
+    private static IJavaObject createNewObject(@NotNull ConstructExpression ce) {
+        IJavaObject newObject;
         String name = ce.getType().getName().toString();
         name = name.split("<")[0]; // remove generics
         switch (name) {
             case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
             case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
-            case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue" -> newObject = new JavaArray();
+            case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue" -> newObject = Value
+                    .getNewArayValue();
             case "java.util.Comparator" -> throw new JavaLanguageFeatureNotSupportedException(
                     "Comparator objects are not supported in abstract interpretation yet.");
             default -> newObject = new JavaObject();
@@ -447,6 +447,9 @@ public class AbstractInterpretation {
             case AssignExpression ae -> nextNode = walkAssignExpression(ae);
             case ShortCircuitOperator scop -> nextNode = walkShortCircuitOperator(scop);
             case BinaryOperator bop -> {
+                if (visitedNodesCounter == 489) {
+                    System.out.println("Debug");
+                }
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 String operator = bop.getOperatorCode();
                 assert operator != null;
@@ -534,7 +537,9 @@ public class AbstractInterpretation {
                 // inside Constructors, no NewExpression nodes come after ConstructExpression nodes
                 if (inConstructor && !(nextEOG.getFirst() instanceof NewExpression)) {
                     ConstructorDeclaration constructor = ce.getConstructor();
-                    assert constructor != null;
+                    if (constructor == null) {
+                        throw new CpgErrorException("Constructor not present in ConstructExpression");
+                    }
                     List<Node> eog = constructor.getNextEOG();
                     if (!(eog.isEmpty())) { // Constructor has a body
                         List<IValue> arguments = new ArrayList<>();
@@ -653,10 +658,15 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1;
                 nextNode = nextEOG.getFirst();
             }
-            case EmptyStatement _ -> {
+            case EmptyStatement es -> {
                 // occurs, for example, when while loop body is empty
+                // or when ; is only statement in a line -> we should not return then
                 assert nextEOG.size() == 1;
-                return null;
+                if (";".equals(es.getCode())) {
+                    nextNode = nextEOG.getFirst();
+                } else {
+                    return null;
+                }
             }
             case ExpressionList _ -> {
                 // indicates the end of an expression list, for example ("for (i2 = 6, i4 = 4; i2 < j; i2++)"), can be skipped
@@ -712,6 +722,9 @@ public class AbstractInterpretation {
                 valueStack.removeLast();    // remove object reference
                 valueStack.add(new JavaObject());
             } else {
+                if (me.getRefersTo() == null) {
+                    throw new CpgErrorException("MemberExpression refers to null");
+                }
                 throw new IllegalStateException("Unexpected value: " + value);
             }
             nodeStack.removeLast();
@@ -890,7 +903,10 @@ public class AbstractInterpretation {
             valueStack.removeLast();
             valueStack.add(new BooleanValue());
         }
-        assert valueStack.getLast() instanceof BooleanValue;
+        if (!(valueStack.getLast() instanceof BooleanValue)) {
+            System.out.println("Debug");
+        }
+        assert valueStack.getLast() instanceof BooleanValue : "Expected BooleanValue on value stack, but found: " + valueStack.getLast().getClass();
         BooleanValue condition = (BooleanValue) valueStack.getLast();
         valueStack.removeLast();
         boolean runThenBranch = true;
@@ -948,7 +964,8 @@ public class AbstractInterpretation {
             variables.newScope();
             graphWalker(nextEOG.getFirst());
             variables.removeScope();
-            if (nodeStack.getLast() == null && elseBlock != null && ifStmt.getElseStatement() == null && !elseBlock.getNextEOG().isEmpty()) {
+            if (!nodeStack.isEmpty()
+                    && (nodeStack.getLast() == null && elseBlock != null && ifStmt.getElseStatement() == null && !elseBlock.getNextEOG().isEmpty())) {
                 // special case for dead else branch
                 assert elseBlock.getNextEOG().size() == 1;
                 nodeStack.add(elseBlock.getNextEOG().getFirst());
@@ -1074,7 +1091,7 @@ public class AbstractInterpretation {
             }
         }
         Collections.reverse(arguments);
-        JavaObject newObject = createNewObject(ce);
+        IJavaObject newObject = createNewObject(ce);
         valueStack.add(newObject);
         // run constructor
         if (classNode != null) {
@@ -1115,7 +1132,9 @@ public class AbstractInterpretation {
                 variables.removeScope();
                 Set<Variable> changedVariables = variables.stopRecordingChanges();
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    if (variables.getVariable(variable.getName()) != null) {
+                        variables.getVariable(variable.getName()).setToUnknown();
+                    }
                 }
             } else {
                 VariableStore originalVariables = this.variables;
@@ -1135,7 +1154,9 @@ public class AbstractInterpretation {
                 // 2: second loop run with only changed variables unknown
                 this.variables = new VariableStore(originalVariables);
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    if (variables.getVariable(variable.getName()) != null) {
+                        variables.getVariable(variable.getName()).setToUnknown();
+                    }
                 }
                 variables.newScope();
                 returnStorage = returnStorageBefore;
@@ -1144,7 +1165,9 @@ public class AbstractInterpretation {
                 // 3: restore variables and set changed variables to unknown
                 this.variables = originalVariables;
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    if (variables.getVariable(variable.getName()) != null) {
+                        variables.getVariable(variable.getName()).setToUnknown();
+                    }
                 }
             }
         } else if (!recordingChanges.isRecording()) {
@@ -1187,6 +1210,10 @@ public class AbstractInterpretation {
         }
         lastVisitedLoopOrIf.addLast(ws);
         // evaluate condition
+        if (valueStack.getLast() instanceof VoidValue) {
+            valueStack.removeLast();
+            valueStack.add(new BooleanValue());
+        }
         assert !valueStack.isEmpty() && valueStack.getLast() instanceof BooleanValue;
         BooleanValue condition = (BooleanValue) valueStack.getLast();
         valueStack.removeLast();
@@ -1416,18 +1443,15 @@ public class AbstractInterpretation {
                     }
                 } else {
                     // Dimension is unknown, create an array with unknown contents
-                    if (innerType == null) {
-                        System.out.println("Debug");
-                    }
                     innerArrays.add(Value.getNewArayValue(innerType));
                 }
-                newArray = new JavaArray(innerArrays.stream().map(a -> (IValue) a).toList());
+                newArray = Value.getNewArayValue(innerArrays.stream().map(a -> (IValue) a).toList());
             }
             valueStack.add(newArray);
         } else if (nae.getInitializer() != null) {
             if (nae.getPrevEOG().getFirst() instanceof InitializerListExpression) {
                 // initializer has already been processed
-                assert valueStack.getLast() instanceof JavaArray;
+                assert valueStack.getLast() instanceof IJavaArray;
                 assert nodeStack.getLast() instanceof InitializerListExpression;
             } else {
                 throw new IllegalStateException("Unexpected value: " + nae);

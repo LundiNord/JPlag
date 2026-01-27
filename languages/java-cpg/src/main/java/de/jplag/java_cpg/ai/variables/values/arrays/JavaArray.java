@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IJavaObject;
@@ -467,7 +468,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return new VoidValue();
             }
             case "iterator" -> {
-                throw new UnsupportedOperationException("Iterators are not supported");
+                throw new JavaLanguageFeatureNotSupportedException("Iterators are not supported");
             }
             case "clone" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -489,6 +490,30 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 this.values = null;
                 this.innerType = Type.VOID;
                 return Value.valueFactory(Type.LIST);
+            }
+            case "set" -> {
+                assert paramVars.size() == 2;
+                if (values != null) {
+                    assert paramVars.getFirst() instanceof INumberValue;
+                    INumberValue index = (INumberValue) paramVars.getFirst();
+                    if (index.getInformation()) {
+                        int idx = (int) index.getValue();
+                        if (idx >= 0 && idx < values.size()) {
+                            assert paramVars.getLast().getType().equals(innerType);
+                            values.set(idx, paramVars.getLast());
+                        } else {
+                            values = null; // no information
+                        }
+                    } else {
+                        values = null; // no information
+                    }
+                }
+                return new VoidValue();
+            }
+            case "offer" -> {
+                assert paramVars.size() == 1;
+                setToUnknown();
+                return Value.valueFactory(Type.BOOLEAN);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

@@ -10,6 +10,7 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 
 /**
@@ -54,6 +55,9 @@ public class Arrays extends JavaObject implements ISpecialObject {
             }
             case "sort" -> {        // void sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
                 assert paramVars.size() == 1 || paramVars.size() == 3 || paramVars.size() == 2;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.getNewArayValue());
+                }
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod("sort", paramVars.subList(1, paramVars.size()), null);
             }
@@ -69,6 +73,10 @@ public class Arrays extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 1;
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod(methodName, List.of(), null);
+            }
+            case "copyOf" -> {
+                assert paramVars.size() == 2 || paramVars.size() == 3;
+                return Value.getNewArayValue();
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

@@ -114,7 +114,7 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
                 return new IntIntervalValue(newInterval);
             }
             default -> {
-                return new IntIntervalValue();
+                return new VoidValue();
             }
         }
     }
@@ -140,7 +140,7 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
                 return new IntIntervalValue(newInterval);
             }
             default -> {
-                return new IntIntervalValue();
+                return new VoidValue();
             }
         }
     }

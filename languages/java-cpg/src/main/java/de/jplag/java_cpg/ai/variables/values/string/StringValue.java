@@ -15,7 +15,6 @@ import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
-import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
@@ -142,11 +141,11 @@ public class StringValue extends JavaObject implements IStringValue {
             case "toCharArray" -> {   // public char[] toCharArray()
                 assert paramVars == null || paramVars.isEmpty();
                 if (!information) {
-                    return new JavaArray(Type.CHAR);
+                    return Value.getNewArayValue(Type.CHAR);
                 }
                 assert value != null;
                 char[] chars = value.toCharArray();
-                JavaArray array = new JavaArray(Type.CHAR);
+                IJavaArray array = Value.getNewArayValue(Type.CHAR);
                 for (int i = 0; i < chars.length; i++) {
                     array.arrayAssign((INumberValue) Value.valueFactory(i), Value.valueFactory(chars[i]));
                 }

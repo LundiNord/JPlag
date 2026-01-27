@@ -20,8 +20,8 @@ import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
  */
 public class JavaLengthArray extends JavaObject implements IJavaArray {
 
-    private final Type innerType;
-    private INumberValue length;
+    private Type innerType;
+    private INumberValue length;        // array == null -> length == null
 
     /**
      * Creates a new JavaLengthArray with an unknown inner type and length.
@@ -29,6 +29,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     public JavaLengthArray() {
         super(Type.ARRAY);
         this.innerType = Type.UNKNOWN;
+        this.length = Value.getNewIntValue();
     }
 
     /**
@@ -38,6 +39,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     public JavaLengthArray(@NotNull Type innerType) {
         super(Type.ARRAY);
         this.innerType = innerType;
+        this.length = Value.getNewIntValue();
     }
 
     /**
@@ -47,8 +49,8 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      */
     public JavaLengthArray(Type innerType, @NotNull INumberValue length) {
         super(Type.ARRAY);
-        this.innerType = innerType;
         this.length = length;
+        this.innerType = Objects.requireNonNullElse(innerType, Type.UNKNOWN);
     }
 
     /**
@@ -57,7 +59,11 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      */
     public JavaLengthArray(@NotNull List<IValue> values) {
         super(Type.ARRAY);
-        this.innerType = values.getFirst().getType();
+        if (values.isEmpty()) {
+            this.innerType = Type.UNKNOWN;
+        } else {
+            this.innerType = values.getFirst().getType();
+        }
         this.length = (INumberValue) Value.valueFactory(values.size());
     }
 
@@ -72,7 +78,8 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             case BOOLEAN -> new BooleanValue();
             case STRING -> Value.valueFactory(Type.STRING);
             case OBJECT -> new JavaObject();
-            case ARRAY, LIST -> new JavaArray();
+            case ARRAY -> Value.valueFactory(Type.ARRAY);
+            case LIST -> Value.valueFactory(Type.LIST);
             case FLOAT -> Value.valueFactory(Type.FLOAT);
             case CHAR -> Value.valueFactory(Type.CHAR);
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
@@ -121,14 +128,18 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 return Value.valueFactory(Type.INT);
             }
             case "remove" -> {
-                assert paramVars.size() == 1;
+                assert paramVars == null || paramVars.size() == 1 || paramVars.isEmpty();
                 // information lost
                 length.setToUnknown();
                 return new VoidValue();
             }
             case "get", "elementAt" -> {
                 assert paramVars.size() == 1;
-                assert paramVars.getFirst() instanceof INumberValue;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.getNewIntValue());
+                }
+                assert paramVars.getFirst() instanceof INumberValue : "Parameter for get/elementAt must be a number value but was "
+                        + paramVars.getFirst().getClass();
                 return arrayAccess((INumberValue) paramVars.getFirst());
             }
             case "contains" -> {
@@ -157,7 +168,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 return Value.valueFactory(Type.BOOLEAN);
             }
             default -> {
-                return new JavaLengthArray();
+                return new VoidValue();
             }
         }
     }
@@ -169,7 +180,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 return this.length;
             }
             default -> {
-                return new JavaLengthArray();
+                return new VoidValue();
             }
         }
     }
@@ -186,12 +197,22 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
 
     @Override
     public void merge(@NotNull IValue other) {
-        assert other instanceof JavaLengthArray;
-        assert Objects.equals(this.innerType, ((JavaLengthArray) other).innerType);
-        if (this.length == null || ((JavaLengthArray) other).length == null) {
+        if (other instanceof VoidValue) {
+            other = new JavaLengthArray(this.innerType);
+        }
+        assert other instanceof JavaLengthArray : "Can only merge with another JavaLengthArray but got " + other.getClass();
+        final JavaLengthArray otherArray = (JavaLengthArray) other;
+        if (this.innerType == Type.UNKNOWN) {
+            this.innerType = otherArray.innerType;
+        }
+        if (otherArray.innerType != Type.UNKNOWN) {
+            assert Objects.equals(this.innerType, otherArray.innerType) : "Cannot merge arrays of different inner types: " + this.innerType + " and "
+                    + ((JavaLengthArray) other).innerType;
+        }
+        if (this.length == null || otherArray.length == null) {
             this.length = null;
         } else {
-            this.length.merge(((JavaLengthArray) other).length);
+            this.length.merge(otherArray.length);
         }
     }
 
