@@ -4,7 +4,7 @@ library(tidyr)
 library(dplyr)
 
 # Read the CSV file
-data <- read.csv("results/Progpedia_deadcode_results.csv")
+data <- read.csv("results/Progpedia_deadcode_results_Level2.csv")
 
 # 1. Box plots for similarity values (NoRemoval, SimpleRemoval, FullRemoval)
 similarity_data <- data %>%
