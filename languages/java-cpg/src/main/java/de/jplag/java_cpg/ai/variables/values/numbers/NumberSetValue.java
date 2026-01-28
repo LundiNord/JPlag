@@ -265,6 +265,16 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
             this.setToUnknown();
             return;
         }
+        if (other instanceof IFloatNumber floatNumber) {    // can happen because some casts are not explicit in eog
+            if (floatNumber.getInformation()) {
+                int value = (int) floatNumber.getValue();
+                TreeSet<I> newValues = new TreeSet<>();
+                newValues.add(createInterval((T) Integer.valueOf(value), (T) Integer.valueOf(value)));
+                other = createInstance(newValues);
+            } else {
+                other = createInstance(new TreeSet<>());
+            }
+        }
         assert other.getClass().equals(this.getClass()) : "Cannot merge different value types" + this.getClass() + " and " + other.getClass();
         TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
         this.values.addAll(otherValues);

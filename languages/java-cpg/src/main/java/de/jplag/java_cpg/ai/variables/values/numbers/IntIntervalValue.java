@@ -77,7 +77,10 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
         if (!(other instanceof INumberValue)) {
             other = new IntIntervalValue();
         }
-        IntIntervalValue otherValue = (IntIntervalValue) other; // ToDo: what if other float?
+        if (other instanceof IFloatNumber) {    // This could be better
+            return new VoidValue();
+        }
+        IntIntervalValue otherValue = (IntIntervalValue) other;
         switch (operator) {
             case "+" -> {
                 IntInterval newInterval = this.interval.copy().plus(otherValue.interval);
@@ -156,7 +159,14 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
         if (other instanceof VoidValue) {
             other = new IntIntervalValue();
         }
-        assert other instanceof IntIntervalValue;
+        if (other instanceof IFloatNumber floatNumber) {    // can happen because some casts are not explicit in eog
+            if (floatNumber.getInformation()) {
+                other = new IntIntervalValue((int) floatNumber.getValue());
+            } else {
+                other = new IntIntervalValue();
+            }
+        }
+        assert other instanceof IntIntervalValue : "Cannot merge " + this.getClass() + " with " + other.getClass();
         this.interval.merge(((IntIntervalValue) other).interval);
     }
 

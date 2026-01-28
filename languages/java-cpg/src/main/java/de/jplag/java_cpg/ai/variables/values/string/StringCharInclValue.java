@@ -174,7 +174,8 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     @NotNull
     @Override
     public JavaObject copy() {
-        return new StringCharInclValue(certainContained == null ? null : new HashSet<>(certainContained), new HashSet<>(maybeContained));
+        return new StringCharInclValue(certainContained == null ? null : new HashSet<>(certainContained), new HashSet<>(maybeContained));   // ToDo:
+                                                                                                                                            // expensive
     }
 
     @Override

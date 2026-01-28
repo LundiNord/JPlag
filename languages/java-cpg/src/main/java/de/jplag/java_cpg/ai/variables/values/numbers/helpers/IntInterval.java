@@ -100,8 +100,8 @@ public class IntInterval extends Interval<Integer> {
     @Pure
     @Override
     public IntInterval plus(@NotNull Interval<Integer> other) {
-        long loSum = (long) lowerBound + (long) other.lowerBound;
-        long hiSum = (long) upperBound + (long) other.upperBound;
+        long loSum = (long) lowerBound + (long) getLowerBound(other);
+        long hiSum = (long) upperBound + (long) getUpperBound(other);
         int lo = loSum > MAX_VALUE ? MAX_VALUE : (loSum < MIN_VALUE ? MIN_VALUE : (int) loSum);
         int hi = hiSum > MAX_VALUE ? MAX_VALUE : (hiSum < MIN_VALUE ? MIN_VALUE : (int) hiSum);
         return new IntInterval(lo, hi);
@@ -121,10 +121,10 @@ public class IntInterval extends Interval<Integer> {
     @Pure
     @Override
     public IntInterval times(@NotNull Interval<Integer> other) {
-        long p1 = (long) lowerBound * other.lowerBound;
-        long p2 = (long) lowerBound * other.upperBound;
-        long p3 = (long) upperBound * other.lowerBound;
-        long p4 = (long) upperBound * other.upperBound;
+        long p1 = (long) lowerBound * getLowerBound(other);
+        long p2 = (long) lowerBound * getUpperBound(other);
+        long p3 = (long) upperBound * getLowerBound(other);
+        long p4 = (long) upperBound * getUpperBound(other);
         long loLong = Math.min(Math.min(p1, p2), Math.min(p3, p4));
         long hiLong = Math.max(Math.max(p1, p2), Math.max(p3, p4));
         int lo = loLong > MAX_VALUE ? MAX_VALUE : (loLong < MIN_VALUE ? MIN_VALUE : (int) loLong);

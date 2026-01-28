@@ -388,6 +388,9 @@ public class AbstractInterpretation {
                 }
                 if (ref.getName().getLocalName().equals("this")) {
                     valueStack.add(this.object);
+                } else if (ref.getRefersTo() instanceof FieldDeclaration fieldDeclaration
+                        && fieldDeclaration.getName().toString().equals("Comparator")) {
+                    throw new JavaLanguageFeatureNotSupportedException("Comparators are not supported yet.");
                 } else {
                     Variable variable = variables.getVariable(new VariableName(ref.getName().toString()));
                     if (variable != null) {
@@ -403,7 +406,7 @@ public class AbstractInterpretation {
                     }
                 }
                 nodeStack.add(ref);
-                assert nextEOG.size() == 1;
+                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
             case SubscriptExpression se -> nextNode = walkSubscriptExpression(se);
@@ -447,9 +450,6 @@ public class AbstractInterpretation {
             case AssignExpression ae -> nextNode = walkAssignExpression(ae);
             case ShortCircuitOperator scop -> nextNode = walkShortCircuitOperator(scop);
             case BinaryOperator bop -> {
-                if (visitedNodesCounter == 489) {
-                    System.out.println("Debug");
-                }
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 String operator = bop.getOperatorCode();
                 assert operator != null;
@@ -1024,6 +1024,9 @@ public class AbstractInterpretation {
     }
 
     private IValue walkReturnStatement(@NotNull ReturnStatement rs) {
+        if (visitedNodesCounter == 141) {
+            System.out.println("Debug");
+        }
         IValue result;
         if (rs.getReturnValues().isEmpty() || valueStack.isEmpty()) {
             result = new VoidValue();
@@ -1501,6 +1504,9 @@ public class AbstractInterpretation {
         visitedLinesRecorder.recordFirstLineVisited(method);
         variables.newScope();
         if (paramVars != null) {
+            if (method.getParameters().size() != paramVars.size()) {
+                System.out.println("Debug");
+            }
             assert method.getParameters().size() == paramVars.size();
             for (int i = 0; i < paramVars.size(); i++) {
                 variables.addVariable(new Variable(new VariableName(method.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));

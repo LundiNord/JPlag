@@ -313,7 +313,7 @@ public class StringValue extends JavaObject implements IStringValue {
             }
             return new StringValue();
         }
-        throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        return new VoidValue();
     }
 
     @NotNull
