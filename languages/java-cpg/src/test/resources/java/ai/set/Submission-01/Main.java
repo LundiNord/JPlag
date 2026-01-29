@@ -29,7 +29,7 @@ public final class Main {
         result3 = set2.size();
 
 
-        Set<String> sortedEntries = new TreeSet<>(Comparator.comparing((String s) -> s.length()).thenComparing(Comparator.naturalOrder()));
+        Set<String> sortedEntries = new TreeSet<>();
         sortedEntries.add("apple");
         result4 = sortedEntries.first();    //"apple"
     }

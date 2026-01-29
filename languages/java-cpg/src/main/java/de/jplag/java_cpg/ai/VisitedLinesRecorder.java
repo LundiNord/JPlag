@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
@@ -54,9 +55,12 @@ public class VisitedLinesRecorder {
     }
 
     /**
-     * @param node record first line visited in the given node
+     * @param node record the first line visited in the given node
      */
-    public void recordFirstLineVisited(@NotNull Node node) {
+    public void recordFirstLineVisited(@Nullable Node node) {
+        if (node == null) {
+            return;
+        }
         PhysicalLocation location = node.getLocation();
         if (location == null) {
             return;

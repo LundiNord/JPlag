@@ -94,9 +94,11 @@ class Department {
         return name;
     }
 
+    //DeadCodeStart
     public String getDeptId() {
         return deptId;
     }
+    //DeadCodeEnd
 
     public void addDoctor(Doctor doctor) {
         doctors.add(doctor);
@@ -106,7 +108,6 @@ class Department {
     public List<Doctor> getDoctors() {
         return doctors;
     }
-    //DeadCodeEnd
 
     public boolean hasCapacity() {
         return currentPatients < capacity;
@@ -120,7 +121,6 @@ class Department {
         if (currentPatients > 0) currentPatients--;
     }
 
-    //DeadCodeStart
     public int getCapacity() {
         return capacity;
     }
@@ -189,6 +189,7 @@ class Doctor {
         return name;
     }
 
+    //DeadCodeStart
     public String getDoctorId() {
         return doctorId;
     }
@@ -196,6 +197,7 @@ class Doctor {
     public String getSpecialization() {
         return specialization;
     }
+    //DeadCodeEnd
 
     public void setDepartment(Department dept) {
         this.assignedDepartment = dept;
@@ -206,6 +208,7 @@ class Doctor {
         appointmentCount++;
     }
 
+    //DeadCodeStart
     public int getAppointmentCount() {
         return appointmentCount;
     }
@@ -214,7 +217,6 @@ class Doctor {
         return appointments;
     }
 
-    //DeadCodeStart
     public int getYearsOfExperience() {
         return yearsOfExperience;
     }
@@ -287,6 +289,7 @@ class Patient {
         return name;
     }
 
+    //DeadCodeStart
     public String getPatientId() {
         return patientId;
     }
@@ -294,6 +297,7 @@ class Patient {
     public int getAge() {
         return age;
     }
+    //DeadCodeEnd
 
     public void addMedicalRecord(String record) {
         medicalHistory.add(record);
@@ -303,6 +307,7 @@ class Patient {
         appointments.add(appointment);
     }
 
+    //DeadCodeStart
     public String getStatus() {
         return currentStatus;
     }
@@ -310,6 +315,7 @@ class Patient {
     public void setStatus(String status) {
         this.currentStatus = status;
     }
+    //DeadCodeEnd
 
     public void displayMedicalHistory() {
         System.out.println("Medical history for " + name + ":");
@@ -400,9 +406,11 @@ class Appointment {
         return patient;
     }
 
+    //DeadCodeStart
     public Doctor getDoctor() {
         return doctor;
     }
+    //DeadCodeEnd
 
     public String getStatus() {
         return status;
@@ -531,6 +539,7 @@ class Hospital {
         }
     }
 
+    //DeadCodeStart
     public List<Patient> getPatients() {
         return patients;
     }
@@ -538,12 +547,11 @@ class Hospital {
     public List<Doctor> getDoctors() {
         return doctors;
     }
-
+    
     public List<Department> getDepartments() {
         return departments;
     }
 
-    //DeadCodeStart
     public String getAddress() {
         return address;
     }

@@ -96,9 +96,11 @@ class Department {
         return name;
     }
 
+    //DeadCodeStart
     public String getDeptId() {
         return deptId;
     }
+    //DeadCodeEnd
 
     // PLAGIARIZED: Renamed from addDoctor
     public void addProfessor(Professor professor) {
@@ -109,7 +111,6 @@ class Department {
     public List<Professor> getProfessors() {
         return professors;
     }
-    //DeadCodeEnd
 
     // PLAGIARIZED: Exact same logic as Hospital
     public boolean hasCapacity() {
@@ -126,7 +127,6 @@ class Department {
         if (currentStudents > 0) currentStudents--;
     }
 
-    //DeadCodeStart
     public int getCapacity() {
         return capacity;
     }
@@ -201,11 +201,11 @@ class Professor {
         return name;
     }
 
+    //DeadCodeStart
     public String getProfessorId() {
         return professorId;
     }
 
-    //DeadCodeStart
     public String getSpecialization() {
         return specialization;
     }
@@ -222,11 +222,11 @@ class Professor {
         courseCount++;
     }
 
+    //DeadCodeStart
     public int getCourseCount() {
         return courseCount;
     }
 
-    //DeadCodeStart
     public List<Enrollment> getEnrollments() {
         return enrollments;
     }
@@ -316,6 +316,7 @@ class Student {
         return name;
     }
 
+    //DeadCodeStart
     public String getStudentId() {
         return studentId;
     }
@@ -323,6 +324,7 @@ class Student {
     public int getAge() {
         return age;
     }
+    //DeadCodeEnd
 
     // PLAGIARIZED from Patient.addMedicalRecord()
     public void addAcademicRecord(String record) {
@@ -334,11 +336,11 @@ class Student {
         enrollments.add(enrollment);
     }
 
+    //DeadCodeStart
     public String getStatus() {
         return currentStatus;
     }
 
-    //DeadCodeStart
     public void setStatus(String status) {
         this.currentStatus = status;
     }
@@ -447,24 +449,25 @@ class Enrollment {
         return student;
     }
 
+    //DeadCodeStart
     public Professor getProfessor() {
         return professor;
     }
+    //DeadCodeEnd
 
     public String getStatus() {
         return status;
     }
-    //DeadCodeEnd
 
     //DeadCodeStart
     public void setStatus(String status) {
         this.status = status;
     }
 
-    //DeadCodeStart
     public String getFeedback() {
         return feedback;
     }
+    //DeadCodeEnd
 
     // PLAGIARIZED from Appointment.setDiagnosis()
     public void setFeedback(String feedback) {
@@ -472,6 +475,7 @@ class Enrollment {
         this.status = "Graded";
     }
 
+    //DeadCodeStart
     public LocalDateTime getEnrollmentTime() {
         return enrollmentTime;
     }
@@ -597,6 +601,7 @@ class University {
         }
     }
 
+    //DeadCodeStart
     public List<Student> getStudents() {
         return students;
     }
@@ -604,12 +609,11 @@ class University {
     public List<Professor> getProfessors() {
         return professors;
     }
-
+    
     public List<Department> getDepartments() {
         return departments;
     }
 
-    //DeadCodeStart
     public String getAddress() {
         return address;
     }

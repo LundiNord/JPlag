@@ -142,6 +142,7 @@ class Member {
         return name;
     }
 
+    //DeadCodeStart
     public String getMemberId() {
         return memberId;
     }
@@ -149,6 +150,7 @@ class Member {
     public List<Book> getBorrowedBooks() {
         return borrowedBooks;
     }
+    //DeadCodeEnd
 
     public void borrowBook(Book book) {
         borrowedBooks.add(book);
@@ -156,9 +158,11 @@ class Member {
         totalBorrows++;
     }
 
+    //DeadCodeStart
     public void returnBook(Book book) {
         borrowedBooks.remove(book);
     }
+    //DeadCodeEnd
 
     public void displayBorrowingHistory() {
         System.out.println("Borrowing history for " + name + ":");
@@ -233,11 +237,13 @@ class Library {
         }
     }
 
+    //DeadCodeStart
     public void returnBook(Member member, Book book) {
         book.setAvailable(true);
         member.returnBook(book);
         System.out.println(member.getName() + " returned " + book.getTitle());
     }
+    //DeadCodeEnd
 
     public void displayAvailableBooks() {
         System.out.println("Available books in " + name + ":");
@@ -248,11 +254,11 @@ class Library {
         }
     }
 
+    //DeadCodeStart
     public List<Book> getBooks() {
         return books;
     }
 
-    //DeadCodeStart
     public List<Member> getMembers() {
         return members;
     }

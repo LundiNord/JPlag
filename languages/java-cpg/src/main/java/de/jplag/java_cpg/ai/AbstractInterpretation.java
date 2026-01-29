@@ -62,7 +62,11 @@ import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.ShortCircuitOperator;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
+import de.fraunhofer.aisec.cpg.graph.types.FloatingPointType;
 import de.fraunhofer.aisec.cpg.graph.types.HasType;
+import de.fraunhofer.aisec.cpg.graph.types.IntegerType;
+import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
+import de.fraunhofer.aisec.cpg.graph.types.ParameterizedType;
 import de.fraunhofer.aisec.cpg.graph.types.PointerType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
@@ -234,6 +238,9 @@ public class AbstractInterpretation {
             @NotNull ConstructorDeclaration constructor) {
         setupClass(rd, objectInstance);
         visitedLinesRecorder.recordFirstLineVisited(constructor);
+        for (Type type : rd.getImplementedInterfaces()) {
+            visitedLinesRecorder.recordFirstLineVisited(((ObjectType) type).getRecordDeclaration());
+        }
         // Run constructor method
         this.inConstructor = true;
         List<Node> eog = constructor.getNextEOG();
@@ -295,6 +302,9 @@ public class AbstractInterpretation {
             }
             assert superClass.size() == 1;
             RecordDeclaration superRd = superClass.stream().findFirst().orElseThrow();
+            for (Type type : superRd.getImplementedInterfaces()) {
+                visitedLinesRecorder.recordFirstLineVisited(((ObjectType) type).getRecordDeclaration());
+            }
             setupFieldDeclarations(superRd, objectInstance);
             currentClass = superRd;
         }
@@ -659,8 +669,8 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case EmptyStatement es -> {
-                // occurs, for example, when while loop body is empty
-                // or when ; is only statement in a line -> we should not return then
+                // occurs, for example, when the while loop body is empty or when ";" is only statement in a line -> we should not
+                // return then
                 assert nextEOG.size() == 1;
                 if (";".equals(es.getCode())) {
                     nextNode = nextEOG.getFirst();
@@ -807,9 +817,6 @@ public class AbstractInterpretation {
                 valueStack
                         .add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME)));
             }
-            if (!(valueStack.getLast() instanceof JavaObject)) {
-                System.out.println("Debug");
-            }
             JavaObject javaObject = (JavaObject) valueStack.getLast();
             if (!javaObject.hasAbstractInterpretation()) {
                 javaObject.setAbstractInterpretation(
@@ -893,6 +900,7 @@ public class AbstractInterpretation {
     private Node walkIfStatement(@NotNull IfStatement ifStmt) {
         Node nextNode;
         List<Node> nextEOG = ifStmt.getNextEOG();
+        boolean elsePresent = ifStmt.getElseStatement() != null;
         // detect infinite loops when no Block inserted by cpg
         if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ifStmt)) {
             nodeStack.add(null);
@@ -1012,8 +1020,9 @@ public class AbstractInterpretation {
             ifElseCounter--;
             return null;
         }
-        if (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch) && condition.getInformation())) {    // FixMe:
-            // stringAiComplex
+        if ((elsePresent || condition.getInformation())
+                && (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch) && condition.getInformation()))) {
+            // FixMe: stringAiComplex
             // return in every branch
             valueStack.add(returnStorage.getLast());
             nextNode = new ReturnStatement();
@@ -1024,9 +1033,6 @@ public class AbstractInterpretation {
     }
 
     private IValue walkReturnStatement(@NotNull ReturnStatement rs) {
-        if (visitedNodesCounter == 141) {
-            System.out.println("Debug");
-        }
         IValue result;
         if (rs.getReturnValues().isEmpty() || valueStack.isEmpty()) {
             result = new VoidValue();
@@ -1478,14 +1484,49 @@ public class AbstractInterpretation {
      * @return null if the method is not known.
      */
     public IValue runMethod(@NotNull String name, List<IValue> paramVars, @Nullable MethodDeclaration method) {
+        if (method == null) {
+            return null;
+        }
+        if (method.getBody() == null) {     // cpg has lost the method body -> try to restore
+            try {
+                RecordDeclaration recordDeclaration = method.getRecordDeclaration();
+                assert recordDeclaration != null;
+                List<MethodDeclaration> methods = recordDeclaration.getMethods();
+                // match on name and arguments
+                for (MethodDeclaration candidate : methods) {
+                    if (candidate.getName().getLocalName().equals(method.getName().getLocalName())
+                            && candidate.getParameters().size() == method.getParameters().size()) {
+                        boolean parametersMatch = true;
+                        for (int i = 0; i < method.getParameters().size(); i++) {
+                            Type candidateType = candidate.getParameters().get(i).getType();
+                            Type methodType = method.getParameters().get(i).getType();
+                            boolean typesMatch = candidateType.equals(methodType)
+                                    || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
+                                    || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
+                            if (!typesMatch) {
+                                parametersMatch = false;
+                                break;
+                            }
+                        }
+                        if (parametersMatch && candidate.getBody() != null) {
+                            method = candidate;
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception _) {
+                // cannot restore method body -> give up
+            }
+        }
         if (lastVisitedMethod.contains(method)) {
             // recursive call detected
             this.variables.setEverythingUnknown();
             return new VoidValue();
         }
         lastVisitedMethod.add(method);
-        if (method == null) {
-            return null;
+        visitedLinesRecorder.recordFirstLineVisited(method);
+        for (FunctionDeclaration subMethod : method.getOverriddenBy()) {
+            visitedLinesRecorder.recordFirstLineVisited(subMethod);
         }
         int numberOfCalls = method.getUsages().size();
         boolean removeDeadCodeBackup = this.removeDeadCode;
@@ -1497,10 +1538,11 @@ public class AbstractInterpretation {
         ArrayList<Node> oldNodeStack = this.nodeStack;      // Save stack
         ArrayList<IValue> oldValueStack = this.valueStack;
         List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
+        int oldIfElseCounter = this.ifElseCounter;
+        this.ifElseCounter = 0;
         this.nodeStack = new ArrayList<>();
         this.valueStack = new ArrayList<>();
         this.lastVisitedLoopOrIf = new ArrayList<>();
-
         visitedLinesRecorder.recordFirstLineVisited(method);
         variables.newScope();
         if (paramVars != null) {
@@ -1527,6 +1569,7 @@ public class AbstractInterpretation {
         this.valueStack = oldValueStack;
         this.lastVisitedLoopOrIf = oldLastVisitedLoopOrIf;
         lastVisitedMethod.removeLast();
+        ifElseCounter = oldIfElseCounter;
         return result;
     }
 

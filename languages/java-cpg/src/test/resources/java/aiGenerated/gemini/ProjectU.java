@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * PROJECT U: Cookie Jar
  * PLAGIARISM: Steals the Generic Vault logic from SecureDataVault.
@@ -32,7 +29,7 @@ public class CookieJar {
             if (eyeScanner) {
                 // The method name 'scanRetina' was lazily renamed to 'checkHunger'
                 // but the logic still throws a security exception.
-                if (!checkHunger()) { 
+                if (!checkHunger()) {
                     throw new HandSlapException("Retina mismatch"); // "Retina" left in string
                 }
             }
@@ -53,6 +50,13 @@ public class CookieJar {
 
     // --- Generics & Inner Classes (Stolen) ---
 
+    // PLAGIARISM: 'Securable' interface copied
+    //DeadCodeStart
+    interface Edible {
+        String getFlavor(); // Was 'getContent'
+    }
+    //DeadCodeEnd
+
     // PLAGIARISM: 'Vault' renamed to 'Container'
     // 'Securable' renamed to 'Edible'
     static class Container<T extends Edible> {
@@ -71,29 +75,35 @@ public class CookieJar {
         }
 
         T takeOut(String spokenWord) throws HandSlapException {
+            //DeadCodeStart
             if (!this.secretWord.equals(spokenWord)) {
                 throw new HandSlapException("Wrong secret word");
             }
+            //DeadCodeEnd
             this.closed = false;
             return snack;
         }
     }
 
-    // PLAGIARISM: 'Securable' interface copied
-    interface Edible {
-        String getFlavor(); // Was 'getContent'
-    }
-
     static class Biscuit implements Edible {
         private String type;
-        Biscuit(String t) { this.type = t; }
-        
+
+        Biscuit(String t) {
+            this.type = t;
+        }
+
         @Override
-        public String getFlavor() { return "Taste of " + type; }
+        public String getFlavor() {
+            return "Taste of " + type;
+        }
     }
 
+    //DeadCodeStart
     // PLAGIARISM: Custom Exception copied
     static class HandSlapException extends Exception {
-        HandSlapException(String msg) { super(msg); }
+        HandSlapException(String msg) {
+            super(msg);
+        }
     }
+    //DeadCodeEnd
 }

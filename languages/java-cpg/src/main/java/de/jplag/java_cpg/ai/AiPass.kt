@@ -68,6 +68,9 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                     }
                     for (method in recordDeclaration.methods) {
                         if (checkIfCompletelyDead(method, visitedLinesRecorder) && removeDeadCode) {
+                            if (method.name.localName == "toString" || method.name.localName == "equals" || method.name.localName == "hashCode") {
+                                continue    //methods that are sometimes not visited by the AI but could still be called implicitly
+                            }
                             println("Dead code (method) detected: ${method.name} in class ${recordDeclaration.name}")
                             val index = recordDeclaration.methods.indexOf(method)
                             recordDeclaration.methodEdges.removeAt(index)
@@ -76,9 +79,9 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                     //inner classes
                     for (innerClass in recordDeclaration.records) {
                         if (checkIfCompletelyDead(innerClass, visitedLinesRecorder) && removeDeadCode) {
-                            println("Dead code (class) detected: ${recordDeclaration.name}")
+                            println("Dead code (class) detected: ${innerClass.name}")
                             val tuIndex = recordDeclaration.declarations.indexOf(innerClass)
-                            recordDeclaration.recordEdges.removeAt(tuIndex)
+                            recordDeclaration.recordEdges.removeAt(tuIndex - 1)
                         }
                     }
                 }

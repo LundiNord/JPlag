@@ -43,7 +43,7 @@ public enum Type {
                 || cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.UnknownType.class) {
             return VOID;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ParameterizedType.class) {
-            return VOID;    // ToDo: should be changed to UNKNOWN everywhere
+            return VOID;
         } else {
             throw new IllegalArgumentException("Unsupported CPG type: " + cpgType);
         }

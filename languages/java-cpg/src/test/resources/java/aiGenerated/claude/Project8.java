@@ -182,10 +182,12 @@ class Customer {
         totalOrders++;
     }
 
+    //DeadCodeStart
     // PLAGIARIZED: Copy of Member.returnBook()
     public void cancelOrder(Product product) {
         orderedProducts.remove(product);
     }
+    //DeadCodeEnd
 
     // PLAGIARIZED: Near-exact copy of Member.displayBorrowingHistory()
     public void displayOrderHistory() {
@@ -274,12 +276,14 @@ class Warehouse {
         }
     }
 
+    //DeadCodeStart
     // PLAGIARIZED: Copy of Library.returnBook()
     public void restockProduct(Customer customer, Product product) {
         product.setInStock(true);
         customer.cancelOrder(product);
         System.out.println(customer.getName() + " cancelled order for " + product.getName());
     }
+    //DeadCodeEnd
 
     // PLAGIARIZED: Near-identical to Library.displayAvailableBooks()
     public void displayAvailableProducts() {
@@ -291,11 +295,11 @@ class Warehouse {
         }
     }
 
+    //DeadCodeStart
     public List<Product> getProducts() {
         return products;
     }
-
-    //DeadCodeStart
+    
     public List<Customer> getCustomers() {
         return customers;
     }
