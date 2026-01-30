@@ -1,3 +1,5 @@
+#@author Anthropic Claude Sonnet 4.5
+
 # Load required libraries
 library(ggplot2)
 library(tidyr)
