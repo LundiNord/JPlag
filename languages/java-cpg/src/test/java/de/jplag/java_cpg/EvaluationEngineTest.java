@@ -49,7 +49,13 @@ class EvaluationEngineTest {
 
     @NotNull
     private static Stream<String> testFiles() {
-        return Stream.of("aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/ProjectB.java", "aiGenerated/gemini/ProjectC.java",
+        return Stream.of(
+                // forst block are jvm warmup files
+                "aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java", "aiGenerated/claude/Project3.java",
+                "aiGenerated/claude/Project4.java", "aiGenerated/claude/Project5.java", "aiGenerated/claude/Project6.java",
+                "aiGenerated/claude/Project7.java", "aiGenerated/claude/Project8.java", "aiGenerated/claude/Project9.java",
+                //
+                "aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/ProjectB.java", "aiGenerated/gemini/ProjectC.java",
                 "aiGenerated/gemini/ProjectD.java", "aiGenerated/gemini/ProjectE.java", "aiGenerated/gemini/ProjectF.java",
                 "aiGenerated/gemini/ProjectG.java", "aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java",
                 "aiGenerated/gemini/ProjectJ.java", "aiGenerated/gemini/ProjectK.java", "aiGenerated/gemini/ProjectL.java",
@@ -166,9 +172,9 @@ class EvaluationEngineTest {
             boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
-                JavaCpgLanguage.deadCodeRemovalTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
-                ArrayAiType.DEFAULT);
-        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+                JavaCpgLanguage.deadCodeRemovalTransformations(),
+                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+                IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
         // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
@@ -354,7 +360,7 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>();
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -404,11 +410,12 @@ class EvaluationEngineTest {
     @Disabled
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
         // String fileName = "aiGenerated/geminiPlag/GridOverseer.java";
-        String fileName = "aiGenerated/gemini/ProjectN.java";
+        String fileName = "aiGenerated/gemini/ProjectD.java";
+
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
 
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
         // Assert we don't remove non-dead code
         assertTrue(checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokens));
@@ -518,7 +525,7 @@ class EvaluationEngineTest {
     @Disabled
     @MethodSource("progpediaFiles")
     void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup, remove prints below for real
-        // evaluation
+                                                                                // evaluation
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;

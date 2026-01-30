@@ -1528,8 +1528,8 @@ public class AbstractInterpretation {
         for (FunctionDeclaration subMethod : method.getOverriddenBy()) {
             visitedLinesRecorder.recordFirstLineVisited(subMethod);
         }
-        int numberOfCalls = method.getUsages().size();
         boolean removeDeadCodeBackup = this.removeDeadCode;
+        int numberOfCalls = method.getUsages().size();
         if (numberOfCalls > 1) {
             // method is called multiple times
             removeDeadCode = false;
