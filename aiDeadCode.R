@@ -4,9 +4,9 @@ library(tidyr)
 library(dplyr)
 
 # Read the CSV file
-data <- read.csv("results/Progpedia_deadcode_results_Standard.csv")
-data1 <- read.csv("results/Progpedia_deadcode_results_Level1.csv")
-data2 <- read.csv("results/Progpedia_deadcode_results_Level2.csv")
+data <- read.csv("results/Ai_deadcode_results_Standard.csv")
+data1 <- read.csv("results/Ai_deadcode_results_Level1.csv")
+data2 <- read.csv("results/Ai_deadcode_results_Level2.csv")
 
 data %>% filter(RemovedFullTokens > 20) %>% count()
 
