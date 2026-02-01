@@ -329,6 +329,9 @@ public class StringValue extends JavaObject implements IStringValue {
             this.value = null;
             return;
         }
+        if (other instanceof IJavaObject javaObject && javaObject.isNull()) {
+            other = new StringValue(null);
+        }
         assert other instanceof StringValue : "Cannot merge " + this.getClass() + " with " + other.getClass();
         StringValue otherString = (StringValue) other;
         if (this.information && otherString.information && java.util.Objects.equals(this.value, otherString.value)) {

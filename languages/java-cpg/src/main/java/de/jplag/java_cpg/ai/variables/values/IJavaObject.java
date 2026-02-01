@@ -56,4 +56,9 @@ public interface IJavaObject extends IValue {
      */
     boolean hasAbstractInterpretation();
 
+    /**
+     * @return whether the object is known to be null.
+     */
+    boolean isNull();
+
 }

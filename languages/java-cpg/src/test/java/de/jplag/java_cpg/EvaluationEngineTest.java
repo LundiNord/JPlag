@@ -84,7 +84,15 @@ class EvaluationEngineTest {
 
     @NotNull
     private static Stream<Pair<String, String>> testPlagFiles() {
-        return Stream.of(new Pair<>("aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/ProjectC.java"),
+        return Stream.of(
+                // JVM Warmup:
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project3.java"),
+                new Pair<>("aiGenerated/claude/Project5.java", "aiGenerated/claude/Project6.java"),
+                new Pair<>("aiGenerated/claude/Project7.java", "aiGenerated/claude/Project8.java"),
+                new Pair<>("aiGenerated/claude/Project9.java", "aiGenerated/claude/Project10.java"),
+                //
+                new Pair<>("aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/ProjectC.java"),
                 new Pair<>("aiGenerated/gemini/ProjectB.java", "aiGenerated/gemini/ProjectE.java"),
                 new Pair<>("aiGenerated/gemini/ProjectF.java", "aiGenerated/gemini/ProjectG.java"),
                 new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/gemini/ProjectI.java"),
@@ -102,8 +110,8 @@ class EvaluationEngineTest {
                 new Pair<>("aiGenerated/gemini/Project4.java", "aiGenerated/gemini/Project8.java"),
                 //
                 new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/geminiPlag/NetworkController.java"),
-                new Pair<>("aiGenerated/gemini/ProjectJ.java", "aiGenerated/geminiPlag/ServerProcessManager.java"),
-                // new Pair<>("aiGenerated/gemini/NetworkController.java", "aiGenerated/geminiPlag/GridOverseer.java"), //bug in my code
+                new Pair<>("aiGenerated/gemini/ProjectJ.java", "aiGenerated/geminiPlag/ServerProcessManager.java"),   // break
+                new Pair<>("aiGenerated/geminiPlag/NetworkController.java", "aiGenerated/geminiPlag/GridOverseer.java"), // bug in my code
                 //
                 new Pair<>("aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java"),
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
@@ -119,10 +127,10 @@ class EvaluationEngineTest {
                 new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/grok/project4.java"),
                 new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/grok/project5.java"),
                 new Pair<>("aiGenerated/grok/project4.java", "aiGenerated/grok/project5.java"),
-                new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/grok/project7.java"),
+                new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/grok/project7.java"),   // break
                 new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/grok/project8.java"),
-                new Pair<>("aiGenerated/grok/project7.java", "aiGenerated/grok/project8.java"));
-
+                new Pair<>("aiGenerated/grok/project7.java", "aiGenerated/grok/project8.java")    // break
+        );
     }
 
     private static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
@@ -172,9 +180,9 @@ class EvaluationEngineTest {
             boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
-                JavaCpgLanguage.deadCodeRemovalTransformations(),
-                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
-                IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+                JavaCpgLanguage.deadCodeRemovalTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
+                ArrayAiType.DEFAULT);
+        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
         // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
@@ -225,7 +233,11 @@ class EvaluationEngineTest {
 
     private static double getJPlagCpgPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean removeDeadCode, boolean detectDeadCode,
             boolean reorder, boolean normalize, boolean removeSimpleDeadCode) throws ExitException, IOException {
-        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode);
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
+                JavaCpgLanguage.allTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
+                ArrayAiType.DEFAULT);
+        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+        // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         return getJPlagScore(fileNameA, fileNameB, normalize, language);
     }
 
@@ -467,7 +479,7 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>();
-                // throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -501,12 +513,12 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/ws2223-Sheet4TaskA-perseverance/submission7";
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm151";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, true, true, false);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
         long timeSimpleRemoval = System.nanoTime() - startTime;
         startTime = System.nanoTime();
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
@@ -525,7 +537,7 @@ class EvaluationEngineTest {
     @Disabled
     @MethodSource("progpediaFiles")
     void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup, remove prints below for real
-                                                                                // evaluation
+        // evaluation
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -663,7 +675,7 @@ class EvaluationEngineTest {
         double similarityAi = getJPlagCpgPlagScore(fileA, fileB, true, true, false, true, false);
         long timeAi = System.nanoTime() - startTime;
 
-        File csvFile = new File("plagiarism_results.csv");
+        File csvFile = new File("AI_plagiarism_results.csv");
         boolean fileExists = csvFile.exists();
 
         try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
@@ -686,8 +698,8 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataPlagEvaluationSingle() throws ExitException, IOException {
-        String fileA = "aiGenerated/gemini/ProjectD.java";
-        String fileB = "aiGenerated/gemini/ProjectD.java";
+        String fileA = "aiGenerated/grok/project8.java";
+        String fileB = "aiGenerated/grok/project7.java";
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
         double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false, false);
         double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true, false);

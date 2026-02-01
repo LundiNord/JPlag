@@ -1,13 +1,13 @@
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
  * PROJECT L: Stock Market Engine
- * COMPLEXITY: Uses PriorityQueues for order matching, 
+ * COMPLEXITY: Uses PriorityQueues for order matching,
  * Java Streams for analytics, and internal static classes.
  */
 public class StockMarketEngine {
@@ -15,13 +15,13 @@ public class StockMarketEngine {
     private static final String[] TICKERS = {"AAPL", "GOOG", "TSLA", "AMZN"};
     private static final Random rand = new Random();
 
-    // Order Books: Buyers want low prices (max heap not needed, just high bids first), 
+    // Order Books: Buyers want low prices (max heap not needed, just high bids first),
     // Sellers want high prices (min heap for lowest ask).
     // Actually standard matching:
     // Buy Orders: Sort Descending (Highest bid gets priority)
     // Sell Orders: Sort Ascending (Lowest ask gets priority)
-    private static PriorityQueue<Order> buySide = new PriorityQueue<>(Comparator.comparingDouble(Order::getPrice).reversed());
-    private static PriorityQueue<Order> sellSide = new PriorityQueue<>(Comparator.comparingDouble(Order::getPrice));
+    private static PriorityQueue<Order> buySide = new PriorityQueue<>();
+    private static PriorityQueue<Order> sellSide = new PriorityQueue<>();
 
     public static void main(String[] args) {
         System.out.println("--- NYSE Trading System v9.2 ---");
@@ -48,7 +48,7 @@ public class StockMarketEngine {
         String ticker = TICKERS[rand.nextInt(TICKERS.length)];
         double price = 100 + (rand.nextDouble() * 50);
         boolean isBuy = rand.nextBoolean();
-        
+
         Order o = new Order(ticker, price, isBuy);
         if (isBuy) buySide.add(o);
         else sellSide.add(o);
@@ -79,7 +79,7 @@ public class StockMarketEngine {
         // Advanced Stream Usage
         Map<String, Long> volumeByTicker = openOrders.stream()
                 .collect(Collectors.groupingBy(o -> o.ticker, Collectors.counting()));
-        
+
         volumeByTicker.forEach((k, v) -> System.out.println(k + " Open Orders: " + v));
     }
 
@@ -92,8 +92,8 @@ public class StockMarketEngine {
     }
 
     private static void flushAllOrders() {
-         // Recursive method that was never implemented correctly
-         // flushAllOrders(); // Would cause StackOverflow
+        // Recursive method that was never implemented correctly
+        // flushAllOrders(); // Would cause StackOverflow
     }
     //DeadCodeEnd
 
@@ -110,6 +110,8 @@ public class StockMarketEngine {
             this.isBuy = b;
         }
 
-        public double getPrice() { return price; }
+        public double getPrice() {
+            return price;
+        }
     }
 }

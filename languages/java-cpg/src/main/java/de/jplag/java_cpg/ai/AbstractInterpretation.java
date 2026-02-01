@@ -236,6 +236,9 @@ public class AbstractInterpretation {
      */
     private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs,
             @NotNull ConstructorDeclaration constructor) {
+        if (visitedNodesCounter == 724) {
+            System.out.println("Debug");
+        }
         setupClass(rd, objectInstance);
         visitedLinesRecorder.recordFirstLineVisited(constructor);
         for (Type type : rd.getImplementedInterfaces()) {
@@ -243,6 +246,40 @@ public class AbstractInterpretation {
         }
         // Run constructor method
         this.inConstructor = true;
+        if (constructor.getBody() == null) {     // cpg has lost the method body -> try to restore
+            try {
+                RecordDeclaration recordDeclaration = constructor.getRecordDeclaration();
+                assert recordDeclaration != null;
+                List<ConstructorDeclaration> methods = recordDeclaration.getConstructors();
+                // match on name and arguments
+                for (ConstructorDeclaration candidate : methods) {
+                    if (candidate.getParameters().size() == constructor.getParameters().size()) {
+                        boolean parametersMatch = true;
+                        for (int i = 0; i < constructor.getParameters().size(); i++) {
+                            Type candidateType = candidate.getParameters().get(i).getType();
+                            Type methodType = constructor.getParameters().get(i).getType();
+                            boolean typesMatch = candidateType.equals(methodType)
+                                    || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
+                                    || (candidateType.getTypeName().equals("java.util.ArrayList")
+                                            && methodType.getTypeName().equals("java.util.List"))
+                                    || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
+                                    || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
+                            if (!typesMatch) {
+                                parametersMatch = false;
+                                break;
+                            }
+                        }
+                        if (parametersMatch && candidate.getBody() != null) {
+                            constructor = candidate;
+                            visitedLinesRecorder.recordFirstLineVisited(constructor);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception _) {
+                // cannot restore method body -> give up
+            }
+        }
         List<Node> eog = constructor.getNextEOG();
         if (eog.size() == 1) {
             variables.newScope();
@@ -370,9 +407,6 @@ public class AbstractInterpretation {
             }
             case Literal<?> l -> {  // adds its value to the value stack
                 nodeStack.add(l);
-                if (l.getValue() == null) {
-                    System.out.println("Debug");
-                }
                 valueStack.add(Value.valueFactory(l.getValue()));
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
@@ -435,6 +469,9 @@ public class AbstractInterpretation {
                 }
             }
             case DeclarationStatement ds -> {
+                if (visitedNodesCounter == 756) {
+                    System.out.println("Debug");
+                }
                 for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
                     if (((VariableDeclaration) ds.getDeclarations().get(i)).getInitializer() == null) {
                         Variable newVar = new Variable(new VariableName((ds.getDeclarations().get(i)).getName().toString()),
@@ -694,7 +731,12 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case ContinueStatement _ -> throw new JavaLanguageFeatureNotSupportedException("ContinueStatement not supported yet");
-            case BreakStatement _ -> throw new JavaLanguageFeatureNotSupportedException("BreakStatement not supported yet");
+            // case BreakStatement _ -> throw new JavaLanguageFeatureNotSupportedException("BreakStatement not supported yet");
+            case BreakStatement _ -> {
+                assert nextEOG.size() == 1;
+                nodeStack.add(nextEOG.getFirst());
+                return null;
+            }
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
         assert nextNode != null;
@@ -702,6 +744,9 @@ public class AbstractInterpretation {
     }
 
     private void walkMemberExpression(@NotNull MemberExpression me) {
+        if (visitedNodesCounter == 864) {
+            System.out.println("Debug");
+        }
         if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
             if (valueStack.getLast() instanceof IJavaObject javaObject) {
                 assert valueStack.getLast() instanceof IJavaObject;
@@ -730,7 +775,7 @@ public class AbstractInterpretation {
             IValue value = valueStack.getLast();
             if (value instanceof VoidValue) {
                 valueStack.removeLast();    // remove object reference
-                valueStack.add(new JavaObject());
+                valueStack.add(new VoidValue());
             } else {
                 if (me.getRefersTo() == null) {
                     throw new CpgErrorException("MemberExpression refers to null");
@@ -899,6 +944,9 @@ public class AbstractInterpretation {
     @Nullable
     private Node walkIfStatement(@NotNull IfStatement ifStmt) {
         Node nextNode;
+        if (visitedNodesCounter == 268) {
+            System.out.println("Debug");
+        }
         List<Node> nextEOG = ifStmt.getNextEOG();
         boolean elsePresent = ifStmt.getElseStatement() != null;
         // detect infinite loops when no Block inserted by cpg
@@ -1502,6 +1550,9 @@ public class AbstractInterpretation {
                             Type methodType = method.getParameters().get(i).getType();
                             boolean typesMatch = candidateType.equals(methodType)
                                     || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
+                                    || (candidateType.getTypeName().equals("java.util.ArrayList")
+                                            && methodType.getTypeName().equals("java.util.List"))
+                                    || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
                                     || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
                             if (!typesMatch) {
                                 parametersMatch = false;

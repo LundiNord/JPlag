@@ -128,6 +128,18 @@ public class JavaCpgLanguage implements Language {
     }
 
     /**
+     * Returns a set of all transformations.
+     * @return the array of all transformations
+     */
+    @NotNull
+    public static GraphTransformation[] allTransformations() {
+        return new GraphTransformation[] {ifWithNegatedConditionResolution, forStatementToWhileStatement, removeOptionalOfCall, removeOptionalGetCall,
+                removeGetterMethod, moveConstantToOnlyUsingClass, inlineSingleUseConstant, inlineSingleUseVariable, removeEmptyDeclarationStatement,
+                removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField, removeEmptyConstructor, removeUnsupportedConstructor,
+                removeUnsupportedMethod, removeEmptyRecord,};
+    }
+
+    /**
      * Adds the given {@link GraphTransformation} to the list to apply to the submissions.
      * @param transformation the transformation
      */
@@ -167,17 +179,6 @@ public class JavaCpgLanguage implements Language {
     public GraphTransformation[] standardTransformations() {
         return new GraphTransformation[] {removeOptionalOfCall, removeOptionalGetCall, moveConstantToOnlyUsingClass, inlineSingleUseVariable,
                 removeLibraryRecord, removeEmptyRecord,};
-    }
-
-    /**
-     * Returns a set of all transformations.
-     * @return the array of all transformations
-     */
-    public GraphTransformation[] allTransformations() {
-        return new GraphTransformation[] {ifWithNegatedConditionResolution, forStatementToWhileStatement, removeOptionalOfCall, removeOptionalGetCall,
-                removeGetterMethod, moveConstantToOnlyUsingClass, inlineSingleUseConstant, inlineSingleUseVariable, removeEmptyDeclarationStatement,
-                removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField, removeEmptyConstructor, removeUnsupportedConstructor,
-                removeUnsupportedMethod, removeEmptyRecord,};
     }
 
     @Override

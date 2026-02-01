@@ -136,6 +136,11 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     @Override
+    public boolean isNull() {
+        return fields == null;
+    }
+
+    @Override
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         switch (operator) {
             case "==" -> {
