@@ -1,6 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -182,32 +186,68 @@ public class JavaObject extends Value implements IJavaObject {
     @NotNull
     @Override
     public JavaObject copy() {
+        return copy(new IdentityHashMap<>());
+    }
+
+    /**
+     * Deep copy of this object.
+     * @param copiedObjects map of already copied objects to handle cyclic references.
+     * @return the copied object.
+     */
+    @Override
+    @NotNull
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
         if (fields == null) {
             return new JavaObject(null, this.abstractInterpretation);
         }
-        return new JavaObject(new Scope(this.fields), this.abstractInterpretation);
+        if (copiedObjects.containsKey(this)) {
+            return copiedObjects.get(this);
+        }
+        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation);
+        copiedObjects.put(this, newObject);
+        newObject.fields = new Scope(this.fields, copiedObjects);
+        return newObject;
     }
 
     @Override
     public void merge(@NotNull IValue other) {
-        if (!(other instanceof JavaObject)) {   // cannot merge different types
+        merge(other, Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    @Override
+    public void merge(@NotNull IValue other, Set<JavaObject> visited) {
+        if (!(other instanceof JavaObject otherObj)) {
             setToUnknown();
             return;
         }
-        if (fields == null && ((JavaObject) other).fields == null) {
+        if (fields == null && otherObj.fields == null) {
             return;
         }
-        if (fields == null || ((JavaObject) other).fields == null) {
+        if (fields == null || otherObj.fields == null) {
             fields = new Scope();
             return;
         }
-        this.fields.merge(((JavaObject) other).fields);
+        // Cycle detection
+        if (visited.contains(this)) {
+            return;
+        }
+        visited.add(this);
+        this.fields.merge(otherObj.fields, visited);
     }
 
     @Override
     public void setToUnknown() {
+        setToUnknown(Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    @Override
+    public void setToUnknown(Set<JavaObject> visited) {
+        if (visited.contains(this)) {
+            return;
+        }
+        visited.add(this);
         if (fields != null) {
-            fields.setEverythingUnknown();
+            fields.setEverythingUnknown(visited);
         } else {
             fields = new Scope();
         }
@@ -215,8 +255,17 @@ public class JavaObject extends Value implements IJavaObject {
 
     @Override
     public void setInitialValue() {
+        setInitialValue(Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    @Override
+    public void setInitialValue(Set<JavaObject> visited) {
+        if (visited.contains(this)) {
+            return;
+        }
+        visited.add(this);
         if (fields != null) {
-            fields.setEverythingInitialValue();
+            fields.setEverythingInitialValue(visited);
         }
         fields = null;
     }

@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values.arrays;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
@@ -193,6 +194,12 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
         }
         INumberValue newLength = (INumberValue) this.length.copy();
         return new JavaLengthArray(this.innerType, newLength);
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

@@ -1,12 +1,19 @@
 package de.jplag.java_cpg.ai.variables;
 
+import static de.jplag.java_cpg.ai.variables.Type.OBJECT;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.values.IJavaObject;
 import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.NullValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
@@ -64,6 +71,17 @@ public class Variable {
     }
 
     /**
+     * Copy constructor with copied objects map.
+     * @param variable the variable to deep copy.
+     * @param copiedObjects map of already copied JavaObjects to handle circular references.
+     */
+    public Variable(@NotNull Variable variable, Map<JavaObject, JavaObject> copiedObjects) {
+        this.name = variable.name;
+        this.value = variable.value.copy(copiedObjects);
+        this.changeRecorders = variable.changeRecorders;
+    }
+
+    /**
      * @return The name of this variable in the program.
      */
     public VariableName getName() {
@@ -101,33 +119,48 @@ public class Variable {
      * @param other the variable whose content will be merged into this one; must have the same name.
      */
     public void merge(@NotNull Variable other) {
+        merge(other, Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    /**
+     * Merge content from another variable into this variable. The provided variable must have the same name as this
+     * variable. The actual merge behavior is delegated to the underlying {@link Value} implementation.
+     * @param other the variable whose content will be merged into this one; must have the same name.
+     * @param visited set of already visited JavaObjects to handle cyclic references.
+     */
+    public void merge(@NotNull Variable other, Set<JavaObject> visited) {
         assert this.changeRecorders.equals(other.changeRecorders);
         assert other.name.equals(this.name);
         if (this.value instanceof NullValue) {
-            if (other.value instanceof NullValue) {
-                // both are null, nothing to do
-            } else {
+            if (!(other.value instanceof NullValue)) {
                 if (other.value instanceof IStringValue) {
                     this.value = Value.valueFactory(Type.STRING);
                 } else if (other.value instanceof IJavaArray) {
                     this.value = Value.valueFactory(Type.ARRAY);
                 } else if (other.value instanceof IJavaObject) {
-                    this.value = Value.valueFactory(Type.OBJECT);
+                    this.value = Value.valueFactory(OBJECT);
                 }
             }
         }
-        this.value.merge(other.value);
+        this.value.merge(other.value, visited);
     }
 
     /**
      * Delete all content information in this variable.
      */
     public void setToUnknown() {
+        setToUnknown(Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    /**
+     * Delete all content information in this variable.
+     * @param visited set of already visited JavaObjects to handle cyclic references.
+     */
+    public void setToUnknown(Set<JavaObject> visited) {
         if (getValue() instanceof NullValue) {
-            // replace null with unknown JavaObject
-            setValue(Value.valueFactory(Type.OBJECT));
+            setValue(Value.valueFactory(OBJECT));
         } else {
-            value.setToUnknown();
+            value.setToUnknown(visited);
         }
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
@@ -138,7 +171,15 @@ public class Variable {
      * Reset all information in this variable expect type and name. Initial values depend on the type.
      */
     public void setInitialValue() {
-        value.setInitialValue();
+        setInitialValue(Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    /**
+     * Reset all information in this variable expect type and name. Initial values depend on the type.
+     * @param visited set of already visited JavaObjects to handle cyclic references.
+     */
+    public void setInitialValue(Set<JavaObject> visited) {
+        value.setInitialValue(visited);
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
         }
@@ -155,9 +196,6 @@ public class Variable {
      * @return the last added change recorder. It is removed from this variable.
      */
     public ChangeRecorder removeLastChangeRecorder() {
-        if (changeRecorders.isEmpty()) {
-            int x = 0;
-        }
         assert !this.changeRecorders.isEmpty();
         return this.changeRecorders.removeLast();
     }

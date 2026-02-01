@@ -37,9 +37,9 @@ class DeadCodeDetectionStringTest {
         Value.setUsedStringAiType(StringAiType.CHAR_INCLUSION);
         final AbstractInterpretation interpretation = interpretFromResource("java/ai/string");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(new HashSet<>(Set.of(' ', 'D', 'e', 'h', 'J', 'l', ',', 'n', 'o')),
+        assertEquals(new HashSet<>(Set.of(' ', '!', 'D', 'e', 'H', 'h', 'J', 'l', ',', 'n', 'o')),
                 ((StringCharInclValue) main.accessField("result")).getCertainContained());
-        assertEquals(new HashSet<>(Set.of('!', 'c', 'W', 'H', 'm')), ((StringCharInclValue) main.accessField("result")).getMaybeContained());
+        assertEquals(new HashSet<>(Set.of()), ((StringCharInclValue) main.accessField("result")).getMaybeContained());
         assertEquals(new HashSet<>(Set.of('J', 'O', 'H', 'N', ' ', 'D', 'E')),
                 ((StringCharInclValue) main.accessField("result2")).getCertainContained());
         assertEquals(new HashSet<>(Set.of()), ((StringCharInclValue) main.accessField("result2")).getMaybeContained());

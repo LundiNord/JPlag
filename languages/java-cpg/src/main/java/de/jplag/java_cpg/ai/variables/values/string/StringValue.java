@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
@@ -249,6 +250,10 @@ public class StringValue extends JavaObject implements IStringValue {
                     return new StringValue();
                 }
             }
+            case "format" -> {   // public static String format(String format, Object... args)
+                assert paramVars.size() >= 1;
+                return new StringValue();
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
@@ -319,6 +324,14 @@ public class StringValue extends JavaObject implements IStringValue {
     @NotNull
     @Override
     public JavaObject copy() {
+        return new StringValue(value, information);
+    }
+
+    @NotNull
+    @Override
+    public StringValue copy(Map<JavaObject, JavaObject> copiedObjects) {
+        // StringValue doesn't have fields that could create cycles,
+        // so we can just return a simple copy
         return new StringValue(value, information);
     }
 

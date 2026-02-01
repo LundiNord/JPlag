@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.values.arrays;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
@@ -543,6 +544,12 @@ public class JavaArray extends JavaObject implements IJavaArray {
             newValues.add(value.copy());
         }
         return new JavaArray(innerType, newValues);
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

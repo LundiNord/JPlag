@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
@@ -64,6 +65,12 @@ public class Random extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new Random();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

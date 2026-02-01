@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.values.string;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
@@ -397,6 +398,14 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     @Override
     public JavaObject copy() {
         return new StringRegexValue(contentRegex == null ? null : new ArrayList<>(contentRegex), unknown);
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        // StringValue doesn't have fields that could create cycles,
+        // so we can just return a simple copy
+        return copy();
     }
 
     @Override

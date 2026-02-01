@@ -2,6 +2,7 @@ package de.jplag.java_cpg.ai.variables.values.string;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -176,6 +177,12 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     public JavaObject copy() {
         return new StringCharInclValue(certainContained == null ? null : new HashSet<>(certainContained), new HashSet<>(maybeContained));   // ToDo:
                                                                                                                                             // expensive
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override
