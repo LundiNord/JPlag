@@ -172,6 +172,7 @@ public class AbstractInterpretation {
         name = name.split("<")[0]; // remove generics
         switch (name) {
             case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
+            case "java.util.HashSet", "java.util.Set" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashSet();
             case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
             case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue" -> newObject = Value
                     .getNewArayValue();
@@ -236,9 +237,6 @@ public class AbstractInterpretation {
      */
     private void runClass(@NotNull RecordDeclaration rd, @NotNull IJavaObject objectInstance, List<IValue> constructorArgs,
             @NotNull ConstructorDeclaration constructor) {
-        if (visitedNodesCounter == 724) {
-            System.out.println("Debug");
-        }
         setupClass(rd, objectInstance);
         visitedLinesRecorder.recordFirstLineVisited(constructor);
         for (Type type : rd.getImplementedInterfaces()) {
@@ -334,10 +332,16 @@ public class AbstractInterpretation {
         RecordDeclaration currentClass = rd;
         while (true) {
             Set<RecordDeclaration> superClass = currentClass.getSuperTypeDeclarations();
-            if (superClass.isEmpty()) {
+            List<Type> superClassTypes = currentClass.getSuperClasses();
+            if (superClass.isEmpty() || superClassTypes.isEmpty()) {
                 break;
             }
-            assert superClass.size() == 1;
+            superClass = superClass.stream()    // necessary to filter out interfaces
+                    .filter(x -> superClassTypes.stream().anyMatch(t -> x.toType().equals(t))).collect(java.util.stream.Collectors.toSet());
+            if (superClass.size() != 1) {
+                System.out.println("Debug");
+            }
+            assert superClass.size() == 1 : superClass.size() + " inheritance is not supported in Java.";
             RecordDeclaration superRd = superClass.stream().findFirst().orElseThrow();
             for (Type type : superRd.getImplementedInterfaces()) {
                 visitedLinesRecorder.recordFirstLineVisited(((ObjectType) type).getRecordDeclaration());
@@ -372,9 +376,15 @@ public class AbstractInterpretation {
                     assert value != null;
                     objectInstance.setField(new Variable(new VariableName(name.toString()), value));
                 } else {
-                    IValue result = graphWalker(fd.getNextEOG().getFirst());
-                    assert result != null;
-                    objectInstance.setField(new Variable(new VariableName(name.toString()), result));
+                    if (fd.getInitializer() instanceof NewExpression newExpr        // filter out recursive constructor calls
+                            && newExpr.getInitializer() instanceof ConstructExpression ce && ce.getConstructor() != null
+                            && ce.getConstructor().getRecordDeclaration() != null && ce.getConstructor().getRecordDeclaration().equals(rd)) {
+                        objectInstance.setField(new Variable(new VariableName(name.toString()), new VoidValue()));
+                    } else {
+                        IValue result = graphWalker(fd.getNextEOG().getFirst());
+                        assert result != null;
+                        objectInstance.setField(new Variable(new VariableName(name.toString()), result));
+                    }
                 }
             }
         }
@@ -469,9 +479,6 @@ public class AbstractInterpretation {
                 }
             }
             case DeclarationStatement ds -> {
-                if (visitedNodesCounter == 756) {
-                    System.out.println("Debug");
-                }
                 for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
                     if (((VariableDeclaration) ds.getDeclarations().get(i)).getInitializer() == null) {
                         Variable newVar = new Variable(new VariableName((ds.getDeclarations().get(i)).getName().toString()),
@@ -480,6 +487,9 @@ public class AbstractInterpretation {
                         variables.addVariable(newVar);
                         nodeStack.removeLast();
                     } else {
+                        if (valueStack.isEmpty()) {
+                            System.out.println("Debug");
+                        }
                         assert !valueStack.isEmpty();
                         Variable variable = new Variable((ds.getDeclarations().get(i)).getName().toString(), valueStack.getLast());
                         variables.addVariable(variable);
@@ -644,7 +654,6 @@ public class AbstractInterpretation {
                 if (ile.getInitializers().stream().anyMatch(ProblemExpression.class::isInstance)) { // catch cpg issues
                     list = Value.getNewArayValue();
                 } else {
-                    assert !ile.getInitializers().isEmpty();
                     assert valueStack.size() >= ile.getInitializers().size();
                     assert nodeStack.size() >= ile.getInitializers().size();
                     List<IValue> arguments = new ArrayList<>();
@@ -744,9 +753,6 @@ public class AbstractInterpretation {
     }
 
     private void walkMemberExpression(@NotNull MemberExpression me) {
-        if (visitedNodesCounter == 864) {
-            System.out.println("Debug");
-        }
         if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
             if (valueStack.getLast() instanceof IJavaObject javaObject) {
                 assert valueStack.getLast() instanceof IJavaObject;
@@ -849,6 +855,9 @@ public class AbstractInterpretation {
                 valueStack.removeLast();
             }
             Collections.reverse(argumentList);
+            if (nodeStack.isEmpty()) {
+                System.out.println("Debug");
+            }
             while (!(nodeStack.getLast() instanceof MemberExpression me)) {
                 // necessary for calls like g.inserirLigacao(v1,almax>=lmin && acmax>=cmin && ahmax>=hmin,v2);
                 // where the arguments contain operations
@@ -1487,7 +1496,8 @@ public class AbstractInterpretation {
             }
             // recover inner type
             de.jplag.java_cpg.ai.variables.Type innerType = null;
-            if (((HasType) nae.getTypeObservers().iterator().next()).getType() instanceof PointerType pointerType) {
+            if (nae.getTypeObservers().iterator().hasNext()
+                    && ((HasType) nae.getTypeObservers().iterator().next()).getType() instanceof PointerType pointerType) {
                 innerType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(pointerType.elementType);
             }
             IJavaArray newArray = Value.getNewArayValue(innerType, dimensions.getFirst());
@@ -1533,7 +1543,7 @@ public class AbstractInterpretation {
      */
     public IValue runMethod(@NotNull String name, List<IValue> paramVars, @Nullable MethodDeclaration method) {
         if (method == null) {
-            return null;
+            return new VoidValue();
         }
         if (method.getBody() == null) {     // cpg has lost the method body -> try to restore
             try {
@@ -1590,6 +1600,8 @@ public class AbstractInterpretation {
         ArrayList<IValue> oldValueStack = this.valueStack;
         List<Node> oldLastVisitedLoopOrIf = this.lastVisitedLoopOrIf;
         int oldIfElseCounter = this.ifElseCounter;
+        List<IValue> oldReturnStorage = this.returnStorage;
+        this.returnStorage = new ArrayList<>();
         this.ifElseCounter = 0;
         this.nodeStack = new ArrayList<>();
         this.valueStack = new ArrayList<>();
@@ -1621,6 +1633,7 @@ public class AbstractInterpretation {
         this.lastVisitedLoopOrIf = oldLastVisitedLoopOrIf;
         lastVisitedMethod.removeLast();
         ifElseCounter = oldIfElseCounter;
+        this.returnStorage = oldReturnStorage;
         return result;
     }
 

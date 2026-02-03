@@ -76,7 +76,9 @@ public class Integer extends JavaObject implements ISpecialObject {
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 

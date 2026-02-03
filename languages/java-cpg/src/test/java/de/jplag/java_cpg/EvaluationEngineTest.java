@@ -513,7 +513,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm151";
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm185";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;

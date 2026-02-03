@@ -196,6 +196,9 @@ public class StringValue extends JavaObject implements IStringValue {
             }
             case "matches" -> {   // public boolean matches(String regex)
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                }
                 StringValue regexValue = (StringValue) paramVars.getFirst();
                 if (information && regexValue.getInformation()) {
                     return Value.valueFactory(this.value.matches(Objects.requireNonNull(regexValue.getValue())));
@@ -250,9 +253,34 @@ public class StringValue extends JavaObject implements IStringValue {
                     return new StringValue();
                 }
             }
-            case "format" -> {   // public static String format(String format, Object... args)
+            case "format", "formatted", "replaceAll" -> {
                 assert paramVars.size() >= 1;
                 return new StringValue();
+            }
+            case "contains" -> {   // public boolean contains(CharSequence s)
+                assert paramVars.size() == 1;
+                StringValue s = (StringValue) paramVars.getFirst();
+                if (information && s.getInformation()) {
+                    return Value.valueFactory(this.value.contains(Objects.requireNonNull(s.getValue())));
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
+            case "isBlank" -> {   // public boolean isBlank()
+                assert paramVars == null || paramVars.isEmpty();
+                if (information) {
+                    return Value.valueFactory(this.value.isBlank());
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
+            case "isEmpty" -> {   // public boolean isEmpty()
+                assert paramVars == null || paramVars.isEmpty();
+                if (information) {
+                    return Value.valueFactory(this.value.isEmpty());
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

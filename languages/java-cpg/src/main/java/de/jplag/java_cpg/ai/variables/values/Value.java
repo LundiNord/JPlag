@@ -10,6 +10,7 @@ import de.jplag.java_cpg.ai.ArrayAiType;
 import de.jplag.java_cpg.ai.CharAiType;
 import de.jplag.java_cpg.ai.FloatAiType;
 import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
@@ -129,6 +130,7 @@ public abstract class Value implements IValue {
      * @param value the known value.
      * @return a {@link Value} instance representing the known value.
      * @throws IllegalStateException if the value type is unsupported.
+     * @throws JavaLanguageFeatureNotSupportedException if the value type is not supported by the AI configuration.
      */
     @NotNull
     public static IValue valueFactory(@Nullable Object value) {
@@ -151,7 +153,9 @@ public abstract class Value implements IValue {
                 return getNewFloatValue(d);
             }
             case Long l -> {    // all integer numbers are treated as int
-                assert l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE;
+                if (l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE) {
+                    throw new JavaLanguageFeatureNotSupportedException("Long values are not supported");
+                }
                 return getNewIntValue(l.intValue());
             }
             case Character c -> {

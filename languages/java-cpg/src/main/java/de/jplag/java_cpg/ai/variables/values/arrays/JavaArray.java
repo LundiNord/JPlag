@@ -54,7 +54,8 @@ public class JavaArray extends JavaObject implements IJavaArray {
         this.innerType = Type.VOID;
         for (IValue value : values) {
             if (this.innerType != Type.VOID) {
-                assert value.getType() == this.innerType;
+                assert value.getType() == this.innerType || value.getType() == Type.VOID : "Inconsistent types in array initialization: "
+                        + this.innerType + " and " + value.getType();
                 continue;
             }
             if (value.getType() != Type.VOID) {
