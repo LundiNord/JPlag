@@ -1,6 +1,8 @@
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Scanner;
 
+//DeadCodeStart
 class Queue {
 	int queue[];
 	int size;
@@ -31,7 +33,7 @@ class Queue {
 		size++;
 	}
 }
-
+//DeadCodeEnd
 
 class Graph {
 	int V;
@@ -51,7 +53,7 @@ class Graph {
 		ordem = new int[V];
 		color = new int[V];
 		dist = new int[V][V];
-		for (int i = 0; i < V; i++) 
+		for (int i = 0; i < V; i++)
 			nodeMap.add(new LinkedList<Integer>());
 		for (int i = 0; i < E; i++) {
 			int a = s.nextInt();
@@ -73,7 +75,7 @@ class Graph {
 	}
 
 	void resetVisited () {
-		for (int i = 0; i < V; i++) 
+		for (int i = 0; i < V; i++)
 			visited[i] = false;
 	}
 
@@ -89,8 +91,9 @@ class Graph {
 		return count;
 	}
 
+	//DeadCodeStart
 	int[] ordem () {
-		for (int i = 1; i < V; i++) 
+		for (int i = 1; i < V; i++)
 			ordem[i] = -1;
 		cursor_ord = 0;
 		resetVisited();
@@ -162,6 +165,7 @@ class Graph {
 			}
 		}
 	}
+	//DeadCodeEnd
 }
 
 public class testGraph {

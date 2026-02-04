@@ -1,7 +1,10 @@
-import java.io.*;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
 
+//DeadCodeStart
 class Node implements Comparable<Node>{
 	double w;
 	int from; // no antecessor
@@ -19,9 +22,10 @@ class Node implements Comparable<Node>{
 	}
 
 }
-
+//DeadCodeEnd
 
 public class Prob21_v7{
+	//DeadCodeStart
 	static List<Node> nodelist;
 	static int n;
 	static int [] pset;
@@ -54,7 +58,7 @@ public class Prob21_v7{
 		//		return (pset[i] == i) ? i : (pset[i] = findSet(pset[i]));
 
 
-		//decoded  == 
+		//decoded  ==
 		if(i!=pset[i]) {
 			pset[i] = findSet(pset[i]);
 		}
@@ -103,15 +107,17 @@ public class Prob21_v7{
 		}
 		return cost;
 	}
-
+	//DeadCodeEnd
 
 	public static void main(String [] args) throws IOException {
 		Scanner in = new Scanner(System.in);
 
 		n = in.nextInt();
-		double [] xcord = new double[n]; 
-		double [] ycord = new double[n]; 
+		double [] xcord = new double[n];
+		double [] ycord = new double[n];
+		//DeadCodeStart
 		nodelist = new ArrayList<Node>();
+		//DeadCodeEnd
 
 		//splits the string and transforms into doubles
 		for(int i = 0; i < n; ++i){
@@ -124,9 +130,10 @@ public class Prob21_v7{
 				double dx = xcord[i] - xcord[j];
 				double dy = ycord[i] - ycord[j];
 				double d = Math.sqrt(dx*dx + dy*dy);
-
+				//DeadCodeStart
 				nodelist.add(new Node(d,i,j));
 				nodelist.add(new Node(d,j,i));
+				//DeadCodeEnd
 			}
 		}
 	}

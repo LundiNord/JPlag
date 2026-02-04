@@ -1,5 +1,6 @@
-import java.util.*;
+import java.util.Scanner;
 
+//DeadCodeStart
 class Grafo {
 	Vert verts[];
 
@@ -11,7 +12,7 @@ class Grafo {
 
 	void addAdj (int x, int y, int l, int c, int a) {
 		verts[x].adicionarAdj(y, l, c, a);
-	} 
+	}
 }
 
 class Vert {
@@ -42,7 +43,9 @@ class Arco {
 		prox = x;
 	}
 }
+//DeadCodeEnd
 
+//DeadCodeStart
 class Lista {
 	Node first;
 	int length;
@@ -55,7 +58,7 @@ class Lista {
 	boolean isEmpty () {
 		if (length == 0) return true;
 		return false;
-	} 
+	}
 
 	void addNode (int n) {
 		Node aux;
@@ -86,8 +89,10 @@ class Lista {
 		}
 	}
 }
+//DeadCodeEnd
 
 class infraestrutura {
+	//DeadCodeStart
 	static int depthFirstSearch (Grafo g, int origem, int destino, int nverts, int larMin, int larMax, int compMin, int compMax, int altMin) {
 		Lista stack = new Lista();
 		Arco adjs;
@@ -107,14 +112,17 @@ class infraestrutura {
 
 		return a;
 	}
+	//DeadCodeEnd
 
 	public static void main (String [] args) {
 		int nverts, larMin, larMax, compMin, compMax, altMin, origem, destino, a, b, l, c, al, cont;
 		Scanner kb = new Scanner(System.in);
+		//DeadCodeStart
 		Grafo g;
 
 		nverts = kb.nextInt();
 		g = new Grafo(nverts);
+		//DeadCodeEnd
 
 		larMin = kb.nextInt();
 		larMax = kb.nextInt();
@@ -132,9 +140,10 @@ class infraestrutura {
 			l = kb.nextInt();
 			c = kb.nextInt();
 			al = kb.nextInt();
-
+			//DeadCodeStart
 			g.addAdj(a, b, l, c, al);
 			g.addAdj(b, a, l, c, al);
+			//DeadCodeEnd
 
 			if (larMin <= l && larMax >= l && compMin <= c && compMax >= c && altMin <= al) {
 				cont += 2;

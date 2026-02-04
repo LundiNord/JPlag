@@ -1,5 +1,6 @@
-import java.util.*;
-
+import java.util.LinkedList;
+import java.util.Scanner;
+//DeadCodeStart
 class Edgenova {
 
 	int outro;
@@ -83,9 +84,9 @@ class Heapmin {
 		/*
 		 * System.out.println("::::"); for(int j=1;j<size+1;j++){
 		 * System.out.println(j+" "+conj[j].ver+" "+conj[j].verkey);
-		 * 
+		 *
 		 * } for(int j=1;j<pos.length;j++){
-		 * 
+		 *
 		 * System.out.println("v:"+j+"p:"+pos[j]); } System.out.println("::::");
 		 */
 	}
@@ -147,8 +148,10 @@ class Heapmin {
 	}
 
 }
+//DeadCodeEnd
 
 class Graph { // Graph
+	//DeadCodeStart
 	private final int V;
 	private int E;
 	private Node[] nos;
@@ -171,7 +174,7 @@ class Graph { // Graph
 
 	/**
 	 * Copy constructor.
-	 * 
+	 *
 	 * public EdgeWeightedGraph(EdgeWeightedGraph G) { this(G.V()); this.E =
 	 * G.E(); for (int v = 1; v < G.V(); v++) { // reverse so that adjacency
 	 * list is in same order as original Stack<Edge> reverse = new
@@ -216,7 +219,7 @@ class Graph { // Graph
 				s.append(e.outro + " l: " + e.largura + " c: "+e.comprimento+" h: "+e.altura);
 				s.append(" | ");
 			}
-			
+
 			s.append(NEWLINE);
 		}
 		return s.toString();
@@ -255,6 +258,8 @@ class Graph { // Graph
 
 	}
 */
+
+	//DeadCodeEnd
 	public static void main(String[] args) {
 
 		Scanner in = new Scanner(System.in);
@@ -268,21 +273,21 @@ class Graph { // Graph
 		altura=in.nextInt();
 		int start = in.nextInt();
 		int fim = in.nextInt();
-		
+
 		int a = in.nextInt();
 		int result=0;
 		int b,lar,com,alt;
 		//Graph G = new Graph(nv + 1);
 		while (a != -1) {
-			
+
 			b=in.nextInt();
 			lar=in.nextInt();
 			com=in.nextInt();
 			alt=in.nextInt();
-			
+
 			if(lar>=lmin && com>=cmin && alt>=altura)
 				result++;
-			
+
 			//G.addEdge(a, b, lar,com,alt);
 			a = in.nextInt();
 		}

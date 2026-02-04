@@ -7,7 +7,7 @@
 
 import java.util.LinkedList;
 import java.util.Scanner;
-
+//DeadCodeStart
 class Qnode {
 	int vert;
 	int vertkey;
@@ -145,6 +145,7 @@ class Heapmin {
 		return size == 0;
 	}
 }
+//DeadCodeEnd
 
 class Arco {
 	int no_final;
@@ -158,7 +159,7 @@ class Arco {
 		comp = c;
 		alt = a;
 	}
-
+	//DeadCodeStart
 	int extremo_final() {
 		return no_final;
 	}
@@ -174,6 +175,7 @@ class Arco {
 	int valor_alt() {
 		return alt;
 	}
+	//DeadCodeEnd
 }
 
 class No {
@@ -197,31 +199,33 @@ class Grafo {
 			verts[i] = new No();
 		// para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
 	}
-
+	//DeadCodeStart
 	public int num_vertices() {
 		return nvs;
 	}
+	//DeadCodeEnd
 
 	public int num_arcos() {
 		return narcos;
 	}
-
+	//DeadCodeStart
 	public LinkedList<Arco> adjs_no(int i) {
 		return verts[i].adjs;
 	}
-
+	//DeadCodeEnd
 	public void insert_new_arc(int i, int j, int valor_larg, int valor_comp,
 			int valor_alt) {
 		verts[i].adjs.addFirst(new Arco(j, valor_larg, valor_comp, valor_alt));
 		narcos++;
 	}
-
+	//DeadCodeStart
 	public Arco find_arc(int i, int j) {
 		for (Arco adj : adjs_no(i))
 			if (adj.extremo_final() == j)
 				return adj;
 		return null;
 	}
+	//DeadCodeEnd
 }
 
 public class main {

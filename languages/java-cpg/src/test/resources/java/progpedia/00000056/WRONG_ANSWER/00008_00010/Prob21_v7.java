@@ -1,6 +1,8 @@
-import java.io.*;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
 
 class Node implements Comparable<Node>{
 	double w;
@@ -13,10 +15,12 @@ class Node implements Comparable<Node>{
 		this.to = to;
 	}
 
+	//DeadCodeStart
 	public int compareTo(Node o) {
 		// TODO Auto-generated method stub
 		return Double.compare(this.w, o.w);
 	}
+	//DeadCodeEnd
 
 }
 
@@ -28,6 +32,7 @@ public class Prob21_v7{
 	static int [] rank;
 
 	//create the set
+	//DeadCodeStart
 	static void makeSet(int n1){
 		pset = new int[n1];
 		rank = new int[n1];
@@ -54,7 +59,7 @@ public class Prob21_v7{
 		//		return (pset[i] == i) ? i : (pset[i] = findSet(pset[i]));
 
 
-		//decoded  == 
+		//decoded  ==
 		if(i!=pset[i]) {
 			pset[i] = findSet(pset[i]);
 		}
@@ -103,15 +108,17 @@ public class Prob21_v7{
 		}
 		return cost;
 	}
-
+	//DeadCodeEnd
 
 	public static void main(String [] args) throws IOException {
 		Scanner in = new Scanner(System.in);
 
 		n = in.nextInt();
-		double [] xcord = new double[n]; 
-		double [] ycord = new double[n]; 
+		double [] xcord = new double[n];
+		double [] ycord = new double[n];
+		//DeadCodeStart
 		nodelist = new ArrayList<Node>();
+		//DeadCodeEnd
 
 		//splits the string and transforms into doubles
 		for(int i = 0; i < n; ++i){
@@ -119,6 +126,7 @@ public class Prob21_v7{
 			ycord[i]=in.nextDouble();
 		}
 
+		//DeadCodeStart
 		for (int i = 0; i < n-1; ++i){
 			for(int j = i+1; j < n; ++j){
 				double dx = xcord[i] - xcord[j];
@@ -129,6 +137,7 @@ public class Prob21_v7{
 				nodelist.add(new Node(d,j,i));
 			}
 		}
+		//DeadCodeEnd
 	}
 
 
