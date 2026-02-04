@@ -513,7 +513,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm185";
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm137";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -537,7 +537,7 @@ class EvaluationEngineTest {
     @Disabled
     @MethodSource("progpediaFiles")
     void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup, remove prints below for real
-        // evaluation
+                                                                                // evaluation
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -578,6 +578,14 @@ class EvaluationEngineTest {
 
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
 
+        boolean tokensSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokens);
+        boolean simpleRemovalSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
+        boolean removalSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
+        if (javaLanguageFeatureNotSupported || cpgErrorException || runtimeError) {
+            tokensSound = true;
+            simpleRemovalSound = true;
+            removalSound = true;
+        }
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
@@ -612,19 +620,16 @@ class EvaluationEngineTest {
     @Disabled
     void ProgpediaDeadCodeEvaluationSingle() throws ParsingException {
         // String fileName = "progpedia/00000021/WRONG_ANSWER/00168_00002"; //very long runtime <- big list init
-
-        // String fileName = "progpedia/00000019/WRONG_ANSWER/00183_00001"; //stack overflow
-        // String fileName = "progpedia/00000035/ACCEPTED/00197_00006"; //stack overflow
-
         // String fileName = "progpedia/00000043/ACCEPTED/00156_00001";
         // String fileName = "progpedia/00000043/ACCEPTED/00154_00008";
-
         // long runtime
         // String fileName = "progpedia/00000016/ACCEPTED/00071_00001";
         // String fileName = "progpedia/00000053/ACCEPTED/00104_00002";
         // String fileName = "progpedia/00000053/WRONG_ANSWER/00104_00001/BFS.java";
 
-        String fileName = "progpedia/00000039/ACCEPTED/00170_00002";
+        // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
+        // i=i.proximo())
+        String fileName = "progpedia/00000021/WRONG_ANSWER/00171_00005/";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -643,6 +648,10 @@ class EvaluationEngineTest {
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
+        // Assert we don't remove non-dead code
+        assertTrue(checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokens));
+        assertTrue(checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode));
+        assertTrue(checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode));
 
         System.out.println("Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
         System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "

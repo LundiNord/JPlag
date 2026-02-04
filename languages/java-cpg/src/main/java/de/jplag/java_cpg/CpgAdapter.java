@@ -15,11 +15,16 @@ import de.fraunhofer.aisec.cpg.TranslationConfiguration;
 import de.fraunhofer.aisec.cpg.TranslationManager;
 import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
+import de.fraunhofer.aisec.cpg.passes.ControlDependenceGraphPass;
 import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
 import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
 import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
 import de.fraunhofer.aisec.cpg.passes.ImportResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
 import de.fraunhofer.aisec.cpg.passes.Pass;
+import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
+import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
 import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeResolver;
@@ -132,17 +137,16 @@ public class CpgAdapter {
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
 
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-                    // JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class, ImportResolver.class, SymbolResolver.class,
-                    // PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class, FilenameMapper.class,
-                    // ReplaceCallCastPass.class,
-                    // AstTransformationPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
-                    // ProgramDependenceGraphPass.class,
-                    // DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
-
-                    ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class,
-                    FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class,  // creates
-                    // EOG
+                    JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class, ImportResolver.class, SymbolResolver.class,
+                    PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class, FilenameMapper.class, ReplaceCallCastPass.class,
+                    AstTransformationPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
                     DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
+
+            // ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class,
+            // DynamicInvokeResolver.class,
+            // FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class, // creates
+            // // EOG
+            // DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
 
             if (!reorderingEnabled) {
                 passClasses.remove(DfgSortPass.class);
