@@ -1,22 +1,11 @@
-import java.util.*;
-
-
 import java.util.Arrays;
 import java.util.LinkedList;
-/*-----------------------------------------------------------------------*\
-|  Exemplo de implementacao de fila de prioridade (por heap de minimo)    |
-|                                                                         |
-|   A.P.Tomas, CC211 (material para prova pratica), DCC-FCUP, 2012        |
-|   Last modified: 2013.01.02                                             |
-\*-----------------------------------------------------------------------*/
-
-import java.lang.*;
-import java.util.*;
+import java.util.Scanner;
 
 class Qnode {
     int vert;
     int vertkey;
-    
+
     Qnode(int v, int key) {
 	vert = v;
 	vertkey = key;
@@ -26,7 +15,7 @@ class Qnode {
 class Heapmax {
     private static int posinvalida = 0;
     int sizeMax,size;
-    
+
     Qnode[] a;
     int[] pos_a;
 
@@ -58,18 +47,18 @@ class Heapmax {
 	int i = pos_a[vertv];
 	a[i].vertkey = newkey;
 
-	while (i > 1 && compare(i, parent(i)) < 0) { 
+	while (i > 1 && compare(i, parent(i)) < 0) {
 	    swap(i, parent(i));
 	    i = parent(i);
 	}
     }
 
-
+	//DeadCodeStart
     void insert(int vertv, int key)
-    { 
+    {
 	if (sizeMax == size)
 	    new Error("Heap is full\n");
-	
+
 	size++;
 	a[size].vert = vertv;
 	pos_a[vertv] = size;   // supondo 1 <= vertv <= n
@@ -82,14 +71,15 @@ class Heapmax {
 	System.out.printf("(Vert,Key)\n---------\n");
 	for(int i=1; i <= size; i++)
 	    System.out.printf("(%d,%d)\n",a[i].vert,a[i].vertkey);
-	
+
 	System.out.printf("-------\n(Vert,PosVert)\n---------\n");
 
 	for(int i=1; i <= sizeMax; i++)
 	    if (pos_valida(pos_a[i]))
 		System.out.printf("(%d,%d)\n",i,pos_a[i]);
     }
-    
+	//DeadCodeEnd
+
     private int parent(int i){
 	return i/2;
     }
@@ -108,7 +98,7 @@ class Heapmax {
 	return 1;
     }
 
-  
+
     private void heapify(int i) {
 	int l, r, biggest;
 
@@ -123,12 +113,12 @@ class Heapmax {
 		biggest = l;
 	if (compare(r,biggest) < 0)
 		biggest = r;
-	
+
 	if (i != biggest) {
 	    swap(i, biggest);
 	    heapify(biggest);
 	}
-	
+
     }
 
     private void swap(int i, int j) {
@@ -139,10 +129,12 @@ class Heapmax {
 	a[i] = a[j];
 	a[j] = aux;
     }
-    
+
+	//DeadCodeStart
     private boolean pos_valida(int i) {
 	return (i >= 1 && i <= size);
     }
+	//DeadCodeEnd
 }
 
 
@@ -150,12 +142,13 @@ class Heapmax {
 class Arco {
     int no_final;
     int valor;
-    
+
     Arco(int fim, int v){
 	no_final = fim;
 	valor = v;
     }
 
+	//DeadCodeStart
     int extremo_final() {
 	return no_final;
     }
@@ -163,6 +156,7 @@ class Arco {
     int valor_arco() {
 	return valor;
     }
+	//DeadCodeEnd
 }
 
 
@@ -179,7 +173,7 @@ class No {
 class Grafo {
     No verts[];
     int nvs, narcos;
-			
+
     public Grafo(int n) {
 	nvs = n;
 	narcos = 0;
@@ -188,7 +182,8 @@ class Grafo {
 	    verts[i] = new No();
         // para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
     }
-    
+
+	//DeadCodeStart
     public int num_vertices(){
 	return nvs;
     }
@@ -196,11 +191,12 @@ class Grafo {
     public int num_arcos(){
 	return narcos;
     }
+	//DeadCodeEnd
 
     public LinkedList<Arco> adjs_no(int i) {
 	return verts[i].adjs;
     }
-    
+
     public void insert_new_arc(int i, int j, int valor_ij){
         if(verts.length < i + 1){
             int lastSize = verts.length;
@@ -208,16 +204,18 @@ class Grafo {
             nvs = i;
             for(int novo = lastSize; novo < nvs + 1; novo++)
                 verts[novo] = new No();
-        } 
+        }
 	verts[i].adjs.addFirst(new Arco(j,valor_ij));
         narcos++;
     }
 
+	//DeadCodeStart
     public Arco find_arc(int i, int j){
 	for (Arco adj: adjs_no(i))
 	    if (adj.extremo_final() == j) return adj;
 	return null;
     }
+	//DeadCodeEnd
 }
 
 
@@ -226,7 +224,7 @@ class Grafo {
 		int Lmax ;
 		int Cmin ;
 		int Cmax ;
-		int Amin ;	
+		int Amin ;
 	Medidas(int L1,int L2,int C1,int C2,int A1){
 		Lmin = L1;
 		Lmax = L2;
@@ -234,11 +232,11 @@ class Grafo {
 		Cmax = C2;
 		Amin = A1;
 	}
-	
+
 }
 
 public class encomenda {
-	
+
 	public static void main(String args[]){
 		Scanner inp = new Scanner(System.in);
 		Medidas medidas = new Medidas(inp.nextInt(),inp.nextInt(),inp.nextInt(),inp.nextInt(),inp.nextInt());
@@ -252,14 +250,14 @@ public class encomenda {
 			int j = inp.nextInt();
             int lMaxArco = inp.nextInt();
             int cMaxArco = inp.nextInt();
-            int aMaxArco = inp.nextInt(); 
+            int aMaxArco = inp.nextInt();
 			if(checkmedidas(medidas,lMaxArco,cMaxArco,aMaxArco)){
 				graf.insert_new_arc(i, j, cMaxArco);
 				graf.insert_new_arc(j, i, cMaxArco);
 				if(origem ==  i || origem == j)
-					count1++;			
-				if ( dest == i || dest ==j) 
-					count2++;		
+					count1++;
+				if ( dest == i || dest ==j)
+					count2++;
 				}
 			i = inp.nextInt();
 		}
@@ -272,9 +270,9 @@ public class encomenda {
         else{
             System.out.println(compMax);
         }
-        } 
-		
-		
+        }
+
+
 	}
 
 	private static boolean checkmedidas(Medidas medidas, int lMaxArco,
@@ -283,11 +281,11 @@ public class encomenda {
 			return true;
 		return false;
 	}
-	
+
 	private static int Dijkstra( int s, int dest, Grafo graf){
 		int dist [] = new int [graf.nvs+1];
 		for(int i =1; i<=graf.nvs;i++) dist[i]=0;
-		
+
 		dist[s] = Integer.MAX_VALUE;
 		Heapmax heap = new Heapmax(dist,graf.nvs);
 
@@ -304,10 +302,10 @@ public class encomenda {
 					heap.increaseKey(w.no_final, dist[w.no_final]);
 				}
 			}
-		
+
 		}
-		return dist[dest];	
+		return dist[dest];
 	}
-	
-	
+
+
 }

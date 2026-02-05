@@ -61,6 +61,7 @@ class Heapmax {
 		}
 	}
 
+	//DeadCodeStart
 	void insert(int vertv, int key) {
 		if (sizeMax == size)
 			new Error("Heap is full\n");
@@ -85,6 +86,7 @@ class Heapmax {
 			if (pos_valida(pos_a[i]))
 				System.out.printf("(%d,%d)\n", i, pos_a[i]);
 	}
+	//DeadCodeEnd
 
 	private int parent(int i) {
 		return i / 2;
@@ -139,9 +141,11 @@ class Heapmax {
 		a[j] = aux;
 	}
 
+	//DeadCodeStart
 	private boolean pos_valida(int i) {
 		return (i >= 1 && i <= size);
 	}
+	//DeadCodeEnd
 }
 
 class Arco {
@@ -155,6 +159,7 @@ class Arco {
 		valor = v;
 	}
 
+	//DeadCodeStart
 	int extremo_final() {
 		return no_final;
 	}
@@ -162,6 +167,7 @@ class Arco {
 	int valor_arco() {
 		return valor;
 	}
+	//DeadCodeEnd
 }
 
 class No {
@@ -186,6 +192,7 @@ class Grafo {
 		// para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
 	}
 
+	//DeadCodeStart
 	public int num_vertices() {
 		return nvs;
 	}
@@ -193,6 +200,7 @@ class Grafo {
 	public int num_arcos() {
 		return narcos;
 	}
+	//DeadCodeEnd
 
 	public LinkedList<Arco> adjs_no(int i) {
 		return verts[i].adjs;
@@ -203,20 +211,22 @@ class Grafo {
 		narcos++;
 	}
 
+	//DeadCodeStart
 	public Arco find_arc(int i, int j) {
 		for (Arco adj : adjs_no(i))
 			if (adj.extremo_final() == j)
 				return adj;
 		return null;
 	}
+	//DeadCodeEnd
 }
 
 public class Encomenda {
 
-	
+
 	public static void main(String[] args) {
 		Scanner moo = new Scanner(System.in);
-		
+
 		int lMin=moo.nextInt();
 		int lMax=moo.nextInt();
 		int cMin=moo.nextInt();
@@ -227,13 +237,13 @@ public class Encomenda {
 
 		LinkedList<Arco> arcos=new LinkedList<Arco>();
 		HashMap<Integer,Integer> nos= new HashMap<Integer,Integer>();
-		
-		
+
+
 		int vA=moo.nextInt();
-		
+
 		while(vA!=-1){
 			int vB=moo.nextInt();
-			
+
 			int largura=moo.nextInt();
 			int comprimento=moo.nextInt();
 			int altura=moo.nextInt();
@@ -244,16 +254,16 @@ public class Encomenda {
 				if(!nos.containsKey(vB))
 					nos.put(vB, nos.size()+1);
 				vB=nos.get(vB);
-				
+
 				//printHash(nos);
 			//	System.out.println("Inserido:  "+vA+" "+vB+" "+comprimento);
 				arcos.add(new Arco(vA,vB,comprimento));
 				arcos.add(new Arco(vB,vA,comprimento));
-		
+
 			}
 			vA=moo.nextInt();
-			
-			
+
+
 		}
 		if(nos.containsKey(inicio)){
 			if(nos.containsKey(fim)){
@@ -265,13 +275,13 @@ public class Encomenda {
 				}
 				int[] caminho=new int [g.nvs+1];
 				caminho=Prim(g, inicio,fim);
-				
-				
+
+
 				if(caminho[fim]==Integer.MIN_VALUE)
 					System.out.println(0);
 				else
 					System.out.println(caminho[fim]);
-				
+
 			}
 			else{
 				System.out.println(0);
@@ -279,14 +289,14 @@ public class Encomenda {
 		}else{
 			System.out.println(0);
 		}
-		
-			
-		//System.out.println(inicio+ " "+fim);
-		
 
-		
-		
-		
+
+		//System.out.println(inicio+ " "+fim);
+
+
+
+
+
 	}/*
 	private static void printHash(HashMap<Integer, Integer> nos) {
 		System.out.println("(key) (value)\n--------");
@@ -294,7 +304,7 @@ public class Encomenda {
 			System.out.print(i+" ");
 			System.out.println(nos.get(i));
 		}
-		
+
 	}*/
 	private static int[] Prim(Grafo g, int vA,int fim) {
 		int dist[] = new int[g.nvs + 1];
@@ -318,8 +328,8 @@ public class Encomenda {
 					dist[w.no_final] = Math.min(dist[v],w.valor);
 					heap.increaseKey(w.no_final, dist[w.no_final]);
 				}
-				
-				
+
+
 			}
 			//System.out.println();
 
@@ -327,6 +337,3 @@ public class Encomenda {
 		return dist;
 	}
 }
-    
-
-

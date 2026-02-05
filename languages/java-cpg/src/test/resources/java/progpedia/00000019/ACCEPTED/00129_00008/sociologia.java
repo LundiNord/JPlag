@@ -1,60 +1,60 @@
 import java.util.*;
 //import java.io.*;
 
-class EmptyQueueException extends RuntimeException {  
-    public EmptyQueueException(String err) {
-	super(err);
-    }
+class EmptyQueueException extends RuntimeException {
+	public EmptyQueueException(String err) {
+		super(err);
+	}
 }
 class Node<E> {
-    E       val;
-    Node<E> next;
-    
-    Node(E v, Node<E> n) {
-	val= v;
-	next= n;
-    }
+	E       val;
+	Node<E> next;
+
+	Node(E v, Node<E> n) {
+		val= v;
+		next= n;
+	}
 }
 class Queue<E>  {
-    private int size;      
-    private Node<E> first; 
-    private Node<E> last;  
+	private int size;
+	private Node<E> first;
+	private Node<E> last;
 
-    Queue()  {              
-	size= 0;
-	first= last= null;
-    }
-    public boolean isEmpty()  { return (size==0); }
-    public int size() { return size; }
-
-  
-    public E dequeue() throws EmptyQueueException { 
-
-	if (isEmpty())
-	    return null;
-
-	E res = first.val;	
-	first= first.next;
-	size--;
-	if (first==null)
-	    last=null;
-	return res;
-    }
-	    
-    
-    
-    public void enqueue(E v) {
-	Node<E>  novo = new Node<E> (v, null);
-    
-	if (isEmpty())
-	    first=last=novo;
-	else {
-	    last.next=null;
-	    last.next= novo;
-	    last = novo;
+	Queue()  {
+		size= 0;
+		first= last= null;
 	}
-	size++;
-    }
+	public boolean isEmpty()  { return (size==0); }
+	public int size() { return size; }
+
+
+	public E dequeue() throws EmptyQueueException {
+
+		if (isEmpty())
+			return null;
+
+		E res = first.val;
+		first= first.next;
+		size--;
+		if (first==null)
+			last=null;
+		return res;
+	}
+
+
+
+	public void enqueue(E v) {
+		Node<E>  novo = new Node<E> (v, null);
+
+		if (isEmpty())
+			first=last=novo;
+		else {
+			last.next=null;
+			last.next= novo;
+			last = novo;
+		}
+		size++;
+	}
 }
 
 class nos {
@@ -63,28 +63,28 @@ class nos {
     int p;
     int cnt;
     int time;
-	
+
     nos(int ola[][],int xl){
 	p = xl;
 	o = ola;
 	cnt = 0;
 	time = 0;
     }
-    
-    
+
+
 
 
     void scc () {
-	
+
 	int mt[][] = new int[p][p];
-	
+
 	int fs[] = dfs(o,p);
 	mt = gl(o,p);
 	dfsl(mt,p,fs);
     }
 
     void dfs_visitl (int o[][],String color[],int pais[],int h,int p) {
-	
+
 	cnt++;
 
       	color[h] = "gray";
@@ -99,7 +99,7 @@ class nos {
 	    }
 	}
 	color[h] = "black";
-		
+
     }
 
 
@@ -108,16 +108,16 @@ class nos {
 
 	String color [] = new String [p];
 	int pais [] = new int [p];
-	
-	for (int i= 0; i<p; i++) {	
+
+	for (int i= 0; i<p; i++) {
 	    color[i] = "white";
 	}
-	
-	for (int i= 0; i<p; i++) {	
+
+	for (int i= 0; i<p; i++) {
 	    pais[i] = 0;
 	}
-	
-		
+
+
 	Queue<Integer> filas = new Queue<Integer>();
 
 	int u = -1;
@@ -138,12 +138,12 @@ class nos {
 	int cntf = 0;
 
 	while (! filas.isEmpty()) {
-	    
+
 	    int q = filas.dequeue();
 
-	  
+
 	    if (color[q] == "white"){
-    
+
 		dfs_visitl(oo,color,pais,q,p);
 		if (cnt > 3) {
 		    cntg++;
@@ -154,7 +154,7 @@ class nos {
 	}
 
 	System.out.println(cntg + " " + cntf);
-	
+
     }
 
 
@@ -170,37 +170,37 @@ class nos {
 		ind = b;
 	    }
 	}
-	
+
 	return ind;
     }
 
 
 
     int[] dfs(int o[][],int p) {
-	
+
 	String color [] = new String [p];
 	int pais [] = new int [p];
 	int d[] = new int [p];
 	int f[] = new int [p];
 
-	for (int i= 0; i<p; i++) {	
+	for (int i= 0; i<p; i++) {
 	    color[i] = "white";
 	}
-	
-	for (int i= 0; i<p; i++) {	
+
+	for (int i= 0; i<p; i++) {
 	    pais[i] = 0;
 	    f[i]=0;
 	    d[i]=0;
-	}	
-	
+	}
+
 	for (int h=0;h<p;h++) {
 	    if (color[h] == "white"){
 		dfs_visit(o,color,pais,h,d,p,f);
 	    }
 	}
-      	
+
 	return f;
-	
+
     }
 
     void dfs_visit (int o[][],String color[],int pais[],int h,int d[],int p,int f[]) {
@@ -221,11 +221,11 @@ class nos {
 	color[h] = "black";
 	time++;
 	f[h] = time;
-    
+
     }
 
 
-    int[][] gl (int matriz[][],int r) { 
+    int[][] gl (int matriz[][],int r) {
 
 	int matrizl [][] = new int [r][r];
 
@@ -247,9 +247,9 @@ class sociologia {
     public static void main(String args[]) {
 
 	Scanner in = new Scanner(System.in);
-	
+
 	int x = in.nextInt();
-	
+
 	int y = 0;
 
 	Queue<Integer> fila = new Queue<Integer>();
@@ -257,21 +257,21 @@ class sociologia {
 	for (int i=0;i<x;i++) {
 
 	    y = in.nextInt();
-	    
+
 
 	    int matriz[][] = new int [y][y];
-	    
+
 	    for (int j=0;j<y;j++) {
-		
+
 		int r = in.nextInt();
 		int m = in.nextInt();
-		
+
 		for (int k=0;k<m;k++){
-		    
+
 		    int n = in.nextInt();
-		    
+
 		    matriz[(r-1)][(n-1)] = 1;
-		    
+
 		}
 	    }
 	    int num = i+1;
@@ -279,7 +279,7 @@ class sociologia {
 	    nos falar = new nos(matriz,y);
 	    falar.scc();
 	}
-	
+
     }
 
 }

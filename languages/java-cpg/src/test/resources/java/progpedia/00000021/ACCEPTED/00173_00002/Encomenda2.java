@@ -5,15 +5,17 @@
 |   A.P.Tomas, CC211 (material para prova pratica), DCC-FCUP, 2012    |
 |   Last modified: 2013.01.03                                         |
 \--------------------------------------------------------------------*/
-import java.io.*;
-import java.util.*;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 class Arco {
     int no_final;
     int lMax;
     int cMax;
     int altura;
-    
+
     Arco(int fim, int l,int c, int a){
 	no_final = fim;
     lMax=l;
@@ -21,6 +23,7 @@ class Arco {
     altura=a;
     }
 
+    //DeadCodeStart
     int extremo_final() {
 	return no_final;
     }
@@ -28,14 +31,15 @@ class Arco {
     int larg_arco() {
 	return lMax;
     }
-    
+
     int comp_arco(){
     return cMax;
     }
-    
+
     int alt_arco(){
     return altura;
     }
+    //DeadCodeEnd
 }
 
 
@@ -52,7 +56,7 @@ class No {
 class Grafo {
     No verts[];
     int nvs, narcos;
-			
+
     public Grafo(int n) {
 	nvs = n;
 	narcos = 0;
@@ -61,7 +65,8 @@ class Grafo {
 	    verts[i] = new No();
         // para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
     }
-    
+
+    //DeadCodeStart
     public int num_vertices(){
 	return nvs;
     }
@@ -69,11 +74,12 @@ class Grafo {
     public int num_arcos(){
 	return narcos;
     }
+    //DeadCodeEnd
 
     public LinkedList<Arco> adjs_no(int i) {
 	return verts[i].adjs;
     }
-    
+
     public void insert_new_arc(int i, int j, int l, int c, int a){
         if(verts.length < i + 1){
             int lastSize = verts.length;
@@ -86,11 +92,14 @@ class Grafo {
         narcos++;
     }
 
+    //DeadCodeStart
     public Arco find_arc(int i, int j){
 	for (Arco adj: adjs_no(i))
 	    if (adj.extremo_final() == j) return adj;
 	return null;
     }
+    //DeadCodeEnd
+
     public int Dijkstra(int o,int dest){
         int dist[] = new int[nvs + 1];
         for(int i = 1; i <= nvs; i++) dist[i] = 0;
@@ -110,14 +119,14 @@ class Grafo {
                 }
             }
         }
-          
+
         return dist[dest];
     }
 }
 class Qnode {
     int vert;
     int vertkey;
-    
+
     Qnode(int v, int key) {
 	vert = v;
 	vertkey = key;
@@ -127,7 +136,7 @@ class Qnode {
 class Heapmax {
     private static int posinvalida = 0;
     int sizeMax,size;
-    
+
     Qnode[] a;
     int[] pos_a;
 
@@ -159,18 +168,18 @@ class Heapmax {
 	int i = pos_a[vertv];
 	a[i].vertkey = newkey;
 
-	while (i > 1 && compare(i, parent(i)) < 0) { 
+	while (i > 1 && compare(i, parent(i)) < 0) {
 	    swap(i, parent(i));
 	    i = parent(i);
 	}
     }
 
-
+    //DeadCodeStart
     void insert(int vertv, int key)
-    { 
+    {
 	if (sizeMax == size)
 	    new Error("Heap is full\n");
-	
+
 	size++;
 	a[size].vert = vertv;
 	pos_a[vertv] = size;   // supondo 1 <= vertv <= n
@@ -183,14 +192,15 @@ class Heapmax {
 	System.out.printf("(Vert,Key)\n---------\n");
 	for(int i=1; i <= size; i++)
 	    System.out.printf("(%d,%d)\n",a[i].vert,a[i].vertkey);
-	
+
 	System.out.printf("-------\n(Vert,PosVert)\n---------\n");
 
 	for(int i=1; i <= sizeMax; i++)
 	    if (pos_valida(pos_a[i]))
 		System.out.printf("(%d,%d)\n",i,pos_a[i]);
     }
-    
+    //DeadCodeEnd
+
     private int parent(int i){
 	return i/2;
     }
@@ -209,7 +219,7 @@ class Heapmax {
 	return 1;
     }
 
-  
+
     private void heapify(int i) {
 	int l, r, biggest;
 
@@ -224,12 +234,12 @@ class Heapmax {
 	    biggest = l;
 	if (compare(r,biggest) < 0)
 	    biggest = r;
-	
+
 	if (i != biggest) {
 	    swap(i, biggest);
 	    heapify(biggest);
 	}
-	
+
     }
 
     private void swap(int i, int j) {
@@ -240,10 +250,12 @@ class Heapmax {
 	a[i] = a[j];
 	a[j] = aux;
     }
-    
+
+    //DeadCodeStart
     private boolean pos_valida(int i) {
 	return (i >= 1 && i <= size);
     }
+    //DeadCodeEnd
 }
 
 
@@ -255,7 +267,7 @@ class Encomenda2{
         int compMin=in.nextInt();
         int compMax= in.nextInt();
         int altMin= in.nextInt();
-        
+
         int origem= in.nextInt();
         int destino= in.nextInt();
         int no1,no2,larg, comp, alt;
@@ -267,7 +279,7 @@ class Encomenda2{
             larg=in.nextInt();
             comp= in.nextInt();
             alt=in.nextInt();
-            if(larg>=largMin && comp>=compMin && alt>=altMin){ 
+            if(larg>=largMin && comp>=compMin && alt>=altMin){
                 grafo.insert_new_arc(no1,no2,larg,comp,alt);
                 grafo.insert_new_arc(no2,no1,larg,comp,alt);
                 if(origem == no1 || origem == no2) cOrigem++;
@@ -284,7 +296,3 @@ class Encomenda2{
         }
     }
 }
-
-        
-            
-        

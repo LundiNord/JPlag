@@ -1,9 +1,7 @@
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-
 import java.util.Scanner;
-import java.lang.*;
-import java.util.*;
 
 class Qnode {
 	int vert;
@@ -56,6 +54,7 @@ class Heapmax {
 		}
 	}
 
+	//DeadCodeStart
 	void insert(int vertv, int key) {
 		if (sizeMax == size)
 			new Error("Heap is full\n");
@@ -80,6 +79,7 @@ class Heapmax {
 			if (pos_valida(pos_a[i]))
 				System.out.printf("(%d,%d)\n", i, pos_a[i]);
 	}
+	//DeadCodeEnd
 
 	private int parent(int i) {
 		return i / 2;
@@ -134,9 +134,11 @@ class Heapmax {
 		a[j] = aux;
 	}
 
+	//DeadCodeStart
 	private boolean pos_valida(int i) {
 		return (i >= 1 && i <= size);
 	}
+	//DeadCodeEnd
 }
 
 class Arco {
@@ -151,9 +153,11 @@ class Arco {
 		custo = c;
 	}
 
+	//DeadCodeStart
 	int extremo_final() {
 		return no_final;
 	}
+	//DeadCodeEnd
 
 }
 
@@ -179,6 +183,7 @@ class Grafo {
 		// para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
 	}
 
+	//DeadCodeStart
 	public int num_vertices() {
 		return nvs;
 	}
@@ -186,6 +191,7 @@ class Grafo {
 	public int num_arcos() {
 		return narcos;
 	}
+	//DeadCodeEnd
 
 	public LinkedList<Arco> adjs_no(int i) {
 		return verts[i].adjs;
@@ -200,17 +206,19 @@ class Grafo {
 				verts[k] = new No();
 
 		}
-		
+
 		verts[i].adjs.addFirst(new Arco(i, j, c));
 		narcos++;
 	}
 
+	//DeadCodeStart
 	public Arco find_arc(int i, int j) {
 		for (Arco adj : adjs_no(i))
 			if (adj.extremo_final() == j)
 				return adj;
 		return null;
 	}
+	//DeadCodeEnd
 }
 
 public class Encomenda {
@@ -231,10 +239,10 @@ public class Encomenda {
 		boolean origem = false;
 		boolean destino = false;
 		Grafo g = new Grafo(2);
-		
+
 		int valorI = ex.nextInt();
-		
-		
+
+
 		while (valorI != -1) {
 			valorI=hash(valorI,nos);
 			int valorF = ex.nextInt();
@@ -270,12 +278,14 @@ public class Encomenda {
 		}
 	}
 
+	//DeadCodeStart
 	private static void printhash(HashMap<Integer, Integer> nos) {
 		System.out.println("------HASH-----");
 		for(Integer a:nos.keySet())
 			System.out.println(a+" "+nos.get(a));
-		
+
 	}
+	//DeadCodeEnd
 
 	private static int hash(int valorI, HashMap<Integer, Integer> nos) {
 		if(!nos.containsKey(valorI)){

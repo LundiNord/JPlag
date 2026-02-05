@@ -1,7 +1,6 @@
-
 import java.util.Arrays;
-import java.util.Scanner;
 import java.util.Comparator;
+import java.util.Scanner;
 
 public class CoberturaMinima {
 
@@ -16,14 +15,20 @@ class Solve {
     int m, count, testeMode;
 
     public Solve() {
+        //DeadCodeStart
         this.testeMode = 0;
+        //DeadCodeEnd
 
         this.count = 0;
+        //DeadCodeStart
         if (this.testeMode == 0) {
+            //DeadCodeEnd
             this.read();
+            //DeadCodeStart
         } else {
             this.fakeRead();
         }
+        //DeadCodeEnd
         this.order();
         this.calc();
         this.printCount();
@@ -39,6 +44,7 @@ class Solve {
         }
     }
 
+    //DeadCodeStart
     private void fakeRead() {
         this.m = 20;
         int n = 15;
@@ -58,8 +64,9 @@ class Solve {
         this.segmento[12] = new Segmentos(18, 20);
         this.segmento[13] = new Segmentos(15, 18);
         this.segmento[14] = new Segmentos(0, 3);
-        
+
     }
+    //DeadCodeEnd
 
     private void order() {
         Arrays.sort(this.segmento, new SegmentosComparator());
@@ -79,7 +86,7 @@ class Solve {
             end=aux;
         }
     }
-    
+
     private void printCount(){
         System.out.println(this.count);
     }

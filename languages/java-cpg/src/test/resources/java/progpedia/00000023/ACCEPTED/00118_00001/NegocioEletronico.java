@@ -1,5 +1,5 @@
-import java.lang.*;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 class Qnode {
 	int vert;
@@ -52,6 +52,7 @@ class Heapmin {
 		}
 	}
 
+	//DeadCodeStart
 	void insert(int vertv, int key) {
 		if (sizeMax == size)
 			new Error("Heap is full\n");
@@ -76,6 +77,7 @@ class Heapmin {
 			if (pos_valida(pos_a[i]))
 				System.out.printf("(%d,%d)\n", i, pos_a[i]);
 	}
+	//DeadCodeEnd
 
 	private int parent(int i) {
 		return i / 2;
@@ -95,7 +97,7 @@ class Heapmin {
 		if (a[i].vertkey == a[j].vertkey)
 			if(a[i].vert<a[j].vert)
 				return -1;
-			
+
 		return 1;
 	}
 
@@ -132,11 +134,12 @@ class Heapmin {
 		a[j] = aux;
 	}
 
+	//DeadCodeStart
 	private boolean pos_valida(int i) {
 		return (i >= 1 && i <= size);
 	}
+	//DeadCodeEnd
 
-	
 }
 
 class Arco {
@@ -148,6 +151,7 @@ class Arco {
 		valor = v;
 	}
 
+	//DeadCodeStart
 	int extremo_final() {
 		return no_final;
 	}
@@ -155,6 +159,7 @@ class Arco {
 	int valor_arco() {
 		return valor;
 	}
+	//DeadCodeEnd
 }
 
 class No {
@@ -179,6 +184,7 @@ class Grafo {
 		// para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
 	}
 
+	//DeadCodeStart
 	public int num_vertices() {
 		return nvs;
 	}
@@ -186,6 +192,7 @@ class Grafo {
 	public int num_arcos() {
 		return narcos;
 	}
+	//DeadCodeEnd
 
 	public LinkedList<Arco> adjs_no(int i) {
 		return verts[i].adjs;
@@ -196,12 +203,14 @@ class Grafo {
 		narcos++;
 	}
 
+	//DeadCodeStart
 	public Arco find_arc(int i, int j) {
 		for (Arco adj : adjs_no(i))
 			if (adj.extremo_final() == j)
 				return adj;
 		return null;
 	}
+	//DeadCodeEnd
 }
 
 class NegocioEletronico {
@@ -210,7 +219,7 @@ class NegocioEletronico {
 		Scanner moo = new Scanner(System.in);
 		int lojas = moo.nextInt();
 		int destino = moo.nextInt();
-		
+
 		Grafo g = new Grafo(lojas);
 
 		int vA = moo.nextInt();
@@ -232,7 +241,7 @@ class NegocioEletronico {
 				i=0;
 			}
 		}
-		
+
 	}
 
 	private static int[] Dijkstra(Grafo g, int destino) {
@@ -249,15 +258,15 @@ class NegocioEletronico {
 		Heapmin Q = new Heapmin(dist, g.nvs);
 		int count=0;
 		while (Q.size != 0) {
-			
+
 			int v = Q.extractMin();
-			
+
 			pai[v]=count;
 			count++;
 			for (Arco w : g.adjs_no(v)) {
 				if (dist[w.no_final] > w.valor+dist[v]) {
 					dist[w.no_final] = w.valor+dist[v];
-					
+
 					Q.decreaseKey(w.no_final, dist[w.no_final]);
 				}
 			}

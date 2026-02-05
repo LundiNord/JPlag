@@ -46,15 +46,15 @@ class Heapmax {
 		int i = pos_a[vertv];
 		a[i].vertkey = newkey;
 
-		while (i > 1 && compare(i, parent(i)) > 0) { 
+		while (i > 1 && compare(i, parent(i)) > 0) {
 			swap(i, parent(i));
 			i = parent(i);
 		}
 	}
 
-
+	//DeadCodeStart
 	void insert(int vertv, int key)
-	{ 
+	{
 		if (sizeMax == size)
 			new Error("Heap is full\n");
 
@@ -77,6 +77,7 @@ class Heapmax {
 			if (pos_valida(pos_a[i]))
 				System.out.printf("(%d,%d)\n",i,pos_a[i]);
 	}
+	//DeadCodeEnd
 
 	private int parent(int i){
 		return i/2;
@@ -94,7 +95,7 @@ class Heapmax {
 		if (a[i].vertkey == a[j].vertkey){
 			if(a[i].vert < a[j].vert)
 				return -1;
-			if(a[i].vert == a[j].vert)		
+			if(a[i].vert == a[j].vert)
 				return 0;
 			else
 				return 1;
@@ -134,10 +135,12 @@ class Heapmax {
 		a[j] = aux;
 	}
 
+	//DeadCodeStart
 	private boolean pos_valida(int i) {
 		return (i >= 1 && i <= size);
 	}
-	
+	//DeadCodeEnd
+
 	public boolean isEmpty(){
 		return(size==0);
 	}
@@ -192,6 +195,7 @@ class Grafo {
 		return nvs;
 	}
 
+	//DeadCodeStart
 	public int num_arcos(){
 		return narcos;
 	}
@@ -199,67 +203,70 @@ class Grafo {
 	public LinkedList<Arco> adjs_no(int i) {
 		return verts[i].adjs;
 	}
+	//DeadCodeEnd
 
 	public void insert_new_arc(int i, int j, int valor_ij){
 		verts[i].adjs.addFirst(new Arco(j,valor_ij));
 		narcos++;
 	}
 
+	//DeadCodeStart
 	public Arco find_arc(int i, int j){
 		for (Arco adj: adjs_no(i))
 			if (adj.extremo_final() == j) return adj;
 		return null;
 	}
+	//DeadCodeEnd
 }
 
 public class OpticaMinimalista {
 	static Grafo g;
 
 	public static int construirGrafo(){
-		
+
 		Scanner kb = new Scanner(System.in);
 		int nnos= kb.nextInt();
 		int ncaminhos = kb.nextInt();
 		int manutencao = kb.nextInt();
 		g = new Grafo(nnos);
-		
+
 		int inicio, fim, rendimentoBruto,s=0;
-		
+
 		for(int i=0; i<ncaminhos; i++){
 			inicio=kb.nextInt();
 			if(i==0)
 				s=inicio;
 			fim=kb.nextInt();
 			rendimentoBruto=kb.nextInt();
-			
+
 			g.insert_new_arc(inicio, fim, rendimentoBruto-manutencao);
 			g.insert_new_arc(fim, inicio, rendimentoBruto-manutencao);
 		}
-		
+
 		return s;
 	}
-	
+
 	public static void Prim(int s){
-		
+
 		int dist[] = new int [g.num_vertices()+1];
-		
+
 		for(int i=2; i<dist.length;i++)
 			dist[i]=Integer.MIN_VALUE;
-		
+
 		dist[s]=0;
-		
+
 		Heapmax Q = new Heapmax(dist,g.num_vertices());
 		int rendimento=0,v=0,w,dvw;
-		
+
 		while(!Q.isEmpty()){
 			v = Q.extractMax();
 			if(dist[v]!=Integer.MIN_VALUE){
 				No no= g.verts[v];
-				
+
 				for(Arco arco: no.adjs){
 					w = arco.extremo_final();
 					dvw = arco.valor_arco();
-					
+
 					if(dist[w]<dvw && g.verts[w].visitado==false){
 						dist[w]=dvw;
 						Q.increaseKey(w, dist[w]);
@@ -267,17 +274,17 @@ public class OpticaMinimalista {
 				}
 			}
 			g.verts[v].visitado=true;
-			rendimento+=dist[v];			
+			rendimento+=dist[v];
 		}
-		
+
 		if(dist[v]==Integer.MIN_VALUE)
 			System.out.println("impossivel");
 		else
 			System.out.println("rendimento optimo: "+rendimento);
 	}
-	
+
 	public static void main(String[] args) {
-		
+
 		int prim = construirGrafo();
 		Prim(prim);
 	}

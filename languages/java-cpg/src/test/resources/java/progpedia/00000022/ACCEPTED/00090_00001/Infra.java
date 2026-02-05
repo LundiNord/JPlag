@@ -3,16 +3,17 @@
 import java.util.LinkedList;
 import java.util.Scanner;
 
+//DeadCodeStart
 class Arco {
     int no_final;
     int valor;
-    
+
     Arco(int fim, int v){
 	no_final = fim;
 	valor = v;
-	
+
     }
-    
+
     int extremo_final() {
 	return no_final;
     }
@@ -27,16 +28,16 @@ class No {
     LinkedList<Arco> adjs;
     No() {
 	adjs = new LinkedList<Arco>();
-	
+
     }
-    
+
 }
 
 
 class Grafo {
     No verts[];
     int nvs, narcos;
-			
+
     public Grafo(int n) {
 	nvs = n;
 	narcos = 0;
@@ -45,7 +46,7 @@ class Grafo {
 	    verts[i] = new No();
         // para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
     }
-    
+
     public int num_vertices(){
 	return nvs;
     }
@@ -57,7 +58,7 @@ class Grafo {
     public LinkedList<Arco> adjs_no(int i) {
 	return verts[i].adjs;
     }
-    
+
     public void insert_new_arc(int i, int j, int valor_ij){
 	verts[i].adjs.addFirst(new Arco(j,valor_ij));
         narcos++;
@@ -69,6 +70,8 @@ class Grafo {
 	return null;
     }
 }
+//DeadCodeEnd
+
 public class Infra {
 	public static void main(String [] args){
 		Scanner in = new Scanner(System.in);

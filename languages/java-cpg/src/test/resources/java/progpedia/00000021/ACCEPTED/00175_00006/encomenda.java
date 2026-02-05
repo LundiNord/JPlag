@@ -1,9 +1,12 @@
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Scanner;
 
 class Qnode {
     int vert;
     int vertkey;
-    
+
     Qnode(int v, int key) {
 	vert = v;
 	vertkey = key;
@@ -13,7 +16,7 @@ class Qnode {
 class Heapmax{
     private static int posinvalida = 0;
     int sizeMax,size;
-    
+
     Qnode[] a;
     int[] pos_a;
 
@@ -45,18 +48,18 @@ class Heapmax{
 	int i = pos_a[vertv];
 	a[i].vertkey = newkey;
 
-	while (i > 1 && compare(i, parent(i)) < 0) { 
+	while (i > 1 && compare(i, parent(i)) < 0) {
 	    swap(i, parent(i));
 	    i = parent(i);
 	}
     }
 
-
+	//DeadCodeStart
     void insert(int vertv, int key)
-    { 
+    {
 	if (sizeMax == size)
 	    new Error("Heap is full\n");
-	
+
 	size++;
 	a[size].vert = vertv;
 	pos_a[vertv] = size;   // supondo 1 <= vertv <= n
@@ -69,14 +72,15 @@ class Heapmax{
 	System.out.printf("(Vert,Key)\n---------\n");
 	for(int i=1; i <= size; i++)
 	    System.out.printf("(%d,%d)\n",a[i].vert,a[i].vertkey);
-	
+
 	System.out.printf("-------\n(Vert,PosVert)\n---------\n");
 
 	for(int i=1; i <= sizeMax; i++)
 	    if (pos_valida(pos_a[i]))
 		System.out.printf("(%d,%d)\n",i,pos_a[i]);
     }
-    
+	//DeadCodeEnd
+
     private int parent(int i){
 	return i/2;
     }
@@ -95,7 +99,7 @@ class Heapmax{
 	return 1;
     }
 
-  
+
     private void heapify(int i) {
 	int l, r, biggest;
 
@@ -110,12 +114,12 @@ class Heapmax{
 	    biggest = l;
 	if (compare(r,biggest) < 0)
 	    biggest = r;
-	
+
 	if (i != biggest) {
 	    swap(i, biggest);
 	    heapify(biggest);
 	}
-	
+
     }
 
     private void swap(int i, int j) {
@@ -126,21 +130,24 @@ class Heapmax{
 	a[i] = a[j];
 	a[j] = aux;
     }
-    
+
+	//DeadCodeStart
     private boolean pos_valida(int i) {
 	return (i >= 1 && i <= size);
     }
+	//DeadCodeEnd
 }
 
 class Arco {
     int no_final;
     int valor;
-    
+
     Arco(int fim, int v){
 	no_final = fim;
 	valor = v;
     }
 
+	//DeadCodeStart
     int extremo_final() {
 	return no_final;
     }
@@ -148,6 +155,7 @@ class Arco {
     int valor_arco() {
 	return valor;
     }
+	//DeadCodeEnd
 }
 
 
@@ -163,7 +171,7 @@ class No {
 class Grafo {
     No verts[];
     int nvs, narcos;
-			
+
     public Grafo(int n) {
 	nvs = n;
 	narcos = 0;
@@ -172,7 +180,8 @@ class Grafo {
 	    verts[i] = new No();
         // para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
     }
-    
+
+	//DeadCodeStart
     public int num_vertices(){
 	return nvs;
     }
@@ -180,29 +189,32 @@ class Grafo {
     public int num_arcos(){
 	return narcos;
     }
+	//DeadCodeEnd
 
     public LinkedList<Arco> adjs_no(int i) {
 	return verts[i].adjs;
     }
-    
+
     public void insert_new_arc(int i, int j, int valor_ij){
-    	 if(verts.length < i + 1){ 
-             int lastSize = verts.length; 
-             verts = Arrays.copyOf(verts, i + 1); 
-             nvs = i; 
-             for(int novo = lastSize; novo < nvs + 1; novo++) 
-                 verts[novo] = new No(); 
-         } 
-         verts[i].adjs.addFirst(new Arco(j, valor_ij)); 
-             narcos++; 
+    	 if(verts.length < i + 1){
+             int lastSize = verts.length;
+             verts = Arrays.copyOf(verts, i + 1);
+             nvs = i;
+             for(int novo = lastSize; novo < nvs + 1; novo++)
+                 verts[novo] = new No();
+         }
+         verts[i].adjs.addFirst(new Arco(j, valor_ij));
+             narcos++;
     }
 
+	//DeadCodeStart
     public Arco find_arc(int i, int j){
 	for (Arco adj: adjs_no(i))
 	    if (adj.extremo_final() == j) return adj;
 	return null;
     }
-    
+	//DeadCodeEnd
+
     public int dijkstra(int orig,int dest){
     	int dist[] = new int[nvs + 1];
 		for (int i = 1; i <= nvs; i++) {
@@ -213,20 +225,20 @@ class Grafo {
 		while (Q.size != 0) {
 			int v = Q.extractMax();
 			ListIterator<Arco> li = verts[v].adjs.listIterator();
-			for (Arco w: adjs_no(v)) { 
-				int cCurrente; 
-				if(w.valor < dist[v]) cCurrente = w.valor; 
-                else{ 
-                    cCurrente = dist[v]; 
-                } 
-                if(cCurrente > dist[w.no_final]){ 
-                    dist[w.no_final] = cCurrente; 
-                    Q.increaseKey(w.no_final, dist[w.no_final]); 
-                } 
+			for (Arco w: adjs_no(v)) {
+				int cCurrente;
+				if(w.valor < dist[v]) cCurrente = w.valor;
+                else{
+                    cCurrente = dist[v];
+                }
+                if(cCurrente > dist[w.no_final]){
+                    dist[w.no_final] = cCurrente;
+                    Q.increaseKey(w.no_final, dist[w.no_final]);
+                }
 			}
 		}
 		return(dist[dest]);
-		
+
     }
 }
 
@@ -235,44 +247,44 @@ public class encomenda {
 		int lmin,lmax,cmin,cmax,alt,orig,dest;
 		Scanner sc= new Scanner(System.in);
 		Grafo gr=new Grafo(2);
-		int contagemOrigem = 0; 
-        int contagemDestino = 0; 
-		int b,plmax,pcmax,palt;		
-		
+		int contagemOrigem = 0;
+        int contagemDestino = 0;
+		int b,plmax,pcmax,palt;
+
 		lmin=sc.nextInt();
 		lmax=sc.nextInt();
 		cmin=sc.nextInt();
 		cmax=sc.nextInt();
 		alt=sc.nextInt();
-		
+
 		orig=sc.nextInt();
 		dest=sc.nextInt();
-		
+
 		int a=sc.nextInt();
 		while(a!=-1){
 			b=sc.nextInt();
 			plmax=sc.nextInt();
 			pcmax=sc.nextInt();
 			palt=sc.nextInt();
-			
+
 			if((plmax>=lmin)&&(pcmax>=cmin)){
 					if(palt>=alt){
 						gr.insert_new_arc(a, b, pcmax);
 						gr.insert_new_arc(b, a, pcmax);
-						if(orig == a || orig == b) contagemOrigem++; 
-		                if(dest == a || dest == b) contagemDestino++; 
+						if(orig == a || orig == b) contagemOrigem++;
+		                if(dest == a || dest == b) contagemDestino++;
 					}
 			}
 			a=sc.nextInt();
-			
+
 		}
-		 if(contagemOrigem == 0 || contagemDestino == 0) System.out.println("0"); 
-	        else{ 
-	            int compMax = gr.dijkstra(orig, dest); 
-	            if(compMax > cmax)System.out.println(cmax); 
-	            else{ 
-	                System.out.println(compMax); 
-	            } 
-	        } 
+		 if(contagemOrigem == 0 || contagemDestino == 0) System.out.println("0");
+	        else{
+	            int compMax = gr.dijkstra(orig, dest);
+	            if(compMax > cmax)System.out.println(cmax);
+	            else{
+	                System.out.println(compMax);
+	            }
+	        }
 	}
 }

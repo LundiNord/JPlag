@@ -60,6 +60,7 @@ class Heapmax {
 		}
 	}
 
+	//DeadCodeStart
 	void insert(int vertv, int key) {
 		if (sizeMax == size)
 			new Error("Heap is full\n");
@@ -84,6 +85,7 @@ class Heapmax {
 			if (pos_valida(pos_a[i]))
 				System.out.printf("(%d,%d)\n", i, pos_a[i]);
 	}
+	//DeadCodeEnd
 
 	private int parent(int i) {
 		return i / 2;
@@ -138,9 +140,11 @@ class Heapmax {
 		a[j] = aux;
 	}
 
+	//DeadCodeStart
 	private boolean pos_valida(int i) {
 		return (i >= 1 && i <= size);
 	}
+	//DeadCodeEnd
 }
 
 class Arco {
@@ -152,6 +156,7 @@ class Arco {
 		valor = v;
 	}
 
+	//DeadCodeStart
 	int extremo_final() {
 		return no_final;
 	}
@@ -159,6 +164,7 @@ class Arco {
 	int valor_arco() {
 		return valor;
 	}
+	//DeadCodeEnd
 }
 
 class No {
@@ -183,6 +189,7 @@ class Grafo {
 		// para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
 	}
 
+	//DeadCodeStart
 	public int num_vertices() {
 		return nvs;
 	}
@@ -190,6 +197,7 @@ class Grafo {
 	public int num_arcos() {
 		return narcos;
 	}
+	//DeadCodeEnd
 
 	public LinkedList<Arco> adjs_no(int i) {
 		return verts[i].adjs;
@@ -200,12 +208,14 @@ class Grafo {
 		narcos++;
 	}
 
+	//DeadCodeStart
 	public Arco find_arc(int i, int j) {
 		for (Arco adj : adjs_no(i))
 			if (adj.extremo_final() == j)
 				return adj;
 		return null;
 	}
+	//DeadCodeEnd
 }
 
 public class OpticaMinimalista {
@@ -227,7 +237,7 @@ public class OpticaMinimalista {
 
 		}
 		int dist[] = new int[nVer + 1];
-		
+
 		dist = Prim(g, vA);
 		boolean conn = conectividade(dist);
 		if (conn) {
@@ -251,7 +261,7 @@ public class OpticaMinimalista {
 		}
 		return true;
 	}
-	
+
 	private static int[] Prim(Grafo g, int vA) {
 		int dist[] = new int[g.nvs + 1];
 		for (int i = 0; i < dist.length; i++) {

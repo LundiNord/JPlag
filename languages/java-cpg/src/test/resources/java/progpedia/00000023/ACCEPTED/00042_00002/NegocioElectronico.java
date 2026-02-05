@@ -1,11 +1,10 @@
-import java.util.*;
-
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 class Arco {
     int no_final;
     int valor;
-    
+
     Arco(int fim, int v){
 	no_final = fim;
 	valor = v;
@@ -34,7 +33,7 @@ class No {
 class Grafo {
     No verts[];
     int nvs, narcos;
-			
+
     public Grafo(int n) {
 	nvs = n;
 	narcos = 0;
@@ -43,7 +42,8 @@ class Grafo {
 	    verts[i] = new No();
         // para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
     }
-    
+
+	//DeadCodeStart
     public int num_vertices(){
 	return nvs;
     }
@@ -51,21 +51,24 @@ class Grafo {
     public int num_arcos(){
 	return narcos;
     }
+	//DeadCodeEnd
 
     public LinkedList<Arco> adjs_no(int i) {
 	return verts[i].adjs;
     }
-    
+
     public void insert_new_arc(int i, int j, int valor_ij){
 	verts[i].adjs.addFirst(new Arco(j,valor_ij));
         narcos++;
     }
 
+	//DeadCodeStart
     public Arco find_arc(int i, int j){
 	for (Arco adj: adjs_no(i))
 	    if (adj.extremo_final() == j) return adj;
 	return null;
     }
+	//DeadCodeEnd
 }
 
 
@@ -75,7 +78,7 @@ class Grafo {
 class Qnode {
     int vert;
     int vertkey;
-    
+
     Qnode(int v, int key) {
 	vert = v;
 	vertkey = key;
@@ -85,7 +88,7 @@ class Qnode {
 class Heapmin {
     private static int posinvalida = 0;
     int sizeMax,size;
-    
+
     Qnode[] a;
     int[] pos_a;
 
@@ -117,18 +120,18 @@ class Heapmin {
 	int i = pos_a[vertv];
 	a[i].vertkey = newkey;
 
-	while (i > 1 && compare(i, parent(i)) < 0) { 
+	while (i > 1 && compare(i, parent(i)) < 0) {
 	    swap(i, parent(i));
 	    i = parent(i);
 	}
     }
 
-
+	//DeadCodeStart
     void insert(int vertv, int key)
-    { 
+    {
 	if (sizeMax == size)
 	    new Error("Heap is full\n");
-	
+
 	size++;
 	a[size].vert = vertv;
 	pos_a[vertv] = size;   // supondo 1 <= vertv <= n
@@ -141,14 +144,15 @@ class Heapmin {
 	System.out.printf("(Vert,Key)\n---------\n");
 	for(int i=1; i <= size; i++)
 	    System.out.printf("(%d,%d)\n",a[i].vert,a[i].vertkey);
-	
+
 	System.out.printf("-------\n(Vert,PosVert)\n---------\n");
 
 	for(int i=1; i <= sizeMax; i++)
 	    if (pos_valida(pos_a[i]))
 		System.out.printf("(%d,%d)\n",i,pos_a[i]);
     }
-    
+	//DeadCodeEnd
+
     private int parent(int i){
 	return i/2;
     }
@@ -159,7 +163,7 @@ class Heapmin {
 	return 2*i+1;
     }
 
-    private int compare(int i, int j) { 
+    private int compare(int i, int j) {
     	if (a[i].vertkey < a[j].vertkey)
     		return -1;
     	if (a[i].vertkey == a[j].vertkey) {
@@ -168,11 +172,11 @@ class Heapmin {
 	    	if (a[i].vert> a[j].vert)
 	    		return 1;
 	    	return 0;
-    	}  
+    	}
     	return 1;
     }
 
-  
+
     private void heapify(int i) {
 	int l, r, smallest;
 
@@ -187,12 +191,12 @@ class Heapmin {
 	    smallest = l;
 	if (compare(r,smallest) < 0)
 	    smallest = r;
-	
+
 	if (i != smallest) {
 	    swap(i, smallest);
 	    heapify(smallest);
 	}
-	
+
     }
 
     private void swap(int i, int j) {
@@ -203,10 +207,12 @@ class Heapmin {
 	a[i] = a[j];
 	a[j] = aux;
     }
-    
+
+	//DeadCodeStart
     private boolean pos_valida(int i) {
 	return (i >= 1 && i <= size);
     }
+	//DeadCodeEnd
 }
 
 
@@ -220,50 +226,50 @@ public class NegocioElectronico {
 	static Grafo g;
 	static LinkedList<Integer> fila;
 	static Grafo construir_Grafo(Scanner in){
-	
+
 		 g =new Grafo(nNos);
-		
+
 		int nI = in.nextInt();
-		
-		
+
+
 		while(nI!=-1){
 			int nF = in.nextInt();
 			int custo = in.nextInt();
 			g.insert_new_arc(nI, nF, custo);
 			g.insert_new_arc(nF, nI, custo);
-			nI = in.nextInt();	
+			nI = in.nextInt();
 		}
-		
+
 		return g;
 	}
-	
+
 	static void caminho(Grafo g, int s) {
 		 dist = new int [g.nvs+1];
 		fila = new LinkedList<Integer>();
-			 
-		 for (int u = 1; u <= g.nvs ; u++){  
-             dist [u] = Integer.MAX_VALUE;              
-         } 
+
+		 for (int u = 1; u <= g.nvs ; u++){
+             dist [u] = Integer.MAX_VALUE;
+         }
 		 dist[s]=0;
 		 Heapmin heap = new Heapmin(dist,g.nvs);
-	
+
 		 while(heap.size!=0){
-			 
+
 			 int v = heap.extractMin();
-			 for(Arco arc: g.adjs_no(v)){ 
+			 for(Arco arc: g.adjs_no(v)){
 				 int w = arc.extremo_final();
 				 int dvw = arc.valor_arco();
 				// System.out.println( v + " " + w + " " + dvw );
 				 if( dist[w] > dist[v]+dvw) {
 					 dist[w] = dist[v]+dvw;
-					 heap.decreaseKey(w,dist[w]); 
+					 heap.decreaseKey(w,dist[w]);
 				 }
 			 }
-			
+
 			fila.addLast(v);
-		 }		 
 		 }
-		
+		 }
+
 		static void escrever(){
 			while(!fila.isEmpty()){
 				System.out.print(fila.removeFirst());
@@ -271,12 +277,12 @@ public class NegocioElectronico {
 					System.out.print(" ");
 				else
 					System.out.println();
-				
+
 			}
 		}
 
 	public static void main(String[] args) {
-					
+
 		Scanner in = new Scanner(System.in);
 		nNos = in.nextInt();
 		nInicial = in.nextInt();
@@ -284,8 +290,8 @@ public class NegocioElectronico {
 		g=construir_Grafo(in);
 		caminho( g, nInicial);
 		escrever();
-	
-		
+
+
 	}
 
 }

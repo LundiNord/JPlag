@@ -629,7 +629,8 @@ class EvaluationEngineTest {
 
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
         // i=i.proximo())
-        String fileName = "progpedia/00000021/WRONG_ANSWER/00171_00005/";
+        // String fileName = "progpedia/00000021/WRONG_ANSWER/00171_00005/";
+        String fileName = "progpedia/00000042/ACCEPTED/00054_00005/CoberturaMinima.java";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

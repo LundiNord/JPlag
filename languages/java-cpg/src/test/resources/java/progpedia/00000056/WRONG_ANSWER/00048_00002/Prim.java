@@ -1,6 +1,6 @@
-import java.util.*;
-import java.lang.*;
-import java.io.*;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Scanner;
 
 class Graph{
     int n;
@@ -9,7 +9,7 @@ class Graph{
     public Graph(int n,double dist){
 	this.n=n;
 	nodes = new Node[n];
-		
+
 	for(int i =0;i<n;i++){
 	    nodes[i] = new Node(i,dist);
 	}
@@ -20,6 +20,7 @@ class Graph{
 	nodes[n2].adj.add(new Edge(nodes[n1],weight));
     }
 
+	//DeadCodeStart
     public Node getChildn(Node node,int n){
 	return node.adj.get(n).linked;
     }
@@ -28,21 +29,24 @@ class Graph{
 	for(int i=0;i<n;i++)
 	    nodes[i].visited=false;
     }
+	//DeadCodeEnd
 
     public void setAllDistancesAS(double dist){
 	for(int i=0;i<n;i++)
 	    nodes[i].dist=dist;
     }
 
+	//DeadCodeStart
     public void nullAllFathers(){
 	for(int i=0;i<n;i++)
 	    nodes[i].father=null;
 
     }
+	//DeadCodeEnd
 
 
     public void prim(int s){
-	
+
 	setAllDistancesAS(1000000000);
 	nodes[s].dist=0.0;
 	PriorityQueue<Integer> pq = new PriorityQueue<Integer>();
@@ -53,13 +57,13 @@ class Graph{
 	    int u= pq.poll();
 	    for(Edge v : nodes[u].adj){
 		if(pq.contains(v.linked.id) && v.weight < v.linked.dist  ){
-		    
+
 		    v.linked.dist=v.weight;
 		}
 	    }
 	}
     }
-}	
+}
 
 class Edge implements Comparable<Edge>{
     Node linked;
@@ -70,9 +74,11 @@ class Edge implements Comparable<Edge>{
 	this.linked = linked;
     }
 
+	//DeadCodeStart
     public int compareTo(Edge other){
 	return this.weight.compareTo(other.weight);
     }
+	//DeadCodeEnd
 }
 
 
@@ -91,11 +97,12 @@ class Node implements Comparable<Node>{
 	this.id=id;
     }
 
-
-    @Override 
+	//DeadCodeStart
+    @Override
 	public int compareTo(Node other){
 	return this.dist.compareTo(other.dist);
     }
+	//DeadCodeEnd
 }
 
 class Par{
@@ -125,7 +132,7 @@ class Prim{
 	g.prim(0);
 	double mst=0;
 	for (int i=0;i<N;i++ ) {
-	    mst+=g.nodes[i].dist;	
+	    mst+=g.nodes[i].dist;
 	}
 	System.out.format("%.2f",mst);
 	System.out.println();
