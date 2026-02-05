@@ -259,8 +259,11 @@ public class AbstractInterpretation {
                             Type methodType = constructor.getParameters().get(i).getType();
                             boolean typesMatch = candidateType.equals(methodType)
                                     || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
-                                    || (candidateType.getTypeName().equals("java.util.ArrayList")
-                                            && methodType.getTypeName().equals("java.util.List"))
+                                    || (candidateType instanceof ObjectType && methodType instanceof ObjectType
+                                            && methodType.getName().getLocalName().equals("E"))
+                                    || (candidateType.getTypeName().contains("List") && methodType.getTypeName().contains("List"))   // this can be
+                                                                                                                                     // wrong but is
+                                                                                                                                     // necessary
                                     || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
                                     || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
                             if (!typesMatch) {
@@ -508,6 +511,9 @@ public class AbstractInterpretation {
             case AssignExpression ae -> nextNode = walkAssignExpression(ae);
             case ShortCircuitOperator scop -> nextNode = walkShortCircuitOperator(scop);
             case BinaryOperator bop -> {
+                if (visitedNodesCounter == 7149) {
+                    System.out.println("Debug");
+                }
                 assert valueStack.size() >= 2 && !nodeStack.isEmpty();
                 String operator = bop.getOperatorCode();
                 assert operator != null;
@@ -912,9 +918,30 @@ public class AbstractInterpretation {
                     System.out.println("Debug");
                 }
                 assert classVal != null;
-                classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
+                if (ae.getOperatorCode().equals("+=") || ae.getOperatorCode().equals("-=")) {
+                    IValue oldValue = classVal.accessField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName());
+                    if (oldValue == null) {
+                        System.out.println("Debug");
+                    }
+                    assert oldValue != null;
+                    IValue newValue;
+                    if (ae.getOperatorCode().equals("+=")) {
+                        newValue = oldValue.binaryOperation("+", valueStack.getLast());
+                    } else {
+                        newValue = oldValue.binaryOperation("-", valueStack.getLast());
+                    }
+                    classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), newValue);
+                } else {
+                    classVal.changeField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), valueStack.getLast());
+                }
             } else {
-                variable.setValue(valueStack.getLast());
+                if (ae.getOperatorCode().equals("+=")) {
+                    variable.setValue(variable.getValue().binaryOperation("+", valueStack.getLast()));
+                } else if (ae.getOperatorCode().equals("-=")) {
+                    variable.setValue(variable.getValue().binaryOperation("-", valueStack.getLast()));
+                } else {
+                    variable.setValue(valueStack.getLast());
+                }
             }
             nodeStack.removeLast();
             // sometimes the value of assign is used after, so don't remove it
@@ -1391,6 +1418,9 @@ public class AbstractInterpretation {
 
     @Nullable
     private Node walkForEachStatement(@NotNull ForEachStatement fes) {
+        if (visitedNodesCounter == 7138) {
+            System.out.println("Debug");
+        }
         Node nextNode;
         List<Node> nextEOG = fes.getNextEOG();
         assert nextEOG.size() == 2;
@@ -1470,8 +1500,9 @@ public class AbstractInterpretation {
                 // 3: restore variables and set changed variables to unknown
                 this.variables = originalVariables;
                 for (Variable variable : changedVariables) {
-                    if (variables.getVariable(variable.getName()) != null) {
-                        variables.getVariable(variable.getName()).setToUnknown();
+                    Variable var = variables.getVariable(variable.getName());
+                    if (var != null) {
+                        var.setToUnknown();
                     }
                 }
             }
@@ -1543,9 +1574,6 @@ public class AbstractInterpretation {
      * @return null if the method is not known.
      */
     public IValue runMethod(@NotNull String name, List<IValue> paramVars, @Nullable MethodDeclaration method) {
-        if (name.equals("output")) {
-            System.out.println("Debug");
-        }
         if (method == null) {
             return new VoidValue();
         }
@@ -1564,8 +1592,11 @@ public class AbstractInterpretation {
                             Type methodType = method.getParameters().get(i).getType();
                             boolean typesMatch = candidateType.equals(methodType)
                                     || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
-                                    || (candidateType.getTypeName().equals("java.util.ArrayList")
-                                            && methodType.getTypeName().equals("java.util.List"))
+                                    || (candidateType instanceof ObjectType && methodType instanceof ObjectType
+                                            && methodType.getTypeOrigin() == Type.Origin.UNRESOLVED)
+                                    || (candidateType.getTypeName().contains("List") && methodType.getTypeName().contains("List"))   // this can be
+                                                                                                                                     // wrong but is
+                                                                                                                                     // necessary
                                     || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
                                     || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
                             if (!typesMatch) {

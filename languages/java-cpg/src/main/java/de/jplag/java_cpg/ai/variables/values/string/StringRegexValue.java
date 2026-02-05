@@ -458,6 +458,16 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
+    public void setToUnknown(Set<IJavaObject> visited) {
+        setToUnknown();
+    }
+
+    @Override
+    public void setInitialValue(Set<IJavaObject> visited) {
+        setInitialValue();
+    }
+
+    @Override
     public void setInitialValue() {
         this.contentRegex = null;
         unknown = false;

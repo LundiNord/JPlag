@@ -156,7 +156,7 @@ public class Variable {
      * Delete all content information in this variable.
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
-    public void setToUnknown(Set<JavaObject> visited) {
+    public void setToUnknown(Set<IJavaObject> visited) {
         if (getValue() instanceof NullValue) {
             setValue(Value.valueFactory(OBJECT));
         } else {
@@ -178,7 +178,7 @@ public class Variable {
      * Reset all information in this variable expect type and name. Initial values depend on the type.
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
-    public void setInitialValue(Set<JavaObject> visited) {
+    public void setInitialValue(Set<IJavaObject> visited) {
         value.setInitialValue(visited);
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);

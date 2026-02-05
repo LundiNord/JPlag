@@ -3,6 +3,7 @@ package de.jplag.java_cpg.ai.variables.values.string;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -387,6 +388,16 @@ public class StringValue extends JavaObject implements IStringValue {
     public void setToUnknown() {
         this.information = false;
         this.value = null;
+    }
+
+    @Override
+    public void setToUnknown(Set<IJavaObject> visited) {
+        setToUnknown();
+    }
+
+    @Override
+    public void setInitialValue(Set<IJavaObject> visited) {
+        setInitialValue();
     }
 
     @Override

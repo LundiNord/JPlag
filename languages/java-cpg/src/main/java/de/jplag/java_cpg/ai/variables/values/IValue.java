@@ -84,7 +84,7 @@ public interface IValue {
      * Delete all information in this value.
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
-    default void setToUnknown(Set<JavaObject> visited) {
+    default void setToUnknown(Set<IJavaObject> visited) {
         setToUnknown(); // default: ignore visited set
     }
 
@@ -97,7 +97,7 @@ public interface IValue {
      * Resets all information about this value except its type. The initial value depends on the specific value type.
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
-    default void setInitialValue(Set<JavaObject> visited) {
+    default void setInitialValue(Set<IJavaObject> visited) {
         setInitialValue(); // default: ignore visited set
     }
 

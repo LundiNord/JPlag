@@ -241,7 +241,7 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     @Override
-    public void setToUnknown(Set<JavaObject> visited) {
+    public void setToUnknown(Set<IJavaObject> visited) {
         if (visited.contains(this)) {
             return;
         }
@@ -259,7 +259,7 @@ public class JavaObject extends Value implements IJavaObject {
     }
 
     @Override
-    public void setInitialValue(Set<JavaObject> visited) {
+    public void setInitialValue(Set<IJavaObject> visited) {
         if (visited.contains(this)) {
             return;
         }

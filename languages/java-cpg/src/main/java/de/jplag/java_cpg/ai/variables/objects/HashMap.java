@@ -101,6 +101,10 @@ public class HashMap extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 2;
                 return new VoidValue();
             }
+            case "isEmpty" -> {
+                assert paramVars == null || paramVars.size() == 0;
+                return Value.valueFactory(Type.BOOLEAN);
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

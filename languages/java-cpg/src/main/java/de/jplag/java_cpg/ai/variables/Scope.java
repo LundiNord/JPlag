@@ -11,6 +11,7 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 
 /**
@@ -107,7 +108,7 @@ public class Scope {
      * Sets all variables to completely unknown.
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
-    public void setEverythingUnknown(Set<JavaObject> visited) {
+    public void setEverythingUnknown(Set<IJavaObject> visited) {
         for (Variable variable : variables.values()) {
             variable.setToUnknown(visited);
         }
@@ -124,7 +125,7 @@ public class Scope {
      * Sets all variables to their initial value. The initial value depends on the variable type.
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
-    public void setEverythingInitialValue(Set<JavaObject> visited) {
+    public void setEverythingInitialValue(Set<IJavaObject> visited) {
         for (Variable variable : variables.values()) {
             variable.setInitialValue(visited);
         }
