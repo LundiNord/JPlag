@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.Scanner;
 
 class Merge
 {
@@ -13,7 +13,7 @@ class Merge
 	    {
 		array[i]=stdin.nextInt();
 	    }
-	
+
 
 	System.out.println(MergeCount(array,0,N-1));
 
@@ -42,13 +42,13 @@ class Merge
 			    {
 				aux[i]=array[pivo2];
 				pivo2++;
-				
+
 			    }
 			else if(pivo2>fim)
 			    {
 				aux[i]=array[pivo1];
 				pivo1++;
-				
+
 			    }
 			else if(array[pivo1]<=array[pivo2])
 			    {
@@ -71,7 +71,7 @@ class Merge
 	    }
     }
 
-
+	//DeadCodeStart
     public static void MergeSort(int array[],int ini,int fim)
     {
 	if(ini<0 || ini>array.length-1 || fim<0 || fim>array.length-1)
@@ -121,8 +121,8 @@ class Merge
 
 	    }
     }
+	//DeadCodeEnd
 
-    
 
 
 }

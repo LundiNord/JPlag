@@ -250,7 +250,7 @@ class Heapmax {
 	//DeadCodeStart
     private boolean pos_valida(int i) {
     	return (i >= 1 && i <= size);
-    }7
+    }
 	//DeadCodeEnd
 }
 

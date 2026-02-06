@@ -1,17 +1,17 @@
-import java.io.*;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.util.PriorityQueue;
+import java.util.Scanner;
 
 class Par implements Comparable<Par> {
     double w;
     int a, b;
-    
+
     Par (double w, int a, int b){
 	this.a = a;
 	this.b = b;
 	this.w = w;
     }
-	
+
     public int compareTo(Par p){
 	if (b < p.b)      return -1;
 	else if (b > p.b) return +1;
@@ -19,7 +19,7 @@ class Par implements Comparable<Par> {
     }
 }
 
-
+//DeadCodeStart
 class Node implements Comparable<Node>{
 	double w;
 	int from; // no antecessor
@@ -37,7 +37,7 @@ class Node implements Comparable<Node>{
 	}
 
 }
-
+//DeadCodeEnd
 
 public class Prog21{
 //	static List<Node> nodelist;
@@ -119,8 +119,8 @@ public class Prog21{
 		Scanner in = new Scanner(System.in);
 
 		n = in.nextInt();
-		double [] xcord = new double[n]; 
-		double [] ycord = new double[n]; 
+		double [] xcord = new double[n];
+		double [] ycord = new double[n];
 //		nodelist = new ArrayList<Node>();
 		queue = new PriorityQueue<Par>();
 		//splits the string and transforms into doubles
@@ -140,7 +140,7 @@ public class Prog21{
 
 			}
 		}
-		
+
 		System.out.println(String.format("%.2f", kruskall()));
 	}
 

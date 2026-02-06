@@ -23,25 +23,27 @@ public class somasmaisproximas07 {
 				}
 			}
 		}
-		
+
 		//ordenação
 		somas[f++] = -5000001;
 		somas[f++] =  5000001;
 		Arrays.sort(somas);
-			
+
 		int p = stdin.nextInt();
 		int val;
-		
+
 		//bsearch
 		for (int i = 0; i < p; i++) {
 			val = stdin.nextInt();
 			int r=bsearch(somas,0,f,val);
+			//DeadCodeStart
 			if(r!=-1) System.out.println(r);
-			
+			//DeadCodeEnd
+
 		}
 
 	}
-	
+
 	static int bsearch(int v[], int low, int high, int key){
 	       int mid;
 	       while(low<high){
@@ -60,6 +62,6 @@ public class somasmaisproximas07 {
 		   System.out.println(v[low-1]);
 	       return -1;
 	   }
-	
-	
+
+
 }

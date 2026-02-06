@@ -1,6 +1,6 @@
-import java.util.*;
-import java.io.*;
-import java.lang.Math;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 class Node{
 
@@ -8,17 +8,17 @@ class Node{
     public double y;
     public Node pai;
     public int index;
-    
+
     Node(){
     }
-    
+
     Node(double x, double y, int index){
         this.index = index;
 	this.x=x;
 	this.y=y;
 	this.pai = null;
     }
-    
+
 }
 
 class Graph{
@@ -26,7 +26,7 @@ class Graph{
     public int n;
     public int c;
     public Node nodes[];
-    
+
     Graph(int n){
 	this.n = n;
 	nodes = new Node[n];
@@ -47,13 +47,13 @@ class Set{
 
     public LinkedList<Node> nodes;
     public int id;
-    
+
     Set(Node a, int id){
-	nodes = new LinkedList<Node>();	
+	nodes = new LinkedList<Node>();
 	nodes.addLast(a);
 	this.id = id;
     }
-    
+
 }
 
 class Edge implements Comparable<Edge>{
@@ -61,8 +61,8 @@ class Edge implements Comparable<Edge>{
     public Node a;
     public Node b;
     public double dist;
-    
-    
+
+
     Edge(Node a, Node b){
 	this.a=a;
 	this.b=b;
@@ -78,7 +78,7 @@ class Edge implements Comparable<Edge>{
 	}
 	return 0;
     }
-       
+
 }
 
 public class SardasKrustall{
@@ -86,7 +86,7 @@ public class SardasKrustall{
     public static LinkedList<Set> sets;
     public static LinkedList<Edge> A;
     public static LinkedList<Edge> edges;
-    
+
     public static int find(Node node){
 	for(int i=0; i<sets.size(); i++){
 	    for(int j=0; j<sets.get(i).nodes.size(); j++){
@@ -98,22 +98,24 @@ public class SardasKrustall{
 	return -1;
     }
 
-    
+
     public static void merge(int a, int b){
-	
+
        	for(int i=0; i<sets.get(b).nodes.size(); i++){
 	    sets.get(a).nodes.add(sets.get(b).nodes.get(i));
 	}
 	sets.remove(b);
-	
+
     }
 
+	//DeadCodeStart
     public static void resetId(){
 	for(int i=0; i<sets.size(); i++){
 	    sets.get(i).id = i;
 	}
     }
-    
+	//DeadCodeEnd
+
     public static void main(String args[]){
 
 	Scanner input = new Scanner(System.in);
@@ -136,20 +138,20 @@ public class SardasKrustall{
 		edges.add(new Edge(g.nodes[i], g.nodes[j]));
 	    }
 	}
-	
+
 	Collections.sort(edges);
-	
-	for(Edge e : edges){			
+
+	for(Edge e : edges){
 	    int a = find(e.a);
 	    int b = find(e.b); // -1
 	    if(a != b){
-		A.addLast(e);			        
-	        merge(a, b);     
-	    }	    
+		A.addLast(e);
+	        merge(a, b);
+	    }
 	}
 
 	double result = 0.0f;
-	
+
 	for(Edge E:A){
 	    result += E.dist;
 	}

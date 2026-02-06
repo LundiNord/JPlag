@@ -8,9 +8,10 @@
  *
  * @author ppetz
  */
-import java.util.*;
-import java.io.*;
-import java.lang.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class Inversoes {
 
@@ -18,6 +19,7 @@ public class Inversoes {
     public static int[] v;
     public static double inversoes;
 
+    //DeadCodeStart
     public static void imprLista(int[] lista) {
         for (int i = 0; i < lista.length; i++) {
             if (i == lista.length - 1) {
@@ -48,6 +50,7 @@ public class Inversoes {
 
         return lista;
     }
+    //DeadCodeEnd
 
     public static double mergesort(int v[], int start, int end) {
         if (end - start == 0) {
@@ -125,7 +128,7 @@ public class Inversoes {
 /**
 8
 2 4 2 3 1 5 1 6
- 
+
 8
 76 32 19 87 7 30 17 79
  */

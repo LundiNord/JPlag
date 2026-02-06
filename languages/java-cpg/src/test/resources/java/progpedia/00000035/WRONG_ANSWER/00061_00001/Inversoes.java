@@ -8,9 +8,9 @@
  * @author ppetz
  */
 
-import java.util.*;
-import java.io.*;
-import java.lang.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class Inversoes {
 
@@ -18,6 +18,7 @@ public class Inversoes {
     public static int[] v;
     public static int inversoes;
 
+    //DeadCodeStart
     public static void imprLista(int[] lista) {
         for (int i = 0; i < lista.length; i++) {
             if (i == lista.length - 1) {
@@ -48,6 +49,7 @@ public class Inversoes {
 
         return lista;
     }
+    //DeadCodeEnd
 
     public static int mergesort(int v[], int start, int end) {
         if (end - start == 0) {
@@ -55,19 +57,19 @@ public class Inversoes {
         }
 
         int middle = (start + end) / 2;
-        
+
         int contador=0;
-        
+
         contador += mergesort(v, start, middle);
         contador += mergesort(v, middle + 1, end);
         contador += merge(v, start, middle, end); /*fazer o merge das duas partições anteriores*/
-        
+
         return contador;
     }
 
     public static int merge(int v[], int start, int middle, int end) {
         int contador=0;
-        
+
         for (int h = start; h <= end; h++) {
             aux[h] = v[h];
         }
@@ -91,9 +93,9 @@ public class Inversoes {
             k++;
             i++;
         }
-        
+
         //System.out.println("#"+contador);
-        
+
         return contador;
     }
 
@@ -102,18 +104,18 @@ public class Inversoes {
      */
     public static void main(String[] args) throws IOException {
         int valor, k = 0;
-        
+
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         int nVec = Integer.parseInt(br.readLine());
-        
+
         v = new int[nVec];
         aux = new int[nVec];
-        
+
         String readLine = br.readLine();
 
         String[] words = readLine.split(" ");
-        
+
         for (String si : words) {
             v[k]=Integer.parseInt(si);
             k++;
@@ -127,7 +129,7 @@ public class Inversoes {
 /**
 8
 2 4 2 3 1 5 1 6
- 
+
 8
 76 32 19 87 7 30 17 79
  */

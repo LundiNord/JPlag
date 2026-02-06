@@ -1,5 +1,4 @@
-import java.io.*;
-import java.util.*;
+import java.util.Scanner;
 
 
 
@@ -10,16 +9,17 @@ class piramides{
     public static int[][] contador = new int [1000][1000];
     public static int count=0;
 
+	//DeadCodeStart
     public static int trepar (int i , int j){
-  	 
+
 
 	if( i>1 && detioradas[i-1][j]==false && j<=n-(i-1)){
 	     if(i-1==1){count++;}
-	  
+
 	     // System.out.println(i + " " + j + " Baixo " + count);
 	    trepar(i-1,j);
 	    // System.out.println(i + " " + j + " Baixo " + count);
-	   
+
 	}
 	if(i>1 && detioradas[i-1][j+1]==false && j+1<=(n+1)-(i-1)){
 	    if(i-1==1){count++;}
@@ -30,9 +30,9 @@ class piramides{
 	}
 	return count;
     }
+	//DeadCodeEnd
 
 
- 
 
 
     public static void main(String args[]){
@@ -41,7 +41,7 @@ class piramides{
 
 	Scanner stdin = new Scanner(System.in);
 	n = stdin.nextInt();
-	
+
 	detioradas = new boolean[n+1][n+1];
 	contador= new int[n+1][n+1];
 
@@ -100,8 +100,3 @@ class piramides{
 	//	else{
 	//	System.out.println(resultado);
 	//	}
-	
-	
-
-
-

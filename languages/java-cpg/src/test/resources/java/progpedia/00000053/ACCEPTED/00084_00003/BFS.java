@@ -4,8 +4,8 @@
 // Exemplo de pesquisa em largura (BFS) num grafo nao dirigido
 // (codigo feito na teorica - inclui calculo de distancias)
 
-import java.io.*;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 // Classe que representa um no
 class Node {
@@ -28,7 +28,7 @@ class Graph {
     int diametro;
     int raio;
     int excentricidade[];
-    
+
     Graph(int n) {
 	this.n = n;
 	nodes  = new Node[n+1];
@@ -60,25 +60,26 @@ class Graph {
 		if (!nodes[w].visited) {
 		    q.add(w);
 		    nodes[w].visited  = true;
-		    nodes[w].distance = nodes[u].distance + 1; 
-		}	    
+		    nodes[w].distance = nodes[u].distance + 1;
+		}
 	}
         excentricidade[v] = max;
         if(max > diametro) diametro = max;
     }
-    
+
     public void calc_raio(){
         raio = diametro;
         for(int i=1; i<=n; i++){
             if(raio > excentricidade[i]) raio = excentricidade[i];
         }
     }
-    
+
     public void clean_nodes(){
         for(int i = 1; i<=n; i++)
             nodes[i].visited = false;
     }
-    
+
+    //DeadCodeStart
     public void print_matriz(){
         boolean aux = false;
         for(int i=1; i<=n; i++){
@@ -90,11 +91,12 @@ class Graph {
             System.out.println();
         }
     }
-    
+    //DeadCodeEnd
+
     public void print_centrais(){
         boolean aux = false;
         for(int i= 1; i<=n; i++){
-            
+
             if(excentricidade[i]==raio){
                 if(!aux) aux = true;
                 else System.out.print(" ");
@@ -103,7 +105,7 @@ class Graph {
         }
         System.out.println();
     }
-    
+
     public void print_perifericos(){
         boolean aux = false;
         for(int i= 1; i<=n; i++){
@@ -123,7 +125,7 @@ public class BFS {
 
 	Graph g = new Graph(in.nextInt());
 	int   e = in.nextInt();
-	for (int i=0; i<e; i++) 
+	for (int i=0; i<e; i++)
 	    g.addLink(in.nextInt(), in.nextInt());
 
 	// Pesquisa em largura a partir do no 1

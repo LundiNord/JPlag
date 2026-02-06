@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.util.Vector;
 
 //Encomenda runtime error why?
 // ASK APT
@@ -102,9 +104,9 @@ class Heapmin {
 		/*
 		 * System.out.println("::::"); for(int j=1;j<size+1;j++){
 		 * System.out.println(j+" "+conj[j].ver+" "+conj[j].verkey);
-		 * 
+		 *
 		 * } for(int j=1;j<pos.length;j++){
-		 * 
+		 *
 		 * System.out.println("v:"+j+"p:"+pos[j]); } System.out.println("::::");
 		 */
 	}
@@ -190,7 +192,7 @@ class Graph { // Graph
 
 	/**
 	 * Copy constructor.
-	 * 
+	 *
 	 * public EdgeWeightedGraph(EdgeWeightedGraph G) { this(G.V()); this.E =
 	 * G.E(); for (int v = 1; v < G.V(); v++) { // reverse so that adjacency
 	 * list is in same order as original Stack<Edge> reverse = new
@@ -198,6 +200,7 @@ class Graph { // Graph
 	 * reverse) { adj[v].add(e); } } }
 	 */
 
+	//DeadCodeStart
 	/**
 	 * Return the number of vertices in this graph.
 	 */
@@ -211,6 +214,7 @@ class Graph { // Graph
 	public int E() {
 		return E;
 	}
+	//DeadCodeEnd
 
 	/**
 	 * Add the undirected edge e to this graph.
@@ -244,16 +248,16 @@ class Graph { // Graph
 
 	/*
 	 * public void dosmth(int aux[], int lmax) {
-	 * 
+	 *
 	 * boolean existe=false; int sol = lmax; for (int i = 0; i < aux.length - 1;
 	 * i++) { existe = false; for (Edgenova e : nos[aux[i]].adj) {
-	 * 
+	 *
 	 * if (e.outro == aux[i + 1]) {
-	 * 
+	 *
 	 * existe = true; if (sol > e.largura) sol = e.largura; } }
 	 * if(existe==false) break; } if (existe == false)
 	 * System.out.println("Nao"); else System.out.println(sol);
-	 * 
+	 *
 	 * }
 	 */
 
@@ -297,15 +301,15 @@ class Graph { // Graph
 
 	}
 
-	
+
 
 	public static void main(String[] args) {
 
 		Scanner in = new Scanner(System.in);
 		int nv;
-		
-		
-		
+
+
+
 		int lmin, lmax, cmin, cmax, altura;
 		Vector<Integer> myalgo = new Vector<Integer>();
 
@@ -316,11 +320,11 @@ class Graph { // Graph
 		altura = in.nextInt();
 		int start = in.nextInt();
 		int fim = in.nextInt();
-				
+
 		int a = in.nextInt();
-		
+
 		myalgo.add(a);
-		
+
 		LinkedList<InputNode> mylist = new LinkedList<InputNode>();
 		int b, lar, com, alt;
 		// Graph G = new Graph(nv + 1);
@@ -339,24 +343,24 @@ class Graph { // Graph
 			if (!myalgo.contains(a))
 				myalgo.add(a);
 		}
-		
-		
+
+
 		nv = myalgo.size();
 		//System.out.println(myalgo.indexOf(1));
 		Graph G = new Graph(nv + 1);
-		
+
 		for (InputNode inode : mylist){
 			G.addEdge(myalgo.indexOf(inode.side1)+1, myalgo.indexOf(inode.side2)+1, -inode.largura, -inode.comprimento,-inode.altura);
 		}
-		
+
 		//System.out.println(nv);
-	
+
 		//System.out.println(myalgo.toString());
-		
+
 	//	System.out.println(G);
-		
-		
-		
+
+
+
 		G.dijsk(myalgo.indexOf(start)+1, myalgo.indexOf(fim)+1, cmax);
 	}
 

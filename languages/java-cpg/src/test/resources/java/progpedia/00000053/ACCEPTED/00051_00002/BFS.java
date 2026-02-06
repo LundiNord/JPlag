@@ -1,5 +1,5 @@
-
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 class Node {
 
@@ -130,6 +130,7 @@ class Graph {
         }
     }
 
+    //DeadCodeStart
     public void printMaximus() {
         for (int i = 1; i < this.n + 1; i++) {
             if (this.n == i) {
@@ -149,6 +150,7 @@ class Graph {
             System.out.println("");
         }
     }
+    //DeadCodeEnd
 }
 
 public class BFS {
@@ -159,9 +161,9 @@ public class BFS {
         int nos = in.nextInt();
 	Graph g = new Graph(nos);
 	int vertices = in.nextInt();
-	for (int i=0; i<vertices; i++) 
+	for (int i=0; i<vertices; i++)
 	    g.addLink(in.nextInt(), in.nextInt());
-        
+
         /*
         int nos = 15;
         int arestas = 30;
