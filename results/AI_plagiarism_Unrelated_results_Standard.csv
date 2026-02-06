@@ -1,9 +1,4 @@
 FileA,FileB,JPlag,CpgMinimal,CpgStandard,CpgAI,TimeJPlag(ms),TimeMinimalCpg(ms),TimeStandardCpg(ms),TimeAi(ms)
-aiGenerated/claude/Project4.java,aiGenerated/claude/Project1.java,0.1714,0.1525,0.1538,0.2466,358.91,683.58,183.90,129.05
-aiGenerated/claude/Project4.java,aiGenerated/claude/Project3.java,0.2261,0.1970,0.3511,0.3824,38.61,78.92,73.77,79.04
-aiGenerated/claude/Project5.java,aiGenerated/claude/Project6.java,0.8991,0.9016,0.7535,0.7467,34.75,116.04,102.43,148.09
-aiGenerated/claude/Project7.java,aiGenerated/claude/Project8.java,0.9547,0.9524,0.9470,0.9779,31.43,225.77,282.26,365.90
-aiGenerated/claude/Project9.java,aiGenerated/claude/Project10.java,0.9833,0.9821,0.9844,1.0000,45.32,578.67,472.10,643.53
 aiGenerated/gemini/ProjectA.java,aiGenerated/gemini/Project3.java,0.0000,0.0000,0.0000,0.0000,23.73,156.72,140.29,264.31
 aiGenerated/gemini/ProjectB.java,aiGenerated/gemini/ProjectI.java,0.0000,0.0000,0.0000,0.0000,21.50,93.97,93.96,131.91
 aiGenerated/gemini/ProjectF.java,aiGenerated/grok/project4.java,0.0000,0.0000,0.0000,0.0000,21.55,76.57,70.11,109.98
@@ -30,6 +25,5 @@ aiGenerated/perplexityLabs/Project1.java,aiGenerated/gemini/Project8.java,0.0000
 aiGenerated/perplexityLabs/Project1.java,aiGenerated/gemini/ProjectE.java,0.0000,0.0000,0.0000,0.0000,14.64,21.70,29.65,34.14
 aiGenerated/grok/project1.java,aiGenerated/claude/Project10.java,0.0000,0.0000,0.0000,0.0000,18.73,116.21,153.52,302.74
 aiGenerated/grok/project3.java,aiGenerated/gemini/ProjectM.java,0.0000,0.0000,0.0000,0.0000,13.57,34.41,50.05,76.22
-aiGenerated/grok/project3.java,aiGenerated/grok/project5.java,0.7632,0.3902,0.3951,0.5366,12.20,23.00,31.93,36.08
 aiGenerated/grok/project4.java,aiGenerated/gemini/ProjectK.java,0.0000,0.0000,0.0000,0.0000,14.77,62.27,68.75,80.87
 aiGenerated/grok/project6.java,aiGenerated/claude/Project6.java,0.0451,0.0911,0.0619,0.0647,14.69,123.95,147.50,188.60
