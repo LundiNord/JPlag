@@ -265,6 +265,7 @@ public class AbstractInterpretation {
                                                                                                                                      // wrong but is
                                                                                                                                      // necessary
                                     || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
+                                    || (candidateType instanceof FloatingPointType && methodType instanceof FloatingPointType)
                                     || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
                             if (!typesMatch) {
                                 parametersMatch = false;
@@ -1104,6 +1105,9 @@ public class AbstractInterpretation {
         }
         if ((elsePresent || condition.getInformation())
                 && (returnStorage.size() >= 2 || (!returnStorage.isEmpty() && (runThenBranch != runElseBranch) && condition.getInformation()))) {
+            if (ifStmt.getElseStatement() instanceof IfStatement) { // problem: if else branch is if else
+                return nextNode;
+            }
             // FixMe: stringAiComplex
             // return in every branch
             valueStack.add(returnStorage.getLast());
@@ -1418,9 +1422,6 @@ public class AbstractInterpretation {
 
     @Nullable
     private Node walkForEachStatement(@NotNull ForEachStatement fes) {
-        if (visitedNodesCounter == 7138) {
-            System.out.println("Debug");
-        }
         Node nextNode;
         List<Node> nextEOG = fes.getNextEOG();
         assert nextEOG.size() == 2;
@@ -1598,6 +1599,7 @@ public class AbstractInterpretation {
                                                                                                                                      // wrong but is
                                                                                                                                      // necessary
                                     || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
+                                    || (candidateType instanceof FloatingPointType && methodType instanceof FloatingPointType)
                                     || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
                             if (!typesMatch) {
                                 parametersMatch = false;

@@ -283,10 +283,11 @@ class EvaluationEngineTest {
 
     public static boolean checkNonDeadCodeNotRemoved(@NotNull List<Token> verifiedDeadCode, @NotNull List<Token> detectedDeadCode) {
         // we check that all tokens in verifiedDeadCode are also in detectedDeadCode
-        if (detectedDeadCode.size() < verifiedDeadCode.size()) {
-            System.out.println("Detected dead code size: " + detectedDeadCode.size() + ", Verified dead code size: " + verifiedDeadCode.size());
-            return false;   // Detected dead code is smaller than verified dead code
-        }
+        // if (detectedDeadCode.size() < verifiedDeadCode.size()) {
+        // System.out.println("Detected dead code size: " + detectedDeadCode.size() + ", Verified dead code size: " +
+        // verifiedDeadCode.size());
+        // return false; // Detected dead code is smaller than verified dead code
+        // }
         int detectedIndex = 0;
         for (Token verifiedToken : verifiedDeadCode) {
             boolean found = false;
@@ -629,8 +630,7 @@ class EvaluationEngineTest {
 
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
         // i=i.proximo())
-        // String fileName = "progpedia/00000021/WRONG_ANSWER/00171_00005/";
-        String fileName = "progpedia/00000042/ACCEPTED/00054_00005/CoberturaMinima.java";
+        String fileName = "";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

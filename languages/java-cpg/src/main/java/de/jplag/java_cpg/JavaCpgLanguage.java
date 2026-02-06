@@ -124,7 +124,7 @@ public class JavaCpgLanguage implements Language {
     @NotNull
     public static GraphTransformation[] deadCodeRemovalTransformations() {
         return new GraphTransformation[] {removeEmptyDeclarationStatement, removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField,
-                removeEmptyConstructor, removeUnsupportedConstructor, removeUnsupportedMethod, removeEmptyRecord,};
+                removeUnsupportedConstructor, removeUnsupportedMethod, removeEmptyRecord,};
     }
 
     /**

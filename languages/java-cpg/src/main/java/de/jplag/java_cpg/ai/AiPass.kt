@@ -68,8 +68,11 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                     }
                     for (method in recordDeclaration.methods) {
                         if (checkIfCompletelyDead(method, visitedLinesRecorder) && removeDeadCode) {
-                            if (method.name.localName == "toString" || method.name.localName == "equals" || method.name.localName == "hashCode") {
+                            if (method.name.localName == "toString" || method.name.localName == "equals" || method.name.localName == "hashCode"
+                                    || method.name.localName == "compareTo" || method.name.localName == "compare"
+                                ) {
                                 continue    //methods that are sometimes not visited by the AI but could still be called implicitly
+                                //this is only a last resort as methods called inside these methods may still incorrectly be detected as dead code
                             }
                             println("Dead code (method) detected: ${method.name} in class ${recordDeclaration.name}")
                             val index = recordDeclaration.methods.indexOf(method)
