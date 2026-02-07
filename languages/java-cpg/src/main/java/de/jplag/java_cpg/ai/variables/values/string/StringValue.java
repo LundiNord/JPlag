@@ -8,6 +8,7 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IJavaObject;
@@ -158,6 +159,9 @@ public class StringValue extends JavaObject implements IStringValue {
             }
             case "concat" -> {   // public String concat(String str)
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                }
                 StringValue str = (StringValue) paramVars.getFirst();
                 if (information && str.getInformation()) {
                     return new StringValue(this.value + str.getValue());
@@ -212,6 +216,9 @@ public class StringValue extends JavaObject implements IStringValue {
             }
             case "repeat" -> {   // public String repeat(int count)
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                }
                 INumberValue countValue = (INumberValue) paramVars.getFirst();
                 if (information && countValue.getInformation()) {
                     int count = (int) countValue.getValue();
@@ -263,6 +270,9 @@ public class StringValue extends JavaObject implements IStringValue {
             }
             case "contains" -> {   // public boolean contains(CharSequence s)
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                }
                 StringValue s = (StringValue) paramVars.getFirst();
                 if (information && s.getInformation()) {
                     return Value.valueFactory(this.value.contains(Objects.requireNonNull(s.getValue())));
@@ -318,7 +328,22 @@ public class StringValue extends JavaObject implements IStringValue {
                 assert paramVars.size() == 1;
                 return new StringValue();
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            case "chars" -> {   // public IntStream chars()
+                assert paramVars == null || paramVars.isEmpty();
+                throw new JavaLanguageFeatureNotSupportedException("IntStream not supported");
+            }
+            case "contentsEquals" -> {   // public boolean contentsEquals(CharSequence cs)
+                assert paramVars.size() == 1;
+                StringValue cs = (StringValue) paramVars.getFirst();
+                if (information && cs.getInformation()) {
+                    return Value.valueFactory(this.value.contentEquals(Objects.requireNonNull(cs.getValue())));
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 

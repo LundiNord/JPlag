@@ -106,6 +106,13 @@ public class BooleanValue extends Value implements IBooleanValue {
                     return new BooleanValue();
                 }
             }
+            case "|" -> {
+                if (this.getInformation() && otherBool.getInformation()) {
+                    return new BooleanValue(this.getValue() | otherBool.getValue());
+                } else {
+                    return new BooleanValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }

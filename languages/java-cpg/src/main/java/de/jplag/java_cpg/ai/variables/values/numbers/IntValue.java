@@ -268,6 +268,13 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
                     return Value.valueFactory(Type.FLOAT);
                 }
             }
+            case "sqrt" -> {
+                if (information) {
+                    return Value.valueFactory(Math.sqrt(this.value));
+                } else {
+                    return Value.valueFactory(Type.FLOAT);
+                }
+            }
             default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
         }
     }

@@ -7,10 +7,12 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 
 /**
  * Representation of the java.util.regex.Pattern class.
@@ -48,6 +50,9 @@ public class Pattern extends JavaObject implements ISpecialObject {
             case "compile", "matcher" -> {
                 assert paramVars.size() == 1 || paramVars.size() == 2;
                 return new Pattern();
+            }
+            case "toString" -> {
+                return Value.valueFactory(Type.STRING);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

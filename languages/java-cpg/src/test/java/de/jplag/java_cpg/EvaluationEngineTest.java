@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +42,7 @@ import de.jplag.java_cpg.ai.ProgpediaTests;
 import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
+import de.jplag.reporting.reportobject.ReportObjectFactory;
 
 import kotlin.Pair;
 
@@ -232,6 +234,7 @@ class EvaluationEngineTest {
         return result;
     }
 
+    @SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.RelianceOnDefaultCharset"})
     @NotNull
     private static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
             throws ParsingException {
@@ -282,10 +285,25 @@ class EvaluationEngineTest {
         return getJPlagScore(fileNameA, fileNameB, normalize, language);
     }
 
+    private static @NotNull JPlagResult getJPlagCpgPlagScore(@NotNull Set<File> files, boolean removeDeadCode, boolean detectDeadCode,
+            boolean reorder, boolean normalize, boolean removeSimpleDeadCode) throws ExitException, IOException {
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
+                JavaCpgLanguage.allTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
+                ArrayAiType.DEFAULT);
+        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+        // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
+        return getJPlagScore(files, normalize, language);
+    }
+
     private static double getJPlagPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize)
             throws ExitException, IOException {
         de.jplag.java.JavaLanguage language = new de.jplag.java.JavaLanguage();
         return getJPlagScore(fileNameA, fileNameB, normalize, language);
+    }
+
+    private static @NotNull JPlagResult getJPlagPlagScore(@NotNull Set<File> files, boolean normalize) throws ExitException, IOException {
+        de.jplag.java.JavaLanguage language = new de.jplag.java.JavaLanguage();
+        return getJPlagScore(files, normalize, language);
     }
 
     private static double getJPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean normalize, Language language)
@@ -311,6 +329,14 @@ class EvaluationEngineTest {
         double maxSimilarity = comparison.maximalSimilarity();
         int matchedTokens = comparison.getNumberOfMatchedTokens();
         return similarity;
+    }
+
+    private static @NotNull JPlagResult getJPlagScore(@NotNull Set<File> submissionDirectories, boolean normalize, Language language)
+            throws ExitException {
+        JPlagOptions options = new JPlagOptions(language, null, submissionDirectories, Set.of(), null, null, null, null, DEFAULT_SIMILARITY_METRIC,
+                DEFAULT_SIMILARITY_THRESHOLD, DEFAULT_SHOWN_COMPARISONS, new ClusteringOptions(), false, new MergingOptions(), normalize, false,
+                new FrequencyAnalysisOptions());
+        return JPlag.run(options);
     }
 
     @NotNull
@@ -375,6 +401,23 @@ class EvaluationEngineTest {
         return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
                 .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
                 .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath());
+    }
+
+    @NotNull
+    public static Set<String> kitBoardGamePlag() {
+        List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/BoardGame/insert", "kit_DONT_COMMIT/BoardGame/refactor");
+        return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
+                .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
+                .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath()).collect(Collectors.toSet());
+    }
+
+    @NotNull
+    public static Set<String> kitTicTocToePlag() {
+        List<String> baseDirs = List.of("kit_DONT_COMMIT/TicTacToe/human", "kit_DONT_COMMIT/TicTacToe/insert", "kit_DONT_COMMIT/TicTacToe/refactor",
+                "kit_DONT_COMMIT/TicTacToe/gpt", "kit_DONT_COMMIT/TicTacToe/gptobf");
+        return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
+                .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
+                .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath()).collect(Collectors.toSet());
     }
 
     @ParameterizedTest
@@ -486,8 +529,8 @@ class EvaluationEngineTest {
 
     @ParameterizedTest
     @Disabled
-    @MethodSource("kitHumanFiles")
-    // @MethodSource("kitGenFiles")
+    // @MethodSource("kitHumanFiles")
+    @MethodSource("kitGenFiles")
     void KitDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -556,7 +599,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm305";
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm34";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -579,8 +622,7 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled
     @MethodSource("progpediaFiles")
-    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup, remove prints below for real
-                                                                                // evaluation
+    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -641,12 +683,12 @@ class EvaluationEngineTest {
         try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
             if (!fileExists) {
                 writer.write(
-                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,RemovedSimpleTokens,RemovedFullTokens,RemovedManualTokens,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException,RuntimeException\n");
+                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,RemovedSimpleTokens,RemovedFullTokens,RemovedManualTokens,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException,RuntimeException,tokensSound,simpleRemovalSound,removalSound\n");
             }
-            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b,%b%n", fileName, simNoRemoval, simSimpleRemoval,
-                    simFullRemoval, removedSimpleTokens, removedFullTokens, removedManualTokens, timeNoRemoval / 1_000_000.0,
-                    timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0, javaLanguageFeatureNotSupported, cpgErrorException,
-                    runtimeError));
+            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b,%b,%b,%b,%b%n", fileName, simNoRemoval,
+                    simSimpleRemoval, simFullRemoval, removedSimpleTokens, removedFullTokens, removedManualTokens, timeNoRemoval / 1_000_000.0,
+                    timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0, javaLanguageFeatureNotSupported, cpgErrorException, runtimeError,
+                    tokensSound, simpleRemovalSound, removalSound));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -764,6 +806,48 @@ class EvaluationEngineTest {
         System.out.println("Cpg minimal transformations: " + similarityMinimalCpg);
         System.out.println("Cpg standard transformations: " + similarityStandardCpg);
         System.out.println("Cpg with AI dead code removal: " + similarityAi);
+        assertTrue(true);
+    }
+
+    @Test
+    void KitPlagTicTacToeEval() throws IOException, ExitException {
+        Set<String> files = kitTicTocToePlag();
+        Set<File> fileSet = files.stream().map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file)).collect(Collectors.toSet());
+        JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
+        JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
+        JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
+
+        File outDir = new File("outputTicTacToe.jplag.zip");
+        ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
+        reportObjectFactory.createAndSaveReport(resultJPlag);
+        File outDir2 = new File("outputTicTacToe.cpg.zip");
+        ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
+        reportObjectFactory2.createAndSaveReport(resultCPG);
+        File outDir3 = new File("outputTicTacToe.ai.zip");
+        ReportObjectFactory reportObjectFactory3 = new ReportObjectFactory(outDir3);
+        reportObjectFactory3.createAndSaveReport(resultAI);
+
+        assertTrue(true);
+    }
+
+    @Test
+    void KitPlagBoardGameEval() throws IOException, ExitException {
+        Set<String> files = kitBoardGamePlag();
+        Set<File> fileSet = files.stream().map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file)).collect(Collectors.toSet());
+        JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
+        JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
+        JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
+
+        File outDir = new File("outputBoardGame.jplag.zip");
+        ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
+        reportObjectFactory.createAndSaveReport(resultJPlag);
+        File outDir2 = new File("outputBoardGame.cpg.zip");
+        ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
+        reportObjectFactory2.createAndSaveReport(resultCPG);
+        File outDir3 = new File("outputBoardGame.ai.zip");
+        ReportObjectFactory reportObjectFactory3 = new ReportObjectFactory(outDir3);
+        reportObjectFactory3.createAndSaveReport(resultAI);
+
         assertTrue(true);
     }
 

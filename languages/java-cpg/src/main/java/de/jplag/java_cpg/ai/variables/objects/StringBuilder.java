@@ -12,6 +12,7 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
 /**
  * Representation of the static java.lang.StringBuilder class.
@@ -45,17 +46,31 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
         switch (methodName) {
             case "append" -> {
                 assert !paramVars.isEmpty();
-                return this;    // append returns the StringBuilder itself
+                return this;
             }
             case "length" -> {
-                assert paramVars.isEmpty();
+                assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.INT);
             }
             case "toString" -> {
-                assert paramVars.isEmpty();
+                assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(Type.STRING);
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            case "deleteCharAt" -> {
+                assert paramVars.size() == 1;
+                return this;
+            }
+            case "delete", "setCharAt" -> {
+                assert paramVars.size() == 2;
+                return this;
+            }
+            case "substring" -> {
+                assert paramVars.size() == 1 || paramVars.size() == 2;
+                return Value.valueFactory(Type.STRING);
+            }
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 

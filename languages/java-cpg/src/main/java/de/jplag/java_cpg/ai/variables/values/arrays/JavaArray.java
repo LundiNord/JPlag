@@ -198,7 +198,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
             }
             case "stream", "toArray" -> {
-                assert paramVars == null || paramVars.isEmpty();
+                if (paramVars != null && paramVars.size() == 1) {
+                    return paramVars.getFirst();
+                }
+                assert paramVars == null || paramVars.isEmpty() : "Method " + methodName + " does not take parameters but " + paramVars.size()
+                        + " were given";
                 return this;
             }
             case "size" -> {
@@ -520,6 +524,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "containsAll" -> {
                 assert paramVars.size() == 1;
+                return Value.valueFactory(Type.BOOLEAN);
+            }
+            case "removeAll", "retainAll" -> {
+                assert paramVars.size() == 1;
+                setToUnknown();
                 return Value.valueFactory(Type.BOOLEAN);
             }
             default -> throw new UnsupportedOperationException(methodName);

@@ -72,6 +72,9 @@ public class Arrays extends JavaObject implements ISpecialObject {
             }
             case "stream" -> {      // <T> Stream<T> stream(T[] array)
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.getNewArayValue());
+                }
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
                 return array.callMethod(methodName, List.of(), null);
             }

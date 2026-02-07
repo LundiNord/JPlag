@@ -63,6 +63,10 @@ public class System extends JavaObject implements ISpecialObject {
                 destArray.setToUnknown();
                 return new VoidValue();
             }
+            case "getProperty" -> {
+                assert paramVars.size() == 1;
+                return Value.valueFactory(Type.STRING);
+            }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
         }
     }

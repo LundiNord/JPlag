@@ -138,6 +138,14 @@ public class CharValue extends Value implements ICharValue {
                 }
                 return new BooleanValue();
             }
+            case "<=" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value <= numberValue.getValue());
+                    }
+                }
+                return new BooleanValue();
+            }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
         }
     }
@@ -176,9 +184,8 @@ public class CharValue extends Value implements ICharValue {
                     }
                 }
             }
-            default -> {
-                throw new IllegalArgumentException("Cannot merge " + getType() + " with " + other.getType());
-            }
+            case VoidValue _ -> this.information = false;
+            default -> throw new IllegalArgumentException("Cannot merge " + getType() + " with " + other.getType());
         }
     }
 

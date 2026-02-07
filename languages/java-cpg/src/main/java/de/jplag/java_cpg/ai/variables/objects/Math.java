@@ -105,6 +105,18 @@ public class Math extends JavaObject implements ISpecialObject {
                 assert paramVars.getFirst() instanceof INumberValue;
                 return paramVars.getFirst().unaryOperation("ceil");
             }
+            case "floorMod" -> {
+                assert paramVars.size() == 2;
+                return Value.valueFactory(Type.INT);
+            }
+            case "floor" -> {
+                assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    return Value.valueFactory(Type.FLOAT);
+                }
+                assert paramVars.getFirst() instanceof INumberValue;
+                return paramVars.getFirst().unaryOperation("floor");
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }
