@@ -27,7 +27,7 @@ public class VoidValue extends Value {
             case "==", ">", "<", ">=", "<=", "!=", "instanceof" -> {
                 return new BooleanValue();
             }
-            case "+", "-", "*", "/" -> {
+            case "+", "-", "*", "/", "%" -> {
                 return switch (other) {
                     case IIntNumber _ -> Value.valueFactory(Type.INT);
                     case IFloatNumber _ -> Value.valueFactory(Type.FLOAT);
@@ -48,7 +48,7 @@ public class VoidValue extends Value {
             case "!" -> {
                 return new BooleanValue();
             }
-            case "--", "++", "abs", "+", "-" -> {
+            case "--", "++", "abs", "+", "-", "throw" -> {
                 return new VoidValue();
             }
             default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());

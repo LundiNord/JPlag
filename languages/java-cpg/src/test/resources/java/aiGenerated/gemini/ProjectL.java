@@ -77,7 +77,7 @@ public class StockMarketEngine {
         openOrders.addAll(sellSide);
 
         // Advanced Stream Usage
-        Map<String, Long> volumeByTicker = openOrders.stream()
+        Map<String, Integer> volumeByTicker = openOrders.stream()
                 .collect(Collectors.groupingBy(o -> o.ticker, Collectors.counting()));
 
         volumeByTicker.forEach((k, v) -> System.out.println(k + " Open Orders: " + v));

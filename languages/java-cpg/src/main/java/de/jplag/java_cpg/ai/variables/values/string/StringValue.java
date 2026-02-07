@@ -106,6 +106,9 @@ public class StringValue extends JavaObject implements IStringValue {
             }
             case "split" -> {   // public String[] split(String regex)
                 assert paramVars.size() == 1 || paramVars.size() == 2;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                }
                 StringValue regexValue = (StringValue) paramVars.getFirst();
                 if (!information || !regexValue.getInformation()) {
                     return Value.getNewArayValue(Type.STRING);
@@ -282,6 +285,38 @@ public class StringValue extends JavaObject implements IStringValue {
                 } else {
                     return Value.valueFactory(Type.BOOLEAN);
                 }
+            }
+            case "indexOf" -> {   // public int indexOf(String str) || public int indexOf(String str, int fromIndex)
+                assert paramVars.size() == 1 || paramVars.size() == 2;
+                StringValue str = (StringValue) paramVars.getFirst();
+                INumberValue fromIndexValue;
+                if (paramVars.size() == 1) {
+                    fromIndexValue = Value.getNewIntValue(0);
+                } else {
+                    fromIndexValue = (INumberValue) paramVars.get(1);
+                }
+                if (information && str.getInformation() && fromIndexValue.getInformation()) {
+                    int fromIndex = (int) fromIndexValue.getValue();
+                    if (fromIndex < 0 || value == null || fromIndex > value.length()) {
+                        return new VoidValue();
+                    }
+                    return Value.valueFactory(this.value.indexOf(Objects.requireNonNull(str.getValue()), fromIndex));
+                } else {
+                    return Value.valueFactory(Type.INT);
+                }
+            }
+            case "endsWith" -> {   // public boolean endsWith(String suffix)
+                assert paramVars.size() == 1;
+                StringValue suffix = (StringValue) paramVars.getFirst();
+                if (information && suffix.getInformation()) {
+                    return Value.valueFactory(this.value.endsWith(Objects.requireNonNull(suffix.getValue())));
+                } else {
+                    return Value.valueFactory(Type.BOOLEAN);
+                }
+            }
+            case "valueOf" -> {   // public static String valueOf(Object obj)
+                assert paramVars.size() == 1;
+                return new StringValue();
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

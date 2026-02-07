@@ -3,19 +3,19 @@ import java.util.Arrays;
 public class LogAnalyzer {
 
     public static void main(String[] args) {
-        // Simulating timestamps (longs) instead of ints, but the logic is identical
-        long[] timestamps = { 162000L, 161000L, 163000L, 160500L, 162500L };
-        
+        // Simulating timestamps (ints) instead of ints, but the logic is identical
+        int[] timestamps = { 162000, 161000, 163000, 160500, 162500 };
+
         System.out.println("Raw Logs: " + Arrays.toString(timestamps));
-        
+
         analyzeSequence(timestamps, 0, timestamps.length - 1);
-        
+
         System.out.println("Ordered:  " + Arrays.toString(timestamps));
     }
 
     // Plagiarism: Renamed 'sort' to 'analyzeSequence'
     // Logic is identical to QuickSort
-    public static void analyzeSequence(long[] logs, int start, int end) {
+    public static void analyzeSequence(int[] logs, int start, int end) {
         if (start < end) {
             // Plagiarism: Renamed 'partition' to 'segmentize'
             int index = segmentize(logs, start, end);
@@ -25,15 +25,15 @@ public class LogAnalyzer {
         }
     }
 
-    private static int segmentize(long[] logs, int start, int end) {
-        long ref = logs[end]; // Renamed 'pivot' to 'ref'
+    private static int segmentize(int[] logs, int start, int end) {
+        int ref = logs[end]; // Renamed 'pivot' to 'ref'
         int marker = (start - 1); // Renamed 'i' to 'marker'
 
         //DeadCodeStart
         // This loop looks like it calculates a hash for security,
         // but the result is local and discarded immediately.
         // It serves to distract from the copied logic below.
-        long securityHash = 0;
+        int securityHash = 0;
         for (int k = start; k < end; k++) {
             securityHash = (securityHash * 31 + logs[k]) % 100000;
             if (securityHash < 0) {
@@ -46,16 +46,16 @@ public class LogAnalyzer {
         for (int scanner = start; scanner < end; scanner++) { // Renamed 'j' to 'scanner'
             if (logs[scanner] <= ref) {
                 marker++;
-                
+
                 // Plagiarism: Inline swap logic instead of helper function to look different
-                long temp = logs[marker];
+                int temp = logs[marker];
                 logs[marker] = logs[scanner];
                 logs[scanner] = temp;
             }
         }
 
         // Final swap of the reference element
-        long tempRef = logs[marker + 1];
+        int tempRef = logs[marker + 1];
         logs[marker + 1] = logs[end];
         logs[end] = tempRef;
 

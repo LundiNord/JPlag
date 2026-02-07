@@ -33,6 +33,7 @@ import de.fraunhofer.aisec.cpg.graph.statements.CatchClause;
 import de.fraunhofer.aisec.cpg.graph.statements.ContinueStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.DefaultStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DoStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.EmptyStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.ForEachStatement;
 import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
@@ -96,7 +97,7 @@ public class AbstractInterpretation {
     /**
      * Helper to detect recursive method calls.
      */
-    private final List<Node> lastVisitedMethod;
+    private static final List<Node> lastVisitedMethod = new ArrayList<>();
     /**
      * Recorder for visited lines to detect dead methods/classes later.
      */
@@ -154,7 +155,6 @@ public class AbstractInterpretation {
         valueStack = new ArrayList<>();
         lastVisitedLoopOrIf = new ArrayList<>();
         returnStorage = new ArrayList<>();
-        lastVisitedMethod = new ArrayList<>();
         this.visitedLinesRecorder = visitedLinesRecorder;
         this.removeDeadCode = removeDeadCode;
         this.recordingChanges = recordingChanges;
@@ -178,6 +178,7 @@ public class AbstractInterpretation {
                     .getNewArayValue();
             case "java.util.Comparator" -> throw new JavaLanguageFeatureNotSupportedException(
                     "Comparator objects are not supported in abstract interpretation yet.");
+            case "java.lang.StringBuilder" -> newObject = new de.jplag.java_cpg.ai.variables.objects.StringBuilder();
             default -> newObject = new JavaObject();
         }
         return newObject;
@@ -200,8 +201,11 @@ public class AbstractInterpretation {
         if (tud.getDeclarations().stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1) {
             // Code in a package
             mainClas = tud.getDeclarations().stream().filter(NamespaceDeclaration.class::isInstance).map(NamespaceDeclaration.class::cast).findFirst()
-                    .map(ns -> (RecordDeclaration) ns.getDeclarations().getFirst())
-                    .orElseThrow(() -> new CpgErrorException("No NamespaceDeclaration found in translation unit"));
+                    .flatMap(ns -> ns.getDeclarations().stream().filter(RecordDeclaration.class::isInstance).map(RecordDeclaration.class::cast)
+                            .filter(rd -> rd.getMethods().stream()
+                                    .anyMatch(m -> m.getName().getLocalName().equals("main") && m.isStatic() && m.hasBody()))
+                            .findFirst())
+                    .orElseThrow(() -> new CpgErrorException("No RecordDeclaration with public static main method found in translation unit"));
         } else if (tud.getDeclarations().stream().map(Declaration::getClass).anyMatch(x -> x.equals(RecordDeclaration.class))) {
             // Code without a package
             mainClas = tud.getDeclarations().stream().filter(RecordDeclaration.class::isInstance).map(RecordDeclaration.class::cast)
@@ -338,11 +342,11 @@ public class AbstractInterpretation {
         while (true) {
             Set<RecordDeclaration> superClass = currentClass.getSuperTypeDeclarations();
             List<Type> superClassTypes = currentClass.getSuperClasses();
+            superClass = superClass.stream()    // necessary to filter out interfaces
+                    .filter(x -> superClassTypes.stream().anyMatch(t -> x.toType().equals(t))).collect(java.util.stream.Collectors.toSet());
             if (superClass.isEmpty() || superClassTypes.isEmpty()) {
                 break;
             }
-            superClass = superClass.stream()    // necessary to filter out interfaces
-                    .filter(x -> superClassTypes.stream().anyMatch(t -> x.toType().equals(t))).collect(java.util.stream.Collectors.toSet());
             if (superClass.size() != 1) {
                 System.out.println("Debug");
             }
@@ -493,7 +497,8 @@ public class AbstractInterpretation {
                         nodeStack.removeLast();
                     } else {
                         if (valueStack.isEmpty()) {
-                            System.out.println("Debug");
+                            valueStack.add(new VoidValue());
+                            nodeStack.addLast(new Node());
                         }
                         assert !valueStack.isEmpty();
                         Variable variable = new Variable((ds.getDeclarations().get(i)).getName().toString(), valueStack.getLast());
@@ -603,6 +608,14 @@ public class AbstractInterpretation {
                 if (inConstructor && !(nextEOG.getFirst() instanceof NewExpression)) {
                     ConstructorDeclaration constructor = ce.getConstructor();
                     if (constructor == null) {
+                        if (ce.getName().toString().equals("java.lang.Exception") || ce.getName().toString().equals("java.lang.RuntimeException")
+                                || ce.getName().toString().equals("java.lang.Throwable")
+                                || ce.getName().toString().equals("java.lang.IllegalArgumentException")) {
+                            // skip exception
+                            assert nextEOG.size() == 1;
+                            nextNode = nextEOG.getFirst();
+                            break;
+                        }
                         throw new CpgErrorException("Constructor not present in ConstructExpression");
                     }
                     List<Node> eog = constructor.getNextEOG();
@@ -754,6 +767,7 @@ public class AbstractInterpretation {
             // nodeStack.add(nextEOG.getFirst());
             // return null;
             // }
+            case DoStatement _ -> throw new JavaLanguageFeatureNotSupportedException("DoStatement not supported yet");
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
         assert nextNode != null;
@@ -1119,7 +1133,7 @@ public class AbstractInterpretation {
     }
 
     private IValue walkReturnStatement(@NotNull ReturnStatement rs) {
-        if (visitedNodesCounter == 336) {
+        if (visitedNodesCounter == 432) {
             System.out.println("Debug");
         }
         IValue result;
@@ -1181,6 +1195,9 @@ public class AbstractInterpretation {
         List<IValue> arguments = new ArrayList<>();
         nodeStack.removeLast();     // remove ConstructExpression
         if (!ce.getArguments().isEmpty()) {
+            if (ce.getArguments().stream().anyMatch(ProblemExpression.class::isInstance)) {
+                throw new CpgErrorException("ProblemExpression found in constructor arguments");
+            }
             int size = ce.getArguments().size();
             for (int i = 0; i < size; i++) {
                 arguments.add(valueStack.getLast());
@@ -1286,13 +1303,13 @@ public class AbstractInterpretation {
         // continue with next node after while
         lastVisitedLoopOrIf.removeLast();
         nextNode = nextEOG.getLast();
-        if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
-            // return in every branch
-            valueStack.add(returnStorage.getLast());
-            nextNode = new ReturnStatement();
-            ((ReturnStatement) nextNode).setReturnValue(new Expression() {
-            });
-        }
+        // if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
+        // // return in every branch
+        // valueStack.add(returnStorage.getLast());
+        // nextNode = new ReturnStatement();
+        // ((ReturnStatement) nextNode).setReturnValue(new Expression() {
+        // });
+        // }
         return nextNode;
     }
 
@@ -1410,13 +1427,13 @@ public class AbstractInterpretation {
         // continue with next node after while
         lastVisitedLoopOrIf.removeLast();
         nextNode = nextEOG.getLast();
-        if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
-            // return in every branch
-            valueStack.add(returnStorage.getLast());
-            nextNode = new ReturnStatement();
-            ((ReturnStatement) nextNode).setReturnValue(new Expression() {
-            });
-        }
+        // if (!returnStorage.isEmpty() && condition.getInformation() && condition.getValue()) {
+        // // return in every branch
+        // valueStack.add(returnStorage.getLast());
+        // nextNode = new ReturnStatement();
+        // ((ReturnStatement) nextNode).setReturnValue(new Expression() {
+        // });
+        // }
         return nextNode;
     }
 
@@ -1522,6 +1539,9 @@ public class AbstractInterpretation {
                 if (valueStack.getLast() instanceof VoidValue) {
                     dimensions.add((INumberValue) Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.INT));
                 } else {
+                    if (!(valueStack.getLast() instanceof INumberValue)) {
+                        System.out.println("Debug");
+                    }
                     dimensions.add((INumberValue) valueStack.getLast());
                 }
                 valueStack.removeLast();
@@ -1651,6 +1671,11 @@ public class AbstractInterpretation {
             }
             assert method.getParameters().size() == paramVars.size();
             for (int i = 0; i < paramVars.size(); i++) {
+                // assert paramVars.get(i).getType() ==
+                // de.jplag.java_cpg.ai.variables.Type.fromCpgType(method.getParameters().get(i).getType())
+                // || paramVars.get(i) instanceof VoidValue || method.getParameters().get(i).getType() instanceof UnknownType
+                // : "Type mismatch for parameter " + method.getParameters().get(i).getName() + ": expected " +
+                // method.getParameters().get(i).getType() + " but got " + paramVars.get(i).getType();
                 variables.addVariable(new Variable(new VariableName(method.getParameters().get(i).getName().getLocalName()), paramVars.get(i)));
             }
         } else {

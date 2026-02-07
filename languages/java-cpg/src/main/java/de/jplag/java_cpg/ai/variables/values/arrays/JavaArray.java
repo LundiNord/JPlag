@@ -140,7 +140,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case ARRAY, LIST -> new JavaArray();
             case FLOAT -> Value.valueFactory(Type.FLOAT);
             case CHAR -> Value.valueFactory(Type.CHAR);
-            case VOID -> new VoidValue();
+            case VOID, UNKNOWN -> new VoidValue();
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
         };
     }
@@ -516,6 +516,10 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "offer" -> {
                 assert paramVars.size() == 1;
                 setToUnknown();
+                return Value.valueFactory(Type.BOOLEAN);
+            }
+            case "containsAll" -> {
+                assert paramVars.size() == 1;
                 return Value.valueFactory(Type.BOOLEAN);
             }
             default -> throw new UnsupportedOperationException(methodName);

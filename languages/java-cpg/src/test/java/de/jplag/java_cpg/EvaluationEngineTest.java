@@ -50,7 +50,7 @@ class EvaluationEngineTest {
     @NotNull
     private static Stream<String> testFiles() {
         return Stream.of(
-                // forst block are jvm warmup files
+                // first block are jvm warmup files
                 "aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java", "aiGenerated/claude/Project3.java",
                 "aiGenerated/claude/Project4.java", "aiGenerated/claude/Project5.java", "aiGenerated/claude/Project6.java",
                 "aiGenerated/claude/Project7.java", "aiGenerated/claude/Project8.java", "aiGenerated/claude/Project9.java",
@@ -131,6 +131,47 @@ class EvaluationEngineTest {
                 new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/grok/project8.java"),
                 new Pair<>("aiGenerated/grok/project7.java", "aiGenerated/grok/project8.java")    // break
         );
+    }
+
+    @NotNull
+    private static Stream<Pair<String, String>> testPlagFilesUnrelated() {
+        return Stream.of(
+                // JVM Warmup:
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project3.java"),
+                new Pair<>("aiGenerated/claude/Project5.java", "aiGenerated/claude/Project6.java"),
+                new Pair<>("aiGenerated/claude/Project7.java", "aiGenerated/claude/Project8.java"),
+                new Pair<>("aiGenerated/claude/Project9.java", "aiGenerated/claude/Project10.java"),
+                //
+                new Pair<>("aiGenerated/gemini/ProjectA.java", "aiGenerated/gemini/Project3.java"),
+                new Pair<>("aiGenerated/gemini/ProjectB.java", "aiGenerated/gemini/ProjectI.java"),
+                new Pair<>("aiGenerated/gemini/ProjectF.java", "aiGenerated/grok/project4.java"),
+                new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/claude/Project1.java"),
+                new Pair<>("aiGenerated/gemini/ProjectJ.java", "aiGenerated/grok/project5.java"),
+                new Pair<>("aiGenerated/gemini/ProjectL.java", "aiGenerated/gemini/Project2.java"),
+                new Pair<>("aiGenerated/gemini/ProjectN.java", "aiGenerated/gemini/ProjectU.java"),
+                new Pair<>("aiGenerated/gemini/ProjectP.java", "aiGenerated/gemini/Project7.java"),
+                new Pair<>("aiGenerated/gemini/ProjectT.java", "aiGenerated/perplexityLabs/Project4.java"),
+                new Pair<>("aiGenerated/gemini/Project1.java", "aiGenerated/geminiPlag/NetworkController.java"),
+                new Pair<>("aiGenerated/gemini/Project1.java", "aiGenerated/gemini/Project8.java"),
+                new Pair<>("aiGenerated/gemini/Project7.java", "aiGenerated/gemini/ProjectG.java"),
+                new Pair<>("aiGenerated/gemini/Project4.java", "aiGenerated/gemini/ProjectC.java"),
+                new Pair<>("aiGenerated/gemini/Project4.java", "aiGenerated/gemini/ProjectQ.java"),
+                new Pair<>("aiGenerated/gemini/ProjectH.java", "aiGenerated/perplexityLabs/Project3.java"),
+                new Pair<>("aiGenerated/geminiPlag/NetworkController.java", "aiGenerated/grok/project2.java"),
+                new Pair<>("aiGenerated/claude/Project1.java", "aiGenerated/gemini/ProjectO.java"),
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project8.java"),
+                new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/grok/project8.java"),
+                new Pair<>("aiGenerated/claude/Project5.java", "aiGenerated/claude/Project2.java"),
+                new Pair<>("aiGenerated/claude/Project7.java", "aiGenerated/claude/Project3.java"),
+                new Pair<>("aiGenerated/claude/Project9.java", "aiGenerated/geminiPlag/GridOverseer.java"),
+                new Pair<>("aiGenerated/perplexityLabs/Project1.java", "aiGenerated/gemini/Project8.java"),
+                new Pair<>("aiGenerated/perplexityLabs/Project1.java", "aiGenerated/gemini/ProjectE.java"),
+                new Pair<>("aiGenerated/grok/project1.java", "aiGenerated/claude/Project10.java"),
+                new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/gemini/ProjectM.java"),
+                new Pair<>("aiGenerated/grok/project3.java", "aiGenerated/geminiPlag/NetworkController.java"),
+                new Pair<>("aiGenerated/grok/project4.java", "aiGenerated/gemini/ProjectK.java"),
+                new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/claude/Project6.java"));
     }
 
     private static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
@@ -319,9 +360,8 @@ class EvaluationEngineTest {
 
     @NotNull
     public static Stream<String> kitGenFiles() {
-        List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/BoardGame/insert", "kit_DONT_COMMIT/BoardGame/refactor",
-                "kit_DONT_COMMIT/TicTacToe/human", "kit_DONT_COMMIT/TicTacToe/insert", "kit_DONT_COMMIT/TicTacToe/refactor",
-                "kit_DONT_COMMIT/TicTacToe/gpt", "kit_DONT_COMMIT/TicTacToe/gptobf");
+        List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/insert", "kit_DONT_COMMIT/BoardGame/refactor", "kit_DONT_COMMIT/TicTacToe/insert",
+                "kit_DONT_COMMIT/TicTacToe/refactor", "kit_DONT_COMMIT/TicTacToe/gpt", "kit_DONT_COMMIT/TicTacToe/gptobf");
         return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
                 .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
                 .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath());
@@ -329,8 +369,9 @@ class EvaluationEngineTest {
 
     @NotNull
     public static Stream<String> kitHumanFiles() {
-        List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/TicTacToe/human",
-                "kit_DONT_COMMIT/ws2223-Sheet4TaskA-perseverance", "kit_DONT_COMMIT/ws2425-Sheet3TaskA-dotsandboxes");
+        List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/TicTacToe/human"
+        // "kit_DONT_COMMIT/ws2223-Sheet4TaskA-perseverance", "kit_DONT_COMMIT/ws2425-Sheet3TaskA-dotsandboxes"
+        );
         return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
                 .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
                 .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath());
@@ -446,6 +487,7 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled
     @MethodSource("kitHumanFiles")
+    // @MethodSource("kitGenFiles")
     void KitDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -514,7 +556,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm137";
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm305";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -664,7 +706,8 @@ class EvaluationEngineTest {
 
     @ParameterizedTest
     @Disabled
-    @MethodSource("testPlagFiles")
+    // @MethodSource("testPlagFiles")
+    @MethodSource("testPlagFilesUnrelated")
     void AiGeneratedTestDataPlagEvaluation(@NotNull Pair<String, String> fileNames) throws ExitException, IOException {
         String fileA = fileNames.getFirst();
         String fileB = fileNames.getSecond();
@@ -708,8 +751,9 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void AiGeneratedTestDataPlagEvaluationSingle() throws ExitException, IOException {
-        String fileA = "aiGenerated/grok/project8.java";
-        String fileB = "aiGenerated/grok/project7.java";
+        // new Pair<>("aiGenerated/gemini/ProjectT.java", "aiGenerated/perplexityLabs/Project4.java"),
+        String fileA = "aiGenerated/gemini/ProjectT.java";
+        String fileB = "aiGenerated/perplexityLabs/Project4.java";
         double similarityJPlag = getJPlagPlagScore(fileA, fileB, false);
         double similarityMinimalCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, false, false);
         double similarityStandardCpg = getJPlagCpgPlagScore(fileA, fileB, false, false, false, true, false);

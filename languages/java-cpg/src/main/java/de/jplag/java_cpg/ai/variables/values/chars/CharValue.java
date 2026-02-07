@@ -8,6 +8,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
@@ -64,6 +65,9 @@ public class CharValue extends Value implements ICharValue {
 
     @Override
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            other = new CharValue();
+        }
         switch (operator) {
             case "==" -> {
                 CharValue otherCharValue = (CharValue) other;
@@ -114,31 +118,25 @@ public class CharValue extends Value implements ICharValue {
                 if (other instanceof INumberValue numberValue) {
                     if (this.information && numberValue.getInformation()) {
                         return new BooleanValue(this.value < numberValue.getValue());
-                    } else {
-                        return new BooleanValue();
                     }
                 }
-                CharValue otherCharValue = (CharValue) other;
-                if (this.information && otherCharValue.information) {
-                    return new BooleanValue(this.value < otherCharValue.value);
-                } else {
-                    return new BooleanValue();
-                }
+                return new BooleanValue();
             }
             case ">" -> {
                 if (other instanceof INumberValue numberValue) {
                     if (this.information && numberValue.getInformation()) {
                         return new BooleanValue(this.value > numberValue.getValue());
-                    } else {
-                        return new BooleanValue();
                     }
                 }
-                CharValue otherCharValue = (CharValue) other;
-                if (this.information && otherCharValue.information) {
-                    return new BooleanValue(this.value > otherCharValue.value);
-                } else {
-                    return new BooleanValue();
+                return new BooleanValue();
+            }
+            case ">=" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value >= numberValue.getValue());
+                    }
                 }
+                return new BooleanValue();
             }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
         }
