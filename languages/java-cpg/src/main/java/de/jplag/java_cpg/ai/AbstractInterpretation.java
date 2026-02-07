@@ -218,7 +218,9 @@ public class AbstractInterpretation {
         }
         JavaObject mainClassVar = new JavaObject();
         setupClass(mainClas, mainClassVar);
-        assert mainClas.getMethods().stream().map(MethodDeclaration::getName).filter(x -> x.getLocalName().equals("main")).count() == 1;
+        assert mainClas.getMethods().stream().map(MethodDeclaration::getName).filter(x -> x.getLocalName().equals("main"))
+                .count() == 1 : "Unexpected number of main methods in class " + mainClas.getName() + ": "
+                        + mainClas.getMethods().stream().filter(m -> m.getName().getLocalName().equals("main")).count();
         for (MethodDeclaration md : mainClas.getMethods()) {
             if (md.getName().getLocalName().equals("main")) {
                 visitedLinesRecorder.recordFirstLineVisited(md);
@@ -249,43 +251,9 @@ public class AbstractInterpretation {
         }
         // Run constructor method
         this.inConstructor = true;
-        if (constructor.getBody() == null) {     // cpg has lost the method body -> try to restore
-            try {
-                RecordDeclaration recordDeclaration = constructor.getRecordDeclaration();
-                assert recordDeclaration != null;
-                List<ConstructorDeclaration> methods = recordDeclaration.getConstructors();
-                // match on name and arguments
-                for (ConstructorDeclaration candidate : methods) {
-                    if (candidate.getParameters().size() == constructor.getParameters().size()) {
-                        boolean parametersMatch = true;
-                        for (int i = 0; i < constructor.getParameters().size(); i++) {
-                            Type candidateType = candidate.getParameters().get(i).getType();
-                            Type methodType = constructor.getParameters().get(i).getType();
-                            boolean typesMatch = candidateType.equals(methodType)
-                                    || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
-                                    || (candidateType instanceof ObjectType && methodType instanceof ObjectType
-                                            && methodType.getName().getLocalName().equals("E"))
-                                    || (candidateType.getTypeName().contains("List") && methodType.getTypeName().contains("List"))   // this can be
-                                                                                                                                     // wrong but is
-                                                                                                                                     // necessary
-                                    || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
-                                    || (candidateType instanceof FloatingPointType && methodType instanceof FloatingPointType)
-                                    || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
-                            if (!typesMatch) {
-                                parametersMatch = false;
-                                break;
-                            }
-                        }
-                        if (parametersMatch && candidate.getBody() != null) {
-                            constructor = candidate;
-                            visitedLinesRecorder.recordFirstLineVisited(constructor);
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception _) {
-                // cannot restore method body -> give up
-            }
+        if (constructor.getBody() == null && constructor.getRecordDeclaration() != null) {     // cpg has lost the method body -> try to restore
+            constructor = (ConstructorDeclaration) restoreFunctionDeclaration(constructor.getRecordDeclaration(), constructor,
+                    new ArrayList<>(constructor.getRecordDeclaration().getConstructors()));
         }
         List<Node> eog = constructor.getNextEOG();
         if (eog.size() == 1) {
@@ -446,30 +414,7 @@ public class AbstractInterpretation {
                 nextNode = nextEOG.getFirst();
             }
             case Reference ref -> {     // adds its value to the value stack
-                if (this.object == null) {
-                    System.out.println("Debug");
-                }
-                if (ref.getName().getLocalName().equals("this")) {
-                    valueStack.add(this.object);
-                } else if (ref.getRefersTo() instanceof FieldDeclaration fieldDeclaration
-                        && fieldDeclaration.getName().toString().equals("Comparator")) {
-                    throw new JavaLanguageFeatureNotSupportedException("Comparators are not supported yet.");
-                } else {
-                    Variable variable = variables.getVariable(new VariableName(ref.getName().toString()));
-                    if (variable != null) {
-                        valueStack.add(Objects.requireNonNull(variables.getVariable(new VariableName(ref.getName().toString()))).getValue());
-                    } else if (object.accessField(ref.getName().toString()) != null) { // sometimes cpg does not insert "this".
-                        IValue value = object.accessField(ref.getName().toString());
-                        if (value.getType() == de.jplag.java_cpg.ai.variables.Type.VOID) {  // value isn't known
-                            value = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(ref.getType()));
-                        }
-                        valueStack.add(value);
-                    } else {    // unknown reference
-                        assert false;
-                    }
-                }
-                nodeStack.add(ref);
-                assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
+                walkReference(ref);
                 nextNode = nextEOG.getFirst();
             }
             case SubscriptExpression se -> nextNode = walkSubscriptExpression(se);
@@ -488,49 +433,13 @@ public class AbstractInterpretation {
                 }
             }
             case DeclarationStatement ds -> {
-                for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
-                    if (((VariableDeclaration) ds.getDeclarations().get(i)).getInitializer() == null) {
-                        Variable newVar = new Variable(new VariableName((ds.getDeclarations().get(i)).getName().toString()),
-                                de.jplag.java_cpg.ai.variables.Type.fromCpgType(((VariableDeclaration) ds.getDeclarations().get(i)).getType()));
-                        newVar.setInitialValue();
-                        variables.addVariable(newVar);
-                        nodeStack.removeLast();
-                    } else {
-                        if (valueStack.isEmpty()) {
-                            valueStack.add(new VoidValue());
-                            nodeStack.addLast(new Node());
-                        }
-                        assert !valueStack.isEmpty();
-                        Variable variable = new Variable((ds.getDeclarations().get(i)).getName().toString(), valueStack.getLast());
-                        variables.addVariable(variable);
-                        nodeStack.removeLast();
-                        nodeStack.removeLast();
-                        valueStack.removeLast();
-                        if (nextEOG.getFirst() instanceof ForEachStatement) {
-                            valueStack.add(variable.getValue());
-                        }
-                    }
-                }
-                assert nextEOG.size() == 1;
+                walkDeclarationStatement(ds);
                 nextNode = nextEOG.getFirst();
             }
             case AssignExpression ae -> nextNode = walkAssignExpression(ae);
             case ShortCircuitOperator scop -> nextNode = walkShortCircuitOperator(scop);
             case BinaryOperator bop -> {
-                if (visitedNodesCounter == 7149) {
-                    System.out.println("Debug");
-                }
-                assert valueStack.size() >= 2 && !nodeStack.isEmpty();
-                String operator = bop.getOperatorCode();
-                assert operator != null;
-                IValue result = valueStack.get(valueStack.size() - 2).binaryOperation(operator, valueStack.getLast());
-                assert nodeStack.size() >= 2;
-                nodeStack.removeLast();
-                nodeStack.removeLast();
-                nodeStack.add(bop);
-                valueStack.removeLast();
-                valueStack.removeLast();
-                valueStack.add(result);
+                walkBinaryOperator(bop);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
                     IValue value = valueStack.getLast();
                     valueStack.removeLast();
@@ -539,24 +448,7 @@ public class AbstractInterpretation {
                 assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
                 nextNode = nextEOG.getFirst();
             }
-            case UnaryOperator uop -> {
-                assert !valueStack.isEmpty() && !nodeStack.isEmpty();
-                String operator = uop.getOperatorCode();
-                assert operator != null;
-                IValue result = valueStack.getLast().unaryOperation(operator);
-                nodeStack.removeLast();
-                nodeStack.add(uop);
-                valueStack.removeLast();
-                valueStack.add(result);
-                if (nextEOG.isEmpty()) {      // when throw is the last statement in a block
-                    nextNode = new ReturnStatement();
-                    ((ReturnStatement) nextNode).setReturnValue(new Expression() {
-                    });
-                } else {
-                    assert nextEOG.size() == 1 || (nextEOG.size() == 2 && nextEOG.getLast() instanceof ShortCircuitOperator);
-                    nextNode = nextEOG.getFirst();
-                }
-            }
+            case UnaryOperator uop -> nextNode = walkUnaryOperator(uop);
             case IfStatement ifStmt -> {
                 nextNode = walkIfStatement(ifStmt);
                 if (nextNode == null) {
@@ -603,45 +495,7 @@ public class AbstractInterpretation {
             case ReturnStatement rs -> {
                 return walkReturnStatement(rs);
             }
-            case ConstructExpression ce -> {
-                // inside Constructors, no NewExpression nodes come after ConstructExpression nodes
-                if (inConstructor && !(nextEOG.getFirst() instanceof NewExpression)) {
-                    ConstructorDeclaration constructor = ce.getConstructor();
-                    if (constructor == null) {
-                        if (ce.getName().toString().equals("java.lang.Exception") || ce.getName().toString().equals("java.lang.RuntimeException")
-                                || ce.getName().toString().equals("java.lang.Throwable")
-                                || ce.getName().toString().equals("java.lang.IllegalArgumentException")) {
-                            // skip exception
-                            assert nextEOG.size() == 1;
-                            nextNode = nextEOG.getFirst();
-                            break;
-                        }
-                        throw new CpgErrorException("Constructor not present in ConstructExpression");
-                    }
-                    List<Node> eog = constructor.getNextEOG();
-                    if (!(eog.isEmpty())) { // Constructor has a body
-                        List<IValue> arguments = new ArrayList<>();
-                        if (!ce.getArguments().isEmpty()) {
-                            int size = ce.getArguments().size();
-                            for (int i = 0; i < size; i++) {
-                                arguments.add(valueStack.getLast());
-                                valueStack.removeLast();
-                                nodeStack.removeLast();
-                            }
-                        }
-                        Collections.reverse(arguments);
-                        for (int i = 0; i < constructor.getParameters().size(); i++) {
-                            variables.addVariable(
-                                    new Variable(new VariableName(constructor.getParameters().get(i).getName().toString()), arguments.get(i)));
-                        }
-                        graphWalker(eog.getFirst());
-                    }
-                } else {
-                    nodeStack.add(ce);
-                }
-                assert nextEOG.size() == 1;
-                nextNode = nextEOG.getFirst();
-            }
+            case ConstructExpression ce -> nextNode = walkConstructExpression(ce);
             case NewExpression ne -> {
                 walkNewExpression(ne);
                 if (nextEOG.isEmpty() || nextEOG.getFirst() instanceof DummyNeighbor) {    // when used as a field initializer
@@ -671,20 +525,7 @@ public class AbstractInterpretation {
                 }
             }
             case InitializerListExpression ile -> {
-                IJavaArray list;
-                if (ile.getInitializers().stream().anyMatch(ProblemExpression.class::isInstance)) { // catch cpg issues
-                    list = Value.getNewArayValue();
-                } else {
-                    assert valueStack.size() >= ile.getInitializers().size();
-                    assert nodeStack.size() >= ile.getInitializers().size();
-                    List<IValue> arguments = new ArrayList<>();
-                    for (int i = 0; i < ile.getInitializers().size(); i++) {
-                        nodeStack.removeLast();
-                        arguments.add(valueStack.getLast());
-                        valueStack.removeLast();
-                    }
-                    list = Value.getNewArayValue(arguments);
-                }
+                IJavaArray list = walkInitializerListExpression(ile);
                 if (nextEOG.isEmpty()) {    // when used as a field initializer
                     return list;
                 }
@@ -815,6 +656,30 @@ public class AbstractInterpretation {
         }
     }
 
+    private void walkReference(@NotNull Reference ref) {     // adds its value to the value stack
+        if (ref.getName().getLocalName().equals("this")) {
+            valueStack.add(this.object);
+        } else if (ref.getRefersTo() instanceof FieldDeclaration fieldDeclaration && fieldDeclaration.getName().toString().equals("Comparator")) {
+            throw new JavaLanguageFeatureNotSupportedException("Comparators are not supported yet.");
+        } else {
+            Variable variable = variables.getVariable(new VariableName(ref.getName().toString()));
+            if (variable != null) {
+                valueStack.add(Objects.requireNonNull(variables.getVariable(new VariableName(ref.getName().toString()))).getValue());
+            } else if (object.accessField(ref.getName().toString()) != null) { // sometimes cpg does not insert "this".
+                IValue value = object.accessField(ref.getName().toString());
+                if (value.getType() == de.jplag.java_cpg.ai.variables.Type.VOID) {  // value isn't known
+                    value = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(ref.getType()));
+                }
+                valueStack.add(value);
+            } else {    // unknown reference
+                assert false;
+            }
+        }
+        nodeStack.add(ref);
+        assert ref.getNextEOG().size() == 1 || (ref.getNextEOG().size() == 2 && ref.getNextEOG().getLast() instanceof ShortCircuitOperator);
+
+    }
+
     private Node walkSubscriptExpression(@NotNull SubscriptExpression se) { // adds its value to the value stack
         assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference || nodeStack.getLast() instanceof BinaryOperator
                 || nodeStack.getLast() instanceof MemberCallExpression || nodeStack.getLast() instanceof UnaryOperator
@@ -910,6 +775,33 @@ public class AbstractInterpretation {
         nodeStack.add(mce);
     }
 
+    private void walkDeclarationStatement(@NotNull DeclarationStatement ds) {
+        for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
+            if (((VariableDeclaration) ds.getDeclarations().get(i)).getInitializer() == null) {
+                Variable newVar = new Variable(new VariableName((ds.getDeclarations().get(i)).getName().toString()),
+                        de.jplag.java_cpg.ai.variables.Type.fromCpgType(((VariableDeclaration) ds.getDeclarations().get(i)).getType()));
+                newVar.setInitialValue();
+                variables.addVariable(newVar);
+                nodeStack.removeLast();
+            } else {
+                if (valueStack.isEmpty()) {
+                    valueStack.add(new VoidValue());
+                    nodeStack.addLast(new Node());
+                }
+                assert !valueStack.isEmpty();
+                Variable variable = new Variable((ds.getDeclarations().get(i)).getName().toString(), valueStack.getLast());
+                variables.addVariable(variable);
+                nodeStack.removeLast();
+                nodeStack.removeLast();
+                valueStack.removeLast();
+                if (ds.getNextEOG().getFirst() instanceof ForEachStatement) {
+                    valueStack.add(variable.getValue());
+                }
+            }
+        }
+        assert ds.getNextEOG().size() == 1;
+    }
+
     private Node walkAssignExpression(@NotNull AssignExpression ae) {
         assert !valueStack.isEmpty();
         if (ae.getLhs().getFirst() instanceof SubscriptExpression) {
@@ -993,6 +885,40 @@ public class AbstractInterpretation {
         return scop.getNextEOG().getFirst();
     }
 
+    private void walkBinaryOperator(@NotNull BinaryOperator bop) {
+        assert valueStack.size() >= 2 && !nodeStack.isEmpty();
+        String operator = bop.getOperatorCode();
+        assert operator != null;
+        IValue result = valueStack.get(valueStack.size() - 2).binaryOperation(operator, valueStack.getLast());
+        assert nodeStack.size() >= 2;
+        nodeStack.removeLast();
+        nodeStack.removeLast();
+        nodeStack.add(bop);
+        valueStack.removeLast();
+        valueStack.removeLast();
+        valueStack.add(result);
+    }
+
+    private Node walkUnaryOperator(@NotNull UnaryOperator uop) {
+        assert !valueStack.isEmpty() && !nodeStack.isEmpty();
+        String operator = uop.getOperatorCode();
+        assert operator != null;
+        IValue result = valueStack.getLast().unaryOperation(operator);
+        nodeStack.removeLast();
+        nodeStack.add(uop);
+        valueStack.removeLast();
+        valueStack.add(result);
+        if (uop.getNextEOG().isEmpty()) {      // when throw is the last statement in a block
+            ReturnStatement nextNode = new ReturnStatement();
+            nextNode.setReturnValue(new Expression() {
+            });
+            return nextNode;
+        } else {
+            assert uop.getNextEOG().size() == 1 || (uop.getNextEOG().size() == 2 && uop.getNextEOG().getLast() instanceof ShortCircuitOperator);
+            return uop.getNextEOG().getFirst();
+        }
+    }
+
     @Nullable
     private Node walkIfStatement(@NotNull IfStatement ifStmt) {
         Node nextNode;
@@ -1050,7 +976,8 @@ public class AbstractInterpretation {
                     if (ifStmt.getElseStatement() == null) {
                         TransformationUtil.disconnectFromPredecessor(ifStmt);
                         assert ifStmt.getScope() != null;
-                        Block containingBlock = (Block) ifStmt.getScope().getAstNode();
+                        Block containingBlock = (Block) ifStmt.getScope().getAstNode(); // ToDo: can be other ifStatement and not block
+                                                                                        // (BoardGame/human/subm304)
                         assert containingBlock != null;
                         List<Statement> statements = containingBlock.getStatements();
                         statements.remove(ifStmt);
@@ -1158,6 +1085,45 @@ public class AbstractInterpretation {
         }
         nodeStack.add(null);
         return result;
+    }
+
+    @NotNull
+    private Node walkConstructExpression(@NotNull ConstructExpression ce) {
+        // inside Constructors, no NewExpression nodes come after ConstructExpression nodes
+        if (inConstructor && !(ce.getNextEOG().getFirst() instanceof NewExpression)) {
+            ConstructorDeclaration constructor = ce.getConstructor();
+            if (constructor == null) {
+                if (ce.getName().toString().equals("java.lang.Exception") || ce.getName().toString().equals("java.lang.RuntimeException")
+                        || ce.getName().toString().equals("java.lang.Throwable")
+                        || ce.getName().toString().equals("java.lang.IllegalArgumentException")) {
+                    // skip exception
+                    assert ce.getNextEOG().size() == 1;
+                    return ce.getNextEOG().getFirst();
+                }
+                throw new CpgErrorException("Constructor not present in ConstructExpression");
+            }
+            List<Node> eog = constructor.getNextEOG();
+            if (!(eog.isEmpty())) { // Constructor has a body
+                List<IValue> arguments = new ArrayList<>();
+                if (!ce.getArguments().isEmpty()) {
+                    int size = ce.getArguments().size();
+                    for (int i = 0; i < size; i++) {
+                        arguments.add(valueStack.getLast());
+                        valueStack.removeLast();
+                        nodeStack.removeLast();
+                    }
+                }
+                Collections.reverse(arguments);
+                for (int i = 0; i < constructor.getParameters().size(); i++) {
+                    variables.addVariable(new Variable(new VariableName(constructor.getParameters().get(i).getName().toString()), arguments.get(i)));
+                }
+                graphWalker(eog.getFirst());
+            }
+        } else {
+            nodeStack.add(ce);
+        }
+        assert ce.getNextEOG().size() == 1;
+        return ce.getNextEOG().getFirst();
     }
 
     private Node walkSwitchStatement(@NotNull SwitchStatement sw) { // ToDo delete dead Code in switch
@@ -1531,6 +1497,25 @@ public class AbstractInterpretation {
         return nextNode;
     }
 
+    @NotNull
+    private IJavaArray walkInitializerListExpression(@NotNull InitializerListExpression ile) {
+        IJavaArray list;
+        if (ile.getInitializers().stream().anyMatch(ProblemExpression.class::isInstance)) { // catch cpg issues
+            list = Value.getNewArayValue();
+        } else {
+            assert valueStack.size() >= ile.getInitializers().size();
+            assert nodeStack.size() >= ile.getInitializers().size();
+            List<IValue> arguments = new ArrayList<>();
+            for (int i = 0; i < ile.getInitializers().size(); i++) {
+                nodeStack.removeLast();
+                arguments.add(valueStack.getLast());
+                valueStack.removeLast();
+            }
+            list = Value.getNewArayValue(arguments);
+        }
+        return list;
+    }
+
     private void walkNewArrayExpression(@NotNull NewArrayExpression nae) {
         // either dimension or initializer is present
         if (!nae.getDimensions().isEmpty()) {
@@ -1587,6 +1572,46 @@ public class AbstractInterpretation {
         return variables;
     }
 
+    private @NotNull FunctionDeclaration restoreFunctionDeclaration(RecordDeclaration recordDeclaration, FunctionDeclaration original,
+            List<FunctionDeclaration> candidates) {
+        try {
+            assert recordDeclaration != null;
+            // match on name and arguments
+            for (FunctionDeclaration candidate : candidates) {
+                if (candidate.getName().getLocalName().equals(original.getName().getLocalName())
+                        && candidate.getParameters().size() == original.getParameters().size()) {
+                    boolean parametersMatch = true;
+                    for (int i = 0; i < original.getParameters().size(); i++) {
+                        Type candidateType = candidate.getParameters().get(i).getType();
+                        Type methodType = original.getParameters().get(i).getType();
+                        // some of them can be wrong, but this is necessary
+                        boolean typesMatch = candidateType.equals(methodType)
+                                || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
+                                || (candidateType instanceof ObjectType && methodType instanceof ObjectType
+                                        && methodType.getTypeOrigin() == Type.Origin.UNRESOLVED)
+                                || (candidateType instanceof ObjectType && methodType instanceof ObjectType
+                                        && methodType.getName().getLocalName().equals("E"))
+                                || (candidateType.getTypeName().contains("List") && methodType.getTypeName().contains("List"))
+                                || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
+                                || (candidateType instanceof FloatingPointType && methodType instanceof FloatingPointType)
+                                || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
+                        if (!typesMatch) {
+                            parametersMatch = false;
+                            break;
+                        }
+                    }
+                    if (parametersMatch && candidate.getBody() != null) {
+                        visitedLinesRecorder.recordFirstLineVisited(candidate);
+                        return candidate;
+                    }
+                }
+            }
+        } catch (Exception _) {
+            // cannot restore method body -> give up
+        }
+        return original;
+    }
+
     /**
      * Runs a method in this abstract interpretation engine context with the given name and parameters.
      * @param name the name of the method to run.
@@ -1599,42 +1624,9 @@ public class AbstractInterpretation {
             return new VoidValue();
         }
         if (method.getBody() == null) {     // cpg has lost the method body -> try to restore
-            try {
-                RecordDeclaration recordDeclaration = method.getRecordDeclaration();
-                assert recordDeclaration != null;
-                List<MethodDeclaration> methods = recordDeclaration.getMethods();
-                // match on name and arguments
-                for (MethodDeclaration candidate : methods) {
-                    if (candidate.getName().getLocalName().equals(method.getName().getLocalName())
-                            && candidate.getParameters().size() == method.getParameters().size()) {
-                        boolean parametersMatch = true;
-                        for (int i = 0; i < method.getParameters().size(); i++) {
-                            Type candidateType = candidate.getParameters().get(i).getType();
-                            Type methodType = method.getParameters().get(i).getType();
-                            boolean typesMatch = candidateType.equals(methodType)
-                                    || (candidateType instanceof ParameterizedType && methodType instanceof ObjectType)
-                                    || (candidateType instanceof ObjectType && methodType instanceof ObjectType
-                                            && methodType.getTypeOrigin() == Type.Origin.UNRESOLVED)
-                                    || (candidateType.getTypeName().contains("List") && methodType.getTypeName().contains("List"))   // this can be
-                                                                                                                                     // wrong but is
-                                                                                                                                     // necessary
-                                    || (candidateType instanceof IntegerType && methodType instanceof IntegerType)
-                                    || (candidateType instanceof FloatingPointType && methodType instanceof FloatingPointType)
-                                    || (candidateType instanceof FloatingPointType && methodType instanceof IntegerType);
-                            if (!typesMatch) {
-                                parametersMatch = false;
-                                break;
-                            }
-                        }
-                        if (parametersMatch && candidate.getBody() != null) {
-                            method = candidate;
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception _) {
-                // cannot restore method body -> give up
-            }
+            assert method.getRecordDeclaration() != null;
+            method = (MethodDeclaration) restoreFunctionDeclaration(method.getRecordDeclaration(), method,
+                    new ArrayList<>(method.getRecordDeclaration().getMethods()));
         }
         if (lastVisitedMethod.contains(method)) {
             // recursive call detected
@@ -1684,7 +1676,12 @@ public class AbstractInterpretation {
         IValue result;
         assert method.getNextEOG().size() <= 1;
         if (method.getNextEOG().size() == 1) {
+            // try {
             result = graphWalker(method.getNextEOG().getFirst());
+            // } catch (Exception e) {
+            // variables.setEverythingUnknown();
+            // result = new VoidValue();
+            // }
         } else {
             result = new VoidValue();
         }
