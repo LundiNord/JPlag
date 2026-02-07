@@ -10,14 +10,14 @@ library(gridExtra)
 data <- read.csv("results/AI_plagiarism_results_Standard.csv")
 data1 <- read.csv("results/AI_plagiarism_results_Level1.csv")
 data2 <- read.csv("results/AI_plagiarism_results_Level2.csv")
-
 # Add dataset identifier to each dataframe
 data$Dataset <- "Standard"
 data1$Dataset <- "Level1"
 data2$Dataset <- "Level2"
-
 # Combine all datasets
 combined_data <- bind_rows(data, data1, data2)
+
+
 
 # 1. Comparison of Detection Methods (Box Plot) with all datasets
 detection_comparison <- combined_data %>%
@@ -27,21 +27,27 @@ detection_comparison <- combined_data %>%
                values_to = "Score") %>%
   mutate(
     DatasetPlot = if_else(Method %in% c("JPlag", "CpgMinimal", "CpgStandard"),
-                          "All datasets",
+                          "all",
                           Dataset),
     Method = factor(Method, levels = c("JPlag", "CpgMinimal", "CpgStandard", "CpgAI")),
-    DatasetPlot = factor(DatasetPlot, levels = c("Standard", "Level1", "Level2", "All datasets"))
+    DatasetPlot = factor(DatasetPlot, levels = c("Standard", "Level1", "Level2", "all"))
   ) %>%
   distinct(Method, Score, DatasetPlot, .keep_all = TRUE)
-
-p1 <- ggplot(detection_comparison, aes(x = Method, y = Score, fill = DatasetPlot)) +
+p1 <- ggplot(
+  detection_comparison,
+  aes(x = interaction(Method, DatasetPlot, sep = " / "), y = Score, fill = DatasetPlot)
+) +
   geom_boxplot() +
-  labs(title = "Plagiarism Detection Score Comparison",
-       x = "Detection Method",
-       y = "Similarity Score",
-       fill = "Dataset") +
+  labs(
+    #title = "",
+    x = "Detection Method / Data Types",
+    y = "Similarity Score",
+    fill = "Dataset"
+  ) +
   theme_minimal() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none")
+
+
 
 
 
@@ -56,20 +62,27 @@ time_comparison <- combined_data %>%
     Method = gsub("Time", "", Method),
     Method = gsub("\\.ms\\.", "", Method),
     DatasetPlot = if_else(Method %in% c("JPlag", "StandardCpg", "MinimalCpg"),
-                          "All datasets",
+                          "all",
                           Dataset),
     Method = factor(Method, levels = c("JPlag", "StandardCpg", "MinimalCpg", "Ai")),
-    DatasetPlot = factor(DatasetPlot, levels = c("Standard", "Level1", "Level2", "All datasets"))
+    DatasetPlot = factor(DatasetPlot, levels = c("Standard", "Level1", "Level2", "all"))
   ) %>%
   distinct(Method, Time, DatasetPlot, .keep_all = TRUE)
-p2 <- ggplot(time_comparison, aes(x = Method, y = Time, fill = DatasetPlot)) +
+p2 <- ggplot(
+  time_comparison,
+  aes(x = interaction(Method, DatasetPlot, sep = " / "), y = Time, fill = DatasetPlot)
+) +
   geom_boxplot() +
-  labs(title = "Execution Time Comparison",
-       x = "Detection Method",
-       y = "Time (ms)",
-       fill = "Dataset") +
+  labs(
+    #title = "",
+    x = "Detection Method / Data Types",
+    y = "Time (ms)",
+    fill = "Dataset"
+  ) +
   theme_minimal() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none")
+
+
 
 
 
@@ -115,7 +128,7 @@ detection_stats <- detection_comparison %>%
   arrange(Method, DatasetPlot)
 print("Detection Score Statistics:")
 print(detection_stats)
-write.csv(detection_stats, "detection_score_statistics.csv", row.names = FALSE)
+#write.csv(detection_stats, "detection_score_statistics.csv", row.names = FALSE)
 # Summary statistics for Execution Time Comparison (Plot #2)
 time_stats <- time_comparison %>%
   group_by(Method, DatasetPlot) %>%
@@ -131,7 +144,7 @@ time_stats <- time_comparison %>%
   arrange(Method, DatasetPlot)
 print("Execution Time Statistics:")
 print(time_stats)
-write.csv(time_stats, "execution_time_statistics.csv", row.names = FALSE)
+#write.csv(time_stats, "execution_time_statistics.csv", row.names = FALSE)
 
 
 
