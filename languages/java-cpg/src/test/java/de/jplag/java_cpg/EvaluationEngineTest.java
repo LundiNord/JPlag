@@ -176,7 +176,7 @@ class EvaluationEngineTest {
                 new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/claude/Project6.java"));
     }
 
-    private static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
+    static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
         // stolen from https://stackoverflow.com/questions/955110/similarity-string-comparison-in-java
         List<T> longer = s1, shorter = s2;
         if (s1.size() < s2.size()) { // longer should always have greater length
@@ -236,7 +236,7 @@ class EvaluationEngineTest {
 
     @SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.RelianceOnDefaultCharset"})
     @NotNull
-    private static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
+    static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
             throws ParsingException {
         try {
             File originalFile = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
@@ -599,15 +599,16 @@ class EvaluationEngineTest {
     @Test
     @Disabled
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm34";
+        // String fileName = "kit_DONT_COMMIT/TicTacToe/human/24846";
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm334";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
         startTime = System.nanoTime();
-        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, false);
+        List<Token> tokensWithoutSimpleDeadCode = getTokensFromFile(fileName, false, false, false, true, true);
         long timeSimpleRemoval = System.nanoTime() - startTime;
         startTime = System.nanoTime();
-        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+        List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, true);
         long timeFullRemoval = System.nanoTime() - startTime;
         double simSimpleRemoval = similarity(tokens, tokensWithoutSimpleDeadCode);
         double simFullRemoval = similarity(tokens, tokensWithoutDeadCode);
@@ -656,7 +657,7 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>();
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -714,7 +715,7 @@ class EvaluationEngineTest {
 
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
         // i=i.proximo())
-        String fileName = "";
+        String fileName = "progpedia/00000039/WRONG_ANSWER/00233_00004/Ex6.java";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
