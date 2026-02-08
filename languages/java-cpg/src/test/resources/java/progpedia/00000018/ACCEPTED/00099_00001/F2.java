@@ -1,12 +1,10 @@
 import java.util.LinkedList;
 import java.util.Scanner;
-import java.lang.*;
-import java.util.*;
 
 class Arco {
     int no_final;
     int valor;
-    
+
     Arco(int fim, int v){
 	no_final = fim;
 	valor = v;
@@ -16,9 +14,11 @@ class Arco {
 	return no_final;
     }
 
+	//DeadCodeStart
     int valor_arco() {
 	return valor;
     }
+	//DeadCodeEnd
 }
 
 
@@ -35,7 +35,7 @@ class No {
 class Grafo {
     No verts[];
     int nvs, narcos;
-			
+
     public Grafo(int n) {
 	nvs = n;
 	narcos = 0;
@@ -44,47 +44,51 @@ class Grafo {
 	    verts[i] = new No();
         // para vertices numerados de 1 a n (posicao 0 nao vai ser usada)
     }
-    
+
     public int num_vertices(){
 	return nvs;
     }
 
+	//DeadCodeStart
     public int num_arcos(){
 	return narcos;
     }
+	//DeadCodeEnd
 
     public LinkedList<Arco> adjs_no(int i) {
 	return verts[i].adjs;
     }
-    
+
     public void insert_new_arc(int i, int j, int valor_ij){
 	verts[i].adjs.addFirst(new Arco(j,valor_ij));
         narcos++;
     }
 
+	//DeadCodeStart
     public Arco find_arc(int i, int j){
 	for (Arco adj: adjs_no(i))
 	    if (adj.extremo_final() == j) return adj;
 	return null;
     }
+	//DeadCodeEnd
 }
 
 class sociologia {
 	public static void main(String args[]) {
 		Scanner in = new Scanner(System.in);
-		
+
 		int n = in.nextInt();
-		
+
 		for (int i = 0; i < n; i++) {
 			Grafo g = criaGrafo(in);
 			kosarajuAdapt(g, i+1);
 		}
 	}
-	
+
 	static Grafo criaGrafo(Scanner in) {
 		int nalunos = in.nextInt();
 		Grafo g = new Grafo(nalunos);
-		
+
 		for (int i = 0; i < nalunos; i++) {
 			int v = in.nextInt();
 			int nr = in.nextInt();
@@ -92,86 +96,86 @@ class sociologia {
 				g.insert_new_arc(v, in.nextInt(), 0);
 			}
 		}
-		
+
 		return g;
 	}
-	
+
 	static void kosarajuAdapt(Grafo g, int num) {
 		LinkedList<Integer> S = stackDFS(g);
 		Grafo gt = gTransposto(g);
-		
+
 		boolean vis[] = new boolean[g.num_vertices()+1];
-		
+
 		int d=0;
 		int f=0;
-		
+
 		while (!S.isEmpty()) {
 			int v = S.pop();
-			
+
 			int c=0;
 			if(!vis[v]) {
 				c = DFS_Transposto(gt, v, vis);
-			
+
 				if(c>=4) d++;
 				else f+=c;
 			}
 		}
-		
+
 		System.out.println("Caso #"+num);
 		System.out.println(d+" "+f);
 	}
-	
+
 	static Grafo gTransposto(Grafo g) {
 		Grafo gt = new Grafo(g.num_vertices());
-		
+
 		for (int i = 1; i <= g.num_vertices(); i++) {
 			for (Arco a : g.adjs_no(i)) {
 				gt.insert_new_arc(a.extremo_final(), i, 0);
 			}
 		}
-		
+
 		return gt;
 	}
-	
+
 	static LinkedList<Integer> stackDFS(Grafo g) {
 		LinkedList<Integer> S = new LinkedList<Integer>();
 		boolean vis[] = new boolean[g.num_vertices()+1];
-		
+
 		for (int i = 1; i <= g.num_vertices(); i++) {
 			if(!vis[i]) {
 				stackDFS_Visit(g, i, S, vis);
 			}
 		}
-		
+
 		return S;
 	}
-	
+
 	static void stackDFS_Visit(Grafo g, int v, LinkedList<Integer> S, boolean vis[]) {
 		vis[v] = true;
-		
+
 		for (Arco a : g.adjs_no(v)) {
 			int w = a.extremo_final();
-			
+
 			if(!vis[w]) {
 				stackDFS_Visit(g, w, S, vis);
 			}
 		}
-		
+
 		S.push(v);
 	}
-	
+
 	static int DFS_Transposto(Grafo g, int v, boolean vis[]) {
 		vis[v] = true;
 		int c = 1;
-		
+
 		for (Arco a : g.adjs_no(v)) {
 			int w = a.extremo_final();
-			
+
 			if(!vis[w]) {
 				c += DFS_Transposto(g, w, vis);
 			}
 		}
-		
+
 		return c;
 	}
 }
@@ -182,7 +186,7 @@ class sociologia {
 class Qnode {
     int vert;
     int vertkey;
-    
+
     Qnode(int v, int key) {
 	vert = v;
 	vertkey = key;
@@ -192,7 +196,7 @@ class Qnode {
 class Heapmax {
     private static int posinvalida = 0;
     int sizeMax,size;
-    
+
     Qnode[] a;
     int[] pos_a;
 
@@ -224,18 +228,18 @@ class Heapmax {
 	int i = pos_a[vertv];
 	a[i].vertkey = newkey;
 
-	while (i > 1 && compare(i, parent(i)) > 0) { 
+	while (i > 1 && compare(i, parent(i)) > 0) {
 	    swap(i, parent(i));
 	    i = parent(i);
 	}
     }
 
-
+	//DeadCodeStart
     void insert(int vertv, int key)
-    { 
+    {
 	if (sizeMax == size)
 	    new Error("Heap is full\n");
-	
+
 	size++;
 	a[size].vert = vertv;
 	pos_a[vertv] = size;   // supondo 1 <= vertv <= n
@@ -248,14 +252,15 @@ class Heapmax {
 	System.out.printf("(Vert,Key)\n---------\n");
 	for(int i=1; i <= size; i++)
 	    System.out.printf("(%d,%d)\n",a[i].vert,a[i].vertkey);
-	
+
 	System.out.printf("-------\n(Vert,PosVert)\n---------\n");
 
 	for(int i=1; i <= sizeMax; i++)
 	    if (pos_valida(pos_a[i]))
 		System.out.printf("(%d,%d)\n",i,pos_a[i]);
     }
-    
+	//DeadCodeEnd
+
     private int parent(int i){
 	return i/2;
     }
@@ -274,7 +279,7 @@ class Heapmax {
 	return 1;
     }
 
-  
+
     private void heapify(int i) {
 	int l, r, smallest;
 
@@ -289,12 +294,12 @@ class Heapmax {
 	    smallest = l;
 	if (compare(r,smallest) > 0)
 	    smallest = r;
-	
+
 	if (i != smallest) {
 	    swap(i, smallest);
 	    heapify(smallest);
 	}
-	
+
     }
 
     private void swap(int i, int j) {
@@ -305,7 +310,7 @@ class Heapmax {
 	a[i] = a[j];
 	a[j] = aux;
     }
-    
+
     private boolean pos_valida(int i) {
 	return (i >= 1 && i <= size);
     }
@@ -324,7 +329,7 @@ class F2 {
 		}
 		prim(g, c);
 	}
-	
+
 	static void prim(Grafo g, int c){
 		int lucro[] = new int[g.nvs+1];
 		boolean vis[] = new boolean[g.nvs+1];
@@ -349,7 +354,7 @@ class F2 {
 				}
 			}
 		}
-		
+
 		if(max>0) System.out.println("rendimento optimo: " + (max-(g.nvs-1)*c));
 		else System.out.println("impossivel");
 	}
