@@ -2,26 +2,23 @@ package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import java.util.Set;
 
-import org.checkerframework.dataflow.qual.Impure;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
-import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
 
 /**
  * Represents an integer value with optional exact information.
  * @author ujiqk
  * @version 1.0
  */
-public class IntValue extends Value implements INumberValue, IIntNumber {
+public class IntValue extends BasicNumberValue implements INumberValue, IIntNumber {
 
-    private int value;
-    private boolean information;    // whether exact information is available
+    private final int value;
+    private final boolean information;    // whether exact information is available
 
     /**
      * a IntValue with no information.
@@ -29,6 +26,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
     public IntValue() {
         super(Type.INT);
         information = false;
+        value = 0;
     }
 
     /**
@@ -62,6 +60,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
             this.information = true;
         } else {
             this.information = false;
+            value = 0;
         }
     }
 
@@ -78,6 +77,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
             this.information = true;
         } else {
             this.information = false;
+            value = 0;
         }
     }
 
@@ -102,183 +102,6 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
         return value;
     }
 
-    @Override
-    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
-        if (!(other instanceof INumberValue)) {
-            other = new IntValue();
-        }
-        INumberValue otherNumber = (INumberValue) other;
-        switch (operator) {
-            case "+" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(this.value + otherNumber.getValue());
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "<" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new BooleanValue(this.value < otherNumber.getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case ">" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new BooleanValue(this.value > otherNumber.getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "-" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(this.value - otherNumber.getValue());
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "!=" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new BooleanValue(this.value != otherNumber.getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "==" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new BooleanValue(this.value == otherNumber.getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "*" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(this.value * otherNumber.getValue());
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "/" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(this.value / otherNumber.getValue());
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "<=" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new BooleanValue(this.value <= otherNumber.getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case ">=" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new BooleanValue(this.value >= otherNumber.getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "max" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(Math.max(this.value, otherNumber.getValue()));
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "min" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(Math.min(this.value, otherNumber.getValue()));
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "%" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(this.value % otherNumber.getValue());
-                } else {
-                    return new IntValue();
-                }
-            }
-            case ">>" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(this.value >> (int) otherNumber.getValue());
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "<<" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue(this.value << (int) otherNumber.getValue());
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "pow" -> {
-                if (information && otherNumber.getInformation()) {
-                    return new IntValue((int) Math.pow(this.value, otherNumber.getValue()));
-                } else {
-                    return new IntValue();
-                }
-            }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
-        }
-    }
-
-    @Override
-    @Impure
-    public IValue unaryOperation(@NotNull String operator) {
-        switch (operator) {
-            case "++" -> {
-                if (information) {
-                    this.value += 1;
-                    return new IntValue(this.value);
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "--" -> {
-                if (information) {
-                    this.value -= 1;
-                    return new IntValue(this.value);
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "-" -> {
-                if (information) {
-                    this.value = -this.value;
-                    return new IntValue(this.value);
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "abs" -> {
-                if (information) {
-                    return new IntValue(Math.abs(this.value));
-                } else {
-                    return new IntValue();
-                }
-            }
-            case "sin" -> {
-                if (information) {
-                    return Value.valueFactory(Math.sin(this.value));
-                } else {
-                    return Value.valueFactory(Type.FLOAT);
-                }
-            }
-            case "sqrt" -> {
-                if (information) {
-                    return Value.valueFactory(Math.sqrt(this.value));
-                } else {
-                    return Value.valueFactory(Type.FLOAT);
-                }
-            }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
-        }
-    }
-
     @NotNull
     @Override
     public Value copy() {
@@ -286,45 +109,38 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
-            this.information = false;
-            return;
-        }
+    public IntValue merge(@NotNull IValue other) {
         if (other instanceof JavaObject javaObject) {   // could be an Integer object
             if (javaObject.accessField("value") instanceof IntValue intValue) {
                 other = intValue;
             } else {
-                this.information = false;
-                return;
+                return new IntValue();
             }
-        }
-        if (other instanceof CharValue charValue) {   // cannot merge different types
-            if (information && charValue.getInformation() && this.value == charValue.getValue()) {
-                // keep information
-            } else {
-                this.information = false;
-            }
-            return;
         }
         assert other instanceof INumberValue;
         INumberValue otherInt = (INumberValue) other;
         if (this.information && otherInt.getInformation() && this.value == otherInt.getValue()) {
             // keep information
+            return this;
         } else {
-            this.information = false;
+            return new IntValue();
         }
     }
 
     @Override
-    public void setToUnknown() {
-        this.information = false;
+    @Pure
+    public @NotNull IntValue getInitialValue() {
+        return new IntValue(0);
     }
 
     @Override
-    public void setInitialValue() {
-        value = 0;
-        information = true;
+    protected BasicNumberValue getInstanceWithValue(double value) {
+        return new IntValue((int) value);
+    }
+
+    @Override
+    protected BasicNumberValue getUnknownInstance() {
+        return new IntValue();
     }
 
 }

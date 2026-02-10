@@ -8,16 +8,16 @@ import de.jplag.java_cpg.ai.variables.values.numbers.IIntNumber;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
- * Void typed value. Represents no value or completely unknown value.
+ * UnknownValue typed value. Represents completely unknown value.
  * @author ujiqk
  * @version 1.0
  */
-public class VoidValue extends Value {
+public class UnknownValue extends Value {
 
     /**
      * Creates a new Void typed value. Represents no value or completely unknown value.
      */
-    public VoidValue() {
+    public UnknownValue() {
         super(Type.VOID);
     }
 
@@ -32,13 +32,13 @@ public class VoidValue extends Value {
                     case IIntNumber _ -> Value.valueFactory(Type.INT);
                     case IFloatNumber _ -> Value.valueFactory(Type.FLOAT);
                     case IStringValue _ -> Value.valueFactory(Type.STRING);
-                    default -> new VoidValue();
+                    default -> this;
                 };
             }
             case "&", "^" -> {
-                return new VoidValue();
+                return this;
             }
-            default -> throw new UnsupportedOperationException("Operator " + operator + " not supported for VoidValue.");
+            default -> throw new UnsupportedOperationException("Operator " + operator + " not supported for UnknownValue.");
         }
     }
 
@@ -49,7 +49,7 @@ public class VoidValue extends Value {
                 return new BooleanValue();
             }
             case "--", "++", "abs", "+", "-", "throw" -> {
-                return new VoidValue();
+                return this;
             }
             default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());
         }
@@ -58,12 +58,11 @@ public class VoidValue extends Value {
     @NotNull
     @Override
     public Value copy() {
-        return new VoidValue();
+        return this;
     }
 
     @Override
-    public VoidValue merge(@NotNull IValue other) {
-        // do nothing
+    public UnknownValue merge(@NotNull IValue other) {
         return this;
     }
 

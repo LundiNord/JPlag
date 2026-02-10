@@ -18,7 +18,7 @@ public enum Type {
     NULL,
     FUNCTION,
     CHAR,
-    UNKNOWN,    // ToDo: split void value to void and unknown??
+    UNKNOWN,
     VOID;
 
     /**
@@ -39,14 +39,21 @@ public enum Type {
             return ARRAY;   // in java pointer types are used only for arrays
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.FloatingPointType.class) {
             return FLOAT;
-        } else if ((cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IncompleteType.class && cpgType.getName().getLocalName().equals("void"))
+        } else if (cpgType.getName().getLocalName().equals("void")) {
+            return VOID;
+        } else if ((cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IncompleteType.class)
                 || cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.UnknownType.class) {
-            return VOID;
+            return UNKNOWN;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ParameterizedType.class) {
-            return VOID;
+            return OBJECT;
         } else {
             throw new IllegalArgumentException("Unsupported CPG type: " + cpgType);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "JPlag cpg ai built in type: " + this.name().toLowerCase();
     }
 
 }

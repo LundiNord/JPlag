@@ -2,9 +2,7 @@ package de.jplag.java_cpg.ai;
 
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.getMainObject;
 import static de.jplag.java_cpg.ai.DeadCodeDetectionTest.interpretFromResource;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -12,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatSetValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.FloatIntervalSetValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntSetValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IntIntervalSetValue;
 
 /**
  * Test that only uses the CPG library. Specifically tests different integer interval analyses.
@@ -125,15 +123,15 @@ class DeadCodeDetectionIntervalTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/interval");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());
-        assertEquals(110, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
-        assertEquals(210, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
+        assertEquals(110, ((IntIntervalSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
+        assertEquals(210, ((IntIntervalSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
         assertEquals(161, ((INumberValue) main.accessField("result2")).getValue());
         assertFalse(((INumberValue) main.accessField("result3")).getInformation());
-        assertEquals(150, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound());
-        assertEquals(450, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound());
+        assertEquals(150, ((IntIntervalSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound());
+        assertEquals(450, ((IntIntervalSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound());
         assertFalse(((INumberValue) main.accessField("result4")).getInformation());
-        assertEquals(501, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound());
-        assertEquals(2501, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound());
+        assertEquals(501, ((IntIntervalSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound());
+        assertEquals(2501, ((IntIntervalSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound());
     }
 
     @Test
@@ -143,23 +141,23 @@ class DeadCodeDetectionIntervalTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/intervalMulti");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());
-        assertEquals(0, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
-        assertEquals(Integer.MAX_VALUE, ((IntSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
+        assertEquals(0, ((IntIntervalSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound());
+        assertEquals(Integer.MAX_VALUE, ((IntIntervalSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound());
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
-        assertEquals(2, ((IntSetValue) main.accessField("result2")).getIntervals().size());     // y
-        assertEquals(10, ((IntSetValue) main.accessField("result2")).getIntervals().getFirst().getLowerBound());
-        assertEquals(50, ((IntSetValue) main.accessField("result2")).getIntervals().getFirst().getUpperBound());
-        assertEquals(200, ((IntSetValue) main.accessField("result2")).getIntervals().getLast().getLowerBound());
-        assertEquals(300, ((IntSetValue) main.accessField("result2")).getIntervals().getLast().getUpperBound());
+        assertEquals(2, ((IntIntervalSetValue) main.accessField("result2")).getIntervals().size());     // y
+        assertEquals(10, ((IntIntervalSetValue) main.accessField("result2")).getIntervals().getFirst().getLowerBound());
+        assertEquals(50, ((IntIntervalSetValue) main.accessField("result2")).getIntervals().getFirst().getUpperBound());
+        assertEquals(200, ((IntIntervalSetValue) main.accessField("result2")).getIntervals().getLast().getLowerBound());
+        assertEquals(300, ((IntIntervalSetValue) main.accessField("result2")).getIntervals().getLast().getUpperBound());
         assertFalse(((INumberValue) main.accessField("result3")).getInformation());
-        assertEquals(11, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound());
-        assertEquals(Integer.MAX_VALUE, ((IntSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound());
+        assertEquals(11, ((IntIntervalSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound());
+        assertEquals(Integer.MAX_VALUE, ((IntIntervalSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound());
         assertFalse(((INumberValue) main.accessField("result4")).getInformation());
-        assertEquals(2, ((IntSetValue) main.accessField("result4")).getIntervals().size());
-        assertEquals(20, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound());
-        assertEquals(100, ((IntSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound());
-        assertEquals(400, ((IntSetValue) main.accessField("result4")).getIntervals().getLast().getLowerBound());
-        assertEquals(600, ((IntSetValue) main.accessField("result4")).getIntervals().getLast().getUpperBound());
+        assertEquals(2, ((IntIntervalSetValue) main.accessField("result4")).getIntervals().size());
+        assertEquals(20, ((IntIntervalSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound());
+        assertEquals(100, ((IntIntervalSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound());
+        assertEquals(400, ((IntIntervalSetValue) main.accessField("result4")).getIntervals().getLast().getLowerBound());
+        assertEquals(600, ((IntIntervalSetValue) main.accessField("result4")).getIntervals().getLast().getUpperBound());
     }
 
     @Test
@@ -169,17 +167,17 @@ class DeadCodeDetectionIntervalTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/intervalDouble");
         JavaObject main = getMainObject(interpretation);
         assertFalse(((INumberValue) main.accessField("result")).getInformation());
-        assertEquals(60.5f, ((FloatSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(110.5, ((FloatSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertEquals(60.5f, ((FloatIntervalSetValue) main.accessField("result")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(110.5, ((FloatIntervalSetValue) main.accessField("result")).getIntervals().getFirst().getUpperBound(), 0.0001);
         assertFalse(((INumberValue) main.accessField("result2")).getInformation());
-        assertEquals(20.65f, ((FloatSetValue) main.accessField("result2")).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(20.9f, ((FloatSetValue) main.accessField("result2")).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertEquals(20.65f, ((FloatIntervalSetValue) main.accessField("result2")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(20.9f, ((FloatIntervalSetValue) main.accessField("result2")).getIntervals().getFirst().getUpperBound(), 0.0001);
         assertFalse(((INumberValue) main.accessField("result3")).getInformation());
-        assertEquals(37.5f, ((FloatSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(112.5f, ((FloatSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertEquals(37.5f, ((FloatIntervalSetValue) main.accessField("result3")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(112.5f, ((FloatIntervalSetValue) main.accessField("result3")).getIntervals().getFirst().getUpperBound(), 0.0001);
         assertFalse(((INumberValue) main.accessField("result4")).getInformation());
-        assertEquals(10.3f, ((FloatSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(1010.3f, ((FloatSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertEquals(10.3f, ((FloatIntervalSetValue) main.accessField("result4")).getIntervals().getFirst().getLowerBound(), 0.0001);
+        assertEquals(1010.3f, ((FloatIntervalSetValue) main.accessField("result4")).getIntervals().getFirst().getUpperBound(), 0.0001);
     }
 
 }

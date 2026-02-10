@@ -1,10 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,22 +24,25 @@ public class JavaObject extends Value implements IJavaObject {
     // ToDo: save type of the object (class name)
     @Nullable
     private Scope fields;       // fields == null => object null
+    private final @NotNull String typeName;
     @Nullable
     private AbstractInterpretation abstractInterpretation;  // the abstract interpretation engine for this object
 
-    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
+    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation, @NotNull String typeName) {
         super(Type.OBJECT);
         this.fields = fields;
         this.abstractInterpretation = abstractInterpretation;
+        this.typeName = typeName;
     }
 
     /**
      * Constructor for a Java object with an abstract interpretation engine and no info.
      * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
      */
-    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
+    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation, @NotNull String typeName) {
         super(Type.OBJECT);
         this.fields = new Scope();
+        this.typeName = typeName;
         this.abstractInterpretation = abstractInterpretation;
         abstractInterpretation.setRelatedObject(this);
     }
@@ -51,9 +50,10 @@ public class JavaObject extends Value implements IJavaObject {
     /**
      * Default constructor for a Java object with no abstract interpretation engine and no info.
      */
-    public JavaObject() {
+    public JavaObject(@NotNull String typeName) {
         super(Type.OBJECT);
         this.fields = new Scope();
+        this.typeName = typeName;
     }
 
     /**
@@ -62,6 +62,7 @@ public class JavaObject extends Value implements IJavaObject {
      */
     protected JavaObject(Type type) {
         super(type);
+        this.typeName = type.toString();
         this.fields = new Scope();
     }
 
@@ -83,9 +84,9 @@ public class JavaObject extends Value implements IJavaObject {
      * @return the value of the field or VoidValue if the field does not exist.
      */
     public IValue accessField(@NotNull String fieldName) {
-        if (fields == null) {
-            return new VoidValue(); // ToDo: is this correct?
-        }
+        // if (fields == null) {
+        // return new VoidValue(); // ToDo: is this correct?
+        // }
         assert fields != null;
         Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
@@ -100,11 +101,11 @@ public class JavaObject extends Value implements IJavaObject {
      * @param value the new value of the field.
      */
     public void changeField(@NotNull String fieldName, IValue value) {
-        if (fields == null) {
-            // reset information
-            fields = new Scope();   // ToDo: is this correct?
-            return;
-        }
+        // if (fields == null) {
+        // // reset information
+        // fields = new Scope(); // ToDo: is this correct?
+        // return;
+        // }
         assert fields != null;
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
@@ -233,6 +234,13 @@ public class JavaObject extends Value implements IJavaObject {
         }
         visited.add(this);
         this.fields.merge(otherObj.fields, visited);
+    }
+
+    @NotNull
+    @Override
+    public IValue getInitialValue() {
+        // ToDo
+        return null;
     }
 
     @Override

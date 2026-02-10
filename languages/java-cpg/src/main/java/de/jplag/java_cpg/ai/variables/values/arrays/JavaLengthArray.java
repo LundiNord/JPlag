@@ -6,15 +6,11 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
-import de.jplag.java_cpg.ai.variables.values.IJavaObject;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 /**
@@ -23,7 +19,7 @@ import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
  */
 public class JavaLengthArray extends JavaObject implements IJavaArray {
 
-    private Type innerType;
+    private final Type innerType;
     private INumberValue length;        // array == null -> length == null
 
     /**
@@ -50,10 +46,10 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      * @param innerType The inner type of the array.
      * @param length The length of the array.
      */
-    public JavaLengthArray(Type innerType, @NotNull INumberValue length) {
+    public JavaLengthArray(@NotNull Type innerType, @Nullable INumberValue length) {
         super(Type.ARRAY);
         this.length = length;
-        this.innerType = Objects.requireNonNullElse(innerType, Type.UNKNOWN);
+        this.innerType = innerType;
     }
 
     /**
@@ -73,8 +69,8 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     @Override
     public IValue arrayAccess(INumberValue index) {
         // if no information, return an unknown value of the inner type
-        if (innerType == null || innerType == Type.UNKNOWN) {
-            return new VoidValue();
+        if (innerType == Type.UNKNOWN) {
+            return new UnknownValue();
         }
         return switch (innerType) {
             case INT -> Value.valueFactory(Type.INT);
@@ -133,7 +129,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             case "remove" -> {
                 assert paramVars == null || paramVars.size() == 1 || paramVars.isEmpty();
                 // information lost
-                length.setToUnknown();
+                length = Value.getNewIntValue();
                 return new VoidValue();
             }
             case "get", "elementAt" -> {
@@ -183,7 +179,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 return this.length;
             }
             default -> {
-                return new VoidValue();
+                return new UnknownValue();
             }
         }
     }
@@ -205,15 +201,15 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
-            other = new JavaLengthArray(this.innerType);
-        }
+    public JavaLengthArray merge(@NotNull IValue other) {
+        // if (other instanceof VoidValue) {
+        // other = new JavaLengthArray(this.innerType);
+        // }
         assert other instanceof JavaLengthArray : "Can only merge with another JavaLengthArray but got " + other.getClass();
         final JavaLengthArray otherArray = (JavaLengthArray) other;
-        if (this.innerType == Type.UNKNOWN) {
-            this.innerType = otherArray.innerType;
-        }
+        // if (this.innerType == Type.UNKNOWN) {
+        // this.innerType = otherArray.innerType;
+        // }
         if (otherArray.innerType != Type.UNKNOWN) {
             assert Objects.equals(this.innerType, otherArray.innerType) : "Cannot merge arrays of different inner types: " + this.innerType + " and "
                     + ((JavaLengthArray) other).innerType;
@@ -223,6 +219,13 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
         } else {
             this.length.merge(otherArray.length);
         }
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public IValue getInitialValue() {
+        return new JavaLengthArray(this.innerType, null);
     }
 
     @Override

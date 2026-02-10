@@ -1,4 +1,4 @@
-package de.jplag.java_cpg.ai.variables.values.chars;
+package de.jplag.java_cpg.ai.variables.values.numbers.chars;
 
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 

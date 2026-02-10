@@ -16,34 +16,34 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
  * @author ujiqk
  * @version 1.0
  */
-public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implements IFloatNumber {
+public class FloatIntervalSetValue extends NumberIntervalSetValue<Double, DoubleInterval> implements IFloatNumber {
 
     /**
      * Default constructor c Float value represented as a set of intervals with no information.
      */
-    public FloatSetValue() {
+    public FloatIntervalSetValue() {
         super(Type.FLOAT);
         values.add(new DoubleInterval());
     }
 
-    private FloatSetValue(TreeSet<DoubleInterval> values) {
+    private FloatIntervalSetValue(TreeSet<DoubleInterval> values) {
         super(Type.FLOAT, values);
     }
 
     /**
-     * Constructor for FloatSetValue that is known to be a single number.
+     * Constructor for FloatIntervalSetValue that is known to be a single number.
      * @param number the single float number
      */
-    public FloatSetValue(double number) {
+    public FloatIntervalSetValue(double number) {
         super(Type.FLOAT);
         values.add(new DoubleInterval(number));
     }
 
     /**
-     * Constructor for FloatSetValue that is known to be one of the possible numbers.
+     * Constructor for FloatIntervalSetValue that is known to be one of the possible numbers.
      * @param possibleNumbers the possible float numbers
      */
-    public FloatSetValue(@NotNull Set<Double> possibleNumbers) {
+    public FloatIntervalSetValue(@NotNull Set<Double> possibleNumbers) {
         super(Type.INT);
         values = new TreeSet<>();
         // ToDo: slice into intervals
@@ -51,11 +51,11 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implem
     }
 
     /**
-     * Constructor for FloatSetValue that is known to be within a certain range.
+     * Constructor for FloatIntervalSetValue that is known to be within a certain range.
      * @param lowerBound the lower bound of the range
      * @param upperBound the upper bound of the range
      */
-    public FloatSetValue(double lowerBound, double upperBound) {
+    public FloatIntervalSetValue(double lowerBound, double upperBound) {
         super(Type.INT);
         values.add(new DoubleInterval(lowerBound, upperBound));
     }
@@ -71,14 +71,14 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implem
     }
 
     @Override
-    protected NumberSetValue<Double, DoubleInterval> createInstance(TreeSet<DoubleInterval> values) {
-        return new FloatSetValue(values);
+    protected NumberIntervalSetValue<Double, DoubleInterval> createInstance(TreeSet<DoubleInterval> values) {
+        return new FloatIntervalSetValue(values);
     }
 
     @NotNull
     @Override
     public Value copy() {
-        return new FloatSetValue(new TreeSet<>(values));
+        return new FloatIntervalSetValue(new TreeSet<>(values));
     }
 
     @Override

@@ -2,22 +2,19 @@ package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import java.util.Set;
 
-import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
 /**
  * Represents a floating point value with optional exact information.
  */
-public class FloatValue extends Value implements INumberValue, IFloatNumber {
+public class FloatValue extends BasicNumberValue implements INumberValue, IFloatNumber {
 
-    private double value;
-    private boolean information;    // whether exact information is available
+    private final double value;
+    private final boolean information;    // whether exact information is available
 
     /**
      * a IntValue with no information.
@@ -25,6 +22,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
     public FloatValue() {
         super(Type.FLOAT);
         information = false;
+        value = 0.0;
     }
 
     /**
@@ -50,6 +48,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
             this.information = true;
         } else {
             this.information = false;
+            this.value = 0.0;
         }
     }
 
@@ -64,6 +63,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
             this.information = true;
         } else {
             this.information = false;
+            this.value = 0.0;
         }
     }
 
@@ -88,133 +88,6 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
         return value;
     }
 
-    @Override
-    public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
-        if (other instanceof VoidValue) {
-            return new VoidValue();
-        }
-        assert other instanceof INumberValue;
-        switch (operator) {
-            case "+" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new FloatValue(this.value + ((INumberValue) other).getValue());
-                } else {
-                    return new FloatValue();
-                }
-            }
-            case "<" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new BooleanValue(this.value < ((INumberValue) other).getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case ">" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new BooleanValue(this.value > ((INumberValue) other).getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "-" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new FloatValue(this.value - ((INumberValue) other).getValue());
-                } else {
-                    return new FloatValue();
-                }
-            }
-            case "==" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new BooleanValue(this.value == ((INumberValue) other).getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "!=" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new BooleanValue(this.value != ((INumberValue) other).getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "*" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new FloatValue(this.value * ((INumberValue) other).getValue());
-                } else {
-                    return new FloatValue();
-                }
-            }
-            case "/" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new FloatValue(this.value / ((INumberValue) other).getValue());
-                } else {
-                    return new FloatValue();
-                }
-            }
-            case "pow" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new FloatValue(Math.pow(this.value, ((INumberValue) other).getValue()));
-                } else {
-                    return new FloatValue();
-                }
-            }
-            case "<=" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new BooleanValue(this.value <= ((INumberValue) other).getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case ">=" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new BooleanValue(this.value >= ((INumberValue) other).getValue());
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "%" -> {
-                if (information && ((INumberValue) other).getInformation()) {
-                    return new FloatValue(this.value % ((INumberValue) other).getValue());
-                } else {
-                    return new FloatValue();
-                }
-            }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
-        }
-    }
-
-    @Override
-    @Impure
-    public IValue unaryOperation(@NotNull String operator) {
-        switch (operator) {
-            case "++" -> {
-                if (information) {
-                    this.value += 1;
-                    return new FloatValue(this.value);
-                } else {
-                    return new BooleanValue();
-                }
-            }
-            case "-" -> {
-                if (information) {
-                    this.value = -this.value;
-                    return new FloatValue(this.value);
-                } else {
-                    return new FloatValue();
-                }
-            }
-            case "sqrt" -> {
-                if (information) {
-                    return new FloatValue(Math.sqrt(this.value));
-                } else {
-                    return new FloatValue();
-                }
-            }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
-        }
-    }
-
     @NotNull
     @Override
     public Value copy() {
@@ -222,29 +95,31 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
-            this.information = false;
-            return;
-        }
+    public FloatValue merge(@NotNull IValue other) {
         assert other instanceof FloatValue;
         FloatValue otherFloat = (FloatValue) other;
         if (this.information && otherFloat.information && this.value == otherFloat.value) {
             // keep information
+            return this;
         } else {
-            this.information = false;
+            return new FloatValue();
         }
     }
 
+    @NotNull
     @Override
-    public void setToUnknown() {
-        this.information = false;
+    public IValue getInitialValue() {
+        return new FloatValue(0.0);
     }
 
     @Override
-    public void setInitialValue() {
-        value = 0.0;
-        information = true;
+    protected BasicNumberValue getInstanceWithValue(double value) {
+        return new FloatValue(value);
+    }
+
+    @Override
+    protected BasicNumberValue getUnknownInstance() {
+        return new FloatValue();
     }
 
 }

@@ -6,24 +6,14 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import de.jplag.java_cpg.ai.ArrayAiType;
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaLengthArray;
-import de.jplag.java_cpg.ai.variables.values.chars.CharSetValue;
-import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatSetValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntIntervalValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntSetValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.*;
+import de.jplag.java_cpg.ai.variables.values.numbers.chars.CharSetValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.chars.CharValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
@@ -213,7 +203,7 @@ public abstract class Value implements IValue {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue();
             case DEFAULT -> new IntValue();
-            case SET -> new IntSetValue();
+            case SET -> new IntIntervalSetValue();
         };
     }
 
@@ -222,7 +212,7 @@ public abstract class Value implements IValue {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue(number);
             case DEFAULT -> new IntValue(number);
-            case SET -> new IntSetValue(number);
+            case SET -> new IntIntervalSetValue(number);
         };
     }
 
@@ -231,7 +221,7 @@ public abstract class Value implements IValue {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue(possibleNumbers);
             case DEFAULT -> new IntValue(possibleNumbers);
-            case SET -> new IntSetValue(possibleNumbers);
+            case SET -> new IntIntervalSetValue(possibleNumbers);
         };
     }
 
@@ -240,7 +230,7 @@ public abstract class Value implements IValue {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue(lowerBound, upperBound);
             case DEFAULT -> new IntValue(lowerBound, upperBound);
-            case SET -> new IntSetValue(lowerBound, upperBound);
+            case SET -> new IntIntervalSetValue(lowerBound, upperBound);
         };
     }
 
@@ -248,7 +238,7 @@ public abstract class Value implements IValue {
     private static Value getNewFloatValue() {
         return switch (usedFloatAiType) {
             case DEFAULT -> new FloatValue();
-            case SET -> new FloatSetValue();
+            case SET -> new FloatIntervalSetValue();
         };
     }
 
@@ -261,7 +251,7 @@ public abstract class Value implements IValue {
     public static Value getNewFloatValue(double number) {
         return switch (usedFloatAiType) {
             case DEFAULT -> new FloatValue(number);
-            case SET -> new FloatSetValue(number);
+            case SET -> new FloatIntervalSetValue(number);
         };
     }
 
@@ -269,7 +259,7 @@ public abstract class Value implements IValue {
     private static Value getNewFloatValue(@NotNull Set<Double> possibleNumbers) {
         return switch (usedFloatAiType) {
             case DEFAULT -> new FloatValue(possibleNumbers);
-            case SET -> new FloatSetValue(possibleNumbers);
+            case SET -> new FloatIntervalSetValue(possibleNumbers);
         };
     }
 
@@ -277,7 +267,7 @@ public abstract class Value implements IValue {
     private static Value getNewFloatValue(double lowerBound, double upperBound) {
         return switch (usedFloatAiType) {
             case DEFAULT -> new FloatValue(lowerBound, upperBound);
-            case SET -> new FloatSetValue(lowerBound, upperBound);
+            case SET -> new FloatIntervalSetValue(lowerBound, upperBound);
         };
     }
 

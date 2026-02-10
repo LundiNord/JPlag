@@ -2,20 +2,11 @@ package de.jplag.java_cpg.ai.variables;
 
 import static de.jplag.java_cpg.ai.variables.Type.OBJECT;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import de.jplag.java_cpg.ai.variables.values.IJavaObject;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.NullValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
@@ -71,7 +62,7 @@ public class Variable {
     }
 
     /**
-     * Copy constructor with copied objects map.
+     * Copy constructor with a copied objects map.
      * @param variable the variable to deep copy.
      * @param copiedObjects map of already copied JavaObjects to handle circular references.
      */
@@ -93,11 +84,6 @@ public class Variable {
      * @return The value of this variable.
      */
     public IValue getValue() {
-        // trigger change recording because returned value could be modified outside.
-        // ToDo: only trigger when actual changes happen
-        for (ChangeRecorder changeRecorder : changeRecorders) {
-            changeRecorder.recordChange(this);
-        }
         return value;
     }
 
@@ -131,18 +117,17 @@ public class Variable {
     public void merge(@NotNull Variable other, Set<JavaObject> visited) {
         assert this.changeRecorders.equals(other.changeRecorders);
         assert other.name.equals(this.name);
-        if (this.value instanceof NullValue) {
-            if (!(other.value instanceof NullValue)) {
-                if (other.value instanceof IStringValue) {
-                    this.value = Value.valueFactory(Type.STRING);
-                } else if (other.value instanceof IJavaArray) {
-                    this.value = Value.valueFactory(Type.ARRAY);
-                } else if (other.value instanceof IJavaObject) {
-                    this.value = Value.valueFactory(OBJECT);
-                }
+        if (this.value instanceof NullValue && !(other.value instanceof NullValue)) {
+            if (other.value instanceof IStringValue) {
+                this.value = Value.valueFactory(Type.STRING);
+            } else if (other.value instanceof IJavaArray) {
+                this.value = Value.valueFactory(Type.ARRAY);
+            } else if (other.value instanceof IJavaObject) {
+                this.value = Value.valueFactory(OBJECT);
             }
         }
-        this.value.merge(other.value, visited);
+
+        value = this.value.merge(other.value, visited);
     }
 
     /**
@@ -160,7 +145,7 @@ public class Variable {
         if (getValue() instanceof NullValue) {
             setValue(Value.valueFactory(OBJECT));
         } else {
-            value.setToUnknown(visited);
+            value = Value.valueFactory(value.getType());   // reset to the default value of the type
         }
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
@@ -179,7 +164,7 @@ public class Variable {
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
     public void setInitialValue(Set<IJavaObject> visited) {
-        value.setInitialValue(visited);
+        value = value.getInitialValue();
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
         }
