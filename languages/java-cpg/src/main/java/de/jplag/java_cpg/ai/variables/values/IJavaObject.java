@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.values;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,5 +61,13 @@ public interface IJavaObject extends IValue {
      * @return whether the object is known to be null.
      */
     boolean isNull();
+
+    void setToUnknown();
+
+    void setToUnknown(Set<IJavaObject> visited);
+
+    void setInitialValue();
+
+    void setInitialValue(Set<IJavaObject> visited);
 
 }

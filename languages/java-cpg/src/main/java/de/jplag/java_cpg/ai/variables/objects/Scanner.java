@@ -29,7 +29,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
      * Creates a new Scanner object representation.
      */
     public Scanner() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -98,9 +98,10 @@ public class Scanner extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Scanner merge(@NotNull IValue other) {
         assert other instanceof Scanner;
         // Nothing to merge
+        return this;
     }
 
 }

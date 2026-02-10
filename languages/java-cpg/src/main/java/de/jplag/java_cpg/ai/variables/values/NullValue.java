@@ -38,21 +38,15 @@ public class NullValue extends Value {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (!(other instanceof NullValue)) {
-            throw new IllegalStateException();
-        }
+    public NullValue merge(@NotNull IValue other) {
         assert other instanceof NullValue;  // other cases are handled in Variable.merge()
+        return this;
     }
 
+    @NotNull
     @Override
-    public void setToUnknown() {
-        // ToDo: replace with JavaObject?
-    }
-
-    @Override
-    public void setInitialValue() {
-        // do nothing
+    public IValue getInitialValue() {
+        return this;
     }
 
 }

@@ -28,7 +28,7 @@ public class InputStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.InputStream class.
      */
     public InputStream() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -67,9 +67,10 @@ public class InputStream extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public InputStream merge(@NotNull IValue other) {
         assert other instanceof InputStream;
         // nothing to merge
+        return this;
     }
 
 }

@@ -58,7 +58,7 @@ public class VariableName {
 
     @Override
     public String toString() {
-        return "VariableName{" + "localName='" + localName + '\'' + ", path='" + path + '\'' + '}';
+        return (path.isEmpty() ? localName : path + "." + localName);
     }
 
 }

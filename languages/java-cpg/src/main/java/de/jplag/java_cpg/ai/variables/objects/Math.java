@@ -30,7 +30,7 @@ public class Math extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Math class.
      */
     public Math() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -134,9 +134,10 @@ public class Math extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Math merge(@NotNull IValue other) {
         assert other instanceof Math;
         // Nothing to merge
+        return this;
     }
 
 }

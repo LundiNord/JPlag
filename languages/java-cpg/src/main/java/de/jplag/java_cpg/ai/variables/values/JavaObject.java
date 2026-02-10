@@ -199,48 +199,49 @@ public class JavaObject extends Value implements IJavaObject {
     @NotNull
     public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
         if (fields == null) {
-            return new JavaObject(null, this.abstractInterpretation);
+            return new JavaObject(null, this.abstractInterpretation, this.typeName);
         }
         if (copiedObjects.containsKey(this)) {
             return copiedObjects.get(this);
         }
-        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation);
+        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation, this.typeName);
         copiedObjects.put(this, newObject);
         newObject.fields = new Scope(this.fields, copiedObjects);
         return newObject;
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        merge(other, Collections.newSetFromMap(new IdentityHashMap<>()));
+    public JavaObject merge(@NotNull IValue other) {
+        return merge(other, Collections.newSetFromMap(new IdentityHashMap<>()));
     }
 
     @Override
-    public void merge(@NotNull IValue other, Set<JavaObject> visited) {
-        if (!(other instanceof JavaObject otherObj)) {
-            setToUnknown();
-            return;
-        }
+    public JavaObject merge(@NotNull IValue other, Set<JavaObject> visited) {
+        // if (!(other instanceof JavaObject otherObj)) {
+        // setToUnknown();
+        // return this;
+        // }
+        JavaObject otherObj = (JavaObject) other;
         if (fields == null && otherObj.fields == null) {
-            return;
+            return this;
         }
         if (fields == null || otherObj.fields == null) {
             fields = new Scope();
-            return;
+            return this;
         }
         // Cycle detection
         if (visited.contains(this)) {
-            return;
+            return this;
         }
         visited.add(this);
         this.fields.merge(otherObj.fields, visited);
+        return this;
     }
 
     @NotNull
     @Override
     public IValue getInitialValue() {
-        // ToDo
-        return null;
+        return new JavaObject(typeName);
     }
 
     @Override

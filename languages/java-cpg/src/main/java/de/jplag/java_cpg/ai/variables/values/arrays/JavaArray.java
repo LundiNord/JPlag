@@ -1,10 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values.arrays;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,12 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
-import de.jplag.java_cpg.ai.variables.values.IJavaObject;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 /**
@@ -27,9 +18,10 @@ import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
  */
 public class JavaArray extends JavaObject implements IJavaArray {
 
-    private Type innerType;
+    private final Type innerType;
     @Nullable
-    private List<IValue> values;     // values = null: no information about the array
+    private List<IValue> values;     // values = null: array == null
+    private boolean information;
 
     /**
      * a Java Array with no information and undefined size.
@@ -38,6 +30,8 @@ public class JavaArray extends JavaObject implements IJavaArray {
     public JavaArray(Type innerType) {
         super(Type.ARRAY);
         this.innerType = innerType;
+        this.values = null;
+        this.information = false;
     }
 
     /**
@@ -47,40 +41,43 @@ public class JavaArray extends JavaObject implements IJavaArray {
      */
     public JavaArray(@NotNull List<IValue> values) {
         super(Type.ARRAY);
+        Type innerTypeTemp = Type.UNKNOWN;
         if (values.isEmpty()) {
-            this.innerType = null;
+            innerType = Type.UNKNOWN;
             this.values = values;
+            this.information = true;
             return;
         }
-        this.innerType = Type.VOID;
         for (IValue value : values) {
-            if (this.innerType != Type.VOID) {
-                assert value.getType() == this.innerType || value.getType() == Type.VOID : "Inconsistent types in array initialization: "
-                        + this.innerType + " and " + value.getType();
+            if (innerTypeTemp != Type.UNKNOWN) {
+                assert value.getType() == innerTypeTemp || value.getType() == Type.UNKNOWN : "Inconsistent types in array initialization: "
+                        + innerTypeTemp + " and " + value.getType();
                 continue;
             }
-            if (value.getType() != Type.VOID) {
-                this.innerType = value.getType();
+            if (value.getType() != Type.UNKNOWN) {
+                innerTypeTemp = value.getType();
             }
         }
+        List<IValue> newValues = new ArrayList<>();
         for (IValue value : values) {   // exchange void values with unknown values of the inner type
-            if (value.getType() == Type.VOID) {
-                switch (this.innerType) {
-                    case INT -> value = Value.valueFactory(Type.INT);
-                    case BOOLEAN -> value = new BooleanValue();
-                    case STRING -> value = Value.valueFactory(Type.STRING);
-                    case OBJECT -> value = new JavaObject();
-                    case ARRAY, LIST -> value = new JavaArray();
-                    case FLOAT -> value = Value.valueFactory(Type.FLOAT);
-                    case CHAR -> value = Value.valueFactory(Type.CHAR);
-                    case VOID -> {
-                    }
-                    default -> throw new UnsupportedOperationException("Array of type " + this.innerType + " not supported");
+            if (value.getType() == Type.UNKNOWN) {
+                switch (innerTypeTemp) {
+                    case INT -> newValues.add(Value.valueFactory(Type.INT));
+                    case BOOLEAN -> newValues.add(new BooleanValue());
+                    case STRING -> newValues.add(Value.valueFactory(Type.STRING));
+                    case OBJECT -> newValues.add(new JavaObject(innerTypeTemp.getTypeName()));
+                    case ARRAY, LIST -> newValues.add(new JavaArray());
+                    case FLOAT -> newValues.add(Value.valueFactory(Type.FLOAT));
+                    case CHAR -> newValues.add(Value.valueFactory(Type.CHAR));
+                    default -> throw new UnsupportedOperationException("Array of type " + innerTypeTemp + " not supported");
                 }
+            } else {
+                newValues.add(value);
             }
-
         }
-        this.values = values;
+        this.values = newValues;
+        this.innerType = innerTypeTemp;
+        this.information = true;
     }
 
     /**
@@ -88,7 +85,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
      */
     public JavaArray() {
         super(Type.ARRAY);
-        this.innerType = null;
+        this.innerType = Type.UNKNOWN;
+        this.values = null;
+        this.information = false;
     }
 
     /**
@@ -136,7 +135,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case INT -> Value.valueFactory(Type.INT);
             case BOOLEAN -> new BooleanValue();
             case STRING -> Value.valueFactory(Type.STRING);
-            case OBJECT -> new JavaObject();
+            case OBJECT -> new JavaObject(innerType.getTypeName());
             case ARRAY, LIST -> new JavaArray();
             case FLOAT -> Value.valueFactory(Type.FLOAT);
             case CHAR -> Value.valueFactory(Type.CHAR);
@@ -171,13 +170,13 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "add" -> {
                 if (paramVars.size() == 1) {
-                    if (values != null) {
+                    if (information) {
                         assert paramVars.getFirst().getType().equals(innerType);
                         values.add(paramVars.getFirst());
                     }
                     return new VoidValue();
                 } else if (paramVars.size() == 2) { // index, element
-                    if (values != null) {
+                    if (information) {
                         assert paramVars.getFirst() instanceof INumberValue;
                         INumberValue index = (INumberValue) paramVars.getFirst();
                         if (index.getInformation()) {
@@ -187,9 +186,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
                                 values.add(idx, paramVars.getLast());
                             } else {
                                 values = null; // no information
+                                this.information = false;
                             }
                         } else {
                             values = null; // no information
+                            this.information = false;
                         }
                     }
                     return new VoidValue();
@@ -207,7 +208,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "size" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                if (values != null) {
+                if (information) {
                     return Value.valueFactory(values.size());
                 }
                 return Value.valueFactory(Type.INT);
@@ -228,7 +229,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "indexOf" -> {
                 assert paramVars.size() == 1;
-                if (values != null) {
+                if (information) {
                     for (int i = 0; i < values.size(); i++) {
                         if (values.get(i).equals(paramVars.getFirst())) {
                             return Value.valueFactory(i);
@@ -272,7 +273,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "contains" -> {
                 assert paramVars.size() == 1;
-                if (values != null) {
+                if (information) {
                     for (IValue value : values) {
                         if (value.equals(paramVars.getFirst())) {
                             return Value.valueFactory(true);
@@ -284,7 +285,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "lastIndexOf" -> {
                 assert paramVars.size() == 1;
-                if (values != null) {
+                if (information) {
                     for (int i = values.size() - 1; i >= 0; i--) {
                         if (values.get(i).equals(paramVars.getFirst())) {
                             return Value.valueFactory(i);
@@ -296,27 +297,25 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "getLast", "peek" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                if (values != null && !values.isEmpty()) {
+                if (information && !values.isEmpty()) {
                     return values.getLast();
                 }
                 // no information
-                if (innerType == null) {
-                    return new VoidValue();
-                }
                 return arrayAccess((INumberValue) Value.valueFactory(1));
             }
             case "removeLast", "pop" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                if (values != null && !values.isEmpty()) {
+                if (information && !values.isEmpty() && information) {
                     return values.removeLast();
                 }
                 // no information
                 values = null;
-                return new VoidValue();
+                this.information = false;
+                return Value.valueFactory(innerType);
             }
             case "addLast", "push" -> {
                 assert paramVars.size() == 1;
-                if (values != null) {
+                if (information) {
                     assert paramVars.getFirst().getType().equals(innerType);
                     values.add(paramVars.getFirst());
                 }
@@ -324,23 +323,24 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "removeFirst", "poll" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                if (values != null && !values.isEmpty()) {
+                if (information && !values.isEmpty()) {
                     return values.removeFirst();
                 }
                 // no information
                 values = null;
-                return new VoidValue();
+                this.information = false;
+                return Value.valueFactory(innerType);
             }
             case "isEmpty" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                if (values != null) {
+                if (information) {
                     return Value.valueFactory(values.isEmpty());
                 }
                 return Value.valueFactory(Type.BOOLEAN);
             }
             case "fill" -> {        // void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
                 assert paramVars.size() == 1 || paramVars.size() == 3;
-                if (values != null) {
+                if (information) {
                     if (paramVars.size() == 1) {
                         IValue val = paramVars.getFirst();
                         for (int i = 0; i < values.size(); i++) {
@@ -361,9 +361,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
                                 }
                             } else {
                                 values = null; // no information
+                                this.information = false;
                             }
                         } else {
                             values = null; // no information
+                            this.information = false;
                         }
                     }
                 }
@@ -372,10 +374,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "sort" -> {        // void// sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
                 if (paramVars.size() == 1) {    // with Comparator
                     this.values = null; // ToDo
+                    this.information = false;
                     return new VoidValue();
                 }
                 assert paramVars.size() == 0 || paramVars.size() == 2;
-                if (values != null) {
+                if (information) {
                     if (paramVars.size() == 0) {
                         values.sort(null);
                     } else {
@@ -393,9 +396,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
                                     values.set(i, sublist.get(i - fromIdx));
                                 }
                             } else {
+                                this.information = false;
                                 values = null; // no information
                             }
                         } else {
+                            this.information = false;
                             values = null; // no information
                         }
                     }
@@ -404,7 +409,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "copyOfRange" -> { // int[] copyOfRange(int[] original, int from, int to)
                 assert paramVars.size() == 2;
-                if (values != null) {
+                if (information) {
                     assert paramVars.getFirst() instanceof INumberValue;
                     assert paramVars.get(1) instanceof INumberValue;
                     INumberValue fromIndex = (INumberValue) paramVars.getFirst();
@@ -421,19 +426,15 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return new JavaArray(innerType);
             }
             case "clear" -> {
-                if (values != null) {
+                if (information) {
                     values.clear();
                 }
                 return new VoidValue();
             }
             case "getFirst", "peekFirst" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                if (values != null && !values.isEmpty()) {
+                if (information && !values.isEmpty()) {
                     return values.getFirst();
-                }
-                // no information
-                if (innerType == null) {
-                    return new VoidValue();
                 }
                 return arrayAccess((INumberValue) Value.valueFactory(0));
             }
@@ -453,40 +454,39 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "addAll" -> {
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof JavaArray otherArray) {
-                    if (this.values != null && otherArray.values != null) {
+                    if (this.information && otherArray.information) {
                         for (IValue val : otherArray.values) {
                             assert val.getType().equals(this.innerType);
                             this.values.add(val);
                         }
                     } else {
+                        this.information = false;
                         this.values = null;
                     }
                 } else {
+                    this.information = false;
                     this.values = null;
                 }
                 return new VoidValue();
             }
             case "addFirst" -> {
                 assert paramVars.size() == 1;
-                if (values != null) {
+                if (information) {
                     assert paramVars.getFirst().getType().equals(innerType);
                     values.addFirst(paramVars.getFirst());
                 }
                 return new VoidValue();
             }
-            case "iterator" -> {
-                throw new JavaLanguageFeatureNotSupportedException("Iterators are not supported");
-            }
+            case "iterator" -> throw new JavaLanguageFeatureNotSupportedException("Iterators are not supported");
             case "clone" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return this.copy();
             }
             case "filter", "collect" -> {
-                this.values = null;
                 return Value.valueFactory(Type.LIST);
             }
             case "findFirst" -> {
-                if (values != null) {
+                if (information) {
                     if (!values.isEmpty()) {
                         return values.getFirst();
                     }
@@ -494,13 +494,11 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 return new VoidValue();
             }
             case "forEach" -> {
-                this.values = null;
-                this.innerType = Type.VOID;
                 return Value.valueFactory(Type.LIST);
             }
             case "set" -> {
                 assert paramVars.size() == 2;
-                if (values != null) {
+                if (information) {
                     assert paramVars.getFirst() instanceof INumberValue;
                     INumberValue index = (INumberValue) paramVars.getFirst();
                     if (index.getInformation()) {
@@ -509,10 +507,10 @@ public class JavaArray extends JavaObject implements IJavaArray {
                             assert paramVars.getLast().getType().equals(innerType);
                             values.set(idx, paramVars.getLast());
                         } else {
-                            values = null; // no information
+                            information = false;
                         }
                     } else {
-                        values = null; // no information
+                        information = false;
                     }
                 }
                 return new VoidValue();
@@ -539,7 +537,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     public IValue accessField(@NotNull String fieldName) {
         switch (fieldName) {
             case "length" -> {
-                if (values != null) {
+                if (information) {
                     return Value.valueFactory(values.size());
                 }
                 return Value.valueFactory(Type.INT);
@@ -568,31 +566,40 @@ public class JavaArray extends JavaObject implements IJavaArray {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue || other instanceof IJavaObject) {   // cannot merge different types
-            other = new JavaArray();
-        }
+    public JavaArray merge(@NotNull IValue other) {
+        // if (other instanceof VoidValue || other instanceof IJavaObject) { // cannot merge different types
+        // other = new JavaArray();
+        // }
         JavaArray otherArray = (JavaArray) other;
-        if (this.innerType == null && otherArray.innerType != null) {
-            this.innerType = otherArray.innerType;
-        }
-        if (!(Objects.equals(this.innerType, otherArray.innerType))) {
-            this.values = null;
-            return;
-        }
+        // if (this.innerType == null && otherArray.innerType != null) {
+        // this.innerType = otherArray.innerType;
+        // }
+        // if (!(Objects.equals(this.innerType, otherArray.innerType))) {
+        // this.values = null;
+        // return;
+        // }
         assert Objects.equals(this.innerType, otherArray.innerType);
-        if (this.values == null || otherArray.values == null || this.values.size() != otherArray.values.size()) {
-            this.values = null;
+        if (!information || !otherArray.information) {
+            this.information = false;
         } else {
-            for (int i = 0; i < this.values.size(); i++) {
-                this.values.get(i).merge(otherArray.values.get(i));
+            if (values == null && otherArray.values == null) {
+                // nothing to do, both are unknown
+            } else if (values == null || otherArray.values == null) {
+                this.information = false;
+            } else if (values.size() != otherArray.values.size()) {
+                this.information = false;   // ToDo: we could also merge up to the minimum size and set the rest to unknown
+            } else {
+                for (int i = 0; i < this.values.size(); i++) {
+                    this.values.get(i).merge(otherArray.values.get(i));
+                }
             }
         }
+        return this;
     }
 
     @Override
     public void setToUnknown() {
-        values = null;
+        information = false;
     }
 
     @Override

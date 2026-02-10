@@ -1,10 +1,6 @@
 package de.jplag.java_cpg.ai.variables;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +33,7 @@ public class VariableStore {
         this.currentScopeIndex = variableStore.currentScopeIndex;
         for (Scope p : variableStore.scopes) {
             this.scopes.add(new Scope(p));          // ToDo: here is a bug: if a object a stores an object b in its field and b stores a in its field
-                                                    // a stackoverflow will occur
+            // a stackoverflow will occur
         }
         thisObject = variableStore.thisObject;
         assert thisObject != null;
@@ -72,16 +68,16 @@ public class VariableStore {
     public IJavaObject getThisObject() {
         assert thisObject != null;
         Variable variable = getVariable(thisObject);
-        if (variable == null) {     // does not exist yet -> create it
-            assert thisObject == ANONYMOUS_THIS_NAME;
-            Variable thisClassVar = new Variable(thisObject, new JavaObject());
-            for (ChangeRecorder recorder : changeRecorders) {
-                thisClassVar.addChangeRecorder(recorder);
-            }
-            scopes.getFirst().addVariable(thisClassVar);
-            variable = getVariable(thisObject);
-            assert variable != null;
-        }
+        // if (variable == null) { // does not exist yet -> create it
+        // assert thisObject == ANONYMOUS_THIS_NAME;
+        // Variable thisClassVar = new Variable(thisObject, new JavaObject());
+        // for (ChangeRecorder recorder : changeRecorders) {
+        // thisClassVar.addChangeRecorder(recorder);
+        // }
+        // scopes.getFirst().addVariable(thisClassVar);
+        // variable = getVariable(thisObject);
+        // assert variable != null;
+        // }
         IValue value = variable.getValue();
         assert value instanceof IJavaObject;
         return (JavaObject) value;
@@ -136,6 +132,7 @@ public class VariableStore {
      * @param other the other variable store to merge.
      */
     public void merge(@NotNull VariableStore other) {
+        assert this.scopes.size() == other.scopes.size();
         // In complex control-flow, the scope depth can differ.
         int targetIndex = Math.min(this.currentScopeIndex, other.currentScopeIndex);
         if (this.currentScopeIndex > targetIndex) {

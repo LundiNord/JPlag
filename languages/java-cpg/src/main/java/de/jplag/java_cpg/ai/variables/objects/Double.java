@@ -31,7 +31,7 @@ public class Double extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Double class.
      */
     public Double() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -93,9 +93,10 @@ public class Double extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Double merge(@NotNull IValue other) {
         assert other instanceof Double;
         // nothing to merge
+        return this;
     }
 
 }

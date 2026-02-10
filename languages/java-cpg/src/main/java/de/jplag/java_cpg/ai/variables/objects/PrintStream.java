@@ -27,7 +27,7 @@ public class PrintStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.PrintStream class.
      */
     public PrintStream() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -67,9 +67,10 @@ public class PrintStream extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public PrintStream merge(@NotNull IValue other) {
         assert other instanceof PrintStream;
         // Nothing to merge
+        return this;
     }
 
 }

@@ -18,7 +18,7 @@ import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 public class Variable {
 
     private final VariableName name;
-    private IValue value;
+    private @NotNull IValue value;
     private List<ChangeRecorder> changeRecorders = new ArrayList<>();
 
     /**
@@ -83,7 +83,7 @@ public class Variable {
      * Triggers change recording.
      * @return The value of this variable.
      */
-    public IValue getValue() {
+    public @NotNull IValue getValue() {
         return value;
     }
 
@@ -126,7 +126,6 @@ public class Variable {
                 this.value = Value.valueFactory(OBJECT);
             }
         }
-
         value = this.value.merge(other.value, visited);
     }
 
@@ -142,10 +141,14 @@ public class Variable {
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
     public void setToUnknown(Set<IJavaObject> visited) {
-        if (getValue() instanceof NullValue) {
-            setValue(Value.valueFactory(OBJECT));
+        if (value instanceof IJavaObject iJavaObject) {
+            iJavaObject.setToUnknown(visited);
         } else {
-            value = Value.valueFactory(value.getType());   // reset to the default value of the type
+            if (getValue() instanceof NullValue) {
+                setValue(Value.valueFactory(OBJECT));
+            } else {
+                value = Value.valueFactory(value.getType());   // reset to the default value of the type
+            }
         }
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
@@ -164,7 +167,11 @@ public class Variable {
      * @param visited set of already visited JavaObjects to handle cyclic references.
      */
     public void setInitialValue(Set<IJavaObject> visited) {
-        value = value.getInitialValue();
+        if (value instanceof IJavaObject iJavaObject) {
+            iJavaObject.setInitialValue(visited);
+        } else {
+            value = value.getInitialValue();
+        }
         for (ChangeRecorder changeRecorder : changeRecorders) {
             changeRecorder.recordChange(this);
         }

@@ -29,7 +29,7 @@ public class HashMap extends JavaObject implements ISpecialObject {
      * Representation of the java.util.HashMap class.
      */
     public HashMap() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -124,9 +124,10 @@ public class HashMap extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public HashMap merge(@NotNull IValue other) {
         assert other instanceof HashMap;
         // Nothing to merge yet
+        return this;
     }
 
 }

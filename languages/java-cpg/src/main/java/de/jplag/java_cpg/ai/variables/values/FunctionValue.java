@@ -27,18 +27,15 @@ public class FunctionValue extends Value {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public FunctionValue merge(@NotNull IValue other) {
         // ToDo
+        return null;
     }
 
+    @NotNull
     @Override
-    public void setToUnknown() {
-        // ToDo
-    }
-
-    @Override
-    public void setInitialValue() {
-        // ToDo
+    public IValue getInitialValue() {
+        return null;
     }
 
 }

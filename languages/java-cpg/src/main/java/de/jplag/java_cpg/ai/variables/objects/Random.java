@@ -28,7 +28,7 @@ public class Random extends JavaObject implements ISpecialObject {
      * Representation of the java.util.Random class.
      */
     public Random() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -74,9 +74,10 @@ public class Random extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Random merge(@NotNull IValue other) {
         assert other instanceof Random;
         // Nothing to merge
+        return this;
     }
 
 }

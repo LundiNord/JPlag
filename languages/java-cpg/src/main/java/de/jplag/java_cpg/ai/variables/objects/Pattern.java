@@ -29,7 +29,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
      * Representation of the java.util.regex.Pattern class.
      */
     public Pattern() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -71,9 +71,10 @@ public class Pattern extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Pattern merge(@NotNull IValue other) {
         assert other instanceof Pattern;
         // Nothing to merge
+        return this;
     }
 
 }

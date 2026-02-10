@@ -31,7 +31,7 @@ public class System extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.System class.
      */
     public System() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -97,9 +97,10 @@ public class System extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public System merge(@NotNull IValue other) {
         assert other instanceof System;
         // Nothing to merge
+        return this;
     }
 
 }

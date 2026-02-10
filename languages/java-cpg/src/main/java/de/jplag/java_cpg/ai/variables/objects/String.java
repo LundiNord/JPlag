@@ -29,7 +29,7 @@ public class String extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.String class.
      */
     public String() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -83,9 +83,10 @@ public class String extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public String merge(@NotNull IValue other) {
         assert other instanceof String;
         // Nothing to merge
+        return this;
     }
 
 }

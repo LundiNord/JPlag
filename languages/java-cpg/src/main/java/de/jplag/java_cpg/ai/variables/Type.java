@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Enumeration of supported variable types.
@@ -8,18 +9,30 @@ import org.jetbrains.annotations.NotNull;
  * @version 1.0
  */
 public enum Type {
-    INT,
-    FLOAT,
-    STRING,
-    BOOLEAN,
-    OBJECT,
-    ARRAY,
-    LIST,
-    NULL,
-    FUNCTION,
-    CHAR,
-    UNKNOWN,
-    VOID;
+    INT(null),
+    FLOAT(null),
+    STRING(null),
+    BOOLEAN(null),
+    OBJECT(null),
+    ARRAY(null),
+    LIST(null),
+    NULL(null),
+    FUNCTION(null),
+    CHAR(null),
+    UNKNOWN(null),
+    VOID(null);
+
+    private final @Nullable String typeName;    // only used for the OBJECT type to save the class name
+
+    Type(@Nullable String typeName) {
+        this.typeName = typeName;
+    }
+
+    public String getTypeName() {
+        assert this == OBJECT;
+        assert typeName != null;
+        return typeName;
+    }
 
     /**
      * @param cpgType CPG type to convert.
@@ -34,6 +47,7 @@ public enum Type {
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.BooleanType.class) {
             return BOOLEAN;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ObjectType.class) {
+            // FixMe: this is not correct, we need to save the class name for the object type
             return OBJECT;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.PointerType.class) {
             return ARRAY;   // in java pointer types are used only for arrays

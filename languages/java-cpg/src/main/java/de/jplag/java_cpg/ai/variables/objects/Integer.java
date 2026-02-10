@@ -31,7 +31,7 @@ public class Integer extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Integer class.
      */
     public Integer() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -95,9 +95,10 @@ public class Integer extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Integer merge(@NotNull IValue other) {
         // Nothing to merge
         assert other instanceof Integer;
+        return this;
     }
 
 }

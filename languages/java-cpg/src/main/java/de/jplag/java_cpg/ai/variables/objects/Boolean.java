@@ -27,7 +27,7 @@ public class Boolean extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Boolean class.
      */
     public Boolean() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -69,9 +69,10 @@ public class Boolean extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Boolean merge(@NotNull IValue other) {
         assert other instanceof Boolean;
         // nothing to merge
+        return this;
     }
 
 }

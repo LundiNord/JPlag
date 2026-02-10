@@ -29,7 +29,7 @@ public class HashSet extends JavaObject implements ISpecialObject, IJavaArray {
      * Representation of the java.util.HashMap class.
      */
     public HashSet() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -78,9 +78,10 @@ public class HashSet extends JavaObject implements ISpecialObject, IJavaArray {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public HashSet merge(@NotNull IValue other) {
         assert other instanceof HashSet;
         // Nothing to merge yet
+        return this;
     }
 
     @Override

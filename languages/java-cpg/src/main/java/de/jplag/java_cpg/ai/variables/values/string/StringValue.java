@@ -419,11 +419,10 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue || other instanceof NullValue) {
+    public StringValue merge(@NotNull IValue other) {
+        if (other instanceof NullValue) {
             this.information = false;
-            this.value = null;
-            return;
+            return this;
         }
         if (other instanceof IJavaObject javaObject && javaObject.isNull()) {
             other = new StringValue(null);
@@ -434,14 +433,14 @@ public class StringValue extends JavaObject implements IStringValue {
             // keep value
         } else {
             this.information = false;
-            this.value = null;
+            return this;
         }
+        return this;
     }
 
     @Override
     public void setToUnknown() {
         this.information = false;
-        this.value = null;
     }
 
     @Override
@@ -460,6 +459,12 @@ public class StringValue extends JavaObject implements IStringValue {
         value = null;
     }
 
+    @NotNull
+    @Override
+    public IValue getInitialValue() {
+        return new StringValue(null);
+    }
+
     /**
      * @return true if the string value has definite information (i.e., a known value), false otherwise.
      */
@@ -473,6 +478,14 @@ public class StringValue extends JavaObject implements IStringValue {
     public String getValue() {
         assert information;
         return value;
+    }
+
+    @Override
+    public boolean isNull() {
+        if (information) {
+            return value == null;
+        }
+        return false;
     }
 
 }

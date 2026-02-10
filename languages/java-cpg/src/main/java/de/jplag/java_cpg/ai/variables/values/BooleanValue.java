@@ -14,8 +14,8 @@ import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
  */
 public class BooleanValue extends Value implements IBooleanValue {
 
-    private boolean value;
-    private boolean information;
+    private final boolean value;
+    private final boolean information;
 
     /**
      * Creates a BooleanValue without exact information.
@@ -23,6 +23,7 @@ public class BooleanValue extends Value implements IBooleanValue {
     public BooleanValue() {
         super(Type.BOOLEAN);
         information = false;
+        this.value = false;
     }
 
     /**
@@ -140,48 +141,43 @@ public class BooleanValue extends Value implements IBooleanValue {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
-            this.information = false;
-            return;
-        }
+    public BooleanValue merge(@NotNull IValue other) {
+        // if (other instanceof VoidValue) {
+        // this.information = false;
+        // return;
+        // }
         if (other instanceof INumberValue numberValue) {    // 1 and 0 to boolean conversion
             if (this.information && numberValue.getInformation()) {
                 if (numberValue.getValue() == 0) {
                     if (this.value) {
-                        this.information = false;
+                        return new BooleanValue(false, false);
+                    } else {
+                        return new BooleanValue(false, true);
                     }
                 } else {
                     if (!this.value) {
-                        this.information = false;
+                        return new BooleanValue(false, false);
+                    } else {
+                        return new BooleanValue(true, true);
                     }
                 }
             } else {
-                this.information = false;
+                return new BooleanValue(false, false);
             }
-            return;
-        }
-        if (!(other instanceof BooleanValue booleanValue)) {
-            System.out.println("Debug");
         }
         assert other instanceof BooleanValue : "Cannot merge " + this.getType() + " with " + other.getType();
         BooleanValue otherBool = (BooleanValue) other;
         if (this.information && otherBool.information && this.value == otherBool.value) {
-            // keep information
+            return new BooleanValue(this.value, true);
         } else {
-            this.information = false;
+            return new BooleanValue(false, false);
         }
     }
 
+    @NotNull
     @Override
-    public void setToUnknown() {
-        this.information = false;
-    }
-
-    @Override
-    public void setInitialValue() {
-        value = false;
-        information = true;
+    public IValue getInitialValue() {
+        return new BooleanValue(false, true);
     }
 
 }

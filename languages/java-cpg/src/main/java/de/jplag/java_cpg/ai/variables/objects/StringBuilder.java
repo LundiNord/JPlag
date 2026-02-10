@@ -29,7 +29,7 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.StringBuilder class.
      */
     public StringBuilder() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -87,9 +87,10 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public StringBuilder merge(@NotNull IValue other) {
         assert other instanceof StringBuilder;
         // Nothing to merge
+        return this;
     }
 
 }

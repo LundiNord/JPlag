@@ -29,7 +29,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
      * Representation of the static java.util.Arrays class.
      */
     public Arrays() {
-        super();
+        super(getName().toString());
     }
 
     /**
@@ -99,9 +99,10 @@ public class Arrays extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
+    public Arrays merge(@NotNull IValue other) {
         assert other instanceof Arrays;
         // nothing to merge
+        return this;
     }
 
 }

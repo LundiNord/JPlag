@@ -76,7 +76,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             case INT -> Value.valueFactory(Type.INT);
             case BOOLEAN -> new BooleanValue();
             case STRING -> Value.valueFactory(Type.STRING);
-            case OBJECT -> new JavaObject();
+            case OBJECT -> new JavaObject(innerType.getTypeName());
             case ARRAY -> Value.valueFactory(Type.ARRAY);
             case LIST -> Value.valueFactory(Type.LIST);
             case FLOAT -> Value.valueFactory(Type.FLOAT);
