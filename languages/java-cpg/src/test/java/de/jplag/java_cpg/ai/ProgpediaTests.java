@@ -82,7 +82,7 @@ public class ProgpediaTests {
     }
 
     @ParameterizedTest
-    @Disabled
+    @Disabled("takes too long")
     @MethodSource("progpediaResourceDirs")
     void testProgpedia(String resourceDir) throws ParsingException, InterruptedException {
         Value.setUsedIntAiType(IntAiType.DEFAULT);
@@ -94,67 +94,13 @@ public class ProgpediaTests {
     }
 
     @Test
-    @Disabled
-    void testSingle1() throws ParsingException, InterruptedException {       // for(Node cursor=invert.top;cursor!=null;cursor=cursor.next)
+    @Disabled("only for debugging a single file, not a real test")
+    void testSingle1() throws ParsingException, InterruptedException {
+        String fileName = "java/progpedia/00000006/ACCEPTED/00130_00001";
         Value.setUsedIntAiType(IntAiType.DEFAULT);
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000006/ACCEPTED/00130_00001");
-        VariableStore variableStore = interpretation.getVariables();
-        assertNotNull(variableStore);
-    }
-
-    @Test
-    @Disabled
-    void testSingle2() throws ParsingException, InterruptedException {  // for (int k=0, i=0; i<ns; i++) for (int j=i+1; j<ns; j++, k++)
-        Value.setUsedIntAiType(IntAiType.DEFAULT);
-        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-        Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00216_00001");
-        VariableStore variableStore = interpretation.getVariables();
-        assertNotNull(variableStore);
-    }
-
-    @Test
-    @Disabled
-    void testSingle3() throws ParsingException, InterruptedException {  // class has the same name as an array
-        Value.setUsedIntAiType(IntAiType.DEFAULT);
-        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-        Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000045/ACCEPTED/00072_00002");
-        VariableStore variableStore = interpretation.getVariables();
-        assertNotNull(variableStore);
-    }
-
-    @Test
-    @Disabled
-    void testSingle4() throws ParsingException, InterruptedException {  // pesquisabinaria
-        Value.setUsedIntAiType(IntAiType.DEFAULT);
-        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-        Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000039/WRONG_ANSWER/00142_00003");
-        VariableStore variableStore = interpretation.getVariables();
-        assertNotNull(variableStore);
-    }
-
-    @Test
-    @Disabled
-    void testSingle5() throws ParsingException, InterruptedException {
-        Value.setUsedIntAiType(IntAiType.DEFAULT);
-        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-        Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000048/ACCEPTED/00158_00001");
-        VariableStore variableStore = interpretation.getVariables();
-        assertNotNull(variableStore);
-    }
-
-    @Test
-    @Disabled
-    void testSingle6() throws ParsingException, InterruptedException {     // FixMe
-        Value.setUsedIntAiType(IntAiType.DEFAULT);
-        Value.setUsedFloatAiType(FloatAiType.DEFAULT);
-        Value.setUsedStringAiType(StringAiType.DEFAULT);
-        AbstractInterpretation interpretation = interpretFromResource("java/progpedia/00000019/ACCEPTED/00196_00001");
+        AbstractInterpretation interpretation = interpretFromResource(fileName);
         VariableStore variableStore = interpretation.getVariables();
         assertNotNull(variableStore);
     }

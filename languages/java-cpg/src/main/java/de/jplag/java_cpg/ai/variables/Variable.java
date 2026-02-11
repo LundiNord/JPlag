@@ -131,15 +131,13 @@ public class Variable {
     public void merge(@NotNull Variable other, Set<JavaObject> visited) {
         assert this.changeRecorders.equals(other.changeRecorders);
         assert other.name.equals(this.name);
-        if (this.value instanceof NullValue) {
-            if (!(other.value instanceof NullValue)) {
-                if (other.value instanceof IStringValue) {
-                    this.value = Value.valueFactory(Type.STRING);
-                } else if (other.value instanceof IJavaArray) {
-                    this.value = Value.valueFactory(Type.ARRAY);
-                } else if (other.value instanceof IJavaObject) {
-                    this.value = Value.valueFactory(OBJECT);
-                }
+        if (this.value instanceof NullValue && !(other.value instanceof NullValue)) {
+            if (other.value instanceof IStringValue) {
+                this.value = Value.valueFactory(Type.STRING);
+            } else if (other.value instanceof IJavaArray) {
+                this.value = Value.valueFactory(Type.ARRAY);
+            } else if (other.value instanceof IJavaObject) {
+                this.value = Value.valueFactory(OBJECT);
             }
         }
         this.value.merge(other.value, visited);

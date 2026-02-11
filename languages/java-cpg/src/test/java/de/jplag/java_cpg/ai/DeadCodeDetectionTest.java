@@ -57,7 +57,7 @@ class DeadCodeDetectionTest {
 
     public static JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
         VariableStore variableStore = interpretation.getVariables();
-        return (JavaObject) variableStore.getVariable("Main").getValue();
+        return (JavaObject) Objects.requireNonNull(variableStore.getVariable("Main")).getValue();
     }
 
     @NotNull
@@ -319,8 +319,6 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        // assertEquals(1, ((INumberValue) main.accessField("result")).getValue()); //ToDo
-        // assertEquals(2, ((INumberValue) main.accessField("result")).getValue());
     }
 
     /**
@@ -365,7 +363,6 @@ class DeadCodeDetectionTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/break");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        // ToDo
     }
 
     /**

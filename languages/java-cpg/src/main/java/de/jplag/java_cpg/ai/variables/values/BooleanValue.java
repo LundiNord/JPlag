@@ -161,9 +161,6 @@ public class BooleanValue extends Value implements IBooleanValue {
             }
             return;
         }
-        if (!(other instanceof BooleanValue booleanValue)) {
-            System.out.println("Debug");
-        }
         assert other instanceof BooleanValue : "Cannot merge " + this.getType() + " with " + other.getType();
         BooleanValue otherBool = (BooleanValue) other;
         if (this.information && otherBool.information && this.value == otherBool.value) {

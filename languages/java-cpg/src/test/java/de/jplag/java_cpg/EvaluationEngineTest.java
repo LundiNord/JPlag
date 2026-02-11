@@ -40,6 +40,7 @@ import de.jplag.java_cpg.ai.IntAiType;
 import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.ProgpediaTests;
 import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
 import de.jplag.reporting.reportobject.ReportObjectFactory;
@@ -222,11 +223,11 @@ class EvaluationEngineTest {
     private static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
             boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
-        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
-                JavaCpgLanguage.deadCodeRemovalTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
-                ArrayAiType.DEFAULT);
-        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
-        // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
+        GraphTransformation[] transformations = JavaCpgLanguage.deadCodeRemovalTransformations();
+        JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, transformations,
+                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+                // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+                IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
         List<Token> result = language.parse(files, normalize);
@@ -286,7 +287,7 @@ class EvaluationEngineTest {
     }
 
     private static @NotNull JPlagResult getJPlagCpgPlagScore(@NotNull Set<File> files, boolean removeDeadCode, boolean detectDeadCode,
-            boolean reorder, boolean normalize, boolean removeSimpleDeadCode) throws ExitException, IOException {
+            boolean reorder, boolean normalize, boolean removeSimpleDeadCode) throws ExitException {
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
                 JavaCpgLanguage.allTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
                 ArrayAiType.DEFAULT);
@@ -301,7 +302,7 @@ class EvaluationEngineTest {
         return getJPlagScore(fileNameA, fileNameB, normalize, language);
     }
 
-    private static @NotNull JPlagResult getJPlagPlagScore(@NotNull Set<File> files, boolean normalize) throws ExitException, IOException {
+    private static @NotNull JPlagResult getJPlagPlagScore(@NotNull Set<File> files, boolean normalize) throws ExitException {
         de.jplag.java.JavaLanguage language = new de.jplag.java.JavaLanguage();
         return getJPlagScore(files, normalize, language);
     }
@@ -421,7 +422,7 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     @MethodSource("testFiles")
     void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
@@ -457,7 +458,7 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>();
-                // throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -504,7 +505,7 @@ class EvaluationEngineTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
         // String fileName = "aiGenerated/geminiPlag/GridOverseer.java";
         String fileName = "aiGenerated/gemini/ProjectD.java";
@@ -528,7 +529,7 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     // @MethodSource("kitHumanFiles")
     @MethodSource("kitGenFiles")
     void KitDeadCodeEvaluation(String fileName) throws ParsingException {
@@ -597,9 +598,8 @@ class EvaluationEngineTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        // String fileName = "kit_DONT_COMMIT/TicTacToe/human/24846";
         String fileName = "kit_DONT_COMMIT/BoardGame/human/subm334";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -621,7 +621,7 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     @MethodSource("progpediaFiles")
     void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup
         long startTime = System.nanoTime();
@@ -703,7 +703,7 @@ class EvaluationEngineTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     void ProgpediaDeadCodeEvaluationSingle() throws ParsingException {
         // String fileName = "progpedia/00000021/WRONG_ANSWER/00168_00002"; //very long runtime <- big list init
         // String fileName = "progpedia/00000043/ACCEPTED/00156_00001";
@@ -715,7 +715,7 @@ class EvaluationEngineTest {
 
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
         // i=i.proximo())
-        String fileName = "progpedia/00000039/WRONG_ANSWER/00233_00004/Ex6.java";
+        String fileName = "progpedia/00000039/ACCEPTED/00233_00005/Ex6.java";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -748,7 +748,7 @@ class EvaluationEngineTest {
     }
 
     @ParameterizedTest
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     // @MethodSource("testPlagFiles")
     @MethodSource("testPlagFilesUnrelated")
     void AiGeneratedTestDataPlagEvaluation(@NotNull Pair<String, String> fileNames) throws ExitException, IOException {
@@ -792,7 +792,7 @@ class EvaluationEngineTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("Only for evaluation purposes, not a real test")
     void AiGeneratedTestDataPlagEvaluationSingle() throws ExitException, IOException {
         // new Pair<>("aiGenerated/gemini/ProjectT.java", "aiGenerated/perplexityLabs/Project4.java"),
         String fileA = "aiGenerated/gemini/ProjectT.java";

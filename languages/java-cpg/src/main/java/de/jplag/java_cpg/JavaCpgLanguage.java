@@ -8,8 +8,6 @@ import static de.jplag.java_cpg.transformation.TransformationRepository.moveCons
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyConstructor;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyDeclarationStatement;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyRecord;
-import static de.jplag.java_cpg.transformation.TransformationRepository.removeGetterMethod;
-import static de.jplag.java_cpg.transformation.TransformationRepository.removeImplicitStandardConstructor;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryField;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryRecord;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeOptionalGetCall;
@@ -115,7 +113,7 @@ public class JavaCpgLanguage implements Language {
      */
     @NotNull
     public static GraphTransformation[] minimalTransformations() {
-        return new GraphTransformation[] {removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField,};
+        return new GraphTransformation[] {removeLibraryRecord, removeLibraryField,};
     }
 
     /**
@@ -123,8 +121,8 @@ public class JavaCpgLanguage implements Language {
      */
     @NotNull
     public static GraphTransformation[] deadCodeRemovalTransformations() {
-        return new GraphTransformation[] {removeEmptyDeclarationStatement, removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField,
-                removeUnsupportedConstructor, removeUnsupportedMethod, removeEmptyRecord,};
+        return new GraphTransformation[] {removeEmptyDeclarationStatement, removeLibraryRecord, removeLibraryField, removeUnsupportedConstructor,
+                removeUnsupportedMethod, removeEmptyRecord,};
     }
 
     /**
@@ -134,9 +132,8 @@ public class JavaCpgLanguage implements Language {
     @NotNull
     public static GraphTransformation[] allTransformations() {
         return new GraphTransformation[] {ifWithNegatedConditionResolution, forStatementToWhileStatement, removeOptionalOfCall, removeOptionalGetCall,
-                removeGetterMethod, moveConstantToOnlyUsingClass, inlineSingleUseConstant, inlineSingleUseVariable, removeEmptyDeclarationStatement,
-                removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField, removeEmptyConstructor, removeUnsupportedConstructor,
-                removeUnsupportedMethod, removeEmptyRecord,};
+                moveConstantToOnlyUsingClass, inlineSingleUseConstant, inlineSingleUseVariable, removeLibraryRecord, removeLibraryField,
+                removeEmptyConstructor, removeUnsupportedConstructor, removeUnsupportedMethod, removeEmptyRecord,};
     }
 
     /**

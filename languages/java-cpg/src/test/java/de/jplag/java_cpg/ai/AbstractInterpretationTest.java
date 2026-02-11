@@ -1,6 +1,9 @@
 package de.jplag.java_cpg.ai;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,16 +17,36 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import de.fraunhofer.aisec.cpg.*;
+import de.fraunhofer.aisec.cpg.ConfigurationException;
+import de.fraunhofer.aisec.cpg.InferenceConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationManager;
+import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
-import de.fraunhofer.aisec.cpg.passes.*;
+import de.fraunhofer.aisec.cpg.passes.ControlDependenceGraphPass;
+import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
+import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
+import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
+import de.fraunhofer.aisec.cpg.passes.ImportResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
+import de.fraunhofer.aisec.cpg.passes.Pass;
+import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
+import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
+import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeResolver;
 import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
-import de.jplag.java_cpg.passes.*;
+import de.jplag.java_cpg.passes.AstTransformationPass;
+import de.jplag.java_cpg.passes.CpgTransformationPass;
+import de.jplag.java_cpg.passes.DfgSortPass;
+import de.jplag.java_cpg.passes.FixAstPass;
+import de.jplag.java_cpg.passes.PrepareTransformationPass;
 
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
@@ -33,7 +56,6 @@ import kotlin.reflect.KClass;
  * @author ujiqk
  * @version 1.0
  */
-@Disabled
 class AbstractInterpretationTest {
 
     /**
@@ -73,6 +95,7 @@ class AbstractInterpretationTest {
      * simple switch test
      */
     @Test
+    @Disabled("test contains a switch statement, which is currently not supported")
     void testSwitch() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
         JavaObject main = getMainObject(interpretation);
@@ -151,7 +174,6 @@ class AbstractInterpretationTest {
      * simple enum test
      */
     @Test
-    @Disabled
     void testEnum() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
         JavaObject main = getMainObject(interpretation);
@@ -167,11 +189,10 @@ class AbstractInterpretationTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        // assertEquals(1, ((IntValue) main.accessField("result")).getValue()); //ToDo
-        // assertEquals(2, ((IntValue) main.accessField("result")).getValue());
     }
 
     @Test
+    @Disabled("error in the dfg sort pass")
     void testQueensFarming() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
         JavaObject main = getMainObject(interpretation);

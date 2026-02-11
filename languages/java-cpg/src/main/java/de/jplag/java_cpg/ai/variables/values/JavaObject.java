@@ -84,7 +84,7 @@ public class JavaObject extends Value implements IJavaObject {
      */
     public IValue accessField(@NotNull String fieldName) {
         if (fields == null) {
-            return new VoidValue(); // ToDo: is this correct?
+            return new VoidValue();
         }
         assert fields != null;
         Variable result = fields.getVariable(new VariableName(fieldName));
@@ -102,7 +102,7 @@ public class JavaObject extends Value implements IJavaObject {
     public void changeField(@NotNull String fieldName, IValue value) {
         if (fields == null) {
             // reset information
-            fields = new Scope();   // ToDo: is this correct?
+            fields = new Scope();
             return;
         }
         assert fields != null;

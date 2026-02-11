@@ -27,11 +27,11 @@ import de.jplag.java_cpg.ai.IntAiType;
 import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.StringAiType;
 
-public class ProgpediaEvalTest {
+class ProgpediaEvalTest {
 
     @Test
-    @Disabled
-    void ProgpediaDeadCodeEvaluationAll() throws ParsingException {
+    @Disabled("Only for evaluation purposes, not a real test")
+    void ProgpediaDeadCodeEvaluationAll() {
         progpediaFiles().forEach(fileName -> {
             try {
                 long startTime = System.nanoTime();
