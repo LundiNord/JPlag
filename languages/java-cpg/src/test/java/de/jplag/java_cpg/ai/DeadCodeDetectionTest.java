@@ -1,9 +1,6 @@
 package de.jplag.java_cpg.ai;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,28 +14,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import de.fraunhofer.aisec.cpg.ConfigurationException;
-import de.fraunhofer.aisec.cpg.InferenceConfiguration;
-import de.fraunhofer.aisec.cpg.TranslationConfiguration;
-import de.fraunhofer.aisec.cpg.TranslationManager;
-import de.fraunhofer.aisec.cpg.TranslationResult;
+import de.fraunhofer.aisec.cpg.*;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
-import de.fraunhofer.aisec.cpg.passes.ControlDependenceGraphPass;
-import de.fraunhofer.aisec.cpg.passes.DFGPass;
-import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
-import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
-import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
-import de.fraunhofer.aisec.cpg.passes.ImportResolver;
-import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
-import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
-import de.fraunhofer.aisec.cpg.passes.Pass;
-import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
-import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
-import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
-import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
-import de.fraunhofer.aisec.cpg.passes.TypeResolver;
+import de.fraunhofer.aisec.cpg.passes.*;
 import de.jplag.ParsingException;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -55,7 +35,7 @@ import kotlin.reflect.KClass;
  */
 class DeadCodeDetectionTest {
 
-    public static JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
+    public static @NotNull JavaObject getMainObject(@NotNull AbstractInterpretation interpretation) {
         VariableStore variableStore = interpretation.getVariables();
         return (JavaObject) variableStore.getVariable("Main").getValue();
     }

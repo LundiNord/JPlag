@@ -22,7 +22,7 @@ public enum Type {
     UNKNOWN(null),
     VOID(null);
 
-    private final @Nullable String typeName;    // only used for the OBJECT type to save the class name
+    private @Nullable String typeName;    // only used for the OBJECT type to save the class name
 
     Type(@Nullable String typeName) {
         this.typeName = typeName;
@@ -32,6 +32,11 @@ public enum Type {
         assert this == OBJECT;
         assert typeName != null;
         return typeName;
+    }
+
+    private void setTypeName(@NotNull String typeName) {
+        assert this == OBJECT;
+        this.typeName = typeName;
     }
 
     /**
@@ -47,8 +52,9 @@ public enum Type {
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.BooleanType.class) {
             return BOOLEAN;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ObjectType.class) {
-            // FixMe: this is not correct, we need to save the class name for the object type
-            return OBJECT;
+            Type result = OBJECT;
+            result.setTypeName(cpgType.getName().getLocalName());
+            return result;
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.PointerType.class) {
             return ARRAY;   // in java pointer types are used only for arrays
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.FloatingPointType.class) {
