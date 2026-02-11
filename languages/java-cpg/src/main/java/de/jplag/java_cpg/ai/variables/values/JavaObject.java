@@ -47,6 +47,15 @@ public class JavaObject extends Value implements IJavaObject {
         abstractInterpretation.setRelatedObject(this);
     }
 
+    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
+        super(Type.OBJECT);
+        this.fields = new Scope();
+        this.typeName = "Deeeeebug";
+        this.abstractInterpretation = abstractInterpretation;
+        abstractInterpretation.setRelatedObject(this);
+        throw new RuntimeException();
+    }
+
     /**
      * Default constructor for a Java object with no abstract interpretation engine and no info.
      */
@@ -54,6 +63,13 @@ public class JavaObject extends Value implements IJavaObject {
         super(Type.OBJECT);
         this.fields = new Scope();
         this.typeName = typeName;
+    }
+
+    public JavaObject() {
+        super(Type.OBJECT);
+        this.fields = new Scope();
+        this.typeName = "Deeeeeeebug";
+        throw new RuntimeException();
     }
 
     /**

@@ -26,8 +26,7 @@ public class IntInterval extends Interval<Integer> {
      * Creates a new Integer interval representing the whole range of Integer values.
      */
     public IntInterval() {
-        this.lowerBound = MIN_VALUE;
-        this.upperBound = MAX_VALUE;
+        super(MIN_VALUE, MAX_VALUE);
     }
 
     /**
@@ -35,8 +34,7 @@ public class IntInterval extends Interval<Integer> {
      * @param number the number
      */
     public IntInterval(int number) {
-        this.lowerBound = number;
-        this.upperBound = number;
+        super(number, number);
     }
 
     /**
@@ -45,12 +43,8 @@ public class IntInterval extends Interval<Integer> {
      * @param upperBound the upper bound.
      */
     public IntInterval(int lowerBound, int upperBound) {
-        if (lowerBound > upperBound) {
-            System.out.println("Debug");
-        }
         assert lowerBound <= upperBound : lowerBound + " is not <= " + upperBound;
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
+        super(lowerBound, upperBound);
     }
 
     @Pure
@@ -89,12 +83,6 @@ public class IntInterval extends Interval<Integer> {
     @Override
     public IntInterval copy() {
         return new IntInterval(lowerBound, upperBound);
-    }
-
-    @Override
-    public void setToUnknown() {
-        this.lowerBound = MIN_VALUE;
-        this.upperBound = MAX_VALUE;
     }
 
     @Pure
@@ -226,9 +214,9 @@ public class IntInterval extends Interval<Integer> {
     public IntInterval plusPlus() {
         long newLower = (long) lowerBound + 1;
         long newUpper = (long) upperBound + 1;
-        lowerBound = newLower > MAX_VALUE ? MAX_VALUE : (int) newLower;
-        upperBound = newUpper > MAX_VALUE ? MAX_VALUE : (int) newUpper;
-        return this.copy();
+        int lowerBound = newLower > MAX_VALUE ? MAX_VALUE : (int) newLower;
+        int upperBound = newUpper > MAX_VALUE ? MAX_VALUE : (int) newUpper;
+        return new IntInterval(lowerBound, upperBound);
     }
 
     @Impure
@@ -236,9 +224,9 @@ public class IntInterval extends Interval<Integer> {
     public IntInterval minusMinus() {
         long newLower = (long) lowerBound - 1;
         long newUpper = (long) upperBound - 1;
-        lowerBound = newLower < MIN_VALUE ? MIN_VALUE : (int) newLower;
-        upperBound = newUpper < MIN_VALUE ? MIN_VALUE : (int) newUpper;
-        return this.copy();
+        int lowerBound = newLower < MIN_VALUE ? MIN_VALUE : (int) newLower;
+        int upperBound = newUpper < MIN_VALUE ? MIN_VALUE : (int) newUpper;
+        return new IntInterval(lowerBound, upperBound);
     }
 
     @Pure
@@ -264,12 +252,11 @@ public class IntInterval extends Interval<Integer> {
 
     @Impure
     @Override
-    public void merge(@NotNull Interval<Integer> other) {
+    public IntInterval merge(@NotNull Interval<Integer> other) {
         int smallerLowerBound = Math.min(this.lowerBound, other.lowerBound);
         int largerUpperBound = Math.max(this.upperBound, other.upperBound);
         assert smallerLowerBound <= largerUpperBound;
-        this.lowerBound = smallerLowerBound;
-        this.upperBound = largerUpperBound;
+        return new IntInterval(smallerLowerBound, largerUpperBound);
     }
 
     @Override

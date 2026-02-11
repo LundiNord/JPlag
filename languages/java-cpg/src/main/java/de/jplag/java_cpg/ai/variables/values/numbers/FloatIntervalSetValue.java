@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
 
@@ -44,10 +45,7 @@ public class FloatIntervalSetValue extends NumberIntervalSetValue<Double, Double
      * @param possibleNumbers the possible float numbers
      */
     public FloatIntervalSetValue(@NotNull Set<Double> possibleNumbers) {
-        super(Type.INT);
-        values = new TreeSet<>();
-        // ToDo: slice into intervals
-        values.add(new DoubleInterval());
+        super(Type.FLOAT, possibleNumbers);
     }
 
     /**
@@ -56,13 +54,8 @@ public class FloatIntervalSetValue extends NumberIntervalSetValue<Double, Double
      * @param upperBound the upper bound of the range
      */
     public FloatIntervalSetValue(double lowerBound, double upperBound) {
-        super(Type.INT);
+        super(Type.FLOAT);
         values.add(new DoubleInterval(lowerBound, upperBound));
-    }
-
-    @Override
-    protected DoubleInterval createFullInterval() {
-        return new DoubleInterval();
     }
 
     @Override
@@ -75,16 +68,23 @@ public class FloatIntervalSetValue extends NumberIntervalSetValue<Double, Double
         return new FloatIntervalSetValue(values);
     }
 
+    @Override
+    protected boolean isConsecutive(Double current, Double next) {
+        // For floating-point numbers, we don't group consecutive values
+        // Only equal values should be in the same interval
+        return current.equals(next);
+    }
+
     @NotNull
     @Override
     public Value copy() {
         return new FloatIntervalSetValue(new TreeSet<>(values));
     }
 
+    @NotNull
     @Override
-    public void setInitialValue() {
-        values = new TreeSet<>();
-        values.add(createInterval(0d, 0d));
+    public IValue getInitialValue() {
+        return new FloatIntervalSetValue(0d);
     }
 
     /**

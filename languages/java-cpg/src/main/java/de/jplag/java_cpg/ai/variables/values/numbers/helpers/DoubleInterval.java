@@ -26,8 +26,7 @@ public class DoubleInterval extends Interval<Double> {
      * Creates a new Double interval representing the whole range of Double values.
      */
     public DoubleInterval() {
-        this.lowerBound = MIN_VALUE;
-        this.upperBound = MAX_VALUE;
+        super(MIN_VALUE, MAX_VALUE);
     }
 
     /**
@@ -35,8 +34,7 @@ public class DoubleInterval extends Interval<Double> {
      * @param number the number
      */
     public DoubleInterval(double number) {
-        this.lowerBound = number;
-        this.upperBound = number;
+        super(number, number);
     }
 
     /**
@@ -46,8 +44,7 @@ public class DoubleInterval extends Interval<Double> {
      */
     public DoubleInterval(double lowerBound, double upperBound) {
         assert lowerBound <= upperBound;
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
+        super(lowerBound, upperBound);
     }
 
     /**
@@ -80,12 +77,6 @@ public class DoubleInterval extends Interval<Double> {
     @Override
     public DoubleInterval copy() {
         return new DoubleInterval(lowerBound, upperBound);
-    }
-
-    @Override
-    public void setToUnknown() {
-        this.lowerBound = MIN_VALUE;
-        this.upperBound = MAX_VALUE;
     }
 
     @Pure
@@ -206,17 +197,17 @@ public class DoubleInterval extends Interval<Double> {
     @Impure
     @Override
     public DoubleInterval plusPlus() {
-        lowerBound += 1.0;
-        upperBound += 1.0;
-        return this.copy();
+        double lowerBound = this.lowerBound + 1.0;
+        double upperBound = this.upperBound + 1.0;
+        return new DoubleInterval(lowerBound, upperBound);
     }
 
     @Impure
     @Override
     public DoubleInterval minusMinus() {
-        lowerBound -= 1.0;
-        upperBound -= 1.0;
-        return this.copy();
+        double lowerBound = this.lowerBound - 1.0;
+        double upperBound = this.upperBound - 1.0;
+        return new DoubleInterval(lowerBound, upperBound);
     }
 
     @Pure
@@ -240,12 +231,11 @@ public class DoubleInterval extends Interval<Double> {
 
     @Impure
     @Override
-    public void merge(@NotNull Interval<Double> other) {
+    public DoubleInterval merge(@NotNull Interval<Double> other) {
         double smallerLowerBound = Math.min(this.lowerBound, other.lowerBound);
         double largerUpperBound = Math.max(this.upperBound, other.upperBound);
         assert smallerLowerBound <= largerUpperBound;
-        this.lowerBound = smallerLowerBound;
-        this.upperBound = largerUpperBound;
+        return new DoubleInterval(smallerLowerBound, largerUpperBound);
     }
 
     @Override

@@ -17,6 +17,12 @@ public abstract class Interval<T extends Number & Comparable<T>> implements Comp
     protected final T lowerBound;
     protected final T upperBound;
 
+    protected Interval(@NotNull T lowerBound, @NotNull T upperBound) {
+        assert lowerBound.compareTo(upperBound) <= 0 : "Lower bound must be less than or equal to upper bound.";
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
+    }
+
     /**
      * @return if exact information is available.
      */
@@ -32,11 +38,6 @@ public abstract class Interval<T extends Number & Comparable<T>> implements Comp
      * @return a new Interval instance with the same bounds.
      */
     public abstract Interval<T> copy();
-
-    /**
-     * Sets this interval to represent an unknown value.
-     */
-    public abstract void setToUnknown();
 
     /**
      * @param other the other interval to add.
@@ -137,7 +138,7 @@ public abstract class Interval<T extends Number & Comparable<T>> implements Comp
      * @param other the other interval to merge
      */
     @Impure
-    public abstract void merge(@NotNull Interval<T> other);
+    public abstract Interval<T> merge(@NotNull Interval<T> other);
 
     /**
      * @return the lower bound of this interval
@@ -147,26 +148,10 @@ public abstract class Interval<T extends Number & Comparable<T>> implements Comp
     }
 
     /**
-     * @param lowerBound the new lower bound
-     */
-    public void setLowerBound(@NotNull T lowerBound) {
-        assert lowerBound.compareTo(upperBound) <= 0;
-        this.lowerBound = lowerBound;
-    }
-
-    /**
      * @return the upper bound of this interval
      */
     public T getUpperBound() {
         return upperBound;
-    }
-
-    /**
-     * @param upperBound the new upper bound
-     */
-    public void setUpperBound(T upperBound) {
-        assert lowerBound.compareTo(upperBound) <= 0;
-        this.upperBound = upperBound;
     }
 
 }

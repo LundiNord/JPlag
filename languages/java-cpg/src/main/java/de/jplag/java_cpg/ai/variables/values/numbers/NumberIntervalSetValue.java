@@ -1,16 +1,15 @@
 package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.checkerframework.dataflow.qual.Impure;
+import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.Interval;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
@@ -34,11 +33,45 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
         this.values = values;
     }
 
-    protected abstract I createFullInterval();
+    protected NumberIntervalSetValue(Type type, Set<T> values) {
+        super(type);
+        this.values = new TreeSet<>();
+        if (values.isEmpty()) {
+            return;
+        }
+        // slice the values into intervals
+        TreeSet<T> sortedValues = new TreeSet<>(values);
+        T rangeStart = sortedValues.first();
+        T rangeEnd = rangeStart;
+        for (T value : sortedValues) {
+            if (value.equals(rangeStart)) {
+                continue; // Skip the first element
+            }
+            // Check if this value is consecutive to the current range
+            if (isConsecutive(rangeEnd, value)) {
+                rangeEnd = value;
+            } else {
+                // The current range is complete, add it and start a new range
+                this.values.add(createInterval(rangeStart, rangeEnd));
+                rangeStart = value;
+                rangeEnd = value;
+            }
+        }
+        this.values.add(createInterval(rangeStart, rangeEnd));
+    }
 
     protected abstract I createInterval(T lowerBound, T upperBound);
 
     protected abstract NumberIntervalSetValue<T, I> createInstance(TreeSet<I> values);
+
+    /**
+     * Checks if two values are consecutive and should be grouped in the same interval. For integers, this means they differ
+     * by 1. For floats, they are only consecutive if equal.
+     * @param current the current end of the range
+     * @param next the next value to consider
+     * @return true if the values should be in the same interval
+     */
+    protected abstract boolean isConsecutive(T current, T next);
 
     @Override
     public boolean getInformation() {
@@ -54,17 +87,14 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
     @Override
     @SuppressWarnings("unchecked")
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
-        if (other instanceof VoidValue || other instanceof ICharValue) {
+        if (other instanceof ICharValue) {
             other = createInstance(new TreeSet<>());
         } else if (other instanceof IStringValue stringValue) {
             return stringValue.binaryOperation(operator, this);
         }
-        if (!(other instanceof NumberIntervalSetValue<?, ?>)) {
-            System.out.println("Debug");
-        }
         NumberIntervalSetValue<T, I> otherValue = (NumberIntervalSetValue<T, I>) other;
         if (this.values.isEmpty() || otherValue.values.isEmpty()) {
-            return new VoidValue();
+            return new UnknownValue();
         }
         switch (operator) {
             case "+" -> {
@@ -74,9 +104,7 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
                         newValues.add((I) interval.plus(value));
                     }
                 }
-                NumberIntervalSetValue<T, I> newValue = createInstance(newValues);
-                newValue.mergeOverlappingIntervals();
-                return newValue;
+                return createInstance(mergeOverlappingIntervals(newValues));
             }
             case "-" -> {
                 TreeSet<I> newValues = new TreeSet<>();
@@ -85,9 +113,7 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
                         newValues.add((I) value.minus(interval));
                     }
                 }
-                NumberIntervalSetValue<T, I> newValue = createInstance(newValues);
-                newValue.mergeOverlappingIntervals();
-                return newValue;
+                return createInstance(mergeOverlappingIntervals(newValues));
             }
             case "<" -> {
                 if (values.getLast().getUpperBound().doubleValue() < otherValue.values.getFirst().getLowerBound().doubleValue()) {
@@ -158,9 +184,7 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
                         newValues.add((I) interval.times(value));
                     }
                 }
-                NumberIntervalSetValue<T, I> newValue = createInstance(newValues);
-                newValue.mergeOverlappingIntervals();
-                return newValue;
+                return createInstance(mergeOverlappingIntervals(newValues));
             }
             case "/" -> {
                 TreeSet<I> newValues = new TreeSet<>();
@@ -169,9 +193,7 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
                         newValues.add((I) value.divided(interval));
                     }
                 }
-                NumberIntervalSetValue<T, I> newValue = createInstance(newValues);
-                newValue.mergeOverlappingIntervals();
-                return newValue;
+                return createInstance(mergeOverlappingIntervals(newValues));
             }
             case "min" -> {
                 T upper = values.getLast().getUpperBound().compareTo(otherValue.values.getLast().getUpperBound()) < 0
@@ -189,9 +211,7 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
                     T lowerBound = interval.getLowerBound().compareTo(upperBound) < 0 ? interval.getLowerBound() : upperBound;
                     newValues.add(createInterval(lowerBound, upperBound));
                 }
-                NumberIntervalSetValue<T, I> newValue = createInstance(newValues);
-                newValue.mergeOverlappingIntervals();
-                return newValue;
+                return createInstance(mergeOverlappingIntervals(newValues));
             }
             case "max" -> {
                 T lower = values.getFirst().getLowerBound().compareTo(otherValue.values.getFirst().getLowerBound()) > 0
@@ -213,9 +233,7 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to create interval instance", e);
                 }
-                NumberIntervalSetValue<T, I> newValue = createInstance(newValues);
-                newValue.mergeOverlappingIntervals();
-                return newValue;
+                return createInstance(mergeOverlappingIntervals(newValues));
             }
             default -> {
                 return new VoidValue();
@@ -248,9 +266,7 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
                 for (I interval : values) {
                     newValues.add((I) interval.abs());
                 }
-                NumberIntervalSetValue<T, I> newValue = createInstance(newValues);
-                newValue.mergeOverlappingIntervals();
-                return newValue;
+                return createInstance(mergeOverlappingIntervals(newValues));
             }
             default -> {
                 return new VoidValue();
@@ -260,10 +276,10 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
 
     @Override
     @SuppressWarnings("unchecked")
-    public NumberIntervalSetValue merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
-            return createInstance(new TreeSet<>());
-        }
+    public NumberIntervalSetValue<T, I> merge(@NotNull IValue other) {
+        // if (other instanceof VoidValue) {
+        // return createInstance(new TreeSet<>());
+        // }
         if (other instanceof IFloatNumber floatNumber) {    // can happen because some casts are not explicit in eog
             if (floatNumber.getInformation()) {
                 int value = (int) floatNumber.getValue();
@@ -277,33 +293,29 @@ public abstract class NumberIntervalSetValue<T extends Number & Comparable<T>, I
         assert other.getClass().equals(this.getClass()) : "Cannot merge different value types" + this.getClass() + " and " + other.getClass();
         TreeSet<I> otherValues = ((NumberIntervalSetValue<T, I>) other).values;
         this.values.addAll(otherValues);
-        mergeOverlappingIntervals();
+        return createInstance(mergeOverlappingIntervals(this.values));
     }
 
-    @Override
-    public void setToUnknown() {
-        values = new TreeSet<>();
-        values.add(createFullInterval());
-    }
-
-    protected void mergeOverlappingIntervals() {
-        if (values.size() < 2) {
-            return;
+    @Pure
+    protected @NotNull TreeSet<I> mergeOverlappingIntervals(@NotNull TreeSet<I> valuesToMerge) {
+        if (valuesToMerge.size() < 2) {
+            return valuesToMerge;
         }
         TreeSet<I> newValues = new TreeSet<>();
-        newValues.add(values.first());
-        values.remove(values.first());
-        for (I interval : values) {
+        newValues.add(valuesToMerge.first());
+        valuesToMerge.remove(valuesToMerge.first());
+        for (I interval : valuesToMerge) {
             I lastInterval = newValues.last();
             if (lastInterval.getUpperBound().compareTo(interval.getLowerBound()) >= 0) {
                 T maxUpper = lastInterval.getUpperBound().compareTo(interval.getUpperBound()) > 0 ? lastInterval.getUpperBound()
                         : interval.getUpperBound();
-                lastInterval.setUpperBound(maxUpper);
+                newValues.remove(lastInterval);
+                newValues.add(createInterval(lastInterval.getLowerBound(), maxUpper));
             } else {
                 newValues.add(interval);
             }
         }
-        this.values = newValues;
+        return newValues;
     }
 
 }

@@ -127,12 +127,10 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
     public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "++" -> {
-                this.interval.plusPlus();
-                return this.copy();
+                return new IntIntervalValue(this.interval.plusPlus());
             }
             case "--" -> {
-                this.interval.minusMinus();
-                return this.copy();
+                return new IntIntervalValue(this.interval.minusMinus());
             }
             case "-" -> {
                 IntInterval newInterval = this.interval.copy().unaryMinus();
@@ -155,10 +153,10 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue) {
-            other = new IntIntervalValue();
-        }
+    public IntIntervalValue merge(@NotNull IValue other) {
+        // if (other instanceof VoidValue) {
+        // other = new IntIntervalValue();
+        // }
         if (other instanceof IFloatNumber floatNumber) {    // can happen because some casts are not explicit in eog
             if (floatNumber.getInformation()) {
                 other = new IntIntervalValue((int) floatNumber.getValue());
@@ -167,18 +165,14 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
             }
         }
         assert other instanceof IntIntervalValue : "Cannot merge " + this.getClass() + " with " + other.getClass();
-        this.interval.merge(((IntIntervalValue) other).interval);
+        // this.interval.merge(((IntIntervalValue) other).interval);
+        return new IntIntervalValue(this.interval.merge(((IntIntervalValue) other).interval));
     }
 
+    @NotNull
     @Override
-    public void setToUnknown() {
-        interval.setToUnknown();
-    }
-
-    @Override
-    public void setInitialValue() {
-        interval.setUpperBound(0);
-        interval.setLowerBound(0);
+    public IValue getInitialValue() {
+        return new IntIntervalValue(0);
     }
 
 }

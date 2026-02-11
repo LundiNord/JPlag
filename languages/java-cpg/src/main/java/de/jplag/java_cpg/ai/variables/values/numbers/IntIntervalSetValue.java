@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
@@ -44,10 +45,7 @@ public class IntIntervalSetValue extends NumberIntervalSetValue<Integer, IntInte
      * @param possibleNumbers the possible integer numbers
      */
     public IntIntervalSetValue(@NotNull Set<Integer> possibleNumbers) {
-        super(Type.INT);
-        values = new TreeSet<>();
-        // ToDo: slice into intervals
-        values.add(new IntInterval());
+        super(Type.INT, possibleNumbers);
     }
 
     /**
@@ -61,11 +59,6 @@ public class IntIntervalSetValue extends NumberIntervalSetValue<Integer, IntInte
     }
 
     @Override
-    protected IntInterval createFullInterval() {
-        return new IntInterval();
-    }
-
-    @Override
     protected IntInterval createInterval(Integer lowerBound, Integer upperBound) {
         return new IntInterval(lowerBound, upperBound);
     }
@@ -75,16 +68,21 @@ public class IntIntervalSetValue extends NumberIntervalSetValue<Integer, IntInte
         return new IntIntervalSetValue(values);
     }
 
+    @Override
+    protected boolean isConsecutive(Integer current, Integer next) {
+        return next - current == 1;
+    }
+
     @NotNull
     @Override
     public Value copy() {
         return new IntIntervalSetValue(new TreeSet<>(values));
     }
 
+    @NotNull
     @Override
-    public void setInitialValue() {
-        values = new TreeSet<>();
-        values.add(createInterval(0, 0));
+    public IValue getInitialValue() {
+        return new IntIntervalSetValue(0);
     }
 
     /**
