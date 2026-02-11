@@ -11,12 +11,7 @@ import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.IJavaObject;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.NullValue;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChar;
 import de.jplag.java_cpg.ai.variables.values.string.regex.RegexChars;
@@ -40,6 +35,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     public StringRegexValue() {
         super(Type.STRING);
         unknown = true;
+        contentRegex = new ArrayList<>();
     }
 
     /**
@@ -83,19 +79,17 @@ public class StringRegexValue extends JavaObject implements IStringValue {
         this.unknown = unknown;
     }
 
-    @NotNull
-    private static List<RegexItem> appendAtPos(@NotNull List<RegexItem> original, @NotNull List<RegexItem> other, int i) {
+    private static void appendAtPos(@NotNull List<RegexItem> original, @NotNull List<RegexItem> other, int i) {
         int length = original.size();
         i++;
-        for (int j = 0; j < other.size(); j++) {
+        for (RegexItem regexItem : other) {
             if (i < length) {
-                original.get(i).merge(other.get(j));
+                original.get(i).merge(regexItem);
             } else {
-                original.add(other.get(j));
+                original.add(regexItem);
             }
             i++;
         }
-        return original;
     }
 
     @Override
@@ -409,29 +403,34 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public void merge(@NotNull IValue other) {
-        if (other instanceof VoidValue || other instanceof IJavaObject) {
-            contentRegex = new ArrayList<>();
-            unknown = true;
-            return;
-        }
+    public StringRegexValue merge(@NotNull IValue other, Set<JavaObject> visited) {
+        return merge(other);
+    }
+
+    @Override
+    public StringRegexValue merge(@NotNull IValue other) {
+        // if (other instanceof VoidValue || other instanceof IJavaObject) {
+        // contentRegex = new ArrayList<>();
+        // unknown = true;
+        // return;
+        // }
         if (other instanceof NullValue) {
             if (contentRegex == null) {
                 // keep null
             } else {
                 this.unknown = true;
             }
-            return;
+            return this;
         }
         assert other instanceof StringRegexValue;
         StringRegexValue otherString = (StringRegexValue) other;
         if (this.contentRegex == null || otherString.contentRegex == null) {
             this.contentRegex = null;
-            return;
+            return this;
         }
         if (this.unknown || otherString.unknown) {
             this.unknown = true;
-            return;
+            return this;
         }
         int maxLength = Math.max(this.contentRegex.size(), otherString.contentRegex.size());
         int minLength = Math.min(this.contentRegex.size(), otherString.contentRegex.size());
@@ -449,6 +448,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 this.contentRegex.get(i).merge(null);
             }
         }
+        return this;
     }
 
     @Override
@@ -471,6 +471,12 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     public void setInitialValue() {
         this.contentRegex = null;
         unknown = false;
+    }
+
+    @NotNull
+    @Override
+    public IValue getInitialValue() {
+        return new StringRegexValue(null, false);
     }
 
     @NotNull
@@ -526,6 +532,11 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     @TestOnly
     public List<RegexItem> getContentRegex() {
         return contentRegex;
+    }
+
+    @Override
+    public boolean isNull() {
+        return contentRegex == null;
     }
 
 }

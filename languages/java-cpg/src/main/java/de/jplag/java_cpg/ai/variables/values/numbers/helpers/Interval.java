@@ -8,14 +8,14 @@ import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 
 /**
  * Abstract class representing an interval of numbers.
+ * @param <T> the type of number (e.g., Integer, Double)
  * @author ujiqk
  * @version 1.0
- * @param <T> the type of number (e.g., Integer, Double)
  */
 public abstract class Interval<T extends Number & Comparable<T>> implements Comparable<Interval<T>> {
 
-    protected T lowerBound;
-    protected T upperBound;
+    protected final T lowerBound;
+    protected final T upperBound;
 
     /**
      * @return if exact information is available.

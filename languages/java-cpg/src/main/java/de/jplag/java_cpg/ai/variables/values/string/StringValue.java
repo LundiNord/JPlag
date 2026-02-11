@@ -419,6 +419,11 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
+    public StringValue merge(@NotNull IValue other, Set<JavaObject> visited) {
+        return merge(other);
+    }
+
+    @Override
     public StringValue merge(@NotNull IValue other) {
         if (other instanceof NullValue) {
             this.information = false;
