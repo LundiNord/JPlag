@@ -28,7 +28,7 @@ public class Random extends JavaObject implements ISpecialObject {
      * Representation of the java.util.Random class.
      */
     public Random() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -41,7 +41,7 @@ public class Random extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "nextInt" -> {
                 if (paramVars == null || paramVars.isEmpty()) {
@@ -55,7 +55,7 @@ public class Random extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value accessField(@NotNull java.lang.String fieldName) {
+    public Value accessField(@NotNull java.lang.String fieldName, @NotNull Type expectedType) {
         switch (fieldName) {
             default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported in " + PATH + "." + NAME);
         }

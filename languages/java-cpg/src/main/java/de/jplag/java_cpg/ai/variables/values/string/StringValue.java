@@ -56,7 +56,7 @@ public class StringValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -342,13 +342,13 @@ public class StringValue extends JavaObject implements IStringValue {
                 }
             }
             default -> {
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
         }
     }
 
     @Override
-    public Value accessField(@NotNull String fieldName) {
+    public Value accessField(@NotNull String fieldName, @NotNull Type expectedType) {
         throw new UnsupportedOperationException("Access field not supported in StringValue (" + fieldName + ")");
     }
 
@@ -401,7 +401,7 @@ public class StringValue extends JavaObject implements IStringValue {
             }
         } else if (operator.equals("+") && other instanceof IJavaObject javaObject) {
             // case: JavaObject with toString method
-            IValue toStringResult = javaObject.callMethod("toString", List.of(), null);
+            IValue toStringResult = javaObject.callMethod("toString", List.of(), null, Type.STRING);
             if (toStringResult instanceof IStringValue otherStringFromObject && information && otherStringFromObject.getInformation()) {
                 return new StringValue(this.value + otherStringFromObject.getValue());
             }

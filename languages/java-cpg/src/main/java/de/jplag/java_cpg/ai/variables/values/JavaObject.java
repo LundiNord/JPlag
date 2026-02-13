@@ -30,38 +30,56 @@ public class JavaObject extends Value implements IJavaObject {
     private Scope fields;       // fields == null => object null
     @Nullable
     private AbstractInterpretation abstractInterpretation;  // the abstract interpretation engine for this object
+    private final @NotNull Type type;
 
-    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
+    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation, @NotNull Type type) {
         super(Type.OBJECT);
         this.fields = fields;
         this.abstractInterpretation = abstractInterpretation;
+        this.type = type;
     }
+
+    // /**
+    // * Constructor for a Java object with an abstract interpretation engine and no info.
+    // * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
+    // */
+    // public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
+    // super(Type.OBJECT);
+    // this.fields = new Scope();
+    // this.abstractInterpretation = abstractInterpretation;
+    // abstractInterpretation.setRelatedObject(this);
+    // throw new RuntimeException();
+    // }
 
     /**
      * Constructor for a Java object with an abstract interpretation engine and no info.
      * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
+     * @param type the type of the object; used for type checking.
      */
-    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
+    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation, @NotNull Type type) {
         super(Type.OBJECT);
         this.fields = new Scope();
         this.abstractInterpretation = abstractInterpretation;
+        this.type = type;
         abstractInterpretation.setRelatedObject(this);
     }
 
-    /**
-     * Default constructor for a Java object with no abstract interpretation engine and no info.
-     */
-    public JavaObject() {
-        super(Type.OBJECT);
-        this.fields = new Scope();
-    }
+    // /**
+    // * Default constructor for a Java object with no abstract interpretation engine and no info.
+    // */
+    // public JavaObject() {
+    // super(Type.OBJECT);
+    // this.fields = new Scope();
+    // throw new RuntimeException();
+    // }
 
     /**
      * Internal constructor for special classes like arrays.
      * @param type the type of the object.
      */
-    protected JavaObject(Type type) {
+    public JavaObject(@NotNull Type type) {
         super(type);
+        this.type = type;
         this.fields = new Scope();
     }
 
@@ -69,27 +87,30 @@ public class JavaObject extends Value implements IJavaObject {
      * @param methodName the name of the method to call.
      * @param paramVars the parameters to pass to the method.
      * @param method the cpg method declaration of the method to call.
+     * @param expectedType the expected return type of the method; used for type checking and to determine the return type
+     * of this method.
      * @return null if the method is not known.
      */
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         if (abstractInterpretation == null) {
-            return new VoidValue();
+            return Value.valueFactory(expectedType);
         }
-        return abstractInterpretation.runMethod(methodName, paramVars, method);
+        return abstractInterpretation.runMethod(methodName, paramVars, method, expectedType);
     }
 
     /**
      * @param fieldName the name of the field to access.
+     * @param expectedType the expected type of the field; used for type checking and to determine the return type of this
+     * method.
      * @return the value of the field or VoidValue if the field does not exist.
      */
-    public IValue accessField(@NotNull String fieldName) {
+    public IValue accessField(@NotNull String fieldName, @NotNull Type expectedType) {
         if (fields == null) {
-            return new VoidValue();
+            return Value.valueFactory(expectedType);
         }
-        assert fields != null;
         Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
-            return new VoidValue();
+            return Value.valueFactory(expectedType);
         }
         return result.getValue();
     }
@@ -105,7 +126,6 @@ public class JavaObject extends Value implements IJavaObject {
             fields = new Scope();
             return;
         }
-        assert fields != null;
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
             fields.addVariable(new Variable(fieldName, value));
@@ -164,7 +184,7 @@ public class JavaObject extends Value implements IJavaObject {
             case "+" -> {
                 if (other instanceof IStringValue stringValue) {
                     // case: JavaObject with toString method
-                    IValue toStringResult = this.callMethod("toString", List.of(), null);
+                    IValue toStringResult = this.callMethod("toString", List.of(), null, Type.STRING);
                     if (toStringResult instanceof IStringValue stringFromObject && stringValue.getInformation()
                             && stringFromObject.getInformation()) {
                         return Value.getNewStringValue(stringValue.getValue() + stringFromObject.getValue());
@@ -178,8 +198,9 @@ public class JavaObject extends Value implements IJavaObject {
             case "instanceof" -> {
                 return new BooleanValue();
             }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 
@@ -198,12 +219,12 @@ public class JavaObject extends Value implements IJavaObject {
     @NotNull
     public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
         if (fields == null) {
-            return new JavaObject(null, this.abstractInterpretation);
+            return new JavaObject(null, this.abstractInterpretation, this.type);
         }
         if (copiedObjects.containsKey(this)) {
             return copiedObjects.get(this);
         }
-        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation);
+        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation, this.type);
         copiedObjects.put(this, newObject);
         newObject.fields = new Scope(this.fields, copiedObjects);
         return newObject;

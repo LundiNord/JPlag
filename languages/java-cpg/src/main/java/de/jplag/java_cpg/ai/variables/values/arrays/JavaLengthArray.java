@@ -80,7 +80,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             case INT -> Value.valueFactory(Type.INT);
             case BOOLEAN -> new BooleanValue();
             case STRING -> Value.valueFactory(Type.STRING);
-            case OBJECT -> new JavaObject();
+            case OBJECT -> new JavaObject(innerType);
             case ARRAY -> Value.valueFactory(Type.ARRAY);
             case LIST -> Value.valueFactory(Type.LIST);
             case FLOAT -> Value.valueFactory(Type.FLOAT);
@@ -95,7 +95,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -171,19 +171,19 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 return Value.valueFactory(Type.BOOLEAN);
             }
             default -> {
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
         }
     }
 
     @Override
-    public IValue accessField(@NotNull String fieldName) {
+    public IValue accessField(@NotNull String fieldName, @NotNull Type expectedType) {
         switch (fieldName) {
             case "length" -> {
                 return this.length;
             }
             default -> {
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
         }
     }

@@ -69,7 +69,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     case INT -> value = Value.valueFactory(Type.INT);
                     case BOOLEAN -> value = new BooleanValue();
                     case STRING -> value = Value.valueFactory(Type.STRING);
-                    case OBJECT -> value = new JavaObject();
+                    case OBJECT -> value = new JavaObject(innerType);
                     case ARRAY, LIST -> value = new JavaArray();
                     case FLOAT -> value = Value.valueFactory(Type.FLOAT);
                     case CHAR -> value = Value.valueFactory(Type.CHAR);
@@ -136,7 +136,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case INT -> Value.valueFactory(Type.INT);
             case BOOLEAN -> new BooleanValue();
             case STRING -> Value.valueFactory(Type.STRING);
-            case OBJECT -> new JavaObject();
+            case OBJECT -> new JavaObject(innerType);
             case ARRAY, LIST -> new JavaArray();
             case FLOAT -> Value.valueFactory(Type.FLOAT);
             case CHAR -> Value.valueFactory(Type.CHAR);
@@ -163,7 +163,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -240,7 +240,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "remove" -> {
                 if (paramVars == null || paramVars.isEmpty()) {    // remove head
-                    return this.callMethod("removeFirst", null, method);
+                    return this.callMethod("removeFirst", null, method, expectedType);
                 }
                 assert paramVars.size() == 1;
                 if (values == null) {
@@ -531,12 +531,14 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 setToUnknown();
                 return Value.valueFactory(Type.BOOLEAN);
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            default -> {
+                return Value.valueFactory(expectedType);
+            }
         }
     }
 
     @Override
-    public IValue accessField(@NotNull String fieldName) {
+    public IValue accessField(@NotNull String fieldName, @NotNull Type expectedType) {
         switch (fieldName) {
             case "length" -> {
                 if (values != null) {

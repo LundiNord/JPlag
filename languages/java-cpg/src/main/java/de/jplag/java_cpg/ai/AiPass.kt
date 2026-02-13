@@ -32,6 +32,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     override fun accept(p0: TranslationResult) {
         var visitedLinesRecorder = VisitedLinesRecorder()
         val abstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
+        assert(p0.components.size == 1)
         val comp: Component = p0.components.first()
         for (translationUnit in comp.translationUnits) {
             if (translationUnit.name.parent?.localName?.endsWith("Main") == true || translationUnit.name.toString()

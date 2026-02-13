@@ -28,7 +28,7 @@ public class InputStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.InputStream class.
      */
     public InputStream() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -41,7 +41,7 @@ public class InputStream extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "read" -> {
                 if (paramVars == null || paramVars.isEmpty()) {

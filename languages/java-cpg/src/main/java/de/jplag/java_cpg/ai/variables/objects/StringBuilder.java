@@ -12,7 +12,6 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
 /**
  * Representation of the static java.lang.StringBuilder class.
@@ -29,7 +28,7 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.StringBuilder class.
      */
     public StringBuilder() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -42,7 +41,7 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "append" -> {
                 assert !paramVars.isEmpty();
@@ -69,7 +68,7 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
                 return Value.valueFactory(Type.STRING);
             }
             default -> {
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
         }
     }

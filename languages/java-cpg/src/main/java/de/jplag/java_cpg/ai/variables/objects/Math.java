@@ -30,7 +30,7 @@ public class Math extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Math class.
      */
     public Math() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -43,7 +43,7 @@ public class Math extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "abs" -> {
                 assert paramVars.size() == 1;

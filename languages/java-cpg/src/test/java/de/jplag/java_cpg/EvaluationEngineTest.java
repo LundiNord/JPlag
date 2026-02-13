@@ -600,7 +600,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm334";
+        String fileName = "kit_DONT_COMMIT/BoardGame/insert/insert-plag-subm177";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -657,7 +657,7 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>();
-                // throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -715,7 +715,7 @@ class EvaluationEngineTest {
 
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
         // i=i.proximo())
-        String fileName = "progpedia/00000039/ACCEPTED/00233_00005/Ex6.java";
+        String fileName = "progpedia/00000018/ACCEPTED/00032_00002";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

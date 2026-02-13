@@ -31,7 +31,7 @@ public class System extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.System class.
      */
     public System() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -44,7 +44,7 @@ public class System extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "lineSeparator" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -72,7 +72,7 @@ public class System extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value accessField(@NotNull java.lang.String fieldName) {
+    public Value accessField(@NotNull java.lang.String fieldName, @NotNull Type expectedType) {
         switch (fieldName) {
             case "out", "err" -> {
                 return new PrintStream();

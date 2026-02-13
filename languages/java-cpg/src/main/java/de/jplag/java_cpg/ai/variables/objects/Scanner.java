@@ -29,7 +29,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
      * Creates a new Scanner object representation.
      */
     public Scanner() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -42,7 +42,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "nextLine", "next" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -79,7 +79,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value accessField(@NotNull java.lang.String fieldName) {
+    public Value accessField(@NotNull java.lang.String fieldName, @NotNull Type expectedType) {
         switch (fieldName) {
             default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported in Scanner.");
         }

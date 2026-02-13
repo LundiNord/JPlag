@@ -12,7 +12,6 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
 /**
  * Representation of the java.util.HashMap class.
@@ -29,7 +28,7 @@ public class HashMap extends JavaObject implements ISpecialObject {
      * Representation of the java.util.HashMap class.
      */
     public HashMap() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -42,20 +41,20 @@ public class HashMap extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         // ToDo: not yet implemented
         switch (methodName) {
             case "put" -> {
                 assert paramVars.size() == 2;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "get" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "containsKey" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "size" -> {
                 assert paramVars == null || paramVars.size() == 0;
@@ -63,19 +62,19 @@ public class HashMap extends JavaObject implements ISpecialObject {
             }
             case "remove" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "putAll" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "clear" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "keySet" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "clone" -> {
                 assert paramVars == null || paramVars.size() == 0;
@@ -83,30 +82,31 @@ public class HashMap extends JavaObject implements ISpecialObject {
             }
             case "entrySet" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "getOrDefault" -> {
                 assert paramVars.size() == 2;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "replace" -> {
                 assert paramVars.size() == 2 || paramVars.size() == 3;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "replaceAll" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "putIfAbsent" -> {
                 assert paramVars.size() == 2;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "isEmpty" -> {
                 assert paramVars == null || paramVars.size() == 0;
+                assert expectedType == Type.BOOLEAN || expectedType == Type.UNKNOWN;
                 return Value.valueFactory(Type.BOOLEAN);
             }
             default -> {
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
         }
     }

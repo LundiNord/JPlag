@@ -29,7 +29,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
      * Representation of the java.util.regex.Pattern class.
      */
     public Pattern() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -42,7 +42,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "matches", "find" -> {
                 return new BooleanValue();

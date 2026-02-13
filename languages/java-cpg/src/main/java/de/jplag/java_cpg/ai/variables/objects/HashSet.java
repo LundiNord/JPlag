@@ -7,9 +7,11 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
@@ -29,7 +31,7 @@ public class HashSet extends JavaObject implements ISpecialObject, IJavaArray {
      * Representation of the java.util.HashMap class.
      */
     public HashSet() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -42,24 +44,24 @@ public class HashSet extends JavaObject implements ISpecialObject, IJavaArray {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         // ToDo: not yet implemented
         switch (methodName) {
             case "add" -> {
                 assert paramVars.size() == 1 : "add expects 1 parameter";
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "remove" -> {
                 assert paramVars.size() == 1 : "remove expects 1 parameter";
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "contains" -> {
                 assert paramVars.size() == 1 : "contains expects 1 parameter";
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "size" -> {
                 assert paramVars == null || paramVars.isEmpty() : "size expects 0 parameters";
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

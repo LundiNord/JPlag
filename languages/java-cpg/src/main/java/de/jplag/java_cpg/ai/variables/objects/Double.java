@@ -31,7 +31,7 @@ public class Double extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Double class.
      */
     public Double() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -44,14 +44,14 @@ public class Double extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "parseDouble", "valueOf" -> {
                 assert paramVars.size() == 1;
                 IValue value = paramVars.getFirst();
                 switch (value) {
                     case IStringValue str -> {
-                        return str.callMethod("parseDouble", paramVars, null);
+                        return str.callMethod("parseDouble", paramVars, null, expectedType);
                     }
                     case INumberValue num -> {
                         if (num.getInformation()) {

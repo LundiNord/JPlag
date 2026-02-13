@@ -30,6 +30,7 @@ import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeResolver;
 import de.jplag.ParsingException;
 import de.jplag.Token;
+import de.jplag.java_cpg.ai.AiMethodPass;
 import de.jplag.java_cpg.ai.AiPass;
 import de.jplag.java_cpg.passes.AstTransformationPass;
 import de.jplag.java_cpg.passes.CpgTransformationPass;
@@ -53,6 +54,10 @@ public class CpgAdapter {
     private final boolean detectDeadCode;
     private List<Token> tokenList;
     private boolean reorderingEnabled = true;
+    /**
+     * Sets if only methods are analyzed instead of the whole program.
+     */
+    private boolean methodAnalysisMode = true;
 
     /**
      * Constructs a new CpgAdapter.
@@ -131,6 +136,7 @@ public class CpgAdapter {
         TranslationResult translationResult;
         TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
         AiPass.AiPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
+        AiMethodPass.AiMethodPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
         DfgSortPass.DfgSortPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeSimpleDeadCode);
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
@@ -140,19 +146,18 @@ public class CpgAdapter {
                     JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class, ImportResolver.class, SymbolResolver.class,
                     PrepareTransformationPass.class, FixAstPass.class, DynamicInvokeResolver.class, FilenameMapper.class, ReplaceCallCastPass.class,
                     AstTransformationPass.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class,
-                    DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
-
-            // ImportResolver.class, SymbolResolver.class, PrepareTransformationPass.class, FixAstPass.class,
-            // DynamicInvokeResolver.class,
-            // FilenameMapper.class, AstTransformationPass.class, EvaluationOrderGraphPass.class, // creates
-            // // EOG
-            // DfgSortPass.class, CpgTransformationPass.class, AiPass.class, TokenizationPass.class));
-
+                    DfgSortPass.class, CpgTransformationPass.class, TokenizationPass.class));
+            if (methodAnalysisMode) {
+                passClasses.add(AiMethodPass.class);
+            } else {
+                passClasses.add(AiPass.class);
+            }
             if (!reorderingEnabled) {
                 passClasses.remove(DfgSortPass.class);
             }
             if (!detectDeadCode && !removeDeadCode) {
                 passClasses.remove(AiPass.class);
+                passClasses.remove(AiMethodPass.class);
             }
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));

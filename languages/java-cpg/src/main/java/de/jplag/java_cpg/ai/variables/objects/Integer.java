@@ -31,7 +31,7 @@ public class Integer extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Integer class.
      */
     public Integer() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -44,14 +44,14 @@ public class Integer extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "parseInt", "valueOf" -> {
                 assert paramVars.size() == 1;
                 IValue value = paramVars.getFirst();
                 switch (value) {
                     case IStringValue str -> {
-                        return str.callMethod("parseInt", paramVars, null);
+                        return str.callMethod("parseInt", paramVars, null, expectedType);
                     }
                     case VoidValue _ -> {
                         return Value.valueFactory(Type.INT);

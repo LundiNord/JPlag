@@ -7,6 +7,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -29,7 +30,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
      * Representation of the static java.util.Arrays class.
      */
     public Arrays() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -42,17 +43,17 @@ public class Arrays extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "toString" -> {
                 assert paramVars.size() == 1;
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
-                return array.callMethod("toString", List.of(), null);
+                return array.callMethod("toString", List.of(), null, expectedType);
             }
             case "fill" -> {        // void fill(int[] a, int val) or void fill(int[] a, int fromIndex, int toIndex, int val)
                 assert paramVars.size() == 2 || paramVars.size() == 4;
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
-                return array.callMethod("fill", paramVars.subList(1, paramVars.size()), null);
+                return array.callMethod("fill", paramVars.subList(1, paramVars.size()), null, expectedType);
             }
             case "sort" -> {        // void sort(int[] a) or void sort(int[] a, int fromIndex, int toIndex)
                 assert paramVars.size() == 1 || paramVars.size() == 3 || paramVars.size() == 2;
@@ -60,12 +61,12 @@ public class Arrays extends JavaObject implements ISpecialObject {
                     paramVars.set(0, Value.getNewArayValue());
                 }
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
-                return array.callMethod("sort", paramVars.subList(1, paramVars.size()), null);
+                return array.callMethod("sort", paramVars.subList(1, paramVars.size()), null, expectedType);
             }
             case "copyOfRange" -> { // int[] copyOfRange(int[] original, int from, int to)
                 assert paramVars.size() == 3;
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
-                return array.callMethod("copyOfRange", paramVars.subList(1, paramVars.size()), null);
+                return array.callMethod("copyOfRange", paramVars.subList(1, paramVars.size()), null, expectedType);
             }
             case "asList" -> {      // <T> List<T> asList(T... a)
                 return Value.getNewArayValue(paramVars);
@@ -76,7 +77,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
                     paramVars.set(0, Value.getNewArayValue());
                 }
                 IJavaArray array = (IJavaArray) paramVars.getFirst();
-                return array.callMethod(methodName, List.of(), null);
+                return array.callMethod(methodName, List.of(), null, expectedType);
             }
             case "copyOf" -> {
                 assert paramVars.size() == 2 || paramVars.size() == 3;

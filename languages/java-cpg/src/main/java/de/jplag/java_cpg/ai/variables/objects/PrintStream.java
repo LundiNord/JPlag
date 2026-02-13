@@ -7,6 +7,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -27,7 +28,7 @@ public class PrintStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.PrintStream class.
      */
     public PrintStream() {
-        super();
+        super(Type.OBJECT);
     }
 
     /**
@@ -40,7 +41,7 @@ public class PrintStream extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "println", "print", "printf" -> {
                 // do nothing

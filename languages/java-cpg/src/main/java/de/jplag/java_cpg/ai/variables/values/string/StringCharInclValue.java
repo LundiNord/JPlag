@@ -85,7 +85,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -138,13 +138,13 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
                 return Value.valueFactory(Type.CHAR);
             }
             default -> {
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
         }
     }
 
     @Override
-    public Value accessField(@NotNull String fieldName) {
+    public Value accessField(@NotNull String fieldName, @NotNull Type expectedType) {
         throw new UnsupportedOperationException("Access field not supported in StringValue");
     }
 

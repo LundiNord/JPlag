@@ -265,7 +265,8 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
             this.setToUnknown();
             return;
         }
-        if (other instanceof IFloatNumber floatNumber) {    // can happen because some casts are not explicit in eog
+        if (other instanceof IFloatNumber floatNumber && !(this instanceof IFloatNumber)) {    // can happen because some casts are not explicit in
+                                                                                               // eog
             if (floatNumber.getInformation()) {
                 int value = (int) floatNumber.getValue();
                 TreeSet<I> newValues = new TreeSet<>();

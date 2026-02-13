@@ -292,7 +292,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
             return;
         }
         if (other instanceof JavaObject javaObject) {   // could be an Integer object
-            if (javaObject.accessField("value") instanceof IntValue intValue) {
+            if (javaObject.accessField("value", Type.UNKNOWN) instanceof IntValue intValue) {
                 other = intValue;
             } else {
                 this.information = false;
