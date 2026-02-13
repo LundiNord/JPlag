@@ -31,7 +31,7 @@ public class Integer extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Integer class.
      */
     public Integer() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -54,7 +54,7 @@ public class Integer extends JavaObject implements ISpecialObject {
                         return str.callMethod("parseInt", paramVars, null, expectedType);
                     }
                     case VoidValue _ -> {
-                        return Value.valueFactory(Type.INT);
+                        return Value.valueFactory(new Type(Type.TypeEnum.INT));
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
@@ -67,11 +67,11 @@ public class Integer extends JavaObject implements ISpecialObject {
                         if (intValue.getInformation()) {
                             return Value.valueFactory(java.lang.Double.toString(intValue.getValue()));
                         } else {
-                            return Value.valueFactory(Type.STRING);
+                            return Value.valueFactory(new Type(Type.TypeEnum.STRING));
                         }
                     }
                     case VoidValue _ -> {
-                        return Value.valueFactory(Type.STRING);
+                        return Value.valueFactory(new Type(Type.TypeEnum.STRING));
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }

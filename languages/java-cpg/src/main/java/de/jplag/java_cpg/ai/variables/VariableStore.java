@@ -73,7 +73,7 @@ public class VariableStore {
         Variable variable = getVariable(thisObject);
         if (variable == null) {     // does not exist yet -> create it
             assert thisObject == ANONYMOUS_THIS_NAME;
-            Variable thisClassVar = new Variable(thisObject, new JavaObject(Type.OBJECT));
+            Variable thisClassVar = new Variable(thisObject, new JavaObject(new Type(Type.TypeEnum.OBJECT)));
             for (ChangeRecorder recorder : changeRecorders) {
                 thisClassVar.addChangeRecorder(recorder);
             }

@@ -23,7 +23,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
      * a IntValue with no information.
      */
     public FloatValue() {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         information = false;
     }
 
@@ -32,7 +32,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
      * @param value the float value.
      */
     public FloatValue(double value) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         this.value = value;
         information = true;
     }
@@ -43,7 +43,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
      * @param upperBound the upper bound of the range.
      */
     public FloatValue(double lowerBound, double upperBound) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         assert lowerBound <= upperBound;
         if (lowerBound == upperBound) {
             this.value = lowerBound;
@@ -58,7 +58,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
      * @param values the set of possible float values.
      */
     public FloatValue(@NotNull Set<Double> values) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         if (values.size() == 1) {
             this.value = values.iterator().next();
             this.information = true;
@@ -68,7 +68,7 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
     }
 
     private FloatValue(double value, boolean information) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         this.value = value;
         this.information = information;
     }

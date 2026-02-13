@@ -31,7 +31,7 @@ public class System extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.System class.
      */
     public System() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -54,7 +54,7 @@ public class System extends JavaObject implements ISpecialObject {
 
             case "currentTimeMillis" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "arraycopy" -> {   // void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)
                 IJavaArray srcArray = (IJavaArray) paramVars.getFirst();
@@ -65,7 +65,7 @@ public class System extends JavaObject implements ISpecialObject {
             }
             case "getProperty" -> {
                 assert paramVars.size() == 1;
-                return Value.valueFactory(Type.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in " + PATH + "." + NAME);
         }

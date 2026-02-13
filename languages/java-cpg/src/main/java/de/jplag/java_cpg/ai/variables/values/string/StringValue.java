@@ -35,7 +35,7 @@ public class StringValue extends JavaObject implements IStringValue {
      * A string value with no information.
      */
     public StringValue() {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         information = false;
     }
 
@@ -44,13 +44,13 @@ public class StringValue extends JavaObject implements IStringValue {
      * @param value the string value
      */
     public StringValue(String value) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         this.value = value;
         information = true;
     }
 
     private StringValue(String value, boolean information) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         this.value = value;
         this.information = information;
     }
@@ -63,7 +63,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (information) {
                     return Value.valueFactory(value.length());
                 } else {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
             }
             case "parseInt" -> {
@@ -72,7 +72,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (str.getInformation()) {
                     return Value.valueFactory(Integer.parseInt(str.getValue()));
                 } else {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
             }
             case "parseDouble" -> {
@@ -81,7 +81,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (str.getInformation()) {
                     return Value.valueFactory(Double.parseDouble(str.getValue()));
                 } else {
-                    return Value.valueFactory(Type.FLOAT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                 }
             }
             case "startsWith" -> {
@@ -90,29 +90,29 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (information && prefix.getInformation()) {
                     return Value.valueFactory(value.startsWith(prefix.getValue()));
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "equals" -> {
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                    paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.STRING)));
                 }
                 StringValue other = (StringValue) paramVars.getFirst();
                 if (information && other.getInformation()) {
                     return Value.valueFactory(value.equals(other.getValue()));
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "split" -> {   // public String[] split(String regex)
                 assert paramVars.size() == 1 || paramVars.size() == 2;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                    paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.STRING)));
                 }
                 StringValue regexValue = (StringValue) paramVars.getFirst();
                 if (!information || !regexValue.getInformation()) {
-                    return Value.getNewArayValue(Type.STRING);
+                    return Value.getNewArayValue(new Type(Type.TypeEnum.STRING));
                 }
                 assert regexValue.getValue() != null && value != null;
                 String[] parts;
@@ -121,11 +121,11 @@ public class StringValue extends JavaObject implements IStringValue {
                 } else {
                     INumberValue limitValue = (INumberValue) paramVars.get(1);
                     if (!limitValue.getInformation()) {
-                        return Value.getNewArayValue(Type.STRING);
+                        return Value.getNewArayValue(new Type(Type.TypeEnum.STRING));
                     }
                     parts = value.split(regexValue.getValue(), (int) limitValue.getValue());
                 }
-                IJavaArray array = Value.getNewArayValue(Type.STRING);
+                IJavaArray array = Value.getNewArayValue(new Type(Type.TypeEnum.STRING));
                 for (int i = 0; i < parts.length; i++) {
                     array.arrayAssign((INumberValue) Value.valueFactory(i), new StringValue(parts[i]));
                 }
@@ -135,7 +135,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 assert paramVars.size() == 1;
                 INumberValue indexValue = (INumberValue) paramVars.getFirst();
                 if (!information || !indexValue.getInformation()) {
-                    return Value.valueFactory(Type.CHAR);
+                    return Value.valueFactory(new Type(Type.TypeEnum.CHAR));
                 }
                 assert value != null;
                 double index = indexValue.getValue();
@@ -147,11 +147,11 @@ public class StringValue extends JavaObject implements IStringValue {
             case "toCharArray" -> {   // public char[] toCharArray()
                 assert paramVars == null || paramVars.isEmpty();
                 if (!information) {
-                    return Value.getNewArayValue(Type.CHAR);
+                    return Value.getNewArayValue(new Type(Type.TypeEnum.CHAR));
                 }
                 assert value != null;
                 char[] chars = value.toCharArray();
-                IJavaArray array = Value.getNewArayValue(Type.CHAR);
+                IJavaArray array = Value.getNewArayValue(new Type(Type.TypeEnum.CHAR));
                 for (int i = 0; i < chars.length; i++) {
                     array.arrayAssign((INumberValue) Value.valueFactory(i), Value.valueFactory(chars[i]));
                 }
@@ -160,7 +160,7 @@ public class StringValue extends JavaObject implements IStringValue {
             case "concat" -> {   // public String concat(String str)
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                    paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.STRING)));
                 }
                 StringValue str = (StringValue) paramVars.getFirst();
                 if (information && str.getInformation()) {
@@ -205,19 +205,19 @@ public class StringValue extends JavaObject implements IStringValue {
             case "matches" -> {   // public boolean matches(String regex)
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                    paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.STRING)));
                 }
                 StringValue regexValue = (StringValue) paramVars.getFirst();
                 if (information && regexValue.getInformation()) {
                     return Value.valueFactory(this.value.matches(Objects.requireNonNull(regexValue.getValue())));
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "repeat" -> {   // public String repeat(int count)
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                    paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.STRING)));
                 }
                 INumberValue countValue = (INumberValue) paramVars.getFirst();
                 if (information && countValue.getInformation()) {
@@ -250,7 +250,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (information && other.getInformation()) {
                     return Value.valueFactory(this.value.equalsIgnoreCase(other.getValue()));
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "replace" -> {   // public String replace(CharSequence target, CharSequence replacement)
@@ -271,13 +271,13 @@ public class StringValue extends JavaObject implements IStringValue {
             case "contains" -> {   // public boolean contains(CharSequence s)
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    paramVars.set(0, Value.valueFactory(Type.STRING));
+                    paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.STRING)));
                 }
                 StringValue s = (StringValue) paramVars.getFirst();
                 if (information && s.getInformation()) {
                     return Value.valueFactory(this.value.contains(Objects.requireNonNull(s.getValue())));
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "isBlank" -> {   // public boolean isBlank()
@@ -285,7 +285,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (information) {
                     return Value.valueFactory(this.value.isBlank());
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "isEmpty" -> {   // public boolean isEmpty()
@@ -293,7 +293,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (information) {
                     return Value.valueFactory(this.value.isEmpty());
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "indexOf" -> {   // public int indexOf(String str) || public int indexOf(String str, int fromIndex)
@@ -312,7 +312,7 @@ public class StringValue extends JavaObject implements IStringValue {
                     }
                     return Value.valueFactory(this.value.indexOf(Objects.requireNonNull(str.getValue()), fromIndex));
                 } else {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
             }
             case "endsWith" -> {   // public boolean endsWith(String suffix)
@@ -321,7 +321,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (information && suffix.getInformation()) {
                     return Value.valueFactory(this.value.endsWith(Objects.requireNonNull(suffix.getValue())));
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "valueOf" -> {   // public static String valueOf(Object obj)
@@ -338,7 +338,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 if (information && cs.getInformation()) {
                     return Value.valueFactory(this.value.contentEquals(Objects.requireNonNull(cs.getValue())));
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             default -> {
@@ -385,23 +385,23 @@ public class StringValue extends JavaObject implements IStringValue {
             if (information) {
                 return Value.valueFactory(this.value == null);
             } else {
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
         } else if (operator.equals("!=") && other instanceof NullValue) {
             if (information) {
                 return Value.valueFactory(this.value != null);
             } else {
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
         } else if (operator.equals("==") && other instanceof IStringValue otherString) {
             if (information && otherString.getInformation()) {
                 return Value.valueFactory(java.util.Objects.equals(this.value, otherString.getValue()));
             } else {
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
         } else if (operator.equals("+") && other instanceof IJavaObject javaObject) {
             // case: JavaObject with toString method
-            IValue toStringResult = javaObject.callMethod("toString", List.of(), null, Type.STRING);
+            IValue toStringResult = javaObject.callMethod("toString", List.of(), null, new Type(Type.TypeEnum.STRING));
             if (toStringResult instanceof IStringValue otherStringFromObject && information && otherStringFromObject.getInformation()) {
                 return new StringValue(this.value + otherStringFromObject.getValue());
             }

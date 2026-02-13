@@ -28,7 +28,7 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.StringBuilder class.
      */
     public StringBuilder() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -49,11 +49,11 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
             }
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "toString" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
             case "deleteCharAt" -> {
                 assert paramVars.size() == 1;
@@ -65,7 +65,7 @@ public class StringBuilder extends JavaObject implements ISpecialObject {
             }
             case "substring" -> {
                 assert paramVars.size() == 1 || paramVars.size() == 2;
-                return Value.valueFactory(Type.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
             default -> {
                 return Value.valueFactory(expectedType);

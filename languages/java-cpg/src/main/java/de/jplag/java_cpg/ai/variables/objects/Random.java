@@ -28,7 +28,7 @@ public class Random extends JavaObject implements ISpecialObject {
      * Representation of the java.util.Random class.
      */
     public Random() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -45,7 +45,7 @@ public class Random extends JavaObject implements ISpecialObject {
         switch (methodName) {
             case "nextInt" -> {
                 if (paramVars == null || paramVars.isEmpty()) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
                 assert paramVars.size() == 1;
                 return Value.valueFactory(Value.valueFactory(0), paramVars.getFirst());

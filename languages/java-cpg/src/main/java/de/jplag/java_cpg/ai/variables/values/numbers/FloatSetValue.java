@@ -22,12 +22,12 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implem
      * Default constructor c Float value represented as a set of intervals with no information.
      */
     public FloatSetValue() {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         values.add(new DoubleInterval());
     }
 
     private FloatSetValue(TreeSet<DoubleInterval> values) {
-        super(Type.FLOAT, values);
+        super(new Type(Type.TypeEnum.FLOAT), values);
     }
 
     /**
@@ -35,7 +35,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implem
      * @param number the single float number
      */
     public FloatSetValue(double number) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         values.add(new DoubleInterval(number));
     }
 
@@ -44,7 +44,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implem
      * @param possibleNumbers the possible float numbers
      */
     public FloatSetValue(@NotNull Set<Double> possibleNumbers) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values = new TreeSet<>();
         // ToDo: slice into intervals
         values.add(new DoubleInterval());
@@ -56,7 +56,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implem
      * @param upperBound the upper bound of the range
      */
     public FloatSetValue(double lowerBound, double upperBound) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values.add(new DoubleInterval(lowerBound, upperBound));
     }
 

@@ -106,7 +106,7 @@ public abstract class Value implements IValue {
      */
     @NotNull
     public static IValue valueFactory(@NotNull Type type) {
-        return switch (type) {
+        return switch (type.getTypeEnum()) {
             case INT -> getNewIntValue();
             case STRING -> getNewStringValue();
             case BOOLEAN -> new BooleanValue();
@@ -135,7 +135,7 @@ public abstract class Value implements IValue {
     @NotNull
     public static IValue valueFactory(@Nullable Object value) {
         if (value == null) {
-            IJavaObject obj = new JavaObject(Type.OBJECT);
+            IJavaObject obj = new JavaObject(new Type(Type.TypeEnum.OBJECT));
             obj.setInitialValue();
             return obj;
         }
@@ -361,7 +361,7 @@ public abstract class Value implements IValue {
     @NotNull
     public static IJavaArray getNewArayValue(Type innerType) {
         if (innerType == null) {
-            innerType = Type.UNKNOWN;
+            innerType = new Type(Type.TypeEnum.UNKNOWN);
         }
         return switch (usedArrayAiType) {
             case DEFAULT -> new JavaArray(innerType);

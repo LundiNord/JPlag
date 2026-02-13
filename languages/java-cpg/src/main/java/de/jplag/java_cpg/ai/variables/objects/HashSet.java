@@ -31,7 +31,7 @@ public class HashSet extends JavaObject implements ISpecialObject, IJavaArray {
      * Representation of the java.util.HashMap class.
      */
     public HashSet() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**

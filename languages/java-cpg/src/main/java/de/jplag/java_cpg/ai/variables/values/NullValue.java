@@ -15,7 +15,7 @@ public class NullValue extends Value {
      * Constructs a new NullValue.
      */
     public NullValue() {
-        super(Type.NULL);
+        super(new Type(Type.TypeEnum.NULL));
     }
 
     @Override

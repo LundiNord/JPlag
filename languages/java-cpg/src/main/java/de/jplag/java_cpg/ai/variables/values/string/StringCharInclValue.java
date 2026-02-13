@@ -41,7 +41,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
      * A string value with no information.
      */
     public StringCharInclValue() {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         certainContained = new HashSet<>();
         maybeContained = allCharactersSet();
     }
@@ -51,7 +51,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
      * @param value the string value.
      */
     public StringCharInclValue(@Nullable String value) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         maybeContained = new HashSet<>();
         if (value == null) {
             certainContained = null;
@@ -68,7 +68,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
      * @param possibleValues the set of possible string values.
      */
     public StringCharInclValue(@NotNull Set<String> possibleValues) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         certainContained = new HashSet<>();
         maybeContained = new HashSet<>();
         for (String value : possibleValues) {
@@ -79,7 +79,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     }
 
     private StringCharInclValue(@Nullable Set<Character> certainContained, Set<Character> maybeContained) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         this.certainContained = certainContained;
         this.maybeContained = maybeContained;
     }
@@ -89,22 +89,22 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "parseInt" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof IStringValue;
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "parseDouble" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof IStringValue;
-                return Value.valueFactory(Type.FLOAT);
+                return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
             }
             case "startsWith" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof IStringValue;
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             case "equals" -> {
                 assert paramVars.size() == 1;
@@ -116,7 +116,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
                         && other.maybeContained.isEmpty()) {
                     return Value.valueFactory(false);
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "toUpperCase" -> {
@@ -135,7 +135,7 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             case "charAt" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof INumberValue;
-                return Value.valueFactory(Type.CHAR);
+                return Value.valueFactory(new Type(Type.TypeEnum.CHAR));
             }
             default -> {
                 return Value.valueFactory(expectedType);

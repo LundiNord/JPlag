@@ -30,7 +30,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
      * Representation of the static java.util.Arrays class.
      */
     public Arrays() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**

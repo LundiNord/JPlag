@@ -28,7 +28,7 @@ public class PrintStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.PrintStream class.
      */
     public PrintStream() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**

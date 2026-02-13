@@ -39,11 +39,12 @@ class DeadCodeDetectionStringTest {
         final AbstractInterpretation interpretation = interpretFromResource("java/ai/string");
         JavaObject main = getMainObject(interpretation);
         assertEquals(new HashSet<>(Set.of(' ', '!', 'D', 'e', 'H', 'h', 'J', 'l', ',', 'n', 'o')),
-                ((StringCharInclValue) main.accessField("result", Type.STRING)).getCertainContained());
-        assertEquals(new HashSet<>(Set.of()), ((StringCharInclValue) main.accessField("result", Type.STRING)).getMaybeContained());
+                ((StringCharInclValue) main.accessField("result", new Type(Type.TypeEnum.STRING))).getCertainContained());
+        assertEquals(new HashSet<>(Set.of()), ((StringCharInclValue) main.accessField("result", new Type(Type.TypeEnum.STRING))).getMaybeContained());
         assertEquals(new HashSet<>(Set.of('J', 'O', 'H', 'N', ' ', 'D', 'E')),
-                ((StringCharInclValue) main.accessField("result2", Type.STRING)).getCertainContained());
-        assertEquals(new HashSet<>(Set.of()), ((StringCharInclValue) main.accessField("result2", Type.STRING)).getMaybeContained());
+                ((StringCharInclValue) main.accessField("result2", new Type(Type.TypeEnum.STRING))).getCertainContained());
+        assertEquals(new HashSet<>(Set.of()),
+                ((StringCharInclValue) main.accessField("result2", new Type(Type.TypeEnum.STRING))).getMaybeContained());
     }
 
     /**
@@ -60,12 +61,12 @@ class DeadCodeDetectionStringTest {
                 new ArrayList<>(List.of(new RegexChar('H'), new RegexChar('e'), new RegexChar('l'), new RegexChar('l'), new RegexChar('o'),
                         new RegexChar(','), new RegexChar(' '), new RegexChar('J'), new RegexChar('o'), new RegexChar('h'), new RegexChar('n'),
                         new RegexChar(' '), new RegexChar('D'), new RegexChar('o'), new RegexChar('e'), new RegexChar('!'))),
-                ((StringRegexValue) main.accessField("result", Type.STRING)).getContentRegex());
+                ((StringRegexValue) main.accessField("result", new Type(Type.TypeEnum.STRING))).getContentRegex());
 
         assertEquals(
                 new ArrayList<>(List.of(new RegexChar('J'), new RegexChar('O'), new RegexChar('H'), new RegexChar('N'), new RegexChar(' '),
                         new RegexChar('D'), new RegexChar('O'), new RegexChar('E'))),
-                ((StringRegexValue) main.accessField("result2", Type.STRING)).getContentRegex());
+                ((StringRegexValue) main.accessField("result2", new Type(Type.TypeEnum.STRING))).getContentRegex());
     }
 
     @Test

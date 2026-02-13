@@ -29,7 +29,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
      * Representation of the java.util.regex.Pattern class.
      */
     public Pattern() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -52,7 +52,7 @@ public class Pattern extends JavaObject implements ISpecialObject {
                 return new Pattern();
             }
             case "toString" -> {
-                return Value.valueFactory(Type.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
             default -> throw new UnsupportedOperationException(methodName);
         }

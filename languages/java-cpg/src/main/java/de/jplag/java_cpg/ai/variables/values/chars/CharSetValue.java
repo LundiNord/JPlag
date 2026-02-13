@@ -28,7 +28,7 @@ public class CharSetValue extends Value implements ICharValue {
      * an unknown char value.
      */
     public CharSetValue() {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = false;
     }
 
@@ -37,7 +37,7 @@ public class CharSetValue extends Value implements ICharValue {
      * @param character the known character
      */
     public CharSetValue(char character) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = true;
         this.maybeContained = new HashSet<>();
         this.maybeContained.add(character);
@@ -48,7 +48,7 @@ public class CharSetValue extends Value implements ICharValue {
      * @param characters the possible characters
      */
     public CharSetValue(@NotNull Set<Character> characters) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = true;
         this.maybeContained = characters;
     }
@@ -57,7 +57,7 @@ public class CharSetValue extends Value implements ICharValue {
      * Copy constructor.
      */
     private CharSetValue(Set<Character> maybeContained, boolean information) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.maybeContained = maybeContained;
         this.information = information;
     }
@@ -111,7 +111,7 @@ public class CharSetValue extends Value implements ICharValue {
                 if (other instanceof IIntNumber || other instanceof IFloatNumber) {
                     return new CharSetValue();
                 } else if (other instanceof IStringValue) {
-                    return Value.valueFactory(Type.STRING);
+                    return Value.valueFactory(new Type(Type.TypeEnum.STRING));
                 }
                 CharSetValue otherCharValue = (CharSetValue) other;
                 if (this.information && otherCharValue.information) {

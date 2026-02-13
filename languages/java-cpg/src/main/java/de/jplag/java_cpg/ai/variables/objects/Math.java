@@ -30,7 +30,7 @@ public class Math extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Math class.
      */
     public Math() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -88,31 +88,31 @@ public class Math extends JavaObject implements ISpecialObject {
             case "sin" -> {
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    return Value.valueFactory(Type.FLOAT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                 }
                 assert paramVars.getFirst() instanceof INumberValue;
                 return paramVars.getFirst().unaryOperation("sin");
             }
             case "random" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.FLOAT);
+                return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
             }
             case "ceil" -> {
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    return Value.valueFactory(Type.FLOAT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                 }
                 assert paramVars.getFirst() instanceof INumberValue;
                 return paramVars.getFirst().unaryOperation("ceil");
             }
             case "floorMod" -> {
                 assert paramVars.size() == 2;
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "floor" -> {
                 assert paramVars.size() == 1;
                 if (paramVars.getFirst() instanceof VoidValue) {
-                    return Value.valueFactory(Type.FLOAT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                 }
                 assert paramVars.getFirst() instanceof INumberValue;
                 return paramVars.getFirst().unaryOperation("floor");

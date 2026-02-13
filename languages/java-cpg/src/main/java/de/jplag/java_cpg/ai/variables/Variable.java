@@ -1,7 +1,5 @@
 package de.jplag.java_cpg.ai.variables;
 
-import static de.jplag.java_cpg.ai.variables.Type.OBJECT;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -133,11 +131,11 @@ public class Variable {
         assert other.name.equals(this.name);
         if (this.value instanceof NullValue && !(other.value instanceof NullValue)) {
             if (other.value instanceof IStringValue) {
-                this.value = Value.valueFactory(Type.STRING);
+                this.value = Value.valueFactory(new Type(Type.TypeEnum.STRING));
             } else if (other.value instanceof IJavaArray) {
-                this.value = Value.valueFactory(Type.ARRAY);
+                this.value = Value.valueFactory(new Type(Type.TypeEnum.ARRAY));
             } else if (other.value instanceof IJavaObject) {
-                this.value = Value.valueFactory(OBJECT);
+                this.value = Value.valueFactory(new Type(Type.TypeEnum.OBJECT));
             }
         }
         this.value.merge(other.value, visited);
@@ -156,7 +154,7 @@ public class Variable {
      */
     public void setToUnknown(Set<IJavaObject> visited) {
         if (getValue() instanceof NullValue) {
-            setValue(Value.valueFactory(OBJECT));
+            setValue(Value.valueFactory(new Type(Type.TypeEnum.OBJECT)));
         } else {
             value.setToUnknown(visited);
         }

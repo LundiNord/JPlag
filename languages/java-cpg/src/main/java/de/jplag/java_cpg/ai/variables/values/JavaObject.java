@@ -30,26 +30,12 @@ public class JavaObject extends Value implements IJavaObject {
     private Scope fields;       // fields == null => object null
     @Nullable
     private AbstractInterpretation abstractInterpretation;  // the abstract interpretation engine for this object
-    private final @NotNull Type type;
 
     private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation, @NotNull Type type) {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
         this.fields = fields;
         this.abstractInterpretation = abstractInterpretation;
-        this.type = type;
     }
-
-    // /**
-    // * Constructor for a Java object with an abstract interpretation engine and no info.
-    // * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
-    // */
-    // public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
-    // super(Type.OBJECT);
-    // this.fields = new Scope();
-    // this.abstractInterpretation = abstractInterpretation;
-    // abstractInterpretation.setRelatedObject(this);
-    // throw new RuntimeException();
-    // }
 
     /**
      * Constructor for a Java object with an abstract interpretation engine and no info.
@@ -57,21 +43,11 @@ public class JavaObject extends Value implements IJavaObject {
      * @param type the type of the object; used for type checking.
      */
     public JavaObject(@NotNull AbstractInterpretation abstractInterpretation, @NotNull Type type) {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
         this.fields = new Scope();
         this.abstractInterpretation = abstractInterpretation;
-        this.type = type;
         abstractInterpretation.setRelatedObject(this);
     }
-
-    // /**
-    // * Default constructor for a Java object with no abstract interpretation engine and no info.
-    // */
-    // public JavaObject() {
-    // super(Type.OBJECT);
-    // this.fields = new Scope();
-    // throw new RuntimeException();
-    // }
 
     /**
      * Internal constructor for special classes like arrays.
@@ -79,7 +55,6 @@ public class JavaObject extends Value implements IJavaObject {
      */
     public JavaObject(@NotNull Type type) {
         super(type);
-        this.type = type;
         this.fields = new Scope();
     }
 
@@ -184,7 +159,7 @@ public class JavaObject extends Value implements IJavaObject {
             case "+" -> {
                 if (other instanceof IStringValue stringValue) {
                     // case: JavaObject with toString method
-                    IValue toStringResult = this.callMethod("toString", List.of(), null, Type.STRING);
+                    IValue toStringResult = this.callMethod("toString", List.of(), null, new Type(Type.TypeEnum.STRING));
                     if (toStringResult instanceof IStringValue stringFromObject && stringValue.getInformation()
                             && stringFromObject.getInformation()) {
                         return Value.getNewStringValue(stringValue.getValue() + stringFromObject.getValue());
@@ -219,12 +194,12 @@ public class JavaObject extends Value implements IJavaObject {
     @NotNull
     public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
         if (fields == null) {
-            return new JavaObject(null, this.abstractInterpretation, this.type);
+            return new JavaObject(null, this.abstractInterpretation, this.getType());
         }
         if (copiedObjects.containsKey(this)) {
             return copiedObjects.get(this);
         }
-        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation, this.type);
+        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation, this.getType());
         copiedObjects.put(this, newObject);
         newObject.fields = new Scope(this.fields, copiedObjects);
         return newObject;

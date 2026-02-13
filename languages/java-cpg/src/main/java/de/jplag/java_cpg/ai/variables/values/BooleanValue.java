@@ -21,7 +21,7 @@ public class BooleanValue extends Value implements IBooleanValue {
      * Creates a BooleanValue without exact information.
      */
     public BooleanValue() {
-        super(Type.BOOLEAN);
+        super(new Type(Type.TypeEnum.BOOLEAN));
         information = false;
     }
 
@@ -30,13 +30,13 @@ public class BooleanValue extends Value implements IBooleanValue {
      * @param value the boolean value
      */
     public BooleanValue(boolean value) {
-        super(Type.BOOLEAN);
+        super(new Type(Type.TypeEnum.BOOLEAN));
         this.value = value;
         information = true;
     }
 
     private BooleanValue(boolean value, boolean information) {
-        super(Type.BOOLEAN);
+        super(new Type(Type.TypeEnum.BOOLEAN));
         this.value = value;
         this.information = information;
     }
@@ -66,7 +66,7 @@ public class BooleanValue extends Value implements IBooleanValue {
             if (this.getInformation()) {
                 return stringValue.binaryOperation(operator, other);
             } else {
-                return Value.valueFactory(Type.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
         }
         BooleanValue otherBool = (BooleanValue) other;

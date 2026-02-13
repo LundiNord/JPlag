@@ -32,8 +32,8 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result", Type.INT)).getValue());
-        assertEquals(100, ((INumberValue) main.accessField("result2", Type.INT)).getValue());
+        assertEquals(400, ((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());
+        assertEquals(100, ((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue());
     }
 
     @Test
@@ -41,8 +41,8 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.SET);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result", Type.INT)).getValue());  // z
-        assertEquals(100, ((INumberValue) main.accessField("result2", Type.INT)).getValue());
+        assertEquals(400, ((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue());
     }
 
     /**
@@ -53,8 +53,8 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result", Type.INT)).getValue());
-        assertFalse(((INumberValue) main.accessField("result2", Type.INT)).getInformation());
+        assertEquals(400, ((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());
+        assertFalse(((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getInformation());
     }
 
     /**
@@ -65,8 +65,8 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple3");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(1, ((INumberValue) main.accessField("result", Type.INT)).getValue());
-        assertEquals(2, ((INumberValue) main.accessField("result2", Type.INT)).getValue());
+        assertEquals(1, ((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());
+        assertEquals(2, ((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue());
     }
 
     /**
@@ -77,8 +77,8 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((INumberValue) main.accessField("result", Type.INT)).getValue());  // z
-        assertEquals(100, ((INumberValue) main.accessField("result2", Type.INT)).getValue()); // y
+        assertEquals(400, ((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());  // z
+        assertEquals(100, ((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
@@ -101,9 +101,9 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(500, ((INumberValue) main.accessField("result", Type.INT)).getValue()); // z
-        assertFalse(((INumberValue) main.accessField("result2", Type.INT)).getInformation());
-        assertFalse(((INumberValue) main.accessField("result3", Type.INT)).getInformation());
+        assertEquals(500, ((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue()); // z
+        assertFalse(((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getInformation());
+        assertFalse(((INumberValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getInformation());
     }
 
     /**
@@ -114,9 +114,9 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedIntAiType(IntAiType.INTERVALS);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loopx2");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(500, ((INumberValue) main.accessField("result", Type.INT)).getValue()); // z
-        assertFalse(((INumberValue) main.accessField("result2", Type.INT)).getInformation());
-        assertFalse(((INumberValue) main.accessField("result3", Type.INT)).getInformation());
+        assertEquals(500, ((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue()); // z
+        assertFalse(((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getInformation());
+        assertFalse(((INumberValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getInformation());
     }
 
     @Test
@@ -125,16 +125,16 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/interval");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result", Type.INT)).getInformation());
-        assertEquals(110, ((IntSetValue) main.accessField("result", Type.INT)).getIntervals().getFirst().getLowerBound());
-        assertEquals(210, ((IntSetValue) main.accessField("result", Type.INT)).getIntervals().getFirst().getUpperBound());
-        assertEquals(161, ((INumberValue) main.accessField("result2", Type.INT)).getValue());
-        assertFalse(((INumberValue) main.accessField("result3", Type.INT)).getInformation());
-        assertEquals(150, ((IntSetValue) main.accessField("result3", Type.INT)).getIntervals().getFirst().getLowerBound());
-        assertEquals(450, ((IntSetValue) main.accessField("result3", Type.INT)).getIntervals().getFirst().getUpperBound());
-        assertFalse(((INumberValue) main.accessField("result4", Type.INT)).getInformation());
-        assertEquals(501, ((IntSetValue) main.accessField("result4", Type.INT)).getIntervals().getFirst().getLowerBound());
-        assertEquals(2501, ((IntSetValue) main.accessField("result4", Type.INT)).getIntervals().getFirst().getUpperBound());
+        assertFalse(((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(110, ((IntSetValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound());
+        assertEquals(210, ((IntSetValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound());
+        assertEquals(161, ((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue());
+        assertFalse(((INumberValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(150, ((IntSetValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound());
+        assertEquals(450, ((IntSetValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound());
+        assertFalse(((INumberValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(501, ((IntSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound());
+        assertEquals(2501, ((IntSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound());
     }
 
     @Test
@@ -143,24 +143,26 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedFloatAiType(FloatAiType.DEFAULT);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/intervalMulti");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result", Type.INT)).getInformation());
-        assertEquals(0, ((IntSetValue) main.accessField("result", Type.INT)).getIntervals().getFirst().getLowerBound());
-        assertEquals(Integer.MAX_VALUE, ((IntSetValue) main.accessField("result", Type.INT)).getIntervals().getFirst().getUpperBound());
-        assertFalse(((INumberValue) main.accessField("result2, Type.INT", Type.INT)).getInformation());
-        assertEquals(2, ((IntSetValue) main.accessField("result2", Type.INT)).getIntervals().size());     // y
-        assertEquals(10, ((IntSetValue) main.accessField("result2", Type.INT)).getIntervals().getFirst().getLowerBound());
-        assertEquals(50, ((IntSetValue) main.accessField("result2", Type.INT)).getIntervals().getFirst().getUpperBound());
-        assertEquals(200, ((IntSetValue) main.accessField("result2", Type.INT)).getIntervals().getLast().getLowerBound());
-        assertEquals(300, ((IntSetValue) main.accessField("result2", Type.INT)).getIntervals().getLast().getUpperBound());
-        assertFalse(((INumberValue) main.accessField("result3", Type.INT)).getInformation());
-        assertEquals(11, ((IntSetValue) main.accessField("result3", Type.INT)).getIntervals().getFirst().getLowerBound());
-        assertEquals(Integer.MAX_VALUE, ((IntSetValue) main.accessField("result3", Type.INT)).getIntervals().getFirst().getUpperBound());
-        assertFalse(((INumberValue) main.accessField("result4", Type.INT)).getInformation());
-        assertEquals(2, ((IntSetValue) main.accessField("result4", Type.INT)).getIntervals().size());
-        assertEquals(20, ((IntSetValue) main.accessField("result4", Type.INT)).getIntervals().getFirst().getLowerBound());
-        assertEquals(100, ((IntSetValue) main.accessField("result4", Type.INT)).getIntervals().getFirst().getUpperBound());
-        assertEquals(400, ((IntSetValue) main.accessField("result4", Type.INT)).getIntervals().getLast().getLowerBound());
-        assertEquals(600, ((IntSetValue) main.accessField("result4", Type.INT)).getIntervals().getLast().getUpperBound());
+        assertFalse(((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(0, ((IntSetValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound());
+        assertEquals(Integer.MAX_VALUE,
+                ((IntSetValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound());
+        assertFalse(((INumberValue) main.accessField("result2, new Type(Type.TypeEnum.INT)", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(2, ((IntSetValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getIntervals().size());     // y
+        assertEquals(10, ((IntSetValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound());
+        assertEquals(50, ((IntSetValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound());
+        assertEquals(200, ((IntSetValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getIntervals().getLast().getLowerBound());
+        assertEquals(300, ((IntSetValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getIntervals().getLast().getUpperBound());
+        assertFalse(((INumberValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(11, ((IntSetValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound());
+        assertEquals(Integer.MAX_VALUE,
+                ((IntSetValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound());
+        assertFalse(((INumberValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(2, ((IntSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().size());
+        assertEquals(20, ((IntSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound());
+        assertEquals(100, ((IntSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound());
+        assertEquals(400, ((IntSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getLast().getLowerBound());
+        assertEquals(600, ((IntSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getLast().getUpperBound());
     }
 
     @Test
@@ -169,18 +171,26 @@ class DeadCodeDetectionIntervalTest {
         Value.setUsedFloatAiType(FloatAiType.SET);
         AbstractInterpretation interpretation = interpretFromResource("java/ai/intervalDouble");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((INumberValue) main.accessField("result", Type.INT)).getInformation());
-        assertEquals(60.5f, ((FloatSetValue) main.accessField("result", Type.INT)).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(110.5, ((FloatSetValue) main.accessField("result", Type.INT)).getIntervals().getFirst().getUpperBound(), 0.0001);
-        assertFalse(((INumberValue) main.accessField("result2", Type.INT)).getInformation());
-        assertEquals(20.65f, ((FloatSetValue) main.accessField("result2", Type.INT)).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(20.9f, ((FloatSetValue) main.accessField("result2", Type.INT)).getIntervals().getFirst().getUpperBound(), 0.0001);
-        assertFalse(((INumberValue) main.accessField("result3", Type.INT)).getInformation());
-        assertEquals(37.5f, ((FloatSetValue) main.accessField("result3", Type.INT)).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(112.5f, ((FloatSetValue) main.accessField("result3", Type.INT)).getIntervals().getFirst().getUpperBound(), 0.0001);
-        assertFalse(((INumberValue) main.accessField("result4", Type.INT)).getInformation());
-        assertEquals(10.3f, ((FloatSetValue) main.accessField("result4", Type.INT)).getIntervals().getFirst().getLowerBound(), 0.0001);
-        assertEquals(1010.3f, ((FloatSetValue) main.accessField("result4", Type.INT)).getIntervals().getFirst().getUpperBound(), 0.0001);
+        assertFalse(((INumberValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(60.5f, ((FloatSetValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound(),
+                0.0001);
+        assertEquals(110.5, ((FloatSetValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound(),
+                0.0001);
+        assertFalse(((INumberValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(20.65f, ((FloatSetValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound(),
+                0.0001);
+        assertEquals(20.9f, ((FloatSetValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound(),
+                0.0001);
+        assertFalse(((INumberValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(37.5f, ((FloatSetValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound(),
+                0.0001);
+        assertEquals(112.5f, ((FloatSetValue) main.accessField("result3", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound(),
+                0.0001);
+        assertFalse(((INumberValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(10.3f, ((FloatSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getLowerBound(),
+                0.0001);
+        assertEquals(1010.3f, ((FloatSetValue) main.accessField("result4", new Type(Type.TypeEnum.INT))).getIntervals().getFirst().getUpperBound(),
+                0.0001);
     }
 
 }

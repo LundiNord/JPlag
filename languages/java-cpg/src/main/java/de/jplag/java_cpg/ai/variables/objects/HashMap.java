@@ -28,7 +28,7 @@ public class HashMap extends JavaObject implements ISpecialObject {
      * Representation of the java.util.HashMap class.
      */
     public HashMap() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -58,7 +58,7 @@ public class HashMap extends JavaObject implements ISpecialObject {
             }
             case "size" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "remove" -> {
                 assert paramVars.size() == 1;
@@ -102,8 +102,8 @@ public class HashMap extends JavaObject implements ISpecialObject {
             }
             case "isEmpty" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                assert expectedType == Type.BOOLEAN || expectedType == Type.UNKNOWN;
-                return Value.valueFactory(Type.BOOLEAN);
+                assert expectedType.getTypeEnum() == Type.TypeEnum.BOOLEAN || expectedType.getTypeEnum() == Type.TypeEnum.UNKNOWN;
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             default -> {
                 return Value.valueFactory(expectedType);

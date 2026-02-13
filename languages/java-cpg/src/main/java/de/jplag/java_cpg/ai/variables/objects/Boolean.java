@@ -28,7 +28,7 @@ public class Boolean extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Boolean class.
      */
     public Boolean() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**

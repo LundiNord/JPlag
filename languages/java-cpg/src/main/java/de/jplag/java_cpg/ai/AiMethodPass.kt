@@ -42,8 +42,8 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val abstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
         abstractInterpretation.setMethodAnalysisMode()
         AbstractInterpretation.visitedNodesCounter = 0
-
-        val javaObject = JavaObject(de.jplag.java_cpg.ai.variables.Type.OBJECT)
+        val recordName: String = method.recordDeclaration?.name?.toString() ?: "Main"
+        val javaObject = JavaObject(de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT, recordName))
         abstractInterpretation.setupObject(javaObject, "this")
 
         val paramVars = ArrayList<IValue>()
@@ -51,7 +51,7 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val type: Type = paramDecl.type
             val cpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(type);
             var value: IValue
-            if (cpgType == de.jplag.java_cpg.ai.variables.Type.OBJECT) {
+            if (cpgType == de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT)) {
                 val constructExpression = ConstructExpression()
                 constructExpression.name = paramDecl.name
                 constructExpression.type = type

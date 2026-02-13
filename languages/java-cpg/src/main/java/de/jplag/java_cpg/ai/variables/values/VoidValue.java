@@ -18,7 +18,7 @@ public class VoidValue extends Value {
      * Creates a new Void typed value. Represents no value or completely unknown value.
      */
     public VoidValue() {
-        super(Type.VOID);
+        super(new Type(Type.TypeEnum.VOID));
     }
 
     @Override
@@ -29,9 +29,9 @@ public class VoidValue extends Value {
             }
             case "+", "-", "*", "/", "%" -> {
                 return switch (other) {
-                    case IIntNumber _ -> Value.valueFactory(Type.INT);
-                    case IFloatNumber _ -> Value.valueFactory(Type.FLOAT);
-                    case IStringValue _ -> Value.valueFactory(Type.STRING);
+                    case IIntNumber _ -> Value.valueFactory(new Type(Type.TypeEnum.INT));
+                    case IFloatNumber _ -> Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
+                    case IStringValue _ -> Value.valueFactory(new Type(Type.TypeEnum.STRING));
                     default -> new VoidValue();
                 };
             }

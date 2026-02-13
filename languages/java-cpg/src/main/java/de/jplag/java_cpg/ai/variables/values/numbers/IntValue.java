@@ -27,7 +27,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
      * a IntValue with no information.
      */
     public IntValue() {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         information = false;
     }
 
@@ -36,7 +36,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
      * @param value the integer value.
      */
     public IntValue(int value) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         this.value = value;
         information = true;
     }
@@ -46,7 +46,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
      * @param value the integer value as double.
      */
     public IntValue(double value) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         this.value = (int) value;
         information = true;
     }
@@ -56,7 +56,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
      * @param possibleValues the set of possible integer values.
      */
     public IntValue(@NotNull Set<Integer> possibleValues) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         if (possibleValues.size() == 1) {
             this.value = possibleValues.iterator().next();
             this.information = true;
@@ -71,7 +71,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
      * @param upperBound the upper bound of the range.
      */
     public IntValue(int lowerBound, int upperBound) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         assert lowerBound <= upperBound;
         if (lowerBound == upperBound) {
             this.value = lowerBound;
@@ -82,7 +82,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
     }
 
     private IntValue(int value, boolean information) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         this.value = value;
         this.information = information;
     }
@@ -265,14 +265,14 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
                 if (information) {
                     return Value.valueFactory(Math.sin(this.value));
                 } else {
-                    return Value.valueFactory(Type.FLOAT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                 }
             }
             case "sqrt" -> {
                 if (information) {
                     return Value.valueFactory(Math.sqrt(this.value));
                 } else {
-                    return Value.valueFactory(Type.FLOAT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                 }
             }
             default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
@@ -292,7 +292,7 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
             return;
         }
         if (other instanceof JavaObject javaObject) {   // could be an Integer object
-            if (javaObject.accessField("value", Type.UNKNOWN) instanceof IntValue intValue) {
+            if (javaObject.accessField("value", new Type(Type.TypeEnum.UNKNOWN)) instanceof IntValue intValue) {
                 other = intValue;
             } else {
                 this.information = false;

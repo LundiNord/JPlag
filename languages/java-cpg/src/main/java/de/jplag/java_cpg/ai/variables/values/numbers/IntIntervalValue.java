@@ -24,7 +24,7 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
      * a IntIntervalValue with no information.
      */
     public IntIntervalValue() {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         interval = new IntInterval();
     }
 
@@ -34,7 +34,7 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
      * @param upperBound the upper bound.
      */
     public IntIntervalValue(int lowerBound, int upperBound) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         interval = new IntInterval(lowerBound, upperBound);
     }
 
@@ -43,7 +43,7 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
      * @param number the integer value.
      */
     public IntIntervalValue(int number) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         interval = new IntInterval(number);
     }
 
@@ -52,13 +52,13 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
      * @param possibleValues the set of possible integer values.
      */
     public IntIntervalValue(@NotNull Set<Integer> possibleValues) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         java.util.List<Integer> values = possibleValues.stream().toList();
         interval = new IntInterval(values.getFirst(), values.getLast());
     }
 
     private IntIntervalValue(IntInterval interval) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         this.interval = interval;
     }
 

@@ -26,7 +26,7 @@ public class CharValue extends Value implements ICharValue {
      * an unknown char value.
      */
     public CharValue() {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = false;
     }
 
@@ -35,7 +35,7 @@ public class CharValue extends Value implements ICharValue {
      * @param value the known character
      */
     public CharValue(char value) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = true;
         this.value = value;
     }
@@ -45,7 +45,7 @@ public class CharValue extends Value implements ICharValue {
      * @param values the possible characters
      */
     public CharValue(@NotNull Set<Character> values) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         if (values.size() == 1) {
             this.information = true;
             this.value = values.iterator().next();
@@ -58,7 +58,7 @@ public class CharValue extends Value implements ICharValue {
      * Copy constructor.
      */
     private CharValue(char value, boolean information) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = information;
         this.value = value;
     }
@@ -96,14 +96,14 @@ public class CharValue extends Value implements ICharValue {
                     if (this.information && numberValue.getInformation()) {
                         return Value.getNewIntValue((char) (this.value + (char) numberValue.getValue()));
                     } else {
-                        return Value.valueFactory(Type.INT);
+                        return Value.valueFactory(new Type(Type.TypeEnum.INT));
                     }
                 }
                 IStringValue otherStringValue = (IStringValue) other;
                 if (this.information && otherStringValue.getInformation()) {
                     return Value.valueFactory(this.value + otherStringValue.getValue());
                 } else {
-                    return Value.valueFactory(Type.STRING);
+                    return Value.valueFactory(new Type(Type.TypeEnum.STRING));
                 }
             }
             case "-" -> {

@@ -29,7 +29,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
      * Creates a new Scanner object representation.
      */
     public Scanner() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -46,7 +46,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
         switch (methodName) {
             case "nextLine", "next" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
             case "close" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -54,15 +54,16 @@ public class Scanner extends JavaObject implements ISpecialObject {
             }
             case "nextInt", "nextLong" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "nextDouble", "nextFloat" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.FLOAT);
+                return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
             }
             case "hasNextInt", "hasNext", "hasNextLine" -> {
-                assert paramVars == null || paramVars.isEmpty() || (paramVars.size() == 1 && paramVars.get(0).getType() == Type.STRING);
-                return Value.valueFactory(Type.BOOLEAN);
+                assert paramVars == null || paramVars.isEmpty()
+                        || (paramVars.size() == 1 && paramVars.get(0).getType().getTypeEnum() == Type.TypeEnum.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             case "useLocale" -> {
                 assert paramVars.size() == 1;

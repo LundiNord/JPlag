@@ -28,7 +28,7 @@ public class InputStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.InputStream class.
      */
     public InputStream() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -45,7 +45,7 @@ public class InputStream extends JavaObject implements ISpecialObject {
         switch (methodName) {
             case "read" -> {
                 if (paramVars == null || paramVars.isEmpty()) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 } else {
                     throw new UnsupportedOperationException("InputStream.read() with parameters is not supported");
                 }

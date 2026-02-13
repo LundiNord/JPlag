@@ -17,7 +17,7 @@ public class FunctionValue extends Value {
      * a FunctionValue with no information.
      */
     public FunctionValue() {
-        super(Type.FUNCTION);
+        super(new Type(Type.TypeEnum.FUNCTION));
     }
 
     @NotNull

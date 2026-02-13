@@ -30,8 +30,8 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      * Creates a new JavaLengthArray with an unknown inner type and length.
      */
     public JavaLengthArray() {
-        super(Type.ARRAY);
-        this.innerType = Type.UNKNOWN;
+        super(new Type(Type.TypeEnum.ARRAY));
+        this.innerType = new Type(Type.TypeEnum.UNKNOWN);
         this.length = Value.getNewIntValue();
     }
 
@@ -40,7 +40,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      * @param innerType The inner type of the array.
      */
     public JavaLengthArray(@NotNull Type innerType) {
-        super(Type.ARRAY);
+        super(new Type(Type.TypeEnum.ARRAY, innerType));
         this.innerType = innerType;
         this.length = Value.getNewIntValue();
     }
@@ -51,9 +51,9 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      * @param length The length of the array.
      */
     public JavaLengthArray(Type innerType, @NotNull INumberValue length) {
-        super(Type.ARRAY);
+        super(new Type(Type.TypeEnum.ARRAY, innerType));
         this.length = length;
-        this.innerType = Objects.requireNonNullElse(innerType, Type.UNKNOWN);
+        this.innerType = Objects.requireNonNullElse(innerType, new Type(Type.TypeEnum.UNKNOWN));
     }
 
     /**
@@ -61,9 +61,9 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      * @param values The values to derive the inner type and length from.
      */
     public JavaLengthArray(@NotNull List<IValue> values) {
-        super(Type.ARRAY);
+        super(new Type(Type.TypeEnum.ARRAY));
         if (values.isEmpty()) {
-            this.innerType = Type.UNKNOWN;
+            this.innerType = new Type(Type.TypeEnum.UNKNOWN);
         } else {
             this.innerType = values.getFirst().getType();
         }
@@ -73,18 +73,18 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
     @Override
     public IValue arrayAccess(INumberValue index) {
         // if no information, return an unknown value of the inner type
-        if (innerType == null || innerType == Type.UNKNOWN) {
+        if (innerType == null || innerType.getTypeEnum() == Type.TypeEnum.UNKNOWN) {
             return new VoidValue();
         }
-        return switch (innerType) {
-            case INT -> Value.valueFactory(Type.INT);
+        return switch (innerType.getTypeEnum()) {
+            case INT -> Value.valueFactory(new Type(Type.TypeEnum.INT));
             case BOOLEAN -> new BooleanValue();
-            case STRING -> Value.valueFactory(Type.STRING);
+            case STRING -> Value.valueFactory(new Type(Type.TypeEnum.STRING));
             case OBJECT -> new JavaObject(innerType);
-            case ARRAY -> Value.valueFactory(Type.ARRAY);
-            case LIST -> Value.valueFactory(Type.LIST);
-            case FLOAT -> Value.valueFactory(Type.FLOAT);
-            case CHAR -> Value.valueFactory(Type.CHAR);
+            case ARRAY -> Value.valueFactory(new Type(Type.TypeEnum.ARRAY, innerType.getInnerType()));
+            case LIST -> Value.valueFactory(new Type(Type.TypeEnum.LIST));
+            case FLOAT -> Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
+            case CHAR -> Value.valueFactory(new Type(Type.TypeEnum.CHAR));
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");
         };
     }
@@ -128,7 +128,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             }
             case "indexOf", "lastIndexOf" -> {
                 assert paramVars.size() == 1;
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "remove" -> {
                 assert paramVars == null || paramVars.size() == 1 || paramVars.isEmpty();
@@ -147,7 +147,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             }
             case "contains" -> {
                 assert paramVars.size() == 1;
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             case "getLast", "findFirst", "findAny" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -168,7 +168,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
                 if (length.getInformation()) {
                     return Value.valueFactory(length.getValue() == 0);
                 }
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             default -> {
                 return Value.valueFactory(expectedType);
@@ -211,10 +211,10 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
         }
         assert other instanceof JavaLengthArray : "Can only merge with another JavaLengthArray but got " + other.getClass();
         final JavaLengthArray otherArray = (JavaLengthArray) other;
-        if (this.innerType == Type.UNKNOWN) {
+        if (this.innerType.getTypeEnum() == Type.TypeEnum.UNKNOWN) {
             this.innerType = otherArray.innerType;
         }
-        if (otherArray.innerType != Type.UNKNOWN) {
+        if (otherArray.innerType.getTypeEnum() != Type.TypeEnum.UNKNOWN) {
             assert Objects.equals(this.innerType, otherArray.innerType) : "Cannot merge arrays of different inner types: " + this.innerType + " and "
                     + ((JavaLengthArray) other).innerType;
         }

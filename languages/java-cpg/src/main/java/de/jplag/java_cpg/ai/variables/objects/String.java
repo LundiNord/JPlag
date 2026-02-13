@@ -30,7 +30,7 @@ public class String extends JavaObject implements ISpecialObject {
      * Creates a new representation of the java.lang.String class.
      */
     public String() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**

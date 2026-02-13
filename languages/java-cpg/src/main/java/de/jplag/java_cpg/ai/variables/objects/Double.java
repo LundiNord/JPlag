@@ -31,7 +31,7 @@ public class Double extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Double class.
      */
     public Double() {
-        super(Type.OBJECT);
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -57,11 +57,11 @@ public class Double extends JavaObject implements ISpecialObject {
                         if (num.getInformation()) {
                             return Value.getNewFloatValue(num.getValue());
                         } else {
-                            return Value.valueFactory(Type.FLOAT);
+                            return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                         }
                     }
                     case VoidValue _ -> {
-                        return Value.valueFactory(Type.FLOAT);
+                        return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
