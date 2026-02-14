@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai
 
 import de.fraunhofer.aisec.cpg.TranslationContext
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration
 import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration
 import de.fraunhofer.aisec.cpg.graph.methods
@@ -30,9 +31,11 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
     override fun accept(p0: TranslationUnitDeclaration) {
         val visitedLinesRecorder = VisitedLinesRecorder()
-        val methods: List<MethodDeclaration>  = p0.methods
+        val methods: List<MethodDeclaration> = p0.methods
         for (method in methods) {
-            analyseMethod(method, visitedLinesRecorder)
+            if (method.hasBody() && method !is ConstructorDeclaration) {
+                analyseMethod(method, visitedLinesRecorder)
+            }
         }
         println("AiMethodPass accept")
     }
@@ -43,7 +46,12 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         abstractInterpretation.setMethodAnalysisMode()
         AbstractInterpretation.visitedNodesCounter = 0
         val recordName: String = method.recordDeclaration?.name?.toString() ?: "Main"
-        val javaObject = JavaObject(de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT, recordName))
+        val javaObject = JavaObject(
+            de.jplag.java_cpg.ai.variables.Type(
+                de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT,
+                recordName
+            )
+        )
         abstractInterpretation.setupObject(javaObject, "this")
 
         val paramVars = ArrayList<IValue>()
@@ -62,8 +70,10 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             paramVars.add(value)
         }
         runCatching {
-            abstractInterpretation.runMethod(method.name.toString(), paramVars, method,
-                de.jplag.java_cpg.ai.variables.Type.fromCpgType((method.type as FunctionType).returnTypes.first()))
+            abstractInterpretation.runMethod(
+                method.name.toString(), paramVars, method,
+                de.jplag.java_cpg.ai.variables.Type.fromCpgType((method.type as FunctionType).returnTypes.first())
+            )
         }.onFailure { t ->
             log.error("AI pass failed for method: ${method.name}", t)
             throw t

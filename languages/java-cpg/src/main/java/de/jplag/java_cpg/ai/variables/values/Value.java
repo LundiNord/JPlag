@@ -6,24 +6,15 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import de.jplag.java_cpg.ai.ArrayAiType;
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaArray;
 import de.jplag.java_cpg.ai.variables.values.arrays.JavaLengthArray;
 import de.jplag.java_cpg.ai.variables.values.chars.CharSetValue;
 import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatSetValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntIntervalValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntSetValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.*;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
@@ -286,7 +277,7 @@ public abstract class Value implements IValue {
      * @return a new string value instance without information.
      */
     @NotNull
-    public static Value getNewStringValue() {
+    public static IStringValue getNewStringValue() {
         return switch (usedStringAiType) {
             case DEFAULT -> new StringValue();
             case CHAR_INCLUSION -> new StringCharInclValue();
@@ -348,8 +339,8 @@ public abstract class Value implements IValue {
     @NotNull
     public static IJavaArray getNewArayValue() {
         return switch (usedArrayAiType) {
-            case DEFAULT -> new JavaArray();
-            case LENGTH -> new JavaLengthArray();
+            case DEFAULT -> new JavaArray(new Type(Type.TypeEnum.UNKNOWN));
+            case LENGTH -> new JavaLengthArray(new Type(Type.TypeEnum.UNKNOWN));
         };
     }
 

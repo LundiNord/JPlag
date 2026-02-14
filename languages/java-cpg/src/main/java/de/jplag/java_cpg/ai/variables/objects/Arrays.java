@@ -83,7 +83,9 @@ public class Arrays extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 2 || paramVars.size() == 3;
                 return Value.getNewArayValue();
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            default -> {
+                return Value.valueFactory(expectedType);
+            }
         }
     }
 

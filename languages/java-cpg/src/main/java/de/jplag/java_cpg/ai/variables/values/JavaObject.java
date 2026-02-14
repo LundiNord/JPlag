@@ -1,10 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +63,7 @@ public class JavaObject extends Value implements IJavaObject {
      * @return null if the method is not known.
      */
     public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
-        if (abstractInterpretation == null) {
+        if (abstractInterpretation == null || abstractInterpretation.isMethodAnalysisMode()) {
             return Value.valueFactory(expectedType);
         }
         return abstractInterpretation.runMethod(methodName, paramVars, method, expectedType);

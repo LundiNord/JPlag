@@ -1,10 +1,6 @@
 package de.jplag.java_cpg.ai.variables.values.arrays;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,12 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
-import de.jplag.java_cpg.ai.variables.values.IJavaObject;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 /**
@@ -30,6 +21,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     private Type innerType;
     @Nullable
     private List<IValue> values;     // values = null: no information about the array
+    // ToDo: add explicit information boolean
 
     /**
      * a Java Array with no information and undefined size.
@@ -46,7 +38,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
      * @throws UnsupportedOperationException if the inner type is not supported.
      */
     public JavaArray(@NotNull List<IValue> values) {
-        super(new Type(Type.TypeEnum.ARRAY));
+        super(new Type(Type.TypeEnum.ARRAY, new Type(Type.TypeEnum.UNKNOWN)));
         if (values.isEmpty()) {
             this.innerType = null;
             this.values = values;
@@ -55,7 +47,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
         this.innerType = new Type(Type.TypeEnum.VOID);
         for (IValue value : values) {
             if (this.innerType.getTypeEnum() != Type.TypeEnum.VOID) {
-                assert value.getType() == this.innerType
+                assert value.getType().equals(this.innerType)
                         || value.getType().getTypeEnum() == Type.TypeEnum.VOID : "Inconsistent types in array initialization: " + this.innerType
                                 + " and " + value.getType();
                 continue;
@@ -64,24 +56,27 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 this.innerType = value.getType();
             }
         }
+        List<IValue> newValues = new ArrayList<>();
         for (IValue value : values) {   // exchange void values with unknown values of the inner type
             if (value.getType().getTypeEnum() == Type.TypeEnum.VOID) {
                 switch (this.innerType.getTypeEnum()) {
-                    case INT -> value = Value.valueFactory(new Type(Type.TypeEnum.INT));
-                    case BOOLEAN -> value = new BooleanValue();
-                    case STRING -> value = Value.valueFactory(new Type(Type.TypeEnum.STRING));
-                    case OBJECT -> value = new JavaObject(innerType);
-                    case ARRAY, LIST -> value = new JavaArray();
-                    case FLOAT -> value = Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
-                    case CHAR -> value = Value.valueFactory(new Type(Type.TypeEnum.CHAR));
+                    case INT -> newValues.add(Value.valueFactory(new Type(Type.TypeEnum.INT)));
+                    case BOOLEAN -> newValues.add(new BooleanValue());
+                    case STRING -> newValues.add(Value.valueFactory(new Type(Type.TypeEnum.STRING)));
+                    case OBJECT -> newValues.add(new JavaObject(innerType));
+                    case ARRAY, LIST -> newValues.add(new JavaArray(innerType.getInnerType()));
+                    case FLOAT -> newValues.add(Value.valueFactory(new Type(Type.TypeEnum.FLOAT)));
+                    case CHAR -> newValues.add(Value.valueFactory(new Type(Type.TypeEnum.CHAR)));
                     case VOID -> {
                     }
                     default -> throw new UnsupportedOperationException("Array of type " + this.innerType + " not supported");
                 }
+            } else {
+                newValues.add(value);
             }
 
         }
-        this.values = values;
+        this.values = newValues;
     }
 
     /**
@@ -111,7 +106,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
     }
 
     private JavaArray(@Nullable Type innerType, @Nullable List<IValue> values) {
-        super(new Type(Type.TypeEnum.ARRAY));
+        super(new Type(Type.TypeEnum.ARRAY, innerType));
         this.innerType = innerType;
         this.values = values;
     }
@@ -268,7 +263,8 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 if (paramVars.getFirst() instanceof VoidValue) {
                     paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.INT)));
                 }
-                assert paramVars.getFirst() instanceof INumberValue;
+                assert paramVars.getFirst() instanceof INumberValue : "Method " + methodName + " requires a number as parameter but "
+                        + paramVars.getFirst().getType() + " was given";
                 return arrayAccess((INumberValue) paramVars.getFirst());
             }
             case "contains" -> {
@@ -313,7 +309,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 // no information
                 values = null;
-                return new VoidValue();
+                return Value.valueFactory(innerType);
             }
             case "addLast", "push" -> {
                 assert paramVars.size() == 1;
@@ -321,7 +317,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     assert paramVars.getFirst().getType().equals(innerType);
                     values.add(paramVars.getFirst());
                 }
-                return new VoidValue();
+                return Value.valueFactory(innerType);
             }
             case "removeFirst", "poll" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -330,7 +326,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 }
                 // no information
                 values = null;
-                return new VoidValue();
+                return Value.valueFactory(innerType);
             }
             case "isEmpty" -> {
                 assert paramVars == null || paramVars.isEmpty();
@@ -375,32 +371,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
                     this.values = null; // ToDo
                     return new VoidValue();
                 }
-                assert paramVars.size() == 0 || paramVars.size() == 2;
-                if (values != null) {
-                    if (paramVars.size() == 0) {
-                        values.sort(null);
-                    } else {
-                        assert paramVars.getFirst() instanceof INumberValue;
-                        assert paramVars.get(1) instanceof INumberValue;
-                        INumberValue fromIndex = (INumberValue) paramVars.getFirst();
-                        INumberValue toIndex = (INumberValue) paramVars.get(1);
-                        if (fromIndex.getInformation() && toIndex.getInformation()) {
-                            int fromIdx = (int) fromIndex.getValue();
-                            int toIdx = (int) toIndex.getValue();
-                            if (fromIdx >= 0 && toIdx <= values.size() && fromIdx <= toIdx) {
-                                List<IValue> sublist = values.subList(fromIdx, toIdx);
-                                sublist.sort(null);
-                                for (int i = fromIdx; i < toIdx; i++) {
-                                    values.set(i, sublist.get(i - fromIdx));
-                                }
-                            } else {
-                                values = null; // no information
-                            }
-                        } else {
-                            values = null; // no information
-                        }
-                    }
-                }
+                this.values = null; // no information after sorting
                 return new VoidValue();
             }
             case "copyOfRange" -> { // int[] copyOfRange(int[] original, int from, int to)
@@ -532,6 +503,17 @@ public class JavaArray extends JavaObject implements IJavaArray {
                 setToUnknown();
                 return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
+            case "hasNext", "hasPrevious" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
+            }
+            case "next", "previous" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                if (innerType == null) {
+                    return new VoidValue();
+                }
+                return Value.valueFactory(innerType);
+            }
             default -> {
                 return Value.valueFactory(expectedType);
             }
@@ -573,8 +555,9 @@ public class JavaArray extends JavaObject implements IJavaArray {
     @Override
     public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue || other instanceof IJavaObject) {   // cannot merge different types
-            other = new JavaArray();
+            other = new JavaArray(this.innerType);
         }
+        assert other instanceof JavaArray;
         JavaArray otherArray = (JavaArray) other;
         if (this.innerType == null && otherArray.innerType != null) {
             this.innerType = otherArray.innerType;

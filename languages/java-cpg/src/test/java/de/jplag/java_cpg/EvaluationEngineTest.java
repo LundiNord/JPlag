@@ -1,9 +1,7 @@
 package de.jplag.java_cpg;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
-import static de.jplag.options.JPlagOptions.DEFAULT_SHOWN_COMPARISONS;
-import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_METRIC;
-import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_THRESHOLD;
+import static de.jplag.options.JPlagOptions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -23,23 +21,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.jplag.JPlag;
-import de.jplag.JPlagComparison;
-import de.jplag.JPlagResult;
-import de.jplag.Language;
-import de.jplag.ParsingException;
-import de.jplag.Token;
+import de.jplag.*;
 import de.jplag.clustering.ClusteringOptions;
 import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
-import de.jplag.java_cpg.ai.ArrayAiType;
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.CpgErrorException;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
-import de.jplag.java_cpg.ai.ProgpediaTests;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
@@ -279,10 +265,10 @@ class EvaluationEngineTest {
     private static double getJPlagCpgPlagScore(@NotNull String fileNameA, @NotNull String fileNameB, boolean removeDeadCode, boolean detectDeadCode,
             boolean reorder, boolean normalize, boolean removeSimpleDeadCode) throws ExitException, IOException {
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode,
-                JavaCpgLanguage.allTransformations(), IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT,
-                ArrayAiType.DEFAULT);
-        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
-        // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
+                JavaCpgLanguage.allTransformations(),
+                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+                // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+                IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         return getJPlagScore(fileNameA, fileNameB, normalize, language);
     }
 
@@ -715,7 +701,9 @@ class EvaluationEngineTest {
 
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
         // i=i.proximo())
-        String fileName = "progpedia/00000018/ACCEPTED/00032_00002";
+        // String fileName = "progpedia/00000019/WRONG_ANSWER/00189_00001"; //Integer.intValue();
+        // String fileName = "progpedia/00000039/ACCEPTED/00139_00005"; //Dummy
+        String fileName = "progpedia/00000021/WRONG_ANSWER/00017_00010";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

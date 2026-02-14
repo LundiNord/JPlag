@@ -179,6 +179,20 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
                     return new FloatValue();
                 }
             }
+            case "compareTo" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    double otherValue = ((INumberValue) other).getValue();
+                    if (this.value < otherValue) {
+                        return new FloatValue(-1);
+                    } else if (this.value > otherValue) {
+                        return new FloatValue(1);
+                    } else {
+                        return new FloatValue(0);
+                    }
+                } else {
+                    return new FloatValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
@@ -207,6 +221,13 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
             case "sqrt" -> {
                 if (information) {
                     return new FloatValue(Math.sqrt(this.value));
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "abs" -> {
+                if (information) {
+                    return new FloatValue(Math.abs(this.value));
                 } else {
                     return new FloatValue();
                 }

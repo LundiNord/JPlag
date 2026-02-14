@@ -55,7 +55,8 @@ public class Math extends JavaObject implements ISpecialObject {
                 if (paramVars.getFirst() instanceof VoidValue || paramVars.getLast() instanceof VoidValue) {
                     return new VoidValue();
                 }
-                assert paramVars.get(0) instanceof INumberValue;
+                assert paramVars.get(0) instanceof INumberValue : "Expected first parameter of min to be a number, but got "
+                        + paramVars.get(0).getType();
                 assert paramVars.get(1) instanceof INumberValue;
                 return paramVars.get(0).binaryOperation("min", paramVars.get(1));
             }
