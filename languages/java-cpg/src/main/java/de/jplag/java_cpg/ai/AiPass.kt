@@ -31,6 +31,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
     override fun accept(p0: TranslationResult) {
         var visitedLinesRecorder = VisitedLinesRecorder()
+        AbstractInterpretation.setContinueOnError(continueOnError)
         val abstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
         assert(p0.components.size == 1)
         val comp: Component = p0.components.first()
@@ -70,8 +71,8 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                     for (method in recordDeclaration.methods) {
                         if (checkIfCompletelyDead(method, visitedLinesRecorder) && removeDeadCode) {
                             if (method.name.localName == "toString" || method.name.localName == "equals" || method.name.localName == "hashCode"
-                                    || method.name.localName == "compareTo" || method.name.localName == "compare"
-                                ) {
+                                || method.name.localName == "compareTo" || method.name.localName == "compare"
+                            ) {
                                 continue    //methods that are sometimes not visited by the AI but could still be called implicitly
                                 //this is only a last resort as methods called inside these methods may still incorrectly be detected as dead code
                             }
@@ -113,6 +114,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
     companion object AiPassCompanion {
         var removeDeadCode: Boolean = true
+        var continueOnError: Boolean = false
     }
 
 }

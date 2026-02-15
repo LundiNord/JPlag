@@ -9,12 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.BooleanValue;
-import de.jplag.java_cpg.ai.variables.values.IJavaObject;
-import de.jplag.java_cpg.ai.variables.values.IValue;
-import de.jplag.java_cpg.ai.variables.values.JavaObject;
-import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.*;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 /**
@@ -25,15 +20,6 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
 
     private Type innerType;
     private INumberValue length;        // array == null -> length == null
-
-    /**
-     * Creates a new JavaLengthArray with an unknown inner type and length.
-     */
-    public JavaLengthArray() {
-        super(new Type(Type.TypeEnum.ARRAY));
-        this.innerType = new Type(Type.TypeEnum.UNKNOWN);
-        this.length = Value.getNewIntValue();
-    }
 
     /**
      * Creates a new JavaLengthArray with the given inner type and unknown length.
@@ -61,7 +47,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
      * @param values The values to derive the inner type and length from.
      */
     public JavaLengthArray(@NotNull List<IValue> values) {
-        super(new Type(Type.TypeEnum.ARRAY));
+        super(new Type(Type.TypeEnum.ARRAY, values.isEmpty() ? new Type(Type.TypeEnum.UNKNOWN) : values.getFirst().getType()));
         if (values.isEmpty()) {
             this.innerType = new Type(Type.TypeEnum.UNKNOWN);
         } else {
@@ -82,7 +68,7 @@ public class JavaLengthArray extends JavaObject implements IJavaArray {
             case STRING -> Value.valueFactory(new Type(Type.TypeEnum.STRING));
             case OBJECT -> new JavaObject(innerType);
             case ARRAY -> Value.valueFactory(new Type(Type.TypeEnum.ARRAY, innerType.getInnerType()));
-            case LIST -> Value.valueFactory(new Type(Type.TypeEnum.LIST));
+            case LIST -> Value.valueFactory(new Type(Type.TypeEnum.LIST, innerType.getInnerType()));
             case FLOAT -> Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
             case CHAR -> Value.valueFactory(new Type(Type.TypeEnum.CHAR));
             default -> throw new UnsupportedOperationException("Array of type " + innerType + " not supported");

@@ -265,12 +265,21 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
             this.setToUnknown();
             return;
         }
-        if (other instanceof IFloatNumber floatNumber && !(this instanceof IFloatNumber)) {    // can happen because some casts are not explicit in
-                                                                                               // eog
+        if (other instanceof IFloatNumber floatNumber && !(this instanceof IFloatNumber)) { // can happen because some casts are not explicit in eog
             if (floatNumber.getInformation()) {
                 int value = (int) floatNumber.getValue();
                 TreeSet<I> newValues = new TreeSet<>();
                 newValues.add(createInterval((T) Integer.valueOf(value), (T) Integer.valueOf(value)));
+                other = createInstance(newValues);
+            } else {
+                other = createInstance(new TreeSet<>());
+            }
+        } else if (other instanceof IIntNumber integerNumber && !(this instanceof IIntNumber)) { // can happen because some casts are not explicit in
+                                                                                                 // eog
+            if (integerNumber.getInformation()) {
+                double value = integerNumber.getValue();
+                TreeSet<I> newValues = new TreeSet<>();
+                newValues.add(createInterval((T) Double.valueOf(value), (T) Double.valueOf(value)));
                 other = createInstance(newValues);
             } else {
                 other = createInstance(new TreeSet<>());
@@ -297,8 +306,8 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
         values.remove(values.first());
         for (I interval : values) {
             I lastInterval = newValues.last();
-            if (lastInterval.getUpperBound().compareTo(interval.getLowerBound()) >= 0) {
-                T maxUpper = lastInterval.getUpperBound().compareTo(interval.getUpperBound()) > 0 ? lastInterval.getUpperBound()
+            if (lastInterval.getUpperBound().doubleValue() >= interval.getLowerBound().doubleValue()) {
+                T maxUpper = lastInterval.getUpperBound().doubleValue() > interval.getUpperBound().doubleValue() ? lastInterval.getUpperBound()
                         : interval.getUpperBound();
                 lastInterval.setUpperBound(maxUpper);
             } else {

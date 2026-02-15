@@ -9,6 +9,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
 /**
@@ -77,8 +78,13 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
         if (!(other instanceof INumberValue)) {
             other = new IntIntervalValue();
         }
-        if (other instanceof IFloatNumber) {    // This could be better
-            return new VoidValue();
+        if (other instanceof IFloatNumber || other instanceof ICharValue) {    // This could be better
+            INumberValue number = (INumberValue) other;
+            if (number.getInformation() && number.getValue() == (int) number.getValue()) {
+                other = new IntIntervalValue((int) number.getValue());
+            } else {
+                other = new IntIntervalValue();
+            }
         }
         IntIntervalValue otherValue = (IntIntervalValue) other;
         switch (operator) {

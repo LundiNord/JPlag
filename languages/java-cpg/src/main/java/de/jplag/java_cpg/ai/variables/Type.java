@@ -55,9 +55,6 @@ public class Type {
      */
     public Type(@NotNull TypeEnum typeEnum, @Nullable Type innerType) {
         this(typeEnum, null, innerType);
-        if (innerType.toString().endsWith("[]")) {
-            System.out.println("Debug");
-        }
         assert typeEnum == ARRAY || typeEnum == LIST;
     }
 
@@ -99,7 +96,9 @@ public class Type {
      */
     public Type getInnerType() {
         assert this.typeEnum == ARRAY || this.typeEnum == LIST;
-        assert innerType != null;
+        if (this.innerType == null) {
+            return new Type(UNKNOWN);
+        }
         return innerType;
     }
 
@@ -128,9 +127,6 @@ public class Type {
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ObjectType.class) {
             String name = cpgType.getName().toString();
             name = name.split("<")[0]; // remove generics
-            if (name.equals("java.util.Set")) {
-                System.out.println("Debug");
-            }
             switch (name) {
                 case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue", "java.util.Deque", "java.util.Stack", "java.util.ListIterator", "java.util.Queue", "java.util.Set", "java.util.HashSet" -> {
                     ObjectType objectType = (ObjectType) cpgType;
@@ -144,6 +140,21 @@ public class Type {
                         innerCpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(innerType);
                     }
                     return new Type(LIST, innerCpgType);
+                }
+                case "java.lang.String" -> {
+                    return new Type(STRING);
+                }
+                case "java.lang.Boolean" -> {
+                    return new Type(BOOLEAN);
+                }
+                case "java.lang.Character" -> {
+                    return new Type(CHAR);
+                }
+                case "java.lang.Integer", "java.lang.Long", "java.lang.Short", "java.lang.Byte" -> {
+                    return new Type(INT);
+                }
+                case "java.lang.Float", "java.lang.Double" -> {
+                    return new Type(FLOAT);
                 }
                 case "T", "E", "K", "V" -> {
                     return new Type(UNKNOWN);
@@ -162,6 +173,8 @@ public class Type {
             return new Type(VOID);
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.ParameterizedType.class) {
             return new Type(VOID);
+        } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.FunctionType.class) {
+            return new Type(FUNCTION);
         } else {
             throw new IllegalArgumentException("Unsupported CPG type: " + cpgType);
         }

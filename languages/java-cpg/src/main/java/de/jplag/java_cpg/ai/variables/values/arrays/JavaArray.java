@@ -80,14 +80,6 @@ public class JavaArray extends JavaObject implements IJavaArray {
     }
 
     /**
-     * a Java Array with no information and undefined size.
-     */
-    public JavaArray() {
-        super(new Type(Type.TypeEnum.ARRAY));
-        this.innerType = null;
-    }
-
-    /**
      * a Java Array with exact length and type information.
      * @param length the length of the array; must contain information.
      * @param innerType the type of the array elements.

@@ -43,6 +43,7 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     fun analyseMethod(method: MethodDeclaration, visitedLinesRecorder: VisitedLinesRecorder) {
         println("Abstract Interpretation of method ${method.name} started.")
         val abstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
+        AbstractInterpretation.setContinueOnError(continueOnError)
         abstractInterpretation.setMethodAnalysisMode()
         AbstractInterpretation.visitedNodesCounter = 0
         val recordName: String = method.recordDeclaration?.name?.toString() ?: "Main"
@@ -83,6 +84,7 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
     companion object AiMethodPassCompanion {
         var removeDeadCode: Boolean = true
+        var continueOnError: Boolean = false
     }
 
 }

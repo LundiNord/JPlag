@@ -38,7 +38,7 @@ public class AbstractInterpretation {
      * Helper to detect recursive method calls.
      */
     private static final List<Node> lastVisitedMethod = new ArrayList<>();
-    private static final boolean CONTINUE_ON_ERROR = false;
+    private static boolean continueOnError = false;
     /**
      * Recorder for visited lines to detect dead methods/classes later.
      */
@@ -594,6 +594,10 @@ public class AbstractInterpretation {
     }
 
     private void walkMemberExpression(@NotNull MemberExpression me) {
+        if (visitedNodesCounter == 180) {
+            System.out.println("Debug");
+        }
+        de.jplag.java_cpg.ai.variables.Type expectedCpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(me.getType());
         if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
             if (valueStack.getLast() instanceof IJavaObject javaObject) {
                 nodeStack.removeLast();
@@ -646,11 +650,11 @@ public class AbstractInterpretation {
             if (variable != null) {
                 valueStack.add(Objects.requireNonNull(variables.getVariable(new VariableName(ref.getName().toString()))).getValue());
             } else if (object.accessField(ref.getName().toString(),
-                    new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.UNKNOWN)) != null) { // sometimes cpg does
-                // not insert "this".
-                IValue value = object.accessField(ref.getName().toString(), expectedType);   // FixMe: type
-                if (value.getType() == new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.VOID)) {  // value isn't
-                    // known
+                    new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.UNKNOWN)) != null) {
+                // sometimes cpg does not insert "this".
+                IValue value = object.accessField(ref.getName().toString(), expectedType);
+                if (value.getType().equals(new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.VOID))) {
+                    // value isn't known
                     value = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(ref.getType()));
                 }
                 valueStack.add(value);
@@ -712,15 +716,22 @@ public class AbstractInterpretation {
                 valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME),
                         objectType));
             }
-            IJavaObject javaObject = (JavaObject) valueStack.getLast();
-            if (mce.getInvokes().isEmpty()) {   // CPG sometimes cannot find the method declaration
-                result = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType()));
+            if (!(valueStack.getLast() instanceof IJavaObject) && memberName.getLocalName().equals("intValue")) { // special case
+                assert valueStack.getLast() instanceof INumberValue;
+                result = valueStack.getLast();
+            } else if (!(valueStack.getLast() instanceof IJavaObject) && memberName.getLocalName().equals("toString")) {
+                result = valueStack.getLast().unaryOperation("toString");
             } else {
-                if (!javaObject.hasAbstractInterpretation() && !methodAnalysisMode) {
-                    javaObject.setAbstractInterpretation(
-                            new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME));
+                IJavaObject javaObject = (JavaObject) valueStack.getLast();
+                if (mce.getInvokes().isEmpty()) {   // CPG sometimes cannot find the method declaration
+                    result = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType()));
+                } else {
+                    if (!javaObject.hasAbstractInterpretation() && !methodAnalysisMode) {
+                        javaObject.setAbstractInterpretation(
+                                new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME));
+                    }
+                    result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast(), expectedType);
                 }
-                result = javaObject.callMethod(memberName.getLocalName(), null, (MethodDeclaration) mce.getInvokes().getLast(), expectedType);
             }
         } else {
             List<IValue> argumentList = new ArrayList<>();
@@ -751,6 +762,11 @@ public class AbstractInterpretation {
             if (!(valueStack.getLast() instanceof IJavaObject) && memberName.getLocalName().equals("equals")) { // special case
                 assert argumentList.size() == 1;
                 result = valueStack.getLast().binaryOperation("==", argumentList.getFirst());
+            } else if (!(valueStack.getLast() instanceof IJavaObject) && memberName.getLocalName().equals("compareTo")) { // special case
+                assert argumentList.size() == 1;
+                argumentList.add(valueStack.getLast());
+                Collections.reverse(argumentList);
+                result = new de.jplag.java_cpg.ai.variables.objects.Double().callMethod("compare", argumentList, null, expectedType);
             } else {
                 JavaObject javaObject = (JavaObject) valueStack.getLast();
                 if (!javaObject.hasAbstractInterpretation() && !methodAnalysisMode) {
@@ -881,6 +897,9 @@ public class AbstractInterpretation {
     }
 
     private void walkBinaryOperator(@NotNull BinaryOperator bop) {
+        if (visitedNodesCounter == 27) {
+            System.out.println("Debug");
+        }
         assert valueStack.size() >= 2 && !nodeStack.isEmpty();
         String operator = bop.getOperatorCode();
         assert operator != null;
@@ -916,7 +935,7 @@ public class AbstractInterpretation {
 
     @Nullable
     private Node walkIfStatement(@NotNull IfStatement ifStmt) {
-        if (visitedNodesCounter == 3858 || visitedNodesCounter == 3747) {
+        if (visitedNodesCounter == 40) {
             System.out.println("Debug");
         }
         Node nextNode;
@@ -982,15 +1001,27 @@ public class AbstractInterpretation {
             }
         }
         nodeStack.removeLast();     // remove condition
-        assert nextEOG.size() == 2;
+        if (nextEOG.size() != 2) {
+            throw new CpgErrorException("Expected 2 statements in if next EOG, found: " + nextEOG.size());
+        }
         VariableStore originalVariables = variables;
         VariableStore thenVariables = new VariableStore(variables);
         VariableStore elseVariables = new VariableStore(variables);
         // then statement
         if (runThenBranch) {
+            boolean restoreBlock = false;
+            if (!(ifStmt.getThenStatement() instanceof Block)) {
+                restoreBlock = true;
+                Block block = new Block();
+                block.setNextEOG(ifStmt.getThenStatement().getNextEOG());
+                ifStmt.getThenStatement().setNextEOG(List.of(block));
+            }
             variables.newScope();
             graphWalker(nextEOG.getFirst());
             variables.removeScope();
+            if (restoreBlock) {
+                ifStmt.getThenStatement().setNextEOG(ifStmt.getThenStatement().getNextEOG().getFirst().getNextEOG());
+            }
             if (!nodeStack.isEmpty()
                     && (nodeStack.getLast() == null && elseBlock != null && ifStmt.getElseStatement() == null && !elseBlock.getNextEOG().isEmpty())) {
                 // special case for dead else branch
@@ -1006,6 +1037,13 @@ public class AbstractInterpretation {
             if (ifStmt.getElseStatement() instanceof IfStatement) {  // this loop is a loop with if else
                 ifElseCounter++;
             }
+            boolean restoreBlock = false;
+            if (!(ifStmt.getElseStatement() instanceof Block)) {
+                restoreBlock = true;
+                Block block = new Block();
+                block.setNextEOG(ifStmt.getElseStatement().getNextEOG());
+                ifStmt.getElseStatement().setNextEOG(List.of(block));
+            }
             if (runThenBranch) {
                 variables = elseVariables;
                 this.object = variables.getThisObject();
@@ -1015,6 +1053,9 @@ public class AbstractInterpretation {
             variables.removeScope();
             if (nodeStack.getLast() == null) {
                 nodeStack.add(nextEOG.getFirst());
+            }
+            if (restoreBlock) {
+                ifStmt.getElseStatement().setNextEOG(ifStmt.getElseStatement().getNextEOG().getFirst().getNextEOG());
             }
         }
         // merge branches
@@ -1277,6 +1318,9 @@ public class AbstractInterpretation {
         Node nextNode;
         List<Node> nextEOG = ws.getNextEOG();
         assert nextEOG.size() == 2;
+        if (nextEOG.size() != 2) {
+            throw new CpgErrorException("Expected 2 statements in for next EOG, found: " + nextEOG.size());
+        }
         // detect infinite loops when no Block inserted by cpg
         if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
             nodeStack.add(null);
@@ -1393,7 +1437,9 @@ public class AbstractInterpretation {
     private Node walkForEachStatement(@NotNull ForEachStatement fes) {
         Node nextNode;
         List<Node> nextEOG = fes.getNextEOG();
-        assert nextEOG.size() == 2;
+        if (nextEOG.size() != 2) {
+            throw new CpgErrorException("Expected 2 statements in for each next EOG, found: " + nextEOG.size());
+        }
         if (!lastVisitedLoopOrIf.isEmpty() && fes == lastVisitedLoopOrIf.getLast()) {
             nodeStack.add(null);
             return null;
@@ -1674,7 +1720,7 @@ public class AbstractInterpretation {
         IValue result;
         assert method.getNextEOG().size() <= 1;
         if (method.getNextEOG().size() == 1) {
-            if (CONTINUE_ON_ERROR) {
+            if (continueOnError) {
                 try {
                     result = graphWalker(method.getNextEOG().getFirst());
                 } catch (Exception _) {
@@ -1704,6 +1750,10 @@ public class AbstractInterpretation {
 
     public boolean isMethodAnalysisMode() {
         return this.methodAnalysisMode;
+    }
+
+    public static void setContinueOnError(boolean continueOnError) {
+        AbstractInterpretation.continueOnError = continueOnError;
     }
 
 }
