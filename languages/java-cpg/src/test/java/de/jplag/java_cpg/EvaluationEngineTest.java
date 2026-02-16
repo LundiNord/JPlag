@@ -1,7 +1,9 @@
 package de.jplag.java_cpg;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
-import static de.jplag.options.JPlagOptions.*;
+import static de.jplag.options.JPlagOptions.DEFAULT_SHOWN_COMPARISONS;
+import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_METRIC;
+import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_THRESHOLD;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -21,11 +23,23 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.jplag.*;
+import de.jplag.JPlag;
+import de.jplag.JPlagComparison;
+import de.jplag.JPlagResult;
+import de.jplag.Language;
+import de.jplag.ParsingException;
+import de.jplag.Token;
 import de.jplag.clustering.ClusteringOptions;
 import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.CpgErrorException;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
+import de.jplag.java_cpg.ai.ProgpediaTests;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
@@ -704,7 +718,7 @@ class EvaluationEngineTest {
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00189_00001"; //Integer.intValue();
         // String fileName = "progpedia/00000039/ACCEPTED/00139_00005"; //Dummy
 
-        String fileName = "progpedia/00000048/WRONG_ANSWER/00145_00001";
+        String fileName = "progpedia/00000039/ACCEPTED/00098_00002/moo06.java";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

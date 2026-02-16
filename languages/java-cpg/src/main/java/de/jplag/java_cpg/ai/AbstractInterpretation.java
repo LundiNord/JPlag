@@ -2,7 +2,11 @@ package de.jplag.java_cpg.ai;
 
 import static de.jplag.java_cpg.ai.variables.VariableStore.ANONYMOUS_THIS_NAME;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
@@ -11,15 +15,71 @@ import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.EnumConstantDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FunctionDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
 import de.fraunhofer.aisec.cpg.graph.scopes.TryScope;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
-import de.fraunhofer.aisec.cpg.graph.types.*;
+import de.fraunhofer.aisec.cpg.graph.statements.AssertStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.BreakStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CaseStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CatchClause;
+import de.fraunhofer.aisec.cpg.graph.statements.ContinueStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DefaultStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.EmptyStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForEachStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.SwitchStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.TryStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.AssignExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.BinaryOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.CastExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConditionalExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConstructExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ExpressionList;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.InitializerListExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Literal;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewArrayExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ProblemExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ShortCircuitOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
+import de.fraunhofer.aisec.cpg.graph.types.FloatingPointType;
+import de.fraunhofer.aisec.cpg.graph.types.HasType;
+import de.fraunhofer.aisec.cpg.graph.types.IntegerType;
+import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
+import de.fraunhofer.aisec.cpg.graph.types.ParameterizedType;
+import de.fraunhofer.aisec.cpg.graph.types.PointerType;
+import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.VariableStore;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.NullValue;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
@@ -121,14 +181,18 @@ public class AbstractInterpretation {
                 newObject.setInitialValue();
             }
             case "java.util.HashMap", "java.util.Map" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashMap();
-            case "java.util.HashSet", "java.util.Set" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashSet();
+            case "java.util.HashSet", "java.util.Set", "java.util.TreeSet" -> newObject = new de.jplag.java_cpg.ai.variables.objects.HashSet();
             case "java.util.Scanner" -> newObject = new de.jplag.java_cpg.ai.variables.objects.Scanner();
             case "java.util.ArrayList", "java.util.List", "java.util.Vector", "java.util.LinkedList", "java.util.PriorityQueue", "java.util.Deque", "java.util.Stack", "java.util.ListIterator", "java.util.Queue" -> {
                 de.jplag.java_cpg.ai.variables.Type innerCpgType;
                 if (ce.getType() instanceof ObjectType objectType) {
-                    assert objectType.getGenerics().size() == 1;
-                    Type innerType = objectType.getGenerics().getFirst();
-                    innerCpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(innerType);
+                    if (objectType.getGenerics().isEmpty()) {
+                        innerCpgType = new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.UNKNOWN);
+                    } else {
+                        assert objectType.getGenerics().size() == 1;
+                        Type innerType = objectType.getGenerics().getFirst();
+                        innerCpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(innerType);
+                    }
                 } else {
                     throw new IllegalStateException("Expected parameterized type for collection, but got " + ce.getType().getClass());
                 }
@@ -184,8 +248,8 @@ public class AbstractInterpretation {
             throw new CpgErrorException("Unexpected number of classes or namespaces in translation unit generated by cpg"
                     + tud.getDeclarations().stream().map(Declaration::getClass).map(Class::getName).toList());
         }
-        de.jplag.java_cpg.ai.variables.Type objectType = new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT);
-        // FixMe: insert right type name
+        de.jplag.java_cpg.ai.variables.Type objectType = new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT,
+                mainClas.getName().toString());
         JavaObject mainClassVar = new JavaObject(objectType);
         setupClass(mainClas, mainClassVar);
         assert mainClas.getMethods().stream().map(MethodDeclaration::getName).filter(x -> x.getLocalName().equals("main"))
@@ -935,7 +999,7 @@ public class AbstractInterpretation {
 
     @Nullable
     private Node walkIfStatement(@NotNull IfStatement ifStmt) {
-        if (visitedNodesCounter == 40) {
+        if (visitedNodesCounter == 73 || visitedNodesCounter == 58) {
             System.out.println("Debug");
         }
         Node nextNode;
@@ -1010,7 +1074,7 @@ public class AbstractInterpretation {
         // then statement
         if (runThenBranch) {
             boolean restoreBlock = false;
-            if (!(ifStmt.getThenStatement() instanceof Block)) {
+            if (!(ifStmt.getThenStatement() instanceof Block) && !(ifStmt.getThenStatement() instanceof IfStatement)) {
                 restoreBlock = true;
                 Block block = new Block();
                 block.setNextEOG(ifStmt.getThenStatement().getNextEOG());
@@ -1038,7 +1102,7 @@ public class AbstractInterpretation {
                 ifElseCounter++;
             }
             boolean restoreBlock = false;
-            if (!(ifStmt.getElseStatement() instanceof Block)) {
+            if (!(ifStmt.getElseStatement() instanceof Block) && !(ifStmt.getElseStatement() instanceof IfStatement)) {
                 restoreBlock = true;
                 Block block = new Block();
                 block.setNextEOG(ifStmt.getElseStatement().getNextEOG());
