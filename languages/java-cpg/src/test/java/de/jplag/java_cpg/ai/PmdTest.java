@@ -1,0 +1,194 @@
+package de.jplag.java_cpg.ai;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+/**
+ * This tests <a href="https://pmd.github.io/">PMD</a> to compare it to our results.
+ * @author GitHub Copilot (Claude Sonnet 4.5)
+ * @version 1.0
+ */
+public class PmdTest {
+
+    @Test
+    @Disabled("Only for testing the setup and PMD integration, not a real test")
+    void singleTest() throws Exception {
+        File file = new File("src/test/resources/java/ai/deadCode5");
+        File virtFile = runPmdForFile(file);
+        assertNotNull(virtFile);
+    }
+
+    public static @NotNull File runPmdForFile(@NotNull File file) throws IOException {
+        String pmdPath = System.getProperty("user.home") + "/pmd-bin-7.21.0/bin/pmd";
+        String folder = file.getAbsolutePath();
+        ProcessBuilder processBuilder = new ProcessBuilder(pmdPath, "check", "-d", folder, "-R", "src/test/resources/pmdDeadCodeRules.xml", "-f",
+                "xml");
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
+
+        // Read the output as XML
+        StringBuilder xmlOutput = new StringBuilder();
+        try (var reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!(line.trim().startsWith("[WARN]"))) {
+                    xmlOutput.append(line).append("\n");
+                }
+            }
+        }
+        Document doc;
+        try {
+            int exitCode = process.waitFor();
+            if (exitCode == 1) {    // PMD returns 0 if no violations, 4 if violations found, 1 for errors
+                throw new RuntimeException("PMD command failed with exit code: " + exitCode);
+            }
+            System.out.println("PMD exited with code: " + exitCode);
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xmlOutput.toString())));
+            System.out.println("\n=== PMD XML Report Successfully Parsed ===");
+        } catch (ParserConfigurationException | InterruptedException | SAXException e) {
+            throw new IOException("Failed to parse PMD XML output: " + e + "| Output was:\n" + xmlOutput);
+        }
+
+        // Extract violations
+        List<ViolationInfo> violationsList = extractViolations(doc);
+        System.out.println("Number of violations found: " + violationsList.size());
+
+        // Create virtual files with violations removed
+        return createVirtualFilesWithViolationsRemoved(violationsList, file);
+    }
+
+    /**
+     * Represents information about a PMD violation.
+     * @author GitHub Copilot (Claude Sonnet 4.5)
+     */
+    static class ViolationInfo {
+        String filePath;
+        int beginLine;
+        int endLine;
+        int beginColumn;
+        int endColumn;
+        String rule;
+        String message;
+
+        @Override
+        public String toString() {
+            return String.format("Violation[%s:%d-%d, rule=%s, message=%s]", filePath, beginLine, endLine, rule, message);
+        }
+    }
+
+    /**
+     * Extracts violation information from the PMD XML document
+     */
+    private static @NotNull List<ViolationInfo> extractViolations(@NotNull Document doc) {
+        List<ViolationInfo> violations = new ArrayList<>();
+        NodeList fileNodes = doc.getElementsByTagName("file");
+
+        for (int i = 0; i < fileNodes.getLength(); i++) {
+            Element fileElement = (Element) fileNodes.item(i);
+            String filePath = fileElement.getAttribute("name");
+
+            NodeList violationNodes = fileElement.getElementsByTagName("violation");
+            for (int j = 0; j < violationNodes.getLength(); j++) {
+                Element violationElement = (Element) violationNodes.item(j);
+
+                ViolationInfo info = new ViolationInfo();
+                info.filePath = filePath;
+                info.beginLine = Integer.parseInt(violationElement.getAttribute("beginline"));
+                info.endLine = Integer.parseInt(violationElement.getAttribute("endline"));
+                info.beginColumn = Integer.parseInt(violationElement.getAttribute("begincolumn"));
+                info.endColumn = Integer.parseInt(violationElement.getAttribute("endcolumn"));
+                info.rule = violationElement.getAttribute("rule");
+                info.message = violationElement.getTextContent().trim();
+
+                violations.add(info);
+                System.out.println("  - " + info);
+            }
+        }
+
+        return violations;
+    }
+
+    /**
+     * Creates a virtual file with violation lines removed
+     */
+    private static @NotNull File createVirtualFilesWithViolationsRemoved(@NotNull List<ViolationInfo> violations, @NotNull File originalFile)
+            throws IOException {
+        // Group violations by file
+        Map<String, List<ViolationInfo>> violationsByFile = new HashMap<>();
+        for (ViolationInfo violation : violations) {
+            violationsByFile.computeIfAbsent(violation.filePath, _ -> new ArrayList<>()).add(violation);
+        }
+        assert violationsByFile.size() == 1 || violationsByFile.isEmpty() : "Expected violations for exactly one file, but found: "
+                + violationsByFile.keySet();
+
+        String originalFilePath;
+        List<ViolationInfo> fileViolations;
+        if (violationsByFile.size() == 1) {
+            Map.Entry<String, List<ViolationInfo>> entry = violationsByFile.entrySet().iterator().next();
+            originalFilePath = entry.getKey();
+            fileViolations = entry.getValue();
+        } else {
+            // Handle empty case
+            originalFilePath = originalFile.getAbsolutePath();
+            fileViolations = new ArrayList<>();
+        }
+
+        // Sort violations by line number in descending order to remove from bottom to top
+        fileViolations.sort((v1, v2) -> Integer.compare(v2.beginLine, v1.beginLine));
+
+        // Read the original file
+        Path originalPath = Path.of(originalFilePath);
+        if (!Files.exists(originalPath)) {
+            throw new IOException("File not found: " + originalFilePath);
+        }
+
+        List<String> lines = Files.readAllLines(originalPath);
+
+        // Collect line numbers to remove (convert to set for efficient lookup)
+        Set<Integer> linesToRemove = new HashSet<>();
+        for (ViolationInfo violation : fileViolations) {
+            for (int line = violation.beginLine; line <= violation.endLine; line++) {
+                linesToRemove.add(line);
+            }
+        }
+
+        // Create virtual file content with violations removed
+        List<String> virtualFileLines = new ArrayList<>();
+        for (int i = 0; i < lines.size(); i++) {
+            int lineNumber = i + 1; // 1-based line number
+            if (!linesToRemove.contains(lineNumber)) {
+                virtualFileLines.add(lines.get(i));
+            }
+        }
+
+        File tempFile = File.createTempFile("jplag_temp_", ".java");
+        tempFile.deleteOnExit();
+        Files.write(tempFile.toPath(), virtualFileLines);
+        return tempFile;
+    }
+
+}

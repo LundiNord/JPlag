@@ -202,7 +202,7 @@ public class JavaCpgLanguage implements Language {
     public List<Token> parse(Set<File> files, boolean normalize) throws ParsingException {
         try {
             return cpgAdapter.adapt(files, normalize);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
             return List.of();
         }

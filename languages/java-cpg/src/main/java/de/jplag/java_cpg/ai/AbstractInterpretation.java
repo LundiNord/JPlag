@@ -658,9 +658,6 @@ public class AbstractInterpretation {
     }
 
     private void walkMemberExpression(@NotNull MemberExpression me) {
-        if (visitedNodesCounter == 180) {
-            System.out.println("Debug");
-        }
         de.jplag.java_cpg.ai.variables.Type expectedCpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(me.getType());
         if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
             if (valueStack.getLast() instanceof IJavaObject javaObject) {
@@ -776,7 +773,7 @@ public class AbstractInterpretation {
                 // order.
                 valueStack.removeLast();
                 de.jplag.java_cpg.ai.variables.Type objectType = new de.jplag.java_cpg.ai.variables.Type(
-                        de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT);    // FixMe
+                        de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT);    // ToDo: insert right object name
                 valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME),
                         objectType));
             }
@@ -819,7 +816,7 @@ public class AbstractInterpretation {
             if (valueStack.getLast() instanceof VoidValue) {
                 valueStack.removeLast();
                 de.jplag.java_cpg.ai.variables.Type objectType = new de.jplag.java_cpg.ai.variables.Type(
-                        de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT);    // FixMe
+                        de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT);    // ToDo: insert right object name
                 valueStack.add(new JavaObject(new AbstractInterpretation(visitedLinesRecorder, removeDeadCode, recordingChanges, ANONYMOUS_THIS_NAME),
                         objectType));
             }
@@ -903,7 +900,6 @@ public class AbstractInterpretation {
                 if (ae.getOperatorCode().equals("+=") || ae.getOperatorCode().equals("-=")) {
                     de.jplag.java_cpg.ai.variables.Type expectedType = new de.jplag.java_cpg.ai.variables.Type(
                             de.jplag.java_cpg.ai.variables.Type.TypeEnum.UNKNOWN);
-                    // FixMe: insert right type name
                     IValue oldValue = classVal.accessField((nodeStack.get(nodeStack.size() - 2)).getName().getLocalName(), expectedType);
                     assert oldValue != null;
                     IValue newValue;
