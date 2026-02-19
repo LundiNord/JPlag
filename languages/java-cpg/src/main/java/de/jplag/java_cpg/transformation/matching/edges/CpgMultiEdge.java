@@ -12,6 +12,7 @@ import java.util.function.Function;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
 import de.fraunhofer.aisec.cpg.helpers.TriConsumer;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.matching.pattern.NodePattern;
 
 /**
@@ -113,8 +114,13 @@ public final class CpgMultiEdge<T extends Node, R extends Node> extends AEdge<T,
         return getter;
     }
 
-    public void saveSequenceIndex(NodePattern<? extends R> pattern, int idx) {
-        this.sequenceNodes.put((NodePattern<R>) pattern, idx);
+    /**
+     * Sets the given node pattern as the element with the given index of the current sequence.
+     * @param pattern the pattern
+     * @param idx the index
+     */
+    public void saveSequenceElement(NodePattern<? extends R> pattern, int idx) {
+        this.sequenceNodes.put(Casting.castNodePattern(pattern), idx);
     }
 
     /**

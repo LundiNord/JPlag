@@ -7,12 +7,28 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import de.fraunhofer.aisec.cpg.*;
+import de.fraunhofer.aisec.cpg.ConfigurationException;
+import de.fraunhofer.aisec.cpg.InferenceConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationManager;
+import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
-import de.fraunhofer.aisec.cpg.passes.*;
+import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
+import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
+import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
+import de.fraunhofer.aisec.cpg.passes.ImportResolver;
+import de.fraunhofer.aisec.cpg.passes.Pass;
+import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeResolver;
 import de.jplag.ParsingException;
 import de.jplag.Token;
-import de.jplag.java_cpg.passes.*;
+import de.jplag.java_cpg.passes.AstTransformationPass;
+import de.jplag.java_cpg.passes.CpgTransformationPass;
+import de.jplag.java_cpg.passes.DfgSortPass;
+import de.jplag.java_cpg.passes.FixAstPass;
+import de.jplag.java_cpg.passes.PrepareTransformationPass;
+import de.jplag.java_cpg.passes.TokenizationPass;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase;
 
@@ -54,7 +70,7 @@ public class CpgAdapter {
      * @param transformation a {@link GraphTransformation}
      */
     public void addTransformation(GraphTransformation transformation) {
-        switch (transformation.getPhase()) {
+        switch (transformation.phase()) {
             case OBLIGATORY -> PrepareTransformationPass.registerTransformation(transformation);
             case AST_TRANSFORM -> AstTransformationPass.registerTransformation(transformation);
             case CPG_TRANSFORM -> CpgTransformationPass.registerTransformation(transformation);

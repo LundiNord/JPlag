@@ -2,11 +2,18 @@ package de.jplag.java_cpg.transformation.matching.pattern;
 
 import static de.jplag.java_cpg.transformation.matching.pattern.PatternUtil.desc;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
+
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.matching.edges.AnyOfNEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgNthEdge;
@@ -138,7 +145,7 @@ public class Match implements Comparable<Match> {
      * @return the concrete {@link Node}
      */
     public <T extends Node> T get(NodePattern<T> pattern) {
-        return (T) patternToNode.get(pattern);
+        return Casting.castNode(patternToNode.get(pattern));
     }
 
     /**
@@ -150,7 +157,7 @@ public class Match implements Comparable<Match> {
      * @return the nth edge
      */
     public <T extends Node, R extends Node> CpgNthEdge<T, R> getEdge(NodePattern<? extends T> sourcePattern, AnyOfNEdge<T, R> edge) {
-        return (CpgNthEdge<T, R>) this.edgeMap.get(new EdgeMapKey<>(sourcePattern, edge));
+        return Casting.castAnyOfNEdge(this.edgeMap.get(new EdgeMapKey<>(sourcePattern, edge)));
     }
 
     private LinkedList<Integer> getFullID() {
@@ -179,8 +186,15 @@ public class Match implements Comparable<Match> {
         return patternToNode.size();
     }
 
+    /**
+     * Creates a concrete {@link GraphOperation} using the {@link WildcardMatch} corresponding to the given node pattern.
+     * @param wcParent the node pattern where the graph operation should be applied
+     * @param wildcardedOperation the wildcard operation
+     * @param <T> the node type of the parent node pattern
+     * @return the concrete operation
+     */
     public <T extends Node> GraphOperation instantiateGraphOperation(ParentNodePattern<T> wcParent, GraphOperationImpl<?, T> wildcardedOperation) {
-        WildcardMatch<?, T> wildcardMatch = (WildcardMatch<?, T>) this.wildcardMatches.get(wcParent);
+        WildcardMatch<?, T> wildcardMatch = Casting.castWildcardMatch(this.wildcardMatches.get(wcParent));
         return wildcardMatch.instantiateGraphOperation(wildcardedOperation::fromWildcardMatch);
     }
 
@@ -207,12 +221,13 @@ public class Match implements Comparable<Match> {
      * @param parent the parent node pattern
      * @param relation the relation object
      * @param index the child index
-     * @param <T> the parent node type
+     * @param <T> the parent node type as defined by the relation
      * @param <R> the child node type
+     * @param <C> the concrete parent node type
      * @return the nth edge
      */
     public <T extends Node, R extends Node, C extends T> Match resolveAnyOfNEdge(NodePattern<C> parent, OneToNRelation<T, R> relation, int index) {
-        AnyOfNEdge<T, R> anyOfNEdge = relation.getEdge().getAnyOfNEdgeTo(relation.pattern);
+        AnyOfNEdge<T, R> anyOfNEdge = relation.getEdge().getAnyOfNEdgeTo(relation.getPattern());
         CpgNthEdge<T, R> concreteEdgePattern = new CpgNthEdge<>(anyOfNEdge.getMultiEdge(), index);
         EdgeMapKey<T, R> key = new EdgeMapKey<>(parent, anyOfNEdge);
         this.edgeMap.put(key, concreteEdgePattern);
@@ -243,40 +258,23 @@ public class Match implements Comparable<Match> {
 
     /**
      * Saves the data related to a concrete occurrence of a {@link WildcardGraphPattern}.
+     * @param parentPattern A concrete {@link NodePattern} for the parent
+     * @param edge the edge
+     * @param <T> the node type of the wildcard parent node
      * @param <R> the concrete type of the child, specified by the edge
      */
-    public static final class WildcardMatch<T extends Node, R extends Node> {
-        private final NodePattern<? extends T> parentPattern;
-        private final CpgEdge<T, R> edge;
+    public record WildcardMatch<T extends Node, R extends Node>(NodePattern<? extends T> parentPattern, CpgEdge<T, R> edge) {
 
         /**
-         * @param parentPattern A concrete {@link NodePattern} for the parent
-         * @param edge the edge
+         * Passes the graph elements involved in a wildcard graph operation to create a concrete graph operation.
+         * @param factoryMethod the method that creates the concrete graph operation
+         * @return the graph operation
          */
-        public WildcardMatch(NodePattern<? extends T> parentPattern, CpgEdge<T, R> edge) {
-            this.parentPattern = parentPattern;
-            this.edge = edge;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this)
-                return true;
-            if (obj == null || obj.getClass() != this.getClass())
-                return false;
-            var that = (WildcardMatch) obj;
-            return Objects.equals(this.parentPattern, that.parentPattern) && Objects.equals(this.edge, that.edge);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(parentPattern, edge);
-        }
-
         public GraphOperation instantiateGraphOperation(BiFunction<NodePattern<? extends T>, CpgEdge<T, R>, GraphOperation> factoryMethod) {
             return factoryMethod.apply(this.parentPattern, this.edge);
         }
 
+        @NotNull
         @Override
         public String toString() {
             return "WildcardMatch[" + "parentPattern=" + parentPattern + ", " + "edge=" + edge + ']';

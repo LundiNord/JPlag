@@ -12,14 +12,39 @@ import java.util.function.Consumer;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FunctionDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.ParameterDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.ValueDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
+import de.fraunhofer.aisec.cpg.graph.statements.DeclarationStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.AssignExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.BinaryOperator;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Reference;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.SubscriptExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.fraunhofer.aisec.cpg.graph.types.FunctionType;
 import de.fraunhofer.aisec.cpg.graph.types.IncompleteType;
 import de.fraunhofer.aisec.cpg.graph.types.ObjectType;
 import de.fraunhofer.aisec.cpg.graph.types.Type;
 import de.fraunhofer.aisec.cpg.sarif.PhysicalLocation;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.GraphTransformation.Builder;
 import de.jplag.java_cpg.transformation.matching.pattern.WildcardGraphPattern;
 
@@ -36,101 +61,267 @@ public class Edges {
      */
     private static final Map<Class<?>, List<IEdge<?, ?>>> edgesByTargetType;
 
+    /**
+     * An edge from an assign expression to its lhs.
+     */
     public static final CpgEdge<AssignExpression, Expression> ASSIGN_EXPRESSION__LHS = CpgEdge.listValued(AssignExpression::getLhs,
             AssignExpression::setLhs);
+    /**
+     * An edge from an assign expression to its rhs.
+     */
     public static final CpgEdge<AssignExpression, Expression> ASSIGN_EXPRESSION__RHS = CpgEdge.listValued(AssignExpression::getRhs,
             AssignExpression::setRhs);
+    /**
+     * An edge from a binary operator to its lhs.
+     */
     public static final CpgEdge<BinaryOperator, Expression> BINARY_OPERATOR__LHS = new CpgEdge<>(BinaryOperator::getLhs, BinaryOperator::setLhs);
+    /**
+     * An edge from a binary operator to its operator code.
+     */
     public static final CpgAttributeEdge<BinaryOperator, String> BINARY_OPERATOR__OPERATOR_CODE = new CpgAttributeEdge<>(
             BinaryOperator::getOperatorCode, BinaryOperator::setOperatorCode);
+    /**
+     * An edge from a binary operator to its rhs.
+     */
     public static final CpgEdge<BinaryOperator, Expression> BINARY_OPERATOR__RHS = new CpgEdge<>(BinaryOperator::getRhs, BinaryOperator::setRhs);
+    /**
+     * An edge from a block to its declarations.
+     */
     public static final CpgMultiEdge<Block, Declaration> BLOCK__DECLARATIONS = CpgMultiEdge.nodeValued(Block::getDeclarations, REFERENCE);
+    /**
+     * An edge from a block to its statements.
+     */
     public static final CpgMultiEdge<Block, Statement> BLOCK__STATEMENTS = CpgMultiEdge.edgeValued(Block::getStatementEdges);
+    /**
+     * An edge from a call expression to its arguments.
+     */
     public static final CpgMultiEdge<CallExpression, Expression> CALL_EXPRESSION__ARGUMENTS = CpgMultiEdge
             .edgeValued(CallExpression::getArgumentEdges);
+    /**
+     * An edge from a call expression to its callee.
+     */
     public static final CpgEdge<CallExpression, Expression> CALL_EXPRESSION__CALLEE = new CpgEdge<>(CallExpression::getCallee,
             CallExpression::setCallee);
+    /**
+     * An edge from a call expression to its invokes.
+     */
     public static final CpgMultiEdge<CallExpression, FunctionDeclaration> CALL_EXPRESSION__INVOKES = CpgMultiEdge
             .edgeValued(CallExpression::getInvokeEdges, REFERENCE);
+    /**
+     * An edge from a component to its translation units.
+     */
     public static final CpgMultiEdge<Component, TranslationUnitDeclaration> COMPONENT__TRANSLATION_UNITS = CpgMultiEdge
             .nodeValued(Component::getTranslationUnits);
+    /**
+     * An edge from a declaration statement to its declarations.
+     */
     public static final CpgMultiEdge<DeclarationStatement, Declaration> DECLARATION_STATEMENT__DECLARATIONS = CpgMultiEdge
             .edgeValued(DeclarationStatement::getDeclarationEdges);
+
+    /**
+     * An edge from a field declaration to its modifiers.
+     */
     public static final CpgAttributeEdge<FieldDeclaration, List<String>> FIELD_DECLARATION__MODIFIERS = new CpgAttributeEdge<>(
             FieldDeclaration::getModifiers, FieldDeclaration::setModifiers);
+    /**
+     * An edge from a for statement to its condition.
+     */
     public static final CpgEdge<ForStatement, Expression> FOR_STATEMENT__CONDITION = new CpgEdge<>(ForStatement::getCondition,
             ForStatement::setCondition);
+    /**
+     * An edge from a for statement to its initializer statement.
+     */
     public static final CpgEdge<ForStatement, Statement> FOR_STATEMENT__INITIALIZER_STATEMENT = new CpgEdge<>(ForStatement::getInitializerStatement,
             ForStatement::setInitializerStatement);
+    /**
+     * An edge from a for statement to its iteration statement.
+     */
     public static final CpgEdge<ForStatement, Statement> FOR_STATEMENT__ITERATION_STATEMENT = new CpgEdge<>(ForStatement::getIterationStatement,
             ForStatement::setIterationStatement);
+    /**
+     * An edge from a for statement to its statement.
+     */
     public static final CpgEdge<ForStatement, Statement> FOR_STATEMENT__STATEMENT = new CpgEdge<>(ForStatement::getStatement,
             ForStatement::setStatement);
+    /**
+     * An edge from a function declaration to its overrides.
+     */
     public static final CpgMultiEdge<FunctionDeclaration, FunctionDeclaration> FUNCTION_DECLARATION__OVERRIDES = CpgMultiEdge
             .nodeValued(FunctionDeclaration::getOverrides, REFERENCE);
+    /**
+     * An edge from a function declaration to its overridden by.
+     */
     public static final CpgMultiEdge<FunctionDeclaration, FunctionDeclaration> FUNCTION_DECLARATION__OVERRIDDEN_BY = CpgMultiEdge
             .nodeValued(FunctionDeclaration::getOverriddenBy, REFERENCE);
+    /**
+     * An edge from a function type to its parameters.
+     */
     public static final CpgMultiEdge<FunctionType, Type> FUNCTION_TYPE__PARAMETERS = CpgMultiEdge.nodeValued(FunctionType::getParameters);
+    /**
+     * An edge from a function type to its return types.
+     */
     public static final CpgMultiEdge<FunctionType, Type> FUNCTION_TYPE__RETURN_TYPES = CpgMultiEdge.nodeValued(FunctionType::getReturnTypes);
+    /**
+     * An edge from an if statement to its condition.
+     */
     public static final CpgEdge<IfStatement, Expression> IF_STATEMENT__CONDITION = new CpgEdge<>(IfStatement::getCondition,
             IfStatement::setCondition);
+    /**
+     * An edge from an if statement to its else statement.
+     */
     public static final CpgEdge<IfStatement, Statement> IF_STATEMENT__ELSE_STATEMENT = new CpgEdge<>(IfStatement::getElseStatement,
             IfStatement::setElseStatement);
+    /**
+     * An edge from an if statement to its then statement.
+     */
     public static final CpgEdge<IfStatement, Statement> IF_STATEMENT__THEN_STATEMENT = new CpgEdge<>(IfStatement::getThenStatement,
             IfStatement::setThenStatement);
+    /**
+     * An edge from a member expression to its record declaration.
+     */
     public static final CpgEdge<MemberExpression, RecordDeclaration> MEMBER_EXPRESSION__RECORD_DECLARATION = new CpgEdge<>(EdgeUtil::getRecord, null,
             ANALYTIC);
+    /**
+     * An edge from a member expression to its base.
+     */
     public static final CpgEdge<MemberExpression, Expression> MEMBER_EXPRESSION__BASE = new CpgEdge<>(MemberExpression::getBase,
             MemberExpression::setBase);
+    /**
+     * An edge from a method declaration to its body.
+     */
     public static final CpgEdge<MethodDeclaration, Statement> METHOD_DECLARATION__BODY = new CpgEdge<>(MethodDeclaration::getBody,
             MethodDeclaration::setBody);
+    /**
+     * An edge from a method declaration to its parameters.
+     */
     public static final CpgMultiEdge<MethodDeclaration, ParameterDeclaration> METHOD_DECLARATION__PARAMETERS = CpgMultiEdge
             .nodeValued(MethodDeclaration::getParameters);
+    /**
+     * An edge from a method declaration to its record declaration.
+     */
     public static final CpgEdge<MethodDeclaration, RecordDeclaration> METHOD_DECLARATION__RECORD_DECLARATION = new CpgEdge<>(
             MethodDeclaration::getRecordDeclaration, MethodDeclaration::setRecordDeclaration, REFERENCE);
+    /**
+     * An edge from a namespace declaration to its declarations.
+     */
     public static final CpgMultiEdge<NamespaceDeclaration, Declaration> NAMESPACE_DECLARATION__DECLARATIONS = CpgMultiEdge
             .nodeValued(NamespaceDeclaration::getDeclarations);
+    /**
+     * An edge from a node to its location.
+     */
     public static final CpgAttributeEdge<Node, PhysicalLocation> NODE__LOCATION = new CpgAttributeEdge<>(Node::getLocation, Node::setLocation);
+    /**
+     * An edge from a node to its name.
+     */
     public static final CpgAttributeEdge<Declaration, Name> NODE__NAME = new CpgAttributeEdge<>(Node::getName, Node::setName);
+    /**
+     * An edge from a node to its local name.
+     */
     public static final CpgAttributeEdge<Declaration, String> NODE__LOCAL_NAME = new CpgAttributeEdge<>(EdgeUtil::getLocalName, null);
+    /**
+     * An edge from a method declaration to its local name.
+     */
     public static final CpgAttributeEdge<MethodDeclaration, String> METHOD_DECLARATION__LOCAL_NAME = new CpgAttributeEdge<>(EdgeUtil::getLocalName,
             null);
 
+    /**
+     * An edge from an object type to its record declaration.
+     */
     public static final CpgEdge<ObjectType, RecordDeclaration> OBJECT_TYPE__RECORD_DECLARATION = new CpgEdge<>(ObjectType::getRecordDeclaration,
             ObjectType::setRecordDeclaration, REFERENCE);
+    /**
+     * An edge from a record declaration to its fields.
+     */
     public static final CpgMultiEdge<RecordDeclaration, FieldDeclaration> RECORD_DECLARATION__FIELDS = CpgMultiEdge
             .edgeValued(RecordDeclaration::getFieldEdges);
+    /**
+     * An edge from a record declaration to its methods.
+     */
     public static final CpgMultiEdge<RecordDeclaration, MethodDeclaration> RECORD_DECLARATION__METHODS = CpgMultiEdge
             .edgeValued(RecordDeclaration::getMethodEdges);
+    /**
+     * An edge from a record declaration to its name.
+     */
     public static final CpgAttributeEdge<RecordDeclaration, Name> RECORD_DECLARATION__NAME = new CpgAttributeEdge<>(Node::getName, Node::setName);
+    /**
+     * An edge from a record declaration to its constructors.
+     */
     public static final CpgMultiEdge<RecordDeclaration, ConstructorDeclaration> RECORD_DECLARATION__CONSTRUCTORS = CpgMultiEdge
             .edgeValued(RecordDeclaration::getConstructorEdges);
+    /**
+     * An edge from a reference to its refers to.
+     */
     public static final CpgEdge<Reference, Declaration> REFERENCE__REFERS_TO = new CpgEdge<>(Reference::getRefersTo, Reference::setRefersTo,
             REFERENCE);
+    /**
+     * An edge from a return statement to its return values.
+     */
     public static final CpgMultiEdge<ReturnStatement, Expression> RETURN_STATEMENT__RETURN_VALUES = CpgMultiEdge
             .nodeValued(ReturnStatement::getReturnValues);
+    /**
+     * An edge from a statement to its locals.
+     */
     public static final CpgMultiEdge<Statement, VariableDeclaration> STATEMENT__LOCALS = CpgMultiEdge.edgeValued(Statement::getLocalEdges, REFERENCE);
+    /**
+     * An edge from a subscript expression to its subscript expression.
+     */
     public static final CpgEdge<SubscriptExpression, Expression> SUBSCRIPT_EXPRESSION__SUBSCRIPT_EXPRESSION = new CpgEdge<>(
             SubscriptExpression::getSubscriptExpression, SubscriptExpression::setSubscriptExpression);
+    /**
+     * An edge from a subscript expression to its array expression.
+     */
     public static final CpgEdge<SubscriptExpression, Expression> SUBSCRIPT_EXPRESSION__ARRAY_EXPRESSION = new CpgEdge<>(
             SubscriptExpression::getArrayExpression, SubscriptExpression::setArrayExpression);
+    /**
+     * An edge from a translation unit to its declarations.
+     */
     public static final CpgMultiEdge<TranslationUnitDeclaration, Declaration> TRANSLATION_UNIT__DECLARATIONS = CpgMultiEdge
             .edgeValued(TranslationUnitDeclaration::getDeclarationEdges);
+    /**
+     * An edge from a type to its type name.
+     */
     public static final CpgAttributeEdge<IncompleteType, String> TYPE__TYPE_NAME = new CpgAttributeEdge<>(Type::getTypeName, null);
+    /**
+     * An edge from a unary operator to its input.
+     */
     public static final CpgEdge<UnaryOperator, Expression> UNARY_OPERATOR__INPUT = new CpgEdge<>(UnaryOperator::getInput, UnaryOperator::setInput);
+    /**
+     * An edge from a unary operator to its operator code.
+     */
     public static final CpgAttributeEdge<UnaryOperator, String> UNARY_OPERATOR__OPERATOR_CODE = new CpgAttributeEdge<>(UnaryOperator::getOperatorCode,
             UnaryOperator::setOperatorCode);
+    /**
+     * An edge from a value declaration to its usages.
+     */
     public static final CpgMultiEdge<ValueDeclaration, Reference> VALUE_DECLARATION__USAGES = CpgMultiEdge.edgeValued(ValueDeclaration::getUsageEdges,
             REFERENCE);
+    /**
+     * An edge from a value declaration to its type.
+     */
     public static final CpgEdge<ValueDeclaration, Type> VALUE_DECLARATION__TYPE = new CpgEdge<>(ValueDeclaration::getType, ValueDeclaration::setType);
+    /**
+     * An edge from a variable declaration to its initializer.
+     */
     public static final CpgEdge<VariableDeclaration, Expression> VARIABLE_DECLARATION__INITIALIZER = new CpgEdge<>(
             VariableDeclaration::getInitializer, VariableDeclaration::setInitializer);
+    /**
+     * An edge from a while statement to its statement.
+     */
     public static final CpgEdge<WhileStatement, Statement> WHILE_STATEMENT__STATEMENT = new CpgEdge<>(WhileStatement::getStatement,
             WhileStatement::setStatement);
+    /**
+     * An edge from a while statement to its condition.
+     */
     public static final CpgEdge<WhileStatement, Expression> WHILE_STATEMENT__CONDITION = new CpgEdge<>(WhileStatement::getCondition,
             WhileStatement::setCondition);
 
+    /**
+     * An edge from a do statement to its statement.
+     */
     public static final CpgEdge<DoStatement, Statement> DO_STATEMENT__STATEMENT = new CpgEdge<>(DoStatement::getStatement, DoStatement::setStatement);
+    /**
+     * An edge from a do statement to its condition.
+     */
     public static final CpgEdge<DoStatement, Expression> DO_STATEMENT__CONDITION = new CpgEdge<>(DoStatement::getCondition,
             DoStatement::setCondition);
 
@@ -197,12 +388,13 @@ public class Edges {
     /**
      * Gets the list of edges with the given node class as target.
      * @param tClass the target node class
+     * @param consumer receives the resulting edges
      * @param <R> the related node type
      */
     public static <R extends Node> void getEdgesToType(Class<R> tClass, Consumer<IEdge<? extends Node, ? super R>> consumer) {
         Class<? super R> type = tClass;
         while (Node.class.isAssignableFrom(type)) {
-            edgesByTargetType.getOrDefault(type, List.of()).stream().map(e -> (IEdge<? extends Node, ? super R>) e).forEach(consumer);
+            edgesByTargetType.getOrDefault(type, List.of()).stream().map(Casting::<R>cast).forEach(consumer);
             type = getSuperclass(type);
         }
     }
@@ -211,7 +403,7 @@ public class Edges {
         if (!type.getSuperclass().equals(type)) {
             return type.getSuperclass();
         }
-        return (Class<? super T>) type.getGenericSuperclass();
+        return Casting.castType(type.getGenericSuperclass());
     }
 
 }

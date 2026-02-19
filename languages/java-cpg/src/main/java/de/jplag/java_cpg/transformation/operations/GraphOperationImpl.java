@@ -3,6 +3,7 @@ package de.jplag.java_cpg.transformation.operations;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.jplag.java_cpg.transformation.matching.edges.AnyOfNEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgEdge;
+import de.jplag.java_cpg.transformation.matching.pattern.Match.WildcardMatch;
 import de.jplag.java_cpg.transformation.matching.pattern.NodePattern;
 import de.jplag.java_cpg.transformation.matching.pattern.WildcardGraphPattern;
 
@@ -36,5 +37,13 @@ public abstract class GraphOperationImpl<T extends Node, R extends Node> impleme
         return this.parentPattern instanceof WildcardGraphPattern.ParentNodePattern && this.edge instanceof WildcardGraphPattern.Edge;
     }
 
+    /**
+     * Creates a concrete {@link GraphOperation} object realising the {@link WildcardMatch} with the parent pattern and
+     * edge.
+     * @param pattern the concrete parent pattern
+     * @param edge the concrete edge pattern connecting
+     * @param <T2> the concrete type of the parent pattern
+     * @return the concrete {@link GraphOperation}
+     */
     public abstract <T2 extends Node> GraphOperationImpl<T2, R> fromWildcardMatch(NodePattern<? extends T2> pattern, CpgEdge<T2, R> edge);
 }

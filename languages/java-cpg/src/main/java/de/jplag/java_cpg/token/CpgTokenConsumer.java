@@ -56,17 +56,14 @@ public abstract class CpgTokenConsumer implements TokenConsumer {
             region = location.getRegion();
             length = calculateLength(region);
         }
-        int line;
-        int column;
-        if (isEndToken) {
-            line = region.getEndLine();
-            column = region.getEndColumn();
-        } else {
-            line = region.startLine;
-            column = region.startColumn;
-        }
+
+        int startLine = region.startLine;
+        int endLine = region.getEndLine();
+        int startColumn = region.startColumn;
+        int endColumn = region.getEndColumn();
+
         Name name = node.getName();
-        addToken(type, file, line, column, length, name);
+        addToken(type, file, startLine, startColumn, endLine, endColumn, length, name);
     }
 
 }

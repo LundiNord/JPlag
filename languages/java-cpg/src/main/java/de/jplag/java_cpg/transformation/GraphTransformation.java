@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +13,19 @@ import de.fraunhofer.aisec.cpg.graph.Node;
 import de.jplag.java_cpg.transformation.matching.edges.CpgEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgMultiEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgNthEdge;
-import de.jplag.java_cpg.transformation.matching.pattern.*;
+import de.jplag.java_cpg.transformation.matching.pattern.GraphPattern;
+import de.jplag.java_cpg.transformation.matching.pattern.Match;
+import de.jplag.java_cpg.transformation.matching.pattern.MultiGraphPattern;
+import de.jplag.java_cpg.transformation.matching.pattern.NodePattern;
+import de.jplag.java_cpg.transformation.matching.pattern.SimpleGraphPattern;
 import de.jplag.java_cpg.transformation.matching.pattern.relation.Relation;
-import de.jplag.java_cpg.transformation.operations.*;
+import de.jplag.java_cpg.transformation.operations.CreateNodeOperation;
+import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
+import de.jplag.java_cpg.transformation.operations.GraphOperation;
+import de.jplag.java_cpg.transformation.operations.InsertOperation;
+import de.jplag.java_cpg.transformation.operations.RemoveOperation;
+import de.jplag.java_cpg.transformation.operations.ReplaceOperation;
+import de.jplag.java_cpg.transformation.operations.SetOperation;
 
 /**
  * This saves all information related to a transformation on a graph.
@@ -30,28 +41,28 @@ public interface GraphTransformation {
     void apply(Match match, TranslationContext ctx);
 
     /**
-     * Gets the {@link ExecutionOrder} for this {@link GraphTransformation}
+     * Gets the {@link ExecutionOrder} for this {@link GraphTransformation}.
      * @return the execution order
      */
-    ExecutionOrder getExecutionOrder();
+    ExecutionOrder executionOrder();
 
     /**
      * Gets the name for this {@link GraphTransformation}.
      * @return the name
      */
-    String getName();
+    String name();
 
     /**
      * Gets the {@link ExecutionPhase} for this {@link GraphTransformation}.
      * @return the execution phase
      */
-    ExecutionPhase getPhase();
+    ExecutionPhase phase();
 
     /**
      * Gets the source {@link GraphPattern} for this {@link GraphTransformation}.
      * @return the source pattern
      */
-    GraphPattern getSourcePattern();
+    GraphPattern sourcePattern();
 
     /**
      * Determines in which transformation pass this transformation is executed.
@@ -76,6 +87,9 @@ public interface GraphTransformation {
          */
         CPG_TRANSFORM(true);
 
+        /**
+         * If true, it is necessary to disconnect the EOG edges of a graph node before relocating it in the CPG.
+         */
         public final boolean disconnectEog;
 
         ExecutionPhase(boolean disconnectEog) {
@@ -93,26 +107,21 @@ public interface GraphTransformation {
         DESCENDING_LOCATION
     }
 
-    class GraphTransformationImpl implements GraphTransformation {
-        private static final Logger logger = LoggerFactory.getLogger(GraphTransformationImpl.class);
-        protected final GraphPattern sourcePattern;
-        protected final GraphPattern targetPattern;
-        private final List<CreateNodeOperation<?>> newNodes;
-        private final List<GraphOperation> operations;
-        private final String name;
-        private final ExecutionPhase phase;
-        private final ExecutionOrder executionOrder;
+    /**
+     * Implementation of a {@link GraphTransformation}.
+     * @param sourcePattern the source graph pattern
+     * @param targetPattern the target graph pattern
+     * @param name the name of the transformation
+     * @param phase the phase in which to execute this transformation given its prerequisites
+     * @param newNodes nodes newly created by this transformation
+     * @param operations individual {@link GraphOperation}s required to execute this transformation
+     * @param executionOrder the order of matching subgraphs in which to apply the transformation, given potential
+     * interaction
+     */
+    record GraphTransformationImpl(GraphPattern sourcePattern, GraphPattern targetPattern, String name, ExecutionPhase phase,
+            List<CreateNodeOperation<?>> newNodes, List<GraphOperation> operations, ExecutionOrder executionOrder) implements GraphTransformation {
 
-        public GraphTransformationImpl(GraphPattern sourcePattern, GraphPattern targetPattern, String name, ExecutionPhase phase,
-                List<CreateNodeOperation<?>> newNodes, List<GraphOperation> operations, ExecutionOrder executionOrder) {
-            this.sourcePattern = sourcePattern;
-            this.targetPattern = targetPattern;
-            this.name = name;
-            this.phase = phase;
-            this.newNodes = newNodes;
-            this.operations = operations;
-            this.executionOrder = executionOrder;
-        }
+        private static final Logger logger = LoggerFactory.getLogger(GraphTransformationImpl.class);
 
         @Override
         public void apply(Match match, TranslationContext ctx) {
@@ -132,8 +141,9 @@ public interface GraphTransformation {
          * @param match the match of the graph transformations source pattern to the concrete CPG
          * @param operations the list of transformations to apply
          * @param ctx the translation context of the current translation
+         * @throws TransformationException if graph invariants are found to be broken
          */
-        protected void apply(Match match, List<GraphOperation> operations, TranslationContext ctx) {
+        private void apply(Match match, List<GraphOperation> operations, TranslationContext ctx) throws TransformationException {
             for (GraphOperation op : operations) {
                 try {
                     op.resolveAndApply(match, ctx);
@@ -142,26 +152,6 @@ public interface GraphTransformation {
                 }
             }
             DummyNeighbor.getInstance().clear();
-        }
-
-        @Override
-        public ExecutionOrder getExecutionOrder() {
-            return this.executionOrder;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public ExecutionPhase getPhase() {
-            return phase;
-        }
-
-        @Override
-        public GraphPattern getSourcePattern() {
-            return sourcePattern;
         }
 
         private List<GraphOperation> instantiate(List<GraphOperation> operations, Match match) {
@@ -175,9 +165,10 @@ public interface GraphTransformation {
             }).toList();
         }
 
+        @NotNull
         @Override
         public String toString() {
-            return getName();
+            return name();
         }
     }
 
@@ -215,10 +206,24 @@ public interface GraphTransformation {
             return new Builder(sourcePattern, targetPattern, name, phase);
         }
 
+        /**
+         * Creates a {@link GraphTransformation.Builder} for a {@link GraphTransformation} object representing the
+         * transformation from sourcePattern to targetPattern.
+         * @param sourcePattern The source graph pattern
+         * @param targetPattern The target graph pattern
+         * @param name the name of the transformation
+         * @param phase the phase in which this transformation shall be executed given its prerequisites.
+         * @return the Builder for the transformation
+         */
         public static Builder from(MultiGraphPattern sourcePattern, MultiGraphPattern targetPattern, String name, ExecutionPhase phase) {
             return new Builder(sourcePattern, targetPattern, name, phase);
         }
 
+        /**
+         * Creates the transformation from this Builder's source pattern to its target pattern, determining the
+         * {@link GraphOperation}s required to apply it.
+         * @return the graph transformation object
+         */
         public GraphTransformation build() {
             return this.calculateTransformation();
         }
@@ -232,6 +237,8 @@ public interface GraphTransformation {
         }
 
         /**
+         * Compares the source and target node patterns with the intention to determine {@link GraphOperation}s necessary to
+         * transform instances of the source graph pattern to instances of the target graph pattern.
          * @param <P> (super)type of the parent node, specified by the incoming edge
          * @param <T> common type of the current source and target node, defined by the incoming edge
          * @param <T1> actual concrete type of the source node
@@ -251,7 +258,7 @@ public interface GraphTransformation {
             NodePattern<T2> newSource;
             if (Objects.equals(srcRole, tgtRole)) {
                 // equal role name indicates type compatibility
-                newSource = (NodePattern<T2>) source;
+                newSource = Casting.castNodePattern(source);
             } else {
 
                 boolean disconnectEog = this.phase.disconnectEog && incomingEdge.isAst();
@@ -307,14 +314,30 @@ public interface GraphTransformation {
             source.handleRelationships(target, RelationComparisonFunction.from(this, ops));
         }
 
+        /**
+         * Sets the {@link ExecutionOrder} of the created {@link GraphTransformation}.
+         * @param executionOrder the new execution order
+         * @return this
+         */
         public GraphTransformation.Builder setExecutionOrder(ExecutionOrder executionOrder) {
             this.executionOrder = executionOrder;
             return this;
         }
 
+        /**
+         * This class represents a function to compare two node patterns with the intention to determine {@link GraphOperation}s
+         * to transform matches of the source graph pattern to graphs matching the target graph pattern.
+         */
         @FunctionalInterface
         public interface RelationComparisonFunction {
 
+            /**
+             * Creates a {@link RelationComparisonFunction} which passes all arguments to
+             * {@link Builder#compare(NodePattern, NodePattern, NodePattern, List, CpgEdge)}.
+             * @param builder the builder
+             * @param ops the GraphOperations determined so far
+             * @return the relation comparison function
+             */
             static RelationComparisonFunction from(Builder builder, List<GraphOperation> ops) {
                 return new RelationComparisonFunction() {
                     @Override
@@ -325,18 +348,41 @@ public interface GraphTransformation {
                 };
             }
 
+            /**
+             * Compares a relation of the source and target graph pattern, respectively, recursively comparing the related node
+             * patterns.
+             * @param source the source node relation
+             * @param target the target node relation
+             * @param parent the common parent pattern
+             * @param <T> the type of the origin node, as defined by the relation
+             * @param <P> the type of the parent pattern
+             * @param <R> the type of the related node, as defined by the relation
+             * @throws TransformationException if the {@link Relation} type is unexpected
+             */
             default <T extends Node, P extends T, R extends Node> void castAndCompare(Relation<? super T, R, ?> source, Relation<?, ?, ?> target,
-                    NodePattern.NodePatternImpl<P> parent) {
-                Relation<T, R, ?> castTarget = (Relation<T, R, ?>) target;
+                    NodePattern.NodePatternImpl<P> parent) throws TransformationException {
+                Relation<T, R, ?> castTarget = Casting.castRelation(target);
                 CpgEdge<? super T, R> edge = switch (source.getEdge()) {
-                    case CpgMultiEdge<? super T, R> multiEdge -> multiEdge.getAnyOfNEdgeTo(source.pattern);
+                    case CpgMultiEdge<? super T, R> multiEdge -> multiEdge.getAnyOfNEdgeTo(source.getPattern());
                     case CpgEdge<? super T, R> singleEdge -> singleEdge;
                     default -> throw new TransformationException("Relation edge must be CpgEdge or CpgMultiEdge");
                 };
 
-                compare(source.pattern, castTarget.pattern, parent, edge);
+                compare(source.getPattern(), castTarget.getPattern(), parent, edge);
             }
 
+            /**
+             * Compares the source node pattern and the target node pattern, both connected to the parent node pattern via the
+             * incomingEdge, respectively.
+             * @param source the source node pattern
+             * @param target the target node pattern
+             * @param parent the parent node pattern of source and target
+             * @param incomingEdge the edge connecting source and target to parent, respectively
+             * @param <T> the type of source and target, as specified by the incoming edge
+             * @param <T1> the concrete type of source
+             * @param <T2> the concrete type of target
+             * @param <P> the type of parent, as specified by the incoming edge
+             */
             <T extends Node, T1 extends T, T2 extends T, P extends Node> void compare(NodePattern<T1> source, NodePattern<T2> target,
                     NodePattern<? extends P> parent, CpgEdge<P, T> incomingEdge);
         }

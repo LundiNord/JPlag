@@ -29,6 +29,7 @@ public sealed class OneToNRelation<T extends Node, R extends Node> extends Relat
         return this.multiEdge;
     }
 
+    @Override
     public List<R> getTarget(T from) {
         return multiEdge.getAllTargets(from);
     }

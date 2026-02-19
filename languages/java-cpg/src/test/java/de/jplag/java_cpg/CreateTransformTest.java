@@ -3,7 +3,6 @@ package de.jplag.java_cpg;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
-import java.net.ConnectException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -36,7 +35,7 @@ public class CreateTransformTest extends AbstractJavaCpgLanguageTest {
 
     @ParameterizedTest
     @MethodSource("provideTuples")
-    void createTransformTest(String fileName, GraphTransformation transformation) throws ParsingException, InterruptedException, ConnectException {
+    void createTransformTest(String fileName, GraphTransformation transformation) throws ParsingException, InterruptedException {
 
         Set<File> files = Set.of(new File(baseDirectory, fileName));
         CpgAdapter cpgAdapter = new CpgAdapter();
@@ -51,7 +50,7 @@ public class CreateTransformTest extends AbstractJavaCpgLanguageTest {
     }
 
     private <T extends Node> void instantiate(GraphTransformation transformation) {
-        GraphPattern sourcePattern = transformation.getSourcePattern();
+        GraphPattern sourcePattern = transformation.sourcePattern();
         List<Match> maybeMatch = detector.getMatches(sourcePattern);
 
         assertFalse(maybeMatch.isEmpty());

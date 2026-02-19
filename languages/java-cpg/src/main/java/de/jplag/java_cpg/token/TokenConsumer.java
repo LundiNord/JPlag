@@ -18,9 +18,11 @@ public interface TokenConsumer {
      * @param file the file that contains the represented code
      * @param startLine the line where the represented code starts
      * @param startColumn the column where the represented code starts
+     * @param endLine the line where the represented code ends
+     * @param endColumn the column where the represented code ends
      * @param length The length of the represented code
      * @param name the name of the represented {@link Node}
      */
-    void addToken(TokenType type, File file, int startLine, int startColumn, int length, Name name);
+    void addToken(TokenType type, File file, int startLine, int startColumn, int endLine, int endColumn, int length, Name name);
 
 }

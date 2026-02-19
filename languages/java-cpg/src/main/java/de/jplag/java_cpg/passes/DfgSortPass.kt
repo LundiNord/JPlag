@@ -710,8 +710,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val nodes1 = NodeOrderStrategy.flattenStatement(n1).iterator()
         val nodes2 = NodeOrderStrategy.flattenStatement(n2).iterator()
 
-        val tokens1 = CpgNodeListener.tokenIterator(nodes1);
-        val tokens2 = CpgNodeListener.tokenIterator(nodes2);
+        val tokens1 = CpgNodeListener.tokenIterator(nodes1)
+        val tokens2 = CpgNodeListener.tokenIterator(nodes2)
 
         while (tokens1.hasNext() && tokens2.hasNext()) {
             val next1 = tokens1.next().type.let { if (it is CpgTokenType) it.ordinal else 0 }
@@ -719,8 +719,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val compare = next1 - next2
             if (compare != 0) return compare
         }
-        return if (tokens1.hasNext()) 1;
-        else if (tokens2.hasNext()) -1;
+        return if (tokens1.hasNext()) 1
+        else if (tokens2.hasNext()) -1
         else 0
 
     }
@@ -942,6 +942,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             // may be class or enum reference
             if (reference.refersTo !is ValueDeclaration || reference.refersTo is FunctionDeclaration) return false
             return this[reference.refersTo]?.register(reference) ?: false
+        }
+
+        companion object {
+            private const val serialVersionUID: Long = -6688414070734477497L
         }
 
     }

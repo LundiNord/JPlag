@@ -31,10 +31,12 @@ public final class RelatedNode<T extends Node, R extends Node> extends Relation<
         return cpgEdge;
     }
 
+    @Override
     public R getTarget(T from) {
         return cpgEdge.getRelated(from);
     }
 
+    @Override
     public <C extends T> void recursiveMatch(NodePattern<C> pattern, T parent, List<Match> openMatches) {
         R candidateNode = getTarget(parent);
 

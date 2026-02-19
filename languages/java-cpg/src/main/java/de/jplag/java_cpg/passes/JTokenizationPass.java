@@ -36,7 +36,7 @@ public class JTokenizationPass extends TranslationResultPass {
     private final ArrayList<Token> tokenList = new ArrayList<>();
     private final CpgTokenConsumer consumer = new ConcreteCpgTokenConsumer();
     private final NodeOrderStrategy strategy = new NodeOrderStrategy();
-    Consumer<List<Token>> callback = null;
+    private final Consumer<List<Token>> callback = null;
 
     /**
      * Constructs a new JTokenizationPass.
@@ -45,22 +45,6 @@ public class JTokenizationPass extends TranslationResultPass {
     public JTokenizationPass(@NotNull TranslationContext ctx) {
         super(ctx);
     }
-
-    // @Override
-    // public void accept(TranslationResult translationResult) {
-    // tokenList.clear();
-    // CpgNodeListener listener = new CpgNodeListener(consumer);
-    // SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();
-    // walker.setStrategy(strategy::getIterator);
-    // //walker.registerOnNodeVisit(listener::visit);
-    // walker.registerOnNodeVisit((node, parent) -> {
-    // listener.visit(node);
-    // return Unit.INSTANCE;
-    // });
-    // walker.registerOnNodeExit(listener::exit);
-    // walker.iterate(translationResult);
-    // callback.accept(tokenList);
-    // }
 
     /**
      * Updated for the (<a href="https://github.com/Fraunhofer-AISEC/cpg/pull/1571/files">new CPG version</a>), the old
@@ -97,8 +81,8 @@ public class JTokenizationPass extends TranslationResultPass {
     }
 
     private class ConcreteCpgTokenConsumer extends CpgTokenConsumer {
-        public void addToken(TokenType type, File file, int rowBegin, int colBegin, int length, Name name) {
-            CpgToken token = new CpgToken(type, file, rowBegin, colBegin, length, name);
+        public void addToken(TokenType type, File file, int startLine, int startColumn, int endLine, int endColumn, int length, Name name) {
+            CpgToken token = new CpgToken(type, file, startLine, startColumn, endLine, endColumn, length, name);
             tokenList.add(token);
         }
     }

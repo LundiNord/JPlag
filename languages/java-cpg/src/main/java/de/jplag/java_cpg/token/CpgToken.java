@@ -20,11 +20,13 @@ public class CpgToken extends Token {
      * @param file the {@link File} that contains the represented piece of code
      * @param startLine the starting line of the represented code
      * @param startColumn the starting column of the represented code
+     * @param endLine the ending line of the represented code
+     * @param endColumn the ending column of the represented code
      * @param length the length of the represented code
      * @param name the name of the represented CPG node
      */
-    public CpgToken(TokenType tokenType, File file, int startLine, int startColumn, int length, Name name) {
-        super(tokenType, file, startLine, startColumn, length);
+    public CpgToken(TokenType tokenType, File file, int startLine, int startColumn, int endLine, int endColumn, int length, Name name) {
+        super(tokenType, file, startLine, startColumn, endLine, endColumn, length);
         this.name = name;
     }
 

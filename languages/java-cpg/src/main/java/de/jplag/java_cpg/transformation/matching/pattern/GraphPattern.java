@@ -14,6 +14,11 @@ import de.jplag.java_cpg.transformation.Role;
  */
 public interface GraphPattern {
 
+    /**
+     * Returns the node pattern corresponding to the given role.
+     * @param role the role
+     * @return the node pattern
+     */
     NodePattern<Node> getPattern(Role role);
 
     /**
@@ -43,14 +48,17 @@ public interface GraphPattern {
     /**
      * Gets the {@link NodePattern} associated to the given role.
      * @param role the role
+     * @param nodeClass the class defining the return type
+     * @param <T> the expected node pattern type
      * @return the node pattern
      */
     <T extends Node> NodePattern<T> getPattern(Role role, Class<T> nodeClass);
 
     /**
-     * Gets the identifier that the given {@link NodePattern} is associated to in this {@link GraphPattern}.
+     * Gets the role that the given {@link NodePattern} is associated to in this {@link GraphPattern}.
      * @param pattern the node pattern
-     * @return the identifier
+     * @param <T> the node pattern type
+     * @return the role
      */
     <T extends Node> Role getRole(NodePattern<T> pattern);
 

@@ -1,7 +1,57 @@
 package de.jplag.java_cpg.token;
 
 import static de.jplag.SharedTokenType.FILE_END;
-import static de.jplag.java_cpg.token.CpgTokenType.*;
+import static de.jplag.java_cpg.token.CpgTokenType.ASSERT_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.ASSIGNMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.BREAK;
+import static de.jplag.java_cpg.token.CpgTokenType.CASE_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.CATCH_CLAUSE_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.CATCH_CLAUSE_END;
+import static de.jplag.java_cpg.token.CpgTokenType.CONSTRUCTOR_CALL;
+import static de.jplag.java_cpg.token.CpgTokenType.CONTINUE;
+import static de.jplag.java_cpg.token.CpgTokenType.DEFAULT_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.DO_WHILE_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.DO_WHILE_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.DO_WHILE_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.ELSE_BLOCK_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.ELSE_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.ENUM_DECL_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.ENUM_DECL_END;
+import static de.jplag.java_cpg.token.CpgTokenType.ENUM_ELEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.FIELD_DECL;
+import static de.jplag.java_cpg.token.CpgTokenType.FOR_BLOCK_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.FOR_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.FOR_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.GOTO_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.IF_BLOCK_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.IF_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.IF_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.INCLUDE;
+import static de.jplag.java_cpg.token.CpgTokenType.LAMBDA_EXPRESSION;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_BODY_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_BODY_END;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_CALL;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_DECL_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.METHOD_PARAM;
+import static de.jplag.java_cpg.token.CpgTokenType.NEW_ARRAY;
+import static de.jplag.java_cpg.token.CpgTokenType.RECORD_DECL_BEGIN;
+import static de.jplag.java_cpg.token.CpgTokenType.RECORD_DECL_END;
+import static de.jplag.java_cpg.token.CpgTokenType.RETURN;
+import static de.jplag.java_cpg.token.CpgTokenType.SWITCH_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.SWITCH_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.SWITCH_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.SYNCHRONIZED_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.SYNCHRONIZED_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.SYNCHRONIZED_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.THROW;
+import static de.jplag.java_cpg.token.CpgTokenType.TRY_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.TRY_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.TRY_STATEMENT;
+import static de.jplag.java_cpg.token.CpgTokenType.VARIABLE_DECL;
+import static de.jplag.java_cpg.token.CpgTokenType.WHILE_BLOCK_END;
+import static de.jplag.java_cpg.token.CpgTokenType.WHILE_BLOCK_START;
+import static de.jplag.java_cpg.token.CpgTokenType.WHILE_STATEMENT;
 
 import java.io.File;
 import java.util.Iterator;
@@ -10,9 +60,41 @@ import java.util.Objects;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
-import de.fraunhofer.aisec.cpg.graph.declarations.*;
-import de.fraunhofer.aisec.cpg.graph.statements.*;
-import de.fraunhofer.aisec.cpg.graph.statements.expressions.*;
+import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.EnumConstantDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.EnumDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.FieldDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.IncludeDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.ParameterDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.RecordDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
+import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
+import de.fraunhofer.aisec.cpg.graph.statements.AssertStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.BreakStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CaseStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.CatchClause;
+import de.fraunhofer.aisec.cpg.graph.statements.ContinueStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DefaultStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.DoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForEachStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ForStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.GotoStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.ReturnStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.Statement;
+import de.fraunhofer.aisec.cpg.graph.statements.SwitchStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.SynchronizedStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.TryStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.WhileStatement;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.AssignExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConstructExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewArrayExpression;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
 import de.jplag.Token;
 import de.jplag.TokenType;
 
@@ -46,8 +128,8 @@ public class CpgNodeListener extends ACpgNodeListener {
             Token next;
             final CpgTokenConsumer consumer = new CpgTokenConsumer() {
                 @Override
-                public void addToken(TokenType type, File file, int startLine, int startColumn, int length, Name name) {
-                    next = new CpgToken(type, file, startLine, startColumn, length, name);
+                public void addToken(TokenType type, File file, int startLine, int startColumn, int endLine, int endColumn, int length, Name name) {
+                    next = new CpgToken(type, file, startLine, startColumn, endLine, endColumn, length, name);
                 }
             };
 
@@ -75,7 +157,8 @@ public class CpgNodeListener extends ACpgNodeListener {
 
     @Override
     public void exit(TranslationUnitDeclaration translationUnitDeclaration) {
-        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), -1, -1, -1, translationUnitDeclaration.getName());
+        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), -1, -1, -1, -1, -1,
+                translationUnitDeclaration.getName());
     }
 
     @Override

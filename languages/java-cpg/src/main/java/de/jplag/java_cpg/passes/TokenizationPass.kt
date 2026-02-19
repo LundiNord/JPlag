@@ -80,12 +80,14 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         override fun addToken(
             type: TokenType,
             file: File,
-            rowBegin: Int,
-            colBegin: Int,
+            startLine: Int,
+            startColumn: Int,
+            endLine: Int,
+            endColumn: Int,
             length: Int,
             name: Name
         ) {
-            val token = CpgToken(type, file, rowBegin, colBegin, length, name)
+            val token = CpgToken(type, file, startLine, startColumn, endLine, endColumn, length, name)
             tokenList.add(token)
         }
     }

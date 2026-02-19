@@ -1,9 +1,13 @@
 package de.jplag.java_cpg.transformation.matching.pattern;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.TransformationException;
 
 /**
@@ -38,7 +42,7 @@ public class SimpleGraphPattern<T extends Node> extends GraphPatternImpl {
 
     @Override
     public List<NodePattern<Node>> getRoots() {
-        return List.of((NodePattern<Node>) root);
+        return List.of(Casting.castNodePattern(root));
     }
 
     @Override
@@ -54,8 +58,8 @@ public class SimpleGraphPattern<T extends Node> extends GraphPatternImpl {
     /**
      * Checks this {@link SimpleGraphPattern} against the given concrete {@link Node} for {@link Match}es.
      * @param rootCandidate the possible root {@link Node} of {@link Match}es
+     * @param <C> the concrete node type of the candidate
      * @return the list of {@link Match}es found
-     * @param <C> a C class
      */
     public <C extends Node> List<Match> recursiveMatch(C rootCandidate) {
         List<Match> matches = new ArrayList<>();
