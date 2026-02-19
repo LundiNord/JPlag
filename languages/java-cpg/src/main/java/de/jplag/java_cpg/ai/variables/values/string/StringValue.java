@@ -341,6 +341,14 @@ public class StringValue extends JavaObject implements IStringValue {
                     return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
+            case "toLowerCase" -> {   // public String toLowerCase()
+                assert paramVars == null || paramVars.isEmpty();
+                if (information) {
+                    return new StringValue(this.value.toLowerCase());
+                } else {
+                    return new StringValue();
+                }
+            }
             default -> {
                 return Value.valueFactory(expectedType);
             }

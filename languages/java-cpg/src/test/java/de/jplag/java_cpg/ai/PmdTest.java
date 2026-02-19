@@ -169,13 +169,21 @@ public class PmdTest {
         List<String> lines = Files.readAllLines(originalPath);
 
         // Collect line numbers to remove (convert to set for efficient lookup)
+        List<String> virtualFileLines = getStrings(fileViolations, lines);
+
+        File tempFile = File.createTempFile("jplag_temp_", ".java");
+        tempFile.deleteOnExit();
+        Files.write(tempFile.toPath(), virtualFileLines);
+        return tempFile;
+    }
+
+    private static @NotNull List<String> getStrings(@NotNull List<ViolationInfo> fileViolations, List<String> lines) {
         Set<Integer> linesToRemove = new HashSet<>();
         for (ViolationInfo violation : fileViolations) {
             for (int line = violation.beginLine; line <= violation.endLine; line++) {
                 linesToRemove.add(line);
             }
         }
-
         // Create virtual file content with violations removed
         List<String> virtualFileLines = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
@@ -184,11 +192,7 @@ public class PmdTest {
                 virtualFileLines.add(lines.get(i));
             }
         }
-
-        File tempFile = File.createTempFile("jplag_temp_", ".java");
-        tempFile.deleteOnExit();
-        Files.write(tempFile.toPath(), virtualFileLines);
-        return tempFile;
+        return virtualFileLines;
     }
 
 }

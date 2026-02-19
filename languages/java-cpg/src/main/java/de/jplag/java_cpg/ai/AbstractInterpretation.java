@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
+import de.fraunhofer.aisec.cpg.graph.BranchingNode;
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.declarations.ConstructorDeclaration;
@@ -377,9 +378,7 @@ public class AbstractInterpretation {
                 Variable newVar;
                 if (aiType.getTypeEnum() == de.jplag.java_cpg.ai.variables.Type.TypeEnum.ARRAY
                         || aiType.getTypeEnum() == de.jplag.java_cpg.ai.variables.Type.TypeEnum.LIST) {
-                    de.jplag.java_cpg.ai.variables.Type innerType = de.jplag.java_cpg.ai.variables.Type
-                            .fromCpgType(((PointerType) type).getElementType());
-                    IJavaArray arrayValue = Value.getNewArayValue(innerType);
+                    IJavaArray arrayValue = Value.getNewArayValue(aiType.getInnerType());
                     newVar = new Variable(new VariableName(name.toString()), arrayValue);
                 } else {
                     newVar = new Variable(new VariableName(name.toString()), aiType);
@@ -995,9 +994,6 @@ public class AbstractInterpretation {
 
     @Nullable
     private Node walkIfStatement(@NotNull IfStatement ifStmt) {
-        if (visitedNodesCounter == 73 || visitedNodesCounter == 58) {
-            System.out.println("Debug");
-        }
         Node nextNode;
         List<Node> nextEOG = ifStmt.getNextEOG();
         boolean elsePresent = ifStmt.getElseStatement() != null;
@@ -1070,7 +1066,7 @@ public class AbstractInterpretation {
         // then statement
         if (runThenBranch) {
             boolean restoreBlock = false;
-            if (!(ifStmt.getThenStatement() instanceof Block) && !(ifStmt.getThenStatement() instanceof IfStatement)) {
+            if (!(ifStmt.getThenStatement() instanceof Block) && !(ifStmt.getThenStatement() instanceof BranchingNode)) {
                 restoreBlock = true;
                 Block block = new Block();
                 block.setNextEOG(ifStmt.getThenStatement().getNextEOG());
@@ -1098,7 +1094,7 @@ public class AbstractInterpretation {
                 ifElseCounter++;
             }
             boolean restoreBlock = false;
-            if (!(ifStmt.getElseStatement() instanceof Block) && !(ifStmt.getElseStatement() instanceof IfStatement)) {
+            if (!(ifStmt.getElseStatement() instanceof Block) && !(ifStmt.getElseStatement() instanceof BranchingNode)) {
                 restoreBlock = true;
                 Block block = new Block();
                 block.setNextEOG(ifStmt.getElseStatement().getNextEOG());
@@ -1248,9 +1244,6 @@ public class AbstractInterpretation {
     }
 
     private void walkNewExpression(@NotNull NewExpression ne) {
-        if (visitedNodesCounter == 177) {
-            System.out.println("Debug");
-        }
         ConstructExpression ce = (ConstructExpression) nodeStack.getLast();
         RecordDeclaration classNode = (RecordDeclaration) ce.getInstantiates();
         List<IValue> arguments = new ArrayList<>();
@@ -1378,9 +1371,6 @@ public class AbstractInterpretation {
         Node nextNode;
         List<Node> nextEOG = ws.getNextEOG();
         assert nextEOG.size() == 2;
-        if (nextEOG.size() != 2) {
-            throw new CpgErrorException("Expected 2 statements in for next EOG, found: " + nextEOG.size());
-        }
         // detect infinite loops when no Block inserted by cpg
         if (!lastVisitedLoopOrIf.isEmpty() && lastVisitedLoopOrIf.contains(ws)) {
             nodeStack.add(null);
@@ -1497,9 +1487,7 @@ public class AbstractInterpretation {
     private Node walkForEachStatement(@NotNull ForEachStatement fes) {
         Node nextNode;
         List<Node> nextEOG = fes.getNextEOG();
-        if (nextEOG.size() != 2) {
-            throw new CpgErrorException("Expected 2 statements in for each next EOG, found: " + nextEOG.size());
-        }
+        assert nextEOG.size() == 2;
         if (!lastVisitedLoopOrIf.isEmpty() && fes == lastVisitedLoopOrIf.getLast()) {
             nodeStack.add(null);
             return null;

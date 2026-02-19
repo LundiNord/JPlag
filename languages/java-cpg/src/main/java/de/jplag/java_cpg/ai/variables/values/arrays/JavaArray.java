@@ -1,6 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values.arrays;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,7 +12,12 @@ import org.jetbrains.annotations.Nullable;
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.*;
+import de.jplag.java_cpg.ai.variables.values.BooleanValue;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
+import de.jplag.java_cpg.ai.variables.values.IValue;
+import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 /**
@@ -447,7 +456,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             }
             case "filter", "collect" -> {
                 this.values = null;
-                return Value.valueFactory(new Type(Type.TypeEnum.LIST));
+                return Value.valueFactory(new Type(Type.TypeEnum.LIST, this.innerType));
             }
             case "findFirst" -> {
                 if (values != null) {
@@ -460,7 +469,7 @@ public class JavaArray extends JavaObject implements IJavaArray {
             case "forEach" -> {
                 this.values = null;
                 this.innerType = new Type(Type.TypeEnum.VOID);
-                return Value.valueFactory(new Type(Type.TypeEnum.LIST));
+                return Value.valueFactory(new Type(Type.TypeEnum.LIST, new Type(Type.TypeEnum.UNKNOWN)));
             }
             case "set" -> {
                 assert paramVars.size() == 2;
