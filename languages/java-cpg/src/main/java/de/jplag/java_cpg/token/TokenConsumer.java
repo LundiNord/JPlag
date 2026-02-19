@@ -4,6 +4,7 @@ import java.io.File;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.fraunhofer.aisec.cpg.sarif.Region;
 import de.jplag.Token;
 import de.jplag.TokenType;
 
@@ -13,16 +14,13 @@ import de.jplag.TokenType;
 public interface TokenConsumer {
 
     /**
-     * Creates a new token to be consumed by this token consumer.
+     * Creates a new {@link Token} to be consumed by this token consumer.
      * @param type the token type
      * @param file the file that contains the represented code
-     * @param startLine the line where the represented code starts
-     * @param startColumn the column where the represented code starts
-     * @param endLine the line where the represented code ends
-     * @param endColumn the column where the represented code ends
-     * @param length The length of the represented code
+     * @param region the region that represents the token location
+     * @param length length of the Token
      * @param name the name of the represented {@link Node}
      */
-    void addToken(TokenType type, File file, int startLine, int startColumn, int endLine, int endColumn, int length, Name name);
+    void addToken(TokenType type, File file, Region region, int length, Name name);
 
 }

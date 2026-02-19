@@ -350,7 +350,7 @@ public interface NodePattern<T extends Node> {
 
         @Override
         public String toString() {
-            return "NodePattern{%s \"%s\"}".formatted(clazz.getSimpleName(), role.name());
+            return "NodePattern{%s \"%s\"}".formatted(clazz.getSimpleName(), role.getName());
         }
 
         private enum NodeAnnotation {

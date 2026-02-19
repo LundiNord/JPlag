@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.token;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -57,13 +58,23 @@ public abstract class CpgTokenConsumer implements TokenConsumer {
             length = calculateLength(region);
         }
 
-        int startLine = region.startLine;
-        int endLine = region.getEndLine();
-        int startColumn = region.startColumn;
-        int endColumn = region.getEndColumn();
+        Region newRegion;
+        List<Region> childRegions = node.getAstChildren().stream().map(Node::getLocation).filter(Objects::nonNull).map(PhysicalLocation::getRegion)
+                .toList();
+
+        // location encompasses the whole node AND all child nodes, not the syntactic element that represents the node.
+        // As an approximation for the missing values, we use the beginning and end of the child nodes, respectively, which is
+        // not ideal.
+        if (!isEndToken) {
+            Region nextTokenRegion = childRegions.getFirst();
+            newRegion = new Region(region.startLine, region.startColumn, nextTokenRegion.startLine, nextTokenRegion.startColumn);
+        } else {
+            Region previousTokenRegion = childRegions.getLast();
+            newRegion = new Region(previousTokenRegion.getEndLine(), previousTokenRegion.getEndColumn(), region.getEndLine(), region.getEndColumn());
+        }
 
         Name name = node.getName();
-        addToken(type, file, startLine, startColumn, endLine, endColumn, length, name);
+        addToken(type, file, newRegion, calculateLength(newRegion), name);
     }
 
 }

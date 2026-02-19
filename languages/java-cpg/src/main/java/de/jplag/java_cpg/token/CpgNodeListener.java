@@ -95,6 +95,7 @@ import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewArrayExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
+import de.fraunhofer.aisec.cpg.sarif.Region;
 import de.jplag.Token;
 import de.jplag.TokenType;
 
@@ -128,8 +129,8 @@ public class CpgNodeListener extends ACpgNodeListener {
             Token next;
             final CpgTokenConsumer consumer = new CpgTokenConsumer() {
                 @Override
-                public void addToken(TokenType type, File file, int startLine, int startColumn, int endLine, int endColumn, int length, Name name) {
-                    next = new CpgToken(type, file, startLine, startColumn, endLine, endColumn, length, name);
+                public void addToken(TokenType type, File file, Region region, int length, Name name) {
+                    next = new CpgToken(type, file, region, length, name);
                 }
             };
 
@@ -157,7 +158,7 @@ public class CpgNodeListener extends ACpgNodeListener {
 
     @Override
     public void exit(TranslationUnitDeclaration translationUnitDeclaration) {
-        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), -1, -1, -1, -1, -1,
+        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), new Region(-1, -1, -1, -1), -1,
                 translationUnitDeclaration.getName());
     }
 

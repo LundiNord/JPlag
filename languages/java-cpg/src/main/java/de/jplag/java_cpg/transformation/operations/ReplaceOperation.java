@@ -45,7 +45,6 @@ public final class ReplaceOperation<T extends Node, R extends Node> extends Grap
         this.disconnectEog = disconnectEog;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void resolveAndApply(Match match, TranslationContext ctx) {
         T parent = match.get(parentPattern);

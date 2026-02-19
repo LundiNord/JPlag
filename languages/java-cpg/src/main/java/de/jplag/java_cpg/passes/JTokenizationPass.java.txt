@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import de.fraunhofer.aisec.cpg.sarif.Region;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,8 @@ import kotlin.Unit;
 
 /**
  * This pass tokenizes the {@link de.fraunhofer.aisec.cpg.TranslationResult}. It is a duplicate of
- * de.jplag.java_cpg.passes.TokenizationPass implemented in Java as a workaround to make JavaDoc work. If the package
- * 'passes' contains only Kotlin files, JavaDoc fails.
+ * de.jplag.java_cpg.passes.TokenizationPass implemented in Java as a workaround to make Javadoc work. If the package
+ * 'passes' contains only Kotlin files, Javadoc fails.
  */
 public class JTokenizationPass extends TranslationResultPass {
 
@@ -81,8 +82,8 @@ public class JTokenizationPass extends TranslationResultPass {
     }
 
     private class ConcreteCpgTokenConsumer extends CpgTokenConsumer {
-        public void addToken(TokenType type, File file, int startLine, int startColumn, int endLine, int endColumn, int length, Name name) {
-            CpgToken token = new CpgToken(type, file, startLine, startColumn, endLine, endColumn, length, name);
+        public void addToken(TokenType type, File file, Region region, int length, Name name) {
+            CpgToken token = new CpgToken(type, file, region, length, name);
             tokenList.add(token);
         }
     }

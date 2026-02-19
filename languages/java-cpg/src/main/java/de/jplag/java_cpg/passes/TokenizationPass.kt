@@ -7,6 +7,7 @@ import de.fraunhofer.aisec.cpg.graph.Node
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker
 import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
+import de.fraunhofer.aisec.cpg.sarif.Region
 import de.jplag.Token
 import de.jplag.TokenType
 import de.jplag.java_cpg.token.CpgNodeListener
@@ -80,14 +81,11 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         override fun addToken(
             type: TokenType,
             file: File,
-            startLine: Int,
-            startColumn: Int,
-            endLine: Int,
-            endColumn: Int,
+            region: Region,
             length: Int,
             name: Name
         ) {
-            val token = CpgToken(type, file, startLine, startColumn, endLine, endColumn, length, name)
+            val token = CpgToken(type, file, region, length, name)
             tokenList.add(token)
         }
     }
