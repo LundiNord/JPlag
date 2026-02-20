@@ -13,7 +13,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import de.fraunhofer.aisec.cpg.TranslationContext;
 import de.fraunhofer.aisec.cpg.TranslationResult;
-import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.declarations.VariableDeclaration;
 import de.fraunhofer.aisec.cpg.graph.statements.IfStatement;
 import de.jplag.ParsingException;
@@ -23,11 +22,14 @@ import de.jplag.java_cpg.transformation.matching.CpgIsomorphismDetector;
 import de.jplag.java_cpg.transformation.matching.pattern.GraphPattern;
 import de.jplag.java_cpg.transformation.matching.pattern.Match;
 
+/**
+ * Tests the creation of transformations.
+ */
 public class CreateTransformTest extends AbstractJavaCpgLanguageTest {
 
     private CpgIsomorphismDetector detector;
 
-    public static Stream<Arguments> provideTuples() {
+    static Stream<Arguments> provideTuples() {
         return Stream.of(
                 Arguments.of("UnusedVariableDeclaration.java", TransformationRepository.removeUnusedVariableDeclaration, VariableDeclaration.class),
                 Arguments.of("IfElseWithNegatedCondition.java", TransformationRepository.ifWithNegatedConditionResolution, IfStatement.class));
@@ -49,7 +51,7 @@ public class CreateTransformTest extends AbstractJavaCpgLanguageTest {
 
     }
 
-    private <T extends Node> void instantiate(GraphTransformation transformation) {
+    private void instantiate(GraphTransformation transformation) {
         GraphPattern sourcePattern = transformation.sourcePattern();
         List<Match> maybeMatch = detector.getMatches(sourcePattern);
 
