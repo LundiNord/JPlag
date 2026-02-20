@@ -37,7 +37,7 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 analyseMethod(method, visitedLinesRecorder)
             }
         }
-        println("AiMethodPass accept")
+        println("Dead lines: ${visitedLinesRecorder.deadLinesCount}")
     }
 
     fun analyseMethod(method: MethodDeclaration, visitedLinesRecorder: VisitedLinesRecorder) {

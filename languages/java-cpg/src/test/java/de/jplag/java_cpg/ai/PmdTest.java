@@ -37,8 +37,50 @@ public class PmdTest {
     @Disabled("Only for testing the setup and PMD integration, not a real test")
     void singleTest() throws Exception {
         File file = new File("src/test/resources/java/ai/deadCode5");
+        int deadLines = getPmdDeadLinesInFile(file);
         File virtFile = runPmdForFile(file);
         assertNotNull(virtFile);
+        System.out.println("Dead lines: " + deadLines);
+    }
+
+    public static int getPmdDeadLinesInFile(@NotNull File file) throws IOException {
+        if (!file.exists()) {
+            throw new IOException("File does not exist: " + file.getAbsolutePath());
+        }
+        if (file.isDirectory()) {
+            // Find the actual Java file in the directory that has violations
+            File virtFile = runPmdForFile(file);
+
+            // Count total lines in all Java files in the directory
+            int totalOriginalLines = 0;
+            List<File> javaFiles = findJavaFiles(file);
+            for (File javaFile : javaFiles) {
+                totalOriginalLines += Files.readAllLines(javaFile.toPath()).size();
+            }
+
+            int virtualLines = Files.readAllLines(virtFile.toPath()).size();
+            return totalOriginalLines - virtualLines;
+        } else {
+            File virtFile = runPmdForFile(file);
+            List<String> originalLines = Files.readAllLines(file.toPath());
+            List<String> virtualLines = Files.readAllLines(virtFile.toPath());
+            return originalLines.size() - virtualLines.size();
+        }
+    }
+
+    private static @NotNull List<File> findJavaFiles(@NotNull File directory) {
+        List<File> javaFiles = new ArrayList<>();
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    javaFiles.addAll(findJavaFiles(file));
+                } else if (file.getName().endsWith(".java")) {
+                    javaFiles.add(file);
+                }
+            }
+        }
+        return javaFiles;
     }
 
     public static @NotNull File runPmdForFile(@NotNull File file) throws IOException {
