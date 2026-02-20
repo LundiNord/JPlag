@@ -620,7 +620,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/insert/insert-plag-subm177";
+        String fileName = "kit_DONT_COMMIT/BoardGame/insert/insert-plag-subm223";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -744,10 +744,8 @@ class EvaluationEngineTest {
 
         // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
         // i=i.proximo())
-        // String fileName = "progpedia/00000019/WRONG_ANSWER/00189_00001"; //Integer.intValue();
+        String fileName = "progpedia/00000019/WRONG_ANSWER/00189_00001"; // Integer.intValue();
         // String fileName = "progpedia/00000039/ACCEPTED/00139_00005"; //Dummy
-
-        String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);

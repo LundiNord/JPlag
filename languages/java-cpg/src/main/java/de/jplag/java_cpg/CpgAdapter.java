@@ -58,6 +58,10 @@ public class CpgAdapter {
      * Sets if only methods are analyzed instead of the whole program.
      */
     private final boolean methodAnalysisMode = true;
+    /**
+     * Sets if the analysis should try to continue if errors are encountered. The detected dead code will not be correct if
+     * this is true.
+     */
     private final boolean continueOnError = false;
 
     /**

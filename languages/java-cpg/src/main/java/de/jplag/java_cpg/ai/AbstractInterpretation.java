@@ -658,6 +658,9 @@ public class AbstractInterpretation {
 
     private void walkMemberExpression(@NotNull MemberExpression me) {
         de.jplag.java_cpg.ai.variables.Type expectedCpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(me.getType());
+        if (me.getAssignedTypes().size() != 1) {        // sometimes cpg does not set the type right (mostly with arraylists defined in class)
+            expectedCpgType = new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.UNKNOWN);
+        }
         if (me.getRefersTo() instanceof FieldDeclaration || me.getRefersTo() instanceof EnumConstantDeclaration) {
             if (valueStack.getLast() instanceof IJavaObject javaObject) {
                 nodeStack.removeLast();
@@ -665,8 +668,7 @@ public class AbstractInterpretation {
                 nodeStack.add(me);
                 assert me.getName().getParent() != null;
                 valueStack.removeLast();    // remove object reference
-                Type expectedType = me.getType();
-                IValue result = javaObject.accessField(me.getName().getLocalName(), de.jplag.java_cpg.ai.variables.Type.fromCpgType(expectedType));
+                IValue result = javaObject.accessField(me.getName().getLocalName(), expectedCpgType);
                 result.setParentObject(javaObject);
                 valueStack.add(result);
             } else {
@@ -682,8 +684,7 @@ public class AbstractInterpretation {
             nodeStack.removeLast();
             nodeStack.add(me);
         } else {
-            // unknown
-            // look at the last item on the value stack
+            // unknown: look at the last item on the value stack
             IValue value = valueStack.getLast();
             if (value instanceof VoidValue) {
                 valueStack.removeLast();    // remove object reference
@@ -728,9 +729,6 @@ public class AbstractInterpretation {
     }
 
     private Node walkSubscriptExpression(@NotNull SubscriptExpression se) { // adds its value to the value stack
-        if (visitedNodesCounter == 306 || visitedNodesCounter == 304) {
-            System.out.println("Debug");
-        }
         assert nodeStack.getLast() instanceof Literal || nodeStack.getLast() instanceof Reference || nodeStack.getLast() instanceof BinaryOperator
                 || nodeStack.getLast() instanceof MemberCallExpression || nodeStack.getLast() instanceof UnaryOperator
                 || nodeStack.getLast() instanceof SubscriptExpression;
@@ -747,6 +745,9 @@ public class AbstractInterpretation {
         if (!(ref instanceof IJavaArray)) {
             // array might not be initialized yet
             ref = Value.valueFactory(de.jplag.java_cpg.ai.variables.Type.fromCpgType(se.getArrayExpression().getType()));
+            if (!(ref instanceof IJavaArray)) { // cpg error
+                ref = Value.getNewArayValue();
+            }
         }
         IValue result = ((IJavaArray) ref).arrayAccess(indexLiteral);
         result.setArrayPosition((IJavaArray) ref, indexLiteral);
@@ -759,9 +760,6 @@ public class AbstractInterpretation {
     }
 
     private void walkMemberCallExpression(@NotNull MemberCallExpression mce) { // adds its value to the value stack
-        if (visitedNodesCounter == 307) {
-            System.out.println("Debug");
-        }
         IValue result;
         de.jplag.java_cpg.ai.variables.Type expectedType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType());
         if (mce.getArguments().isEmpty()) {     // no arguments
@@ -874,8 +872,12 @@ public class AbstractInterpretation {
     }
 
     private Node walkAssignExpression(@NotNull AssignExpression ae) {
-        if (visitedNodesCounter == 197) {
+        if (visitedNodesCounter == 17) {
             System.out.println("Debug");
+        }
+        if (!ae.getRhs().isEmpty() && ae.getRhs().getFirst() instanceof ProblemExpression) {
+            // cpg does not properly translate x = switch() {...}
+            throw new CpgErrorException("CPG error: switch expression is not properly translated, cannot analyze assignment expression");
         }
         assert !valueStack.isEmpty();
         if (ae.getLhs().getFirst() instanceof SubscriptExpression) {
@@ -956,9 +958,6 @@ public class AbstractInterpretation {
     }
 
     private void walkBinaryOperator(@NotNull BinaryOperator bop) {
-        if (visitedNodesCounter == 27) {
-            System.out.println("Debug");
-        }
         assert valueStack.size() >= 2 && !nodeStack.isEmpty();
         String operator = bop.getOperatorCode();
         assert operator != null;

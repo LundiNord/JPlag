@@ -58,7 +58,7 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val paramVars = ArrayList<IValue>()
         for (paramDecl in method.parameters) {
             val type: Type = paramDecl.type
-            val cpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(type);
+            val cpgType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(type)
             var value: IValue
             if (cpgType == de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT)) {
                 val constructExpression = ConstructExpression()

@@ -1,6 +1,16 @@
 package de.jplag.java_cpg.ai.variables;
 
-import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.*;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.ARRAY;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.BOOLEAN;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.CHAR;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.FLOAT;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.FUNCTION;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.INT;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.LIST;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.STRING;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.UNKNOWN;
+import static de.jplag.java_cpg.ai.variables.Type.TypeEnum.VOID;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -114,7 +124,7 @@ public class Type {
      * @return the corresponding Type enum.
      * @throws IllegalArgumentException if the CPG type is not supported.
      */
-    public static Type fromCpgType(@NotNull de.fraunhofer.aisec.cpg.graph.types.Type cpgType) {
+    public static @NotNull Type fromCpgType(@NotNull de.fraunhofer.aisec.cpg.graph.types.Type cpgType) {
         if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.IntegerType.class) {
             return new Type(INT);
         } else if (cpgType.getClass() == de.fraunhofer.aisec.cpg.graph.types.StringType.class) {
@@ -189,10 +199,7 @@ public class Type {
             case "void" -> new Type(VOID);
             case "String", "java.lang.String" -> new Type(STRING);
             case "T", "E", "K", "V" -> new Type(UNKNOWN);
-            default -> {
-                // new Type(OBJECT, typeStr);
-                throw new IllegalArgumentException("Unsupported CPG type: " + typeStr);
-            }
+            default -> new Type(OBJECT, typeStr);
         };
     }
 
