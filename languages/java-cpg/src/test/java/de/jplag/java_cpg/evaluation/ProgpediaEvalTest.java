@@ -1,10 +1,7 @@
-package de.jplag.java_cpg;
+package de.jplag.java_cpg.evaluation;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
-import static de.jplag.java_cpg.EvaluationEngineTest.checkNonDeadCodeNotRemoved;
-import static de.jplag.java_cpg.EvaluationEngineTest.getTokensFromFileWithoutDeadCode;
-import static de.jplag.java_cpg.EvaluationEngineTest.progpediaFiles;
-import static de.jplag.java_cpg.EvaluationEngineTest.similarity;
+import static de.jplag.java_cpg.evaluation.EvaluationEngineTest.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -19,13 +16,8 @@ import org.junit.jupiter.api.Test;
 
 import de.jplag.ParsingException;
 import de.jplag.Token;
-import de.jplag.java_cpg.ai.ArrayAiType;
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.CpgErrorException;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.JavaCpgLanguage;
+import de.jplag.java_cpg.ai.*;
 
 class ProgpediaEvalTest {
 
@@ -50,23 +42,23 @@ class ProgpediaEvalTest {
                 try {
                     tokensWithoutDeadCode = getTokensFromFileStandard(fileName, true, true, false, true, false);
                 } catch (JavaLanguageFeatureNotSupportedException _) {
-                    tokensWithoutDeadCode = new ArrayList<>();
+                    tokensWithoutDeadCode = new ArrayList<>(tokens);
                     javaLanguageFeatureNotSupported = true;
                 } catch (CpgErrorException _) {
-                    tokensWithoutDeadCode = new ArrayList<>();
+                    tokensWithoutDeadCode = new ArrayList<>(tokens);
                     cpgErrorException = true;
                 } catch (Exception e) {
                     Throwable one = e.getCause();
                     Throwable two = one.getCause();
                     if (two instanceof CpgErrorException) {
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                         cpgErrorException = true;
                     } else if (two instanceof JavaLanguageFeatureNotSupportedException) {
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                         javaLanguageFeatureNotSupported = true;
                     } else {
                         runtimeError = true;
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                     }
                 }
                 long timeFullRemoval = System.nanoTime() - startTime;
@@ -102,13 +94,6 @@ class ProgpediaEvalTest {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
-                System.out.println(
-                        "Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
-                System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
-                        + timeSimpleRemoval / 1_000_000.0 + " ms)");
-                System.out.println("Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took "
-                        + timeFullRemoval / 1_000_000.0 + " ms)");
             } catch (ParsingException e) {
                 System.out.println(e.getMessage());
             }
@@ -133,23 +118,23 @@ class ProgpediaEvalTest {
                 try {
                     tokensWithoutDeadCode = getTokensFromFileLevel1(fileName, true, true, false, true, false);
                 } catch (JavaLanguageFeatureNotSupportedException _) {
-                    tokensWithoutDeadCode = new ArrayList<>();
+                    tokensWithoutDeadCode = new ArrayList<>(tokens);
                     javaLanguageFeatureNotSupported = true;
                 } catch (CpgErrorException _) {
-                    tokensWithoutDeadCode = new ArrayList<>();
+                    tokensWithoutDeadCode = new ArrayList<>(tokens);
                     cpgErrorException = true;
                 } catch (Exception e) {
                     Throwable one = e.getCause();
                     Throwable two = one.getCause();
                     if (two instanceof CpgErrorException) {
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                         cpgErrorException = true;
                     } else if (two instanceof JavaLanguageFeatureNotSupportedException) {
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                         javaLanguageFeatureNotSupported = true;
                     } else {
                         runtimeError = true;
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                     }
                 }
                 long timeFullRemoval = System.nanoTime() - startTime;
@@ -185,13 +170,6 @@ class ProgpediaEvalTest {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
-                System.out.println(
-                        "Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
-                System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
-                        + timeSimpleRemoval / 1_000_000.0 + " ms)");
-                System.out.println("Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took "
-                        + timeFullRemoval / 1_000_000.0 + " ms)");
             } catch (ParsingException e) {
                 System.out.println(e.getMessage());
             }
@@ -216,23 +194,23 @@ class ProgpediaEvalTest {
                 try {
                     tokensWithoutDeadCode = getTokensFromFileLevel2(fileName, true, true, false, true, false);
                 } catch (JavaLanguageFeatureNotSupportedException _) {
-                    tokensWithoutDeadCode = new ArrayList<>();
+                    tokensWithoutDeadCode = new ArrayList<>(tokens);
                     javaLanguageFeatureNotSupported = true;
                 } catch (CpgErrorException _) {
-                    tokensWithoutDeadCode = new ArrayList<>();
+                    tokensWithoutDeadCode = new ArrayList<>(tokens);
                     cpgErrorException = true;
                 } catch (Exception e) {
                     Throwable one = e.getCause();
                     Throwable two = one.getCause();
                     if (two instanceof CpgErrorException) {
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                         cpgErrorException = true;
                     } else if (two instanceof JavaLanguageFeatureNotSupportedException) {
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                         javaLanguageFeatureNotSupported = true;
                     } else {
                         runtimeError = true;
-                        tokensWithoutDeadCode = new ArrayList<>();
+                        tokensWithoutDeadCode = new ArrayList<>(tokens);
                     }
                 }
                 long timeFullRemoval = System.nanoTime() - startTime;
@@ -268,13 +246,6 @@ class ProgpediaEvalTest {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
-                System.out.println(
-                        "Similarity between manual and no dead code removal: " + simNoRemoval + "% (took " + timeNoRemoval / 1_000_000.0 + " ms)");
-                System.out.println("Similarity between manual and automatic simple dead code removal: " + simSimpleRemoval + "% (took "
-                        + timeSimpleRemoval / 1_000_000.0 + " ms)");
-                System.out.println("Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took "
-                        + timeFullRemoval / 1_000_000.0 + " ms)");
             } catch (ParsingException e) {
                 System.out.println(e.getMessage());
             }

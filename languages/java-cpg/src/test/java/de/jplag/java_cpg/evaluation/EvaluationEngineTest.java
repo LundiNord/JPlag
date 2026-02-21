@@ -1,10 +1,8 @@
-package de.jplag.java_cpg;
+package de.jplag.java_cpg.evaluation;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
-import static de.jplag.java_cpg.ai.PmdTest.runPmdForFile;
-import static de.jplag.options.JPlagOptions.DEFAULT_SHOWN_COMPARISONS;
-import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_METRIC;
-import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_THRESHOLD;
+import static de.jplag.java_cpg.evaluation.PmdTest.runPmdForFile;
+import static de.jplag.options.JPlagOptions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -24,23 +22,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.jplag.JPlag;
-import de.jplag.JPlagComparison;
-import de.jplag.JPlagResult;
-import de.jplag.Language;
-import de.jplag.ParsingException;
-import de.jplag.Token;
+import de.jplag.*;
 import de.jplag.clustering.ClusteringOptions;
 import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
-import de.jplag.java_cpg.ai.ArrayAiType;
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.CpgErrorException;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
-import de.jplag.java_cpg.ai.ProgpediaTests;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.JavaCpgLanguage;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
@@ -52,7 +39,7 @@ import kotlin.Pair;
 class EvaluationEngineTest {
 
     @NotNull
-    private static Stream<String> testFiles() {
+    static Stream<String> testFiles() {
         return Stream.of(
                 // the first block is jvm warmup files
                 "aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java", "aiGenerated/claude/Project3.java",
@@ -178,7 +165,7 @@ class EvaluationEngineTest {
                 new Pair<>("aiGenerated/grok/project6.java", "aiGenerated/claude/Project6.java"));
     }
 
-    static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
+    public static <T> double similarity(@NotNull List<T> s1, @NotNull List<T> s2) {
         // stolen from https://stackoverflow.com/questions/955110/similarity-string-comparison-in-java
         List<T> longer = s1, shorter = s2;
         if (s1.size() < s2.size()) { // longer should always have greater length
@@ -237,7 +224,7 @@ class EvaluationEngineTest {
     }
 
     @NotNull
-    static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
+    public static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
             throws ParsingException {
         try {
             File originalFile = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
@@ -432,7 +419,7 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled("Only for evaluation purposes, not a real test")
     @MethodSource("testFiles")
-    void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException, IOException {
+    void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -449,23 +436,23 @@ class EvaluationEngineTest {
         try {
             tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         } catch (JavaLanguageFeatureNotSupportedException _) {
-            tokensWithoutDeadCode = new ArrayList<>();
+            tokensWithoutDeadCode = new ArrayList<>(tokens);
             javaLanguageFeatureNotSupported = true;
         } catch (CpgErrorException _) {
-            tokensWithoutDeadCode = new ArrayList<>();
+            tokensWithoutDeadCode = new ArrayList<>(tokens);
             cpgErrorException = true;
         } catch (Exception e) {
             Throwable one = e.getCause();
             Throwable two = one.getCause();
             if (two instanceof CpgErrorException) {
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 cpgErrorException = true;
             } else if (two instanceof JavaLanguageFeatureNotSupportedException) {
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 javaLanguageFeatureNotSupported = true;
             } else {
                 runtimeError = true;
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 throw new RuntimeException(e);
             }
         }
@@ -527,8 +514,8 @@ class EvaluationEngineTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
-        // String fileName = "aiGenerated/claude/Project5.java";
-        String fileName = "aiGenerated/gemini/ProjectN.java";
+        String fileName = "aiGenerated/claude/Project1.java";
+        // String fileName = "aiGenerated/grok/project6.java";
 
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
 
@@ -569,23 +556,23 @@ class EvaluationEngineTest {
         try {
             tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         } catch (JavaLanguageFeatureNotSupportedException _) {
-            tokensWithoutDeadCode = new ArrayList<>();
+            tokensWithoutDeadCode = new ArrayList<>(tokens);
             javaLanguageFeatureNotSupported = true;
         } catch (CpgErrorException _) {
-            tokensWithoutDeadCode = new ArrayList<>();
+            tokensWithoutDeadCode = new ArrayList<>(tokens);
             cpgErrorException = true;
         } catch (Exception e) {
             Throwable one = e.getCause();
             Throwable two = one.getCause();
             if (two instanceof CpgErrorException) {
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 cpgErrorException = true;
             } else if (two instanceof JavaLanguageFeatureNotSupportedException) {
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 javaLanguageFeatureNotSupported = true;
             } else {
                 runtimeError = true;
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 throw new RuntimeException(e);
             }
         }
@@ -660,23 +647,23 @@ class EvaluationEngineTest {
         try {
             tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
         } catch (JavaLanguageFeatureNotSupportedException _) {
-            tokensWithoutDeadCode = new ArrayList<>();
+            tokensWithoutDeadCode = new ArrayList<>(tokens);
             javaLanguageFeatureNotSupported = true;
         } catch (CpgErrorException _) {
-            tokensWithoutDeadCode = new ArrayList<>();
+            tokensWithoutDeadCode = new ArrayList<>(tokens);
             cpgErrorException = true;
         } catch (Exception e) {
             Throwable one = e.getCause();
             Throwable two = one.getCause();
             if (two instanceof CpgErrorException) {
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 cpgErrorException = true;
             } else if (two instanceof JavaLanguageFeatureNotSupportedException) {
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 javaLanguageFeatureNotSupported = true;
             } else {
                 runtimeError = true;
-                tokensWithoutDeadCode = new ArrayList<>();
+                tokensWithoutDeadCode = new ArrayList<>(tokens);
                 throw new RuntimeException(e);
             }
         }

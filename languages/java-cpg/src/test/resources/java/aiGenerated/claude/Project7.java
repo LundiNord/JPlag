@@ -116,7 +116,7 @@ class Book {
     @Override
     public String toString() {
         return String.format("'%s' by %s [%s] - %s",
-                title, author, isbn, isAvailable ? "Available" : "Borrowed");
+                title, author, isbn, "Available");
     }
 }
 

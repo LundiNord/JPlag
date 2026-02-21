@@ -9,35 +9,14 @@ import java.util.concurrent.ExecutionException;
 
 import org.jetbrains.annotations.NotNull;
 
-import de.fraunhofer.aisec.cpg.ConfigurationException;
-import de.fraunhofer.aisec.cpg.InferenceConfiguration;
-import de.fraunhofer.aisec.cpg.TranslationConfiguration;
-import de.fraunhofer.aisec.cpg.TranslationManager;
-import de.fraunhofer.aisec.cpg.TranslationResult;
+import de.fraunhofer.aisec.cpg.*;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
-import de.fraunhofer.aisec.cpg.passes.ControlDependenceGraphPass;
-import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
-import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
-import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
-import de.fraunhofer.aisec.cpg.passes.ImportResolver;
-import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
-import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
-import de.fraunhofer.aisec.cpg.passes.Pass;
-import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
-import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
-import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
-import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
-import de.fraunhofer.aisec.cpg.passes.TypeResolver;
+import de.fraunhofer.aisec.cpg.passes.*;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.ai.AiMethodPass;
 import de.jplag.java_cpg.ai.AiPass;
-import de.jplag.java_cpg.passes.AstTransformationPass;
-import de.jplag.java_cpg.passes.CpgTransformationPass;
-import de.jplag.java_cpg.passes.DfgSortPass;
-import de.jplag.java_cpg.passes.FixAstPass;
-import de.jplag.java_cpg.passes.PrepareTransformationPass;
-import de.jplag.java_cpg.passes.TokenizationPass;
+import de.jplag.java_cpg.passes.*;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase;
 
@@ -62,7 +41,7 @@ public class CpgAdapter {
      * Sets if the analysis should try to continue if errors are encountered. The detected dead code will not be correct if
      * this is true.
      */
-    private final boolean continueOnError = false;
+    private static final boolean continueOnError = false;
 
     /**
      * Constructs a new CpgAdapter.

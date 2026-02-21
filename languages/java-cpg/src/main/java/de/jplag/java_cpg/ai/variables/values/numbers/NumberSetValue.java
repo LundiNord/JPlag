@@ -108,18 +108,18 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 }
             }
             case "<=" -> {
-                if (values.getLast().getUpperBound().compareTo(otherValue.values.getFirst().getLowerBound()) <= 0) {
+                if (values.getLast().getUpperBound().doubleValue() <= otherValue.values.getFirst().getLowerBound().doubleValue()) {
                     return new BooleanValue(true);
-                } else if (values.getFirst().getLowerBound().compareTo(otherValue.values.getLast().getUpperBound()) > 0) {
+                } else if (values.getFirst().getLowerBound().doubleValue() > otherValue.values.getLast().getUpperBound().doubleValue()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">=" -> {
-                if (values.getFirst().getLowerBound().compareTo(otherValue.values.getLast().getUpperBound()) >= 0) {
+                if (values.getFirst().getLowerBound().doubleValue() >= otherValue.values.getLast().getUpperBound().doubleValue()) {
                     return new BooleanValue(true);
-                } else if (values.getLast().getUpperBound().compareTo(otherValue.values.getFirst().getLowerBound()) < 0) {
+                } else if (values.getLast().getUpperBound().doubleValue() < otherValue.values.getFirst().getLowerBound().doubleValue()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
@@ -275,7 +275,7 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 other = createInstance(new TreeSet<>());
             }
         } else if (other instanceof IIntNumber integerNumber && !(this instanceof IIntNumber)) { // can happen because some casts are not explicit in
-                                                                                                 // eog
+            // eog
             if (integerNumber.getInformation()) {
                 double value = integerNumber.getValue();
                 TreeSet<I> newValues = new TreeSet<>();

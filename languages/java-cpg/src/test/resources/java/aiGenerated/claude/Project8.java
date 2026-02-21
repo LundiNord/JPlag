@@ -136,8 +136,7 @@ class Product {
     // PLAGIARIZED: toString format similar to Book
     @Override
     public String toString() {
-        return String.format("'%s' by %s [%s] - %s",
-                name, manufacturer, sku, inStock ? "In Stock" : "Out of Stock");
+        return String.format("'%s' by %s [%s] - %s", name, manufacturer, sku, "In Stock");
     }
 }
 
@@ -299,7 +298,7 @@ class Warehouse {
     public List<Product> getProducts() {
         return products;
     }
-    
+
     public List<Customer> getCustomers() {
         return customers;
     }
