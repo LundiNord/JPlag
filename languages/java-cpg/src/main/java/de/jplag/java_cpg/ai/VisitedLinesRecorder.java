@@ -25,6 +25,7 @@ public class VisitedLinesRecorder {
     private final Map<URI, Set<Integer>> possibleLines;
     private final Map<URI, Set<Integer>> detectedDeadLines;
     private int deadLinesCount = 0;
+    private int deadCodeCount = 0;
 
     /**
      * Creates a new VisitedLinesRecorder.
@@ -91,6 +92,7 @@ public class VisitedLinesRecorder {
         Set<Integer> alreadyDeadLines = detectedDeadLines.computeIfAbsent(uri, _ -> new HashSet<>());
         alreadyDeadLines.addAll(deadLines);
         deadLinesCount += (endLine - startLine + 1);
+        deadCodeCount++;
     }
 
     /**
@@ -180,6 +182,14 @@ public class VisitedLinesRecorder {
     @TestOnly
     public int getDeadLinesCount() {
         return deadLinesCount;
+    }
+
+    /**
+     * @return the number of code regions that have been detected to be dead code.
+     */
+    @TestOnly
+    public int getDeadCodeCount() {
+        return deadCodeCount;
     }
 
 }

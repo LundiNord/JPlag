@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 import org.kohsuke.MetaInfServices;
 
 import de.jplag.Language;
@@ -38,6 +39,8 @@ import de.jplag.java_cpg.ai.IntAiType;
 import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.transformation.GraphTransformation;
+
+import kotlin.Pair;
 
 /**
  * This class represents the front end of the CPG module of JPlag.
@@ -199,12 +202,33 @@ public class JavaCpgLanguage implements Language {
     }
 
     @Override
-    public List<Token> parse(Set<File> files, boolean normalize) throws ParsingException {
+    public @NotNull List<Token> parse(@NotNull Set<File> files, boolean normalize) throws ParsingException {
         try {
             return cpgAdapter.adapt(files, normalize);
         } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
             return List.of();
+        }
+    }
+
+    /**
+     * Parses the given files and returns a pair of the resulting tokens and the number of dead code lines detected, if
+     * enabled.
+     * @param files the files to parse
+     * @param normalize whether to apply normalization transformations
+     * @return a pair of the resulting tokens and the number of dead code lines detected,
+     * @throws ParsingException if an error occurs during parsing
+     */
+    @TestOnly
+    public @NotNull Pair<List<Token>, Integer> parse2(@NotNull Set<File> files, boolean normalize) throws ParsingException {
+        try {
+            List<Token> tokens = cpgAdapter.adapt(files, normalize);
+            // int deadLines = cpgAdapter.getDeadLinesCount();
+            int deadLines = cpgAdapter.getDeadCodeCount();
+            return new Pair<>(tokens, deadLines);
+        } catch (InterruptedException _) {
+            Thread.currentThread().interrupt();
+            return new Pair<>(List.of(), 0);
         }
     }
 

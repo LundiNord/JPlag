@@ -24,19 +24,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.JavaCpgLanguage;
-import de.jplag.java_cpg.ai.ArrayAiType;
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.CpgErrorException;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
 public class DceLlmEvalTest {
 
     private static @NotNull Stream<String> dceLlmFiles() {
-        String basePath = "/home/alpaka/PycharmProjects/baplots/testFiles";
+        // String basePath = "/home/alpaka/PycharmProjects/baplots/testFiles";
+        String basePath = "/home/alpaka/IdeaProjects/DCE-LLM/testFiles";
         Path baseDir = Path.of(basePath);
         if (!Files.exists(baseDir)) {
             return Stream.empty();
@@ -44,7 +39,7 @@ public class DceLlmEvalTest {
         try (Stream<Path> paths = Files.walk(baseDir)) {
             List<String> files = paths.filter(Files::isRegularFile).map(Path::toString).filter(path -> path.endsWith(".java")).toList();
             return files.stream();
-        } catch (IOException e) {
+        } catch (IOException _) {
             return Stream.empty();
         }
     }
@@ -55,9 +50,9 @@ public class DceLlmEvalTest {
         assert normalize || !reorder;
         GraphTransformation[] transformations = JavaCpgLanguage.deadCodeRemovalTransformations();
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, transformations,
-                IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
-        // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
-        // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
+                // IntAiType.DEFAULT, FloatAiType.DEFAULT, StringAiType.DEFAULT, CharAiType.DEFAULT, ArrayAiType.DEFAULT);
+                // IntAiType.INTERVALS, FloatAiType.DEFAULT, StringAiType.CHAR_INCLUSION, CharAiType.DEFAULT, ArrayAiType.LENGTH);
+                IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         File file = new File(fileName);
         Set<File> files = Set.of(file);
         List<Token> result = language.parse(files, normalize);

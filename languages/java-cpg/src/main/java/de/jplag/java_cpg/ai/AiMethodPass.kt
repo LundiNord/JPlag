@@ -16,6 +16,7 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject
 import de.jplag.java_cpg.ai.variables.values.Value
 import de.jplag.java_cpg.passes.CpgTransformationPass
 import de.jplag.java_cpg.passes.TokenizationPass
+import java.util.function.Consumer
 
 @DependsOn(CpgTransformationPass::class)
 @ExecuteBefore(TokenizationPass::class)
@@ -37,11 +38,11 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 analyseMethod(method, visitedLinesRecorder)
             }
         }
-        println("Dead lines: ${visitedLinesRecorder.deadLinesCount}")
+        deadLinesCallback!!.accept(visitedLinesRecorder.deadLinesCount)
+        deadCountCallback!!.accept(visitedLinesRecorder.deadCodeCount)
     }
 
     fun analyseMethod(method: MethodDeclaration, visitedLinesRecorder: VisitedLinesRecorder) {
-        println("Abstract Interpretation of method ${method.name} started.")
         val abstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
         AbstractInterpretation.setContinueOnError(continueOnError)
         abstractInterpretation.setMethodAnalysisMode()
@@ -79,12 +80,13 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             log.error("AI pass failed for method: ${method.name}", t)
             throw t
         }
-        println("Abstract Interpretation of method ${method.name} finished.")
     }
 
     companion object AiMethodPassCompanion {
         var removeDeadCode: Boolean = true
         var continueOnError: Boolean = false
+        var deadLinesCallback: Consumer<Int>? = null
+        var deadCountCallback: Consumer<Int>? = null
     }
 
 }

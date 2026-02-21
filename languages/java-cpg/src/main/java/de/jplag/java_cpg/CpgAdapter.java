@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.ConfigurationException;
 import de.fraunhofer.aisec.cpg.InferenceConfiguration;
@@ -53,6 +54,8 @@ public class CpgAdapter {
     private final boolean removeSimpleDeadCode;
     private final boolean detectDeadCode;
     private List<Token> tokenList;
+    private int deadLinesCount;
+    private int deadCodeCount;
     private boolean reorderingEnabled = true;
     /**
      * Sets if only methods are analyzed instead of the whole program.
@@ -85,6 +88,7 @@ public class CpgAdapter {
     List<Token> adapt(@NotNull Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
         assert !files.isEmpty();
         tokenList = null;
+        deadLinesCount = 0;
         if (!normalize) {
             clearTransformations();
             addTransformations(JavaCpgLanguage.minimalTransformations());
@@ -141,9 +145,13 @@ public class CpgAdapter {
         TranslationResult translationResult;
         TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
         AiPass.AiPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
-        AiPass.AiPassCompanion.setContinueOnError(CpgAdapter.this.continueOnError);
+        AiPass.AiPassCompanion.setContinueOnError(continueOnError);
+        AiPass.AiPassCompanion.setDeadLinesCallback(CpgAdapter.this::setDeadLinesCount);
+        AiPass.AiPassCompanion.setDeadCountCallback(CpgAdapter.this::setDeadCodeCount);
         AiMethodPass.AiMethodPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
-        AiMethodPass.AiMethodPassCompanion.setContinueOnError(CpgAdapter.this.continueOnError);
+        AiMethodPass.AiMethodPassCompanion.setContinueOnError(continueOnError);
+        AiMethodPass.AiMethodPassCompanion.setDeadLinesCallback(CpgAdapter.this::setDeadLinesCount);
+        AiMethodPass.AiMethodPassCompanion.setDeadCountCallback(CpgAdapter.this::setDeadCodeCount);
         DfgSortPass.DfgSortPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeSimpleDeadCode);
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
@@ -176,8 +184,25 @@ public class CpgAdapter {
         return translationResult;
     }
 
-    private void setTokenList(List<Token> tokenList) {
+    private void setTokenList(@NotNull List<Token> tokenList) {
         this.tokenList = tokenList;
+    }
+
+    private void setDeadLinesCount(int count) {
+        this.deadLinesCount = count;
+    }
+
+    int getDeadLinesCount() {
+        return deadLinesCount;
+    }
+
+    private void setDeadCodeCount(int count) {
+        this.deadCodeCount = count;
+    }
+
+    @TestOnly
+    int getDeadCodeCount() {
+        return deadCodeCount;
     }
 
 }

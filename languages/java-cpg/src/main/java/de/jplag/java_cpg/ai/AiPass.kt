@@ -12,7 +12,7 @@ import de.fraunhofer.aisec.cpg.passes.configuration.ExecuteBefore
 import de.jplag.java_cpg.passes.CpgTransformationPass
 import de.jplag.java_cpg.passes.TokenizationPass
 import java.net.URI
-import java.util.*
+import java.util.function.Consumer
 
 /**
  * A CPG Pass performing Abstract Interpretation on the CPG Translation Result.
@@ -47,13 +47,11 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                 }
             }
         }
-        println("Abstract Interpretation finished.")
         //find dead methods and classes
         try {
             for (translationUnit in comp.translationUnits) {
                 for (recordDeclaration in translationUnit.records) {
                     if (checkIfCompletelyDead(recordDeclaration, visitedLinesRecorder) && removeDeadCode) {
-                        println("Dead code (class) detected: ${recordDeclaration.name}")
                         // Try removing from Translation Unit directly
                         val tuIndex = translationUnit.declarations.indexOf(recordDeclaration)
                         if (tuIndex > 0) {
@@ -76,7 +74,6 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                                 continue    //methods that are sometimes not visited by the AI but could still be called implicitly
                                 //this is only a last resort as methods called inside these methods may still incorrectly be detected as dead code
                             }
-                            println("Dead code (method) detected: ${method.name} in class ${recordDeclaration.name}")
                             val index = recordDeclaration.methods.indexOf(method)
                             recordDeclaration.methodEdges.removeAt(index)
                         }
@@ -84,7 +81,6 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
                     //inner classes
                     for (innerClass in recordDeclaration.records) {
                         if (checkIfCompletelyDead(innerClass, visitedLinesRecorder) && removeDeadCode) {
-                            println("Dead code (inner class) detected: ${innerClass.name}")
                             val index = recordDeclaration.records.indexOf(innerClass)
                             recordDeclaration.recordEdges.removeAt(index)
                             innerClass.disconnectFromGraph()
@@ -95,11 +91,11 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         } catch (e: Exception) {
             log.error("Error while detecting dead classes and methods", e)
         }
-        //Debug
-        val visitedLines: Set<Int> = visitedLinesRecorder.visitedLines.values.firstOrNull() ?: emptySet()
-        val sortedVisitedLines = TreeSet(visitedLines)
-        println("Abstract Interpretation code removal finished.")
-        println("Dead lines: ${visitedLinesRecorder.deadLinesCount}")
+//        Debug
+//        val visitedLines: Set<Int> = visitedLinesRecorder.visitedLines.values.firstOrNull() ?: emptySet()
+//        val sortedVisitedLines = TreeSet(visitedLines)
+        deadLinesCallback!!.accept(visitedLinesRecorder.deadLinesCount)
+        deadCountCallback!!.accept(visitedLinesRecorder.deadCodeCount)
     }
 
     fun checkIfCompletelyDead(node: Node, visitedLinesRecorder: VisitedLinesRecorder): Boolean {
@@ -116,6 +112,8 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     companion object AiPassCompanion {
         var removeDeadCode: Boolean = true
         var continueOnError: Boolean = false
+        var deadLinesCallback: Consumer<Int>? = null
+        var deadCountCallback: Consumer<Int>? = null
     }
 
 }
