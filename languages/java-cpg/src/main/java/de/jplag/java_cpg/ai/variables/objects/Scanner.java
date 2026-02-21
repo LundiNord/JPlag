@@ -7,6 +7,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
@@ -52,17 +53,17 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 assert paramVars == null || paramVars.isEmpty();
                 return new VoidValue();
             }
-            case "nextInt", "nextLong" -> {
+            case "nextInt", "nextLong", "nextBigInteger" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
-            case "nextDouble", "nextFloat" -> {
+            case "nextDouble", "nextFloat", "nextBigDecimal" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
             }
             case "hasNextInt", "hasNext", "hasNextLine" -> {
                 assert paramVars == null || paramVars.isEmpty()
-                        || (paramVars.size() == 1 && paramVars.get(0).getType().getTypeEnum() == Type.TypeEnum.STRING);
+                        || (paramVars.size() == 1 && paramVars.getFirst().getType().getTypeEnum() == Type.TypeEnum.STRING);
                 return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             case "useLocale" -> {
@@ -74,6 +75,10 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 assert paramVars.size() == 1;
                 // We don't model Pattern, so just return this
                 return this;
+            }
+            case "nextByte" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                throw new JavaLanguageFeatureNotSupportedException("byte is not supported");
             }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in Scanner.");
         }

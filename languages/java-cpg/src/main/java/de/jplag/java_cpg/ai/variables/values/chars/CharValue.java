@@ -107,9 +107,9 @@ public class CharValue extends Value implements ICharValue {
                 }
             }
             case "-" -> {
-                CharValue otherCharValue = (CharValue) other;
-                if (this.information && otherCharValue.information) {
-                    return new CharValue((char) (this.value - otherCharValue.value));
+                INumberValue otherCharValue = (INumberValue) other;
+                if (this.information && otherCharValue.getInformation()) {
+                    return new CharValue((char) (this.value - otherCharValue.getValue()));
                 } else {
                     return new CharValue();
                 }

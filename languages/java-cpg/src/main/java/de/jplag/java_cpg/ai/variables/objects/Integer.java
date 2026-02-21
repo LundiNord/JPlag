@@ -13,6 +13,7 @@ import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IIntNumber;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
@@ -56,11 +57,17 @@ public class Integer extends JavaObject implements ISpecialObject {
                     case VoidValue _ -> {
                         return Value.valueFactory(new Type(Type.TypeEnum.INT));
                     }
+                    case IIntNumber intNumber -> {
+                        return intNumber;
+                    }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
             }
             case "toString" -> {
-                assert paramVars.size() == 1;
+                if (paramVars.size() == 2) {    // with radix
+                    return Value.valueFactory(new Type(Type.TypeEnum.STRING));
+                }
+                assert paramVars.size() == 1 : "toString method of Integer expects exactly one parameter but got " + paramVars.size();
                 IValue value = paramVars.getFirst();
                 switch (value) {
                     case INumberValue intValue -> {

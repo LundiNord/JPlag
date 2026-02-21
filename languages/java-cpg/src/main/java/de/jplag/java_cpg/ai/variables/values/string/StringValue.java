@@ -70,7 +70,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 assert paramVars.size() == 1;
                 StringValue str = (StringValue) paramVars.getFirst();
                 if (str.getInformation()) {
-                    return Value.valueFactory(Integer.parseInt(str.getValue()));
+                    return Value.valueFactory(Integer.parseInt(Objects.requireNonNull(str.getValue())));
                 } else {
                     return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
@@ -79,7 +79,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 assert paramVars.size() == 1;
                 StringValue str = (StringValue) paramVars.getFirst();
                 if (str.getInformation()) {
-                    return Value.valueFactory(Double.parseDouble(str.getValue()));
+                    return Value.valueFactory(Double.parseDouble(Objects.requireNonNull(str.getValue())));
                 } else {
                     return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
                 }
@@ -88,7 +88,7 @@ public class StringValue extends JavaObject implements IStringValue {
                 assert paramVars.size() == 1;
                 StringValue prefix = (StringValue) paramVars.getFirst();
                 if (information && prefix.getInformation()) {
-                    return Value.valueFactory(value.startsWith(prefix.getValue()));
+                    return Value.valueFactory(value.startsWith(Objects.requireNonNull(prefix.getValue())));
                 } else {
                     return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }

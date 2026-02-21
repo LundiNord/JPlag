@@ -69,7 +69,7 @@ public class Arrays extends JavaObject implements ISpecialObject {
                 return array.callMethod("copyOfRange", paramVars.subList(1, paramVars.size()), null, expectedType);
             }
             case "asList" -> {      // <T> List<T> asList(T... a)
-                return Value.getNewArayValue(paramVars);
+                return Value.getNewArayValue();
             }
             case "stream" -> {      // <T> Stream<T> stream(T[] array)
                 assert paramVars.size() == 1;

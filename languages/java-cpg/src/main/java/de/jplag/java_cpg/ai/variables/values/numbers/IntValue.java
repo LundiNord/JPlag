@@ -12,6 +12,7 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.chars.CharValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Represents an integer value with optional exact information.
@@ -104,6 +105,9 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
 
     @Override
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
+        if (other instanceof IStringValue) {
+            return other.binaryOperation(operator, this);
+        }
         if (!(other instanceof INumberValue)) {
             other = new IntValue();
         }
@@ -287,6 +291,13 @@ public class IntValue extends Value implements INumberValue, IIntNumber {
                     return Value.valueFactory(Math.sqrt(this.value));
                 } else {
                     return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
+                }
+            }
+            case "ceil", "floor" -> {
+                if (information) {
+                    return Value.valueFactory((int) (double) this.value);
+                } else {
+                    return new IntValue();
                 }
             }
             default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());

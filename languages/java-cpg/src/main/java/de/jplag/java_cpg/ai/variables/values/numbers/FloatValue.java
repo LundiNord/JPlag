@@ -10,6 +10,7 @@ import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Represents a floating point value with optional exact information.
@@ -93,7 +94,10 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
         if (other instanceof VoidValue) {
             return new VoidValue();
         }
-        assert other instanceof INumberValue;
+        if (other instanceof IStringValue) {
+            return other.binaryOperation(operator, this);
+        }
+        assert other instanceof INumberValue : "Expected a number value for binary operation, but got " + other.getType();
         switch (operator) {
             case "+" -> {
                 if (information && ((INumberValue) other).getInformation()) {
@@ -228,6 +232,20 @@ public class FloatValue extends Value implements INumberValue, IFloatNumber {
             case "abs" -> {
                 if (information) {
                     return new FloatValue(Math.abs(this.value));
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "ceil" -> {
+                if (information) {
+                    return new FloatValue(Math.ceil(this.value));
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "floor" -> {
+                if (information) {
+                    return new FloatValue(Math.floor(this.value));
                 } else {
                     return new FloatValue();
                 }

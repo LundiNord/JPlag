@@ -118,7 +118,17 @@ public class Math extends JavaObject implements ISpecialObject {
                 assert paramVars.getFirst() instanceof INumberValue;
                 return paramVars.getFirst().unaryOperation("floor");
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            case "round" -> {
+                assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
+                }
+                assert paramVars.getFirst() instanceof INumberValue;
+                return paramVars.getFirst().unaryOperation("round");
+            }
+            default -> {
+                return Value.valueFactory(expectedType);
+            }
         }
     }
 

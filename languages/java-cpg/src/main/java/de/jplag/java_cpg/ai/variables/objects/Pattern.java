@@ -54,6 +54,10 @@ public class Pattern extends JavaObject implements ISpecialObject {
             case "toString" -> {
                 return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
+            case "group" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

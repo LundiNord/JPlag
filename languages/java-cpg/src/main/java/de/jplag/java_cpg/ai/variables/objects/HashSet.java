@@ -67,7 +67,9 @@ public class HashSet extends JavaObject implements ISpecialObject, IJavaArray {
                 assert paramVars == null || paramVars.isEmpty() : "first expects 0 parameters";
                 return Value.valueFactory(expectedType);
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            default -> {
+                return Value.valueFactory(expectedType);
+            }
         }
     }
 
