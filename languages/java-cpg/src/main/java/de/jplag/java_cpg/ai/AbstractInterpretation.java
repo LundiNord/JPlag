@@ -760,9 +760,6 @@ public class AbstractInterpretation {
     }
 
     private void walkMemberCallExpression(@NotNull MemberCallExpression mce) { // adds its value to the value stack
-        if (visitedNodesCounter == 24) {
-            System.out.println("Debug");
-        }
         IValue result;
         de.jplag.java_cpg.ai.variables.Type expectedType = de.jplag.java_cpg.ai.variables.Type.fromCpgType(mce.getType());
         if (mce.getArguments().isEmpty()) {     // no arguments
@@ -1804,10 +1801,20 @@ public class AbstractInterpretation {
         this.methodAnalysisMode = true;
     }
 
+    /**
+     * @return true if this abstract interpretation engine is currently only analyzing a method without running any other
+     * methods or constructors, false otherwise.
+     */
     public boolean isMethodAnalysisMode() {
         return this.methodAnalysisMode;
     }
 
+    /**
+     * If set to true, the abstract interpretation engine will continue execution even if it encounters an error during
+     * execution. This can lead to more imprecise results, but can be useful to still get some results even if the cpg is
+     * not perfect.
+     * @param continueOnError whether to continue on error or not
+     */
     public static void setContinueOnError(boolean continueOnError) {
         AbstractInterpretation.continueOnError = continueOnError;
     }

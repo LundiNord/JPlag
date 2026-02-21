@@ -1,10 +1,9 @@
 package de.jplag.java_cpg.evaluation;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
+import static de.jplag.java_cpg.evaluation.PmdTest.getPmdDeadLinesInFile;
 import static de.jplag.java_cpg.evaluation.PmdTest.runPmdForFile;
-import static de.jplag.options.JPlagOptions.DEFAULT_SHOWN_COMPARISONS;
-import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_METRIC;
-import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_THRESHOLD;
+import static de.jplag.options.JPlagOptions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -24,24 +23,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.jplag.JPlag;
-import de.jplag.JPlagComparison;
-import de.jplag.JPlagResult;
-import de.jplag.Language;
-import de.jplag.ParsingException;
-import de.jplag.Token;
+import de.jplag.*;
 import de.jplag.clustering.ClusteringOptions;
 import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
 import de.jplag.java_cpg.JavaCpgLanguage;
-import de.jplag.java_cpg.ai.ArrayAiType;
-import de.jplag.java_cpg.ai.CharAiType;
-import de.jplag.java_cpg.ai.CpgErrorException;
-import de.jplag.java_cpg.ai.FloatAiType;
-import de.jplag.java_cpg.ai.IntAiType;
-import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
-import de.jplag.java_cpg.ai.ProgpediaTests;
-import de.jplag.java_cpg.ai.StringAiType;
+import de.jplag.java_cpg.ai.*;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
@@ -52,8 +39,7 @@ import kotlin.Pair;
 @Disabled("Only for manual evaluation of dead code removal and plagiarism detection")
 class EvaluationEngineTest {
 
-    @NotNull
-    static Stream<String> testFiles() {
+    static @NotNull Stream<String> testFiles() {
         return Stream.of(
                 // the first block is jvm warmup files
                 "aiGenerated/claude/Project1.java", "aiGenerated/claude/Project2.java", "aiGenerated/claude/Project3.java",
@@ -87,8 +73,7 @@ class EvaluationEngineTest {
                 "aiGenerated/grok/project7.java", "aiGenerated/grok/project8.java");
     }
 
-    @NotNull
-    private static Stream<Pair<String, String>> testPlagFiles() {
+    private static @NotNull Stream<Pair<String, String>> testPlagFiles() {
         return Stream.of(
                 // JVM Warmup:
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
@@ -138,8 +123,7 @@ class EvaluationEngineTest {
         );
     }
 
-    @NotNull
-    private static Stream<Pair<String, String>> testPlagFilesUnrelated() {
+    private static @NotNull Stream<Pair<String, String>> testPlagFilesUnrelated() {
         return Stream.of(
                 // JVM Warmup:
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
@@ -221,9 +205,13 @@ class EvaluationEngineTest {
         return costs[s2.size()];
     }
 
-    @NotNull
-    static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder, boolean normalize,
-            boolean removeSimpleDeadCode) throws ParsingException {
+    static @NotNull List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
+            boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
+        return getTokensFromFilePair(fileName, removeDeadCode, detectDeadCode, reorder, normalize, removeSimpleDeadCode).getFirst();
+    }
+
+    static @NotNull Pair<List<Token>, Integer> getTokensFromFilePair(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode,
+            boolean reorder, boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
         GraphTransformation[] transformations = JavaCpgLanguage.deadCodeRemovalTransformations();
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, transformations,
@@ -232,13 +220,12 @@ class EvaluationEngineTest {
         // IntAiType.SET, FloatAiType.SET, StringAiType.REGEX, CharAiType.SET, ArrayAiType.DEFAULT);
         File file = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
         Set<File> files = Set.of(file);
-        List<Token> result = language.parse(files, normalize);
-        result.removeLast(); // remove EOF token
+        Pair<List<Token>, Integer> result = language.parse2(files, normalize);
+        result.getFirst().removeLast(); // remove EOF token
         return result;
     }
 
-    @NotNull
-    public static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
+    public static @NotNull List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
             throws ParsingException {
         try {
             File originalFile = new File(BASE_PATH.toFile().getAbsolutePath(), fileName);
@@ -351,8 +338,7 @@ class EvaluationEngineTest {
         return JPlag.run(options);
     }
 
-    @NotNull
-    private static File createTempDir() throws IOException {
+    private static @NotNull File createTempDir() throws IOException {
         File tempDir = File.createTempFile("jplag_submission_", "");
         tempDir.delete();
         tempDir.mkdir();
@@ -386,8 +372,7 @@ class EvaluationEngineTest {
         return true;
     }
 
-    @NotNull
-    public static Stream<String> progpediaFiles() {
+    public static @NotNull Stream<String> progpediaFiles() {
         // warm up with 6 files
         List<String> warmups = List.of("progpedia/00000006/ACCEPTED/00218_00001/CigarrasTontas.java",
                 "progpedia/00000006/ACCEPTED/00076_00001/Main.java", "progpedia/00000006/ACCEPTED/00005_00001/CigarrasTontas.java",
@@ -396,8 +381,7 @@ class EvaluationEngineTest {
         return Stream.concat(warmups.stream(), ProgpediaTests.progpediaFiles());
     }
 
-    @NotNull
-    public static Stream<String> kitGenFiles() {
+    public static @NotNull Stream<String> kitGenFiles() {
         List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/insert", "kit_DONT_COMMIT/BoardGame/refactor", "kit_DONT_COMMIT/TicTacToe/insert",
                 "kit_DONT_COMMIT/TicTacToe/refactor", "kit_DONT_COMMIT/TicTacToe/gpt", "kit_DONT_COMMIT/TicTacToe/gptobf");
         return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
@@ -405,8 +389,7 @@ class EvaluationEngineTest {
                 .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath());
     }
 
-    @NotNull
-    public static Stream<String> kitHumanFiles() {
+    public static @NotNull Stream<String> kitHumanFiles() {
         List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/TicTacToe/human"
         // "kit_DONT_COMMIT/ws2223-Sheet4TaskA-perseverance", "kit_DONT_COMMIT/ws2425-Sheet3TaskA-dotsandboxes"
         );
@@ -415,16 +398,14 @@ class EvaluationEngineTest {
                 .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath());
     }
 
-    @NotNull
-    public static Set<String> kitBoardGamePlag() {
+    public static @NotNull Set<String> kitBoardGamePlag() {
         List<String> baseDirs = List.of("kit_DONT_COMMIT/BoardGame/human", "kit_DONT_COMMIT/BoardGame/insert", "kit_DONT_COMMIT/BoardGame/refactor");
         return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
                 .flatMap(dir -> Stream.ofNullable(dir.listFiles(File::isDirectory))).flatMap(Stream::of)
                 .map(file -> BASE_PATH.toFile().toURI().relativize(file.toURI()).getPath()).collect(Collectors.toSet());
     }
 
-    @NotNull
-    public static Set<String> kitTicTocToePlag() {
+    public static @NotNull Set<String> kitTicTocToePlag() {
         List<String> baseDirs = List.of("kit_DONT_COMMIT/TicTacToe/human", "kit_DONT_COMMIT/TicTacToe/insert", "kit_DONT_COMMIT/TicTacToe/refactor",
                 "kit_DONT_COMMIT/TicTacToe/gpt", "kit_DONT_COMMIT/TicTacToe/gptobf");
         return baseDirs.stream().map(baseDir -> new File(BASE_PATH.toFile(), baseDir)).filter(File::exists).filter(File::isDirectory)
@@ -435,7 +416,7 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled("Only for evaluation purposes, not a real test")
     @MethodSource("testFiles")
-    void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException {
+    void AiGeneratedTestDataDeadCodeEvaluation(String fileName) throws ParsingException, IOException {
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -448,9 +429,13 @@ class EvaluationEngineTest {
         boolean cpgErrorException = false;
         boolean runtimeError = false;
         startTime = System.nanoTime();
+        Pair<List<Token>, Integer> result;
         List<Token> tokensWithoutDeadCode;
+        int removedDeadLines = 0;
         try {
-            tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+            result = getTokensFromFilePair(fileName, true, true, false, true, false);
+            tokensWithoutDeadCode = result.getFirst();
+            removedDeadLines = result.getSecond();
         } catch (JavaLanguageFeatureNotSupportedException _) {
             tokensWithoutDeadCode = new ArrayList<>(tokens);
             javaLanguageFeatureNotSupported = true;
@@ -469,20 +454,19 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>(tokens);
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
 
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
-        // startTime = System.nanoTime();
-        // List<Token> tokensWithoutDeadCodePmd = getTokensFromFileWithoutPmdDeadCode(fileName);
-        // long timePmd = System.nanoTime() - startTime;
+        startTime = System.nanoTime();
+        int pmdRemovedLines = getPmdDeadLinesInFile(new File(BASE_PATH.toFile(), fileName));
+        long timePmd = System.nanoTime() - startTime;
 
         boolean tokensSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokens);
         boolean simpleRemovalSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         boolean removalSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
-        // boolean pmdSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCodePmd);
         if (javaLanguageFeatureNotSupported || cpgErrorException || runtimeError) {
             tokensSound = true;
             simpleRemovalSound = true;
@@ -495,23 +479,21 @@ class EvaluationEngineTest {
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
-        // double simPmd = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCodePmd);
         double removedSimpleTokens = tokens.size() - tokensWithoutSimpleDeadCode.size();
         double removedFullTokens = tokens.size() - tokensWithoutDeadCode.size();
         double removedManualTokens = tokens.size() - tokensWithoutDeadCodeManual.size();
-        // double removedPmdTokens = tokens.size() - tokensWithoutDeadCodePmd.size();
 
         File csvFile = new File("Ai_deadcode_results.csv");
         boolean fileExists = csvFile.exists();
         try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
             if (!fileExists) {
                 writer.write(
-                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,RemovedSimpleTokens,RemovedFullTokens,RemovedManualTokens,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException,RuntimeException,tokensSound,simpleRemovalSound,removalSound\n");
+                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,RemovedSimpleTokens,RemovedFullTokens,RemovedManualTokens,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException,RuntimeException,tokensSound,simpleRemovalSound,removalSound,removedDeadLines,pmdRemovedLines,timePmd\n");
             }
-            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b,%b,%b,%b,%b%n", fileName, simNoRemoval,
+            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b,%b,%b,%b,%b,%d,%d,%.2f%n", fileName, simNoRemoval,
                     simSimpleRemoval, simFullRemoval, removedSimpleTokens, removedFullTokens, removedManualTokens, timeNoRemoval / 1_000_000.0,
                     timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0, javaLanguageFeatureNotSupported, cpgErrorException, runtimeError,
-                    tokensSound, simpleRemovalSound, removalSound));
+                    tokensSound, simpleRemovalSound, removalSound, removedDeadLines, pmdRemovedLines, timePmd / 1_000_000.0));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -521,9 +503,7 @@ class EvaluationEngineTest {
                 + timeSimpleRemoval / 1_000_000.0 + " ms)");
         System.out.println(
                 "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
-        // System.out.println("Similarity between manual and pmd dead code removal: " + simPmd + "% (took " + timePmd /
-        // 1_000_000.0 + " ms), removed "
-        // + removedPmdTokens + " tokens)");
+        System.out.println("Pmd removed lines: " + pmdRemovedLines + " (took " + timePmd / 1_000_000.0 + " ms)");
         assertTrue(true);
     }
 
@@ -646,7 +626,7 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled("Only for evaluation purposes, not a real test")
     @MethodSource("progpediaFiles")
-    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException, IOException { // the first 6 lines are warmup
+    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -680,7 +660,7 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>(tokens);
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -782,8 +762,8 @@ class EvaluationEngineTest {
 
     @ParameterizedTest
     @Disabled("Only for evaluation purposes, not a real test")
-    // @MethodSource("testPlagFiles")
-    @MethodSource("testPlagFilesUnrelated")
+    @MethodSource("testPlagFiles")
+    // @MethodSource("testPlagFilesUnrelated")
     void AiGeneratedTestDataPlagEvaluation(@NotNull Pair<String, String> fileNames) throws ExitException, IOException {
         String fileA = fileNames.getFirst();
         String fileB = fileNames.getSecond();

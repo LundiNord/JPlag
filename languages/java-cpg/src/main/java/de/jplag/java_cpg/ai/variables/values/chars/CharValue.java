@@ -146,6 +146,14 @@ public class CharValue extends Value implements ICharValue {
                 }
                 return new BooleanValue();
             }
+            case "*" -> {
+                INumberValue otherCharValue = (INumberValue) other;
+                if (this.information && otherCharValue.getInformation()) {
+                    return Value.valueFactory(this.value * otherCharValue.getValue());
+                } else {
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
+                }
+            }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
         }
     }

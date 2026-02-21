@@ -51,6 +51,10 @@ public class PrintStream extends JavaObject implements ISpecialObject {
                 // do nothing & return this
                 return this;
             }
+            case "flush" -> {
+                // do nothing & return this
+                return this;
+            }
             default -> throw new UnsupportedOperationException(methodName);
         }
     }

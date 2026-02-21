@@ -1,7 +1,5 @@
 package de.jplag.java_cpg.evaluation;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -31,10 +29,11 @@ public class PmdTest {
     @Test
     @Disabled("Only for testing the setup and PMD integration, not a real test")
     void singleTest() throws Exception {
-        File file = new File("src/test/resources/java/ai/deadCode5");
+        // File file = new File("src/test/resources/java/ai/deadCode5");
+        File file = new File("src/test/resources/java/aiGenerated/claude/Project10.java");
         int deadLines = getPmdDeadLinesInFile(file);
-        File virtFile = runPmdForFile(file);
-        assertNotNull(virtFile);
+        // File virtFile = runPmdForFile(file);
+        // assertNotNull(virtFile);
         System.out.println("Dead lines: " + deadLines);
     }
 
@@ -165,7 +164,6 @@ public class PmdTest {
                 System.out.println("  - " + info);
             }
         }
-
         return violations;
     }
 

@@ -265,8 +265,8 @@ public class IntInterval extends Interval<Integer> {
     @Impure
     @Override
     public void merge(@NotNull Interval<Integer> other) {
-        int smallerLowerBound = Math.min(this.lowerBound, other.lowerBound);
-        int largerUpperBound = Math.max(this.upperBound, other.upperBound);
+        int smallerLowerBound = Math.min(this.lowerBound, getLowerBound(other));
+        int largerUpperBound = Math.max(this.upperBound, getUpperBound(other));
         assert smallerLowerBound <= largerUpperBound;
         this.lowerBound = smallerLowerBound;
         this.upperBound = largerUpperBound;
@@ -274,10 +274,10 @@ public class IntInterval extends Interval<Integer> {
 
     @Override
     public int compareTo(@NotNull Interval<Integer> o) {
-        if (!this.lowerBound.equals(o.lowerBound)) {
-            return Integer.compare(this.lowerBound, o.lowerBound);
+        if (!this.lowerBound.equals(getLowerBound(o))) {
+            return Integer.compare(this.lowerBound, getLowerBound(o));
         } else {
-            return Integer.compare(this.upperBound, o.upperBound);
+            return Integer.compare(this.upperBound, getUpperBound(o));
         }
     }
 

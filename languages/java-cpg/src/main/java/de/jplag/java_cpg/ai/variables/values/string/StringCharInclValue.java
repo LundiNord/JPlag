@@ -127,7 +127,8 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             }
             case "charAt" -> {
                 assert paramVars.size() == 1;
-                assert paramVars.getFirst() instanceof INumberValue;
+                assert paramVars.getFirst() instanceof INumberValue : "charAt parameter must be a number value but was "
+                        + paramVars.getFirst().getType();
                 return Value.valueFactory(new Type(Type.TypeEnum.CHAR));
             }
             default -> {

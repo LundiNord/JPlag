@@ -1,6 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
