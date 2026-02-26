@@ -45,9 +45,6 @@ public class IntInterval extends Interval<Integer> {
      * @param upperBound the upper bound.
      */
     public IntInterval(int lowerBound, int upperBound) {
-        if (lowerBound > upperBound) {
-            System.out.println("Debug");
-        }
         assert lowerBound <= upperBound : lowerBound + " is not <= " + upperBound;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;

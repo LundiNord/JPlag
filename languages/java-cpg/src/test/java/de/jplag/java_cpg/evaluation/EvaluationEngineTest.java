@@ -3,7 +3,9 @@ package de.jplag.java_cpg.evaluation;
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
 import static de.jplag.java_cpg.evaluation.PmdTest.getPmdDeadLinesInFile;
 import static de.jplag.java_cpg.evaluation.PmdTest.runPmdForFile;
-import static de.jplag.options.JPlagOptions.*;
+import static de.jplag.options.JPlagOptions.DEFAULT_SHOWN_COMPARISONS;
+import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_METRIC;
+import static de.jplag.options.JPlagOptions.DEFAULT_SIMILARITY_THRESHOLD;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -23,12 +25,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.jplag.*;
+import de.jplag.JPlag;
+import de.jplag.JPlagComparison;
+import de.jplag.JPlagResult;
+import de.jplag.Language;
+import de.jplag.ParsingException;
+import de.jplag.Token;
 import de.jplag.clustering.ClusteringOptions;
 import de.jplag.exceptions.ExitException;
 import de.jplag.highlightextraction.FrequencyAnalysisOptions;
 import de.jplag.java_cpg.JavaCpgLanguage;
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.CpgErrorException;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
+import de.jplag.java_cpg.ai.ProgpediaTests;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.merging.MergingOptions;
 import de.jplag.options.JPlagOptions;
@@ -533,8 +547,8 @@ class EvaluationEngineTest {
 
     @ParameterizedTest
     @Disabled("Only for evaluation purposes, not a real test")
-    // @MethodSource("kitHumanFiles")
-    @MethodSource("kitGenFiles")
+    @MethodSource("kitHumanFiles")
+    // @MethodSource("kitGenFiles")
     void KitDeadCodeEvaluation(String fileName) throws ParsingException {
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -603,7 +617,8 @@ class EvaluationEngineTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        String fileName = "kit_DONT_COMMIT/BoardGame/insert/insert-plag-subm223";
+        // String fileName = "kit_DONT_COMMIT/BoardGame/insert/insert-plag-subm223";
+        String fileName = "kit_DONT_COMMIT/BoardGame/human/subm207";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -626,7 +641,7 @@ class EvaluationEngineTest {
     @ParameterizedTest
     @Disabled("Only for evaluation purposes, not a real test")
     @MethodSource("progpediaFiles")
-    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException { // the first 6 lines are warmup
+    void ProgpediaDeadCodeEvaluation(String fileName) throws ParsingException, IOException { // the first 6 lines are warmup
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
         long timeNoRemoval = System.nanoTime() - startTime;
@@ -639,9 +654,13 @@ class EvaluationEngineTest {
         boolean cpgErrorException = false;
         boolean runtimeError = false;
         startTime = System.nanoTime();
+        Pair<List<Token>, Integer> result;
         List<Token> tokensWithoutDeadCode;
+        int removedDeadLines = 0;
         try {
-            tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
+            result = getTokensFromFilePair(fileName, true, true, false, true, false);
+            tokensWithoutDeadCode = result.getFirst();
+            removedDeadLines = result.getSecond();
         } catch (JavaLanguageFeatureNotSupportedException _) {
             tokensWithoutDeadCode = new ArrayList<>(tokens);
             javaLanguageFeatureNotSupported = true;
@@ -666,14 +685,13 @@ class EvaluationEngineTest {
         long timeFullRemoval = System.nanoTime() - startTime;
 
         List<Token> tokensWithoutDeadCodeManual = getTokensFromFileWithoutDeadCode(fileName, false, false);
-        // startTime = System.nanoTime();
-        // List<Token> tokensWithoutPmdDeadCode = getTokensFromFileWithoutPmdDeadCode(fileName);
-        // long timePmdRemoval = System.nanoTime() - startTime;
+        startTime = System.nanoTime();
+        int pmdRemovedLines = getPmdDeadLinesInFile(new File(BASE_PATH.toFile(), fileName));
+        long timePmd = System.nanoTime() - startTime;
 
         boolean tokensSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokens);
         boolean simpleRemovalSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         boolean removalSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
-        // boolean pmdRemovalSound = checkNonDeadCodeNotRemoved(tokensWithoutDeadCodeManual, tokensWithoutPmdDeadCode);
         if (javaLanguageFeatureNotSupported || cpgErrorException || runtimeError) {
             tokensSound = true;
             simpleRemovalSound = true;
@@ -682,23 +700,21 @@ class EvaluationEngineTest {
         double simNoRemoval = similarity(tokensWithoutDeadCodeManual, tokens);
         double simSimpleRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutSimpleDeadCode);
         double simFullRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutDeadCode);
-        // double simPmdRemoval = similarity(tokensWithoutDeadCodeManual, tokensWithoutPmdDeadCode);
         double removedSimpleTokens = tokens.size() - tokensWithoutSimpleDeadCode.size();
         double removedFullTokens = tokens.size() - tokensWithoutDeadCode.size();
         double removedManualTokens = tokens.size() - tokensWithoutDeadCodeManual.size();
-        // double removedPmdTokens = tokens.size() - tokensWithoutPmdDeadCode.size();
 
         File csvFile = new File("Progpedia_deadcode_results.csv");
         boolean fileExists = csvFile.exists();
         try (java.io.FileWriter writer = new java.io.FileWriter(csvFile, true)) {
             if (!fileExists) {
                 writer.write(
-                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,RemovedSimpleTokens,RemovedFullTokens,RemovedManualTokens,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException,RuntimeException,tokensSound,simpleRemovalSound,removalSound\n");
+                        "FileName,NoRemoval,SimpleRemoval,FullRemoval,RemovedSimpleTokens,RemovedFullTokens,RemovedManualTokens,TimeNoRemoval(ms),TimeSimpleRemoval(ms),TimeFullRemoval(ms),JavaLanguageFeatureNotSupported,CpgErrorException,RuntimeException,tokensSound,simpleRemovalSound,removalSound,removedDeadLines,pmdRemovedLines,timePmd\n");
             }
-            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b,%b,%b,%b,%b%n", fileName, simNoRemoval,
+            writer.write(String.format("%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.2f,%.2f,%b,%b,%b,%b,%b,%b,%d,%d,%.2f%n", fileName, simNoRemoval,
                     simSimpleRemoval, simFullRemoval, removedSimpleTokens, removedFullTokens, removedManualTokens, timeNoRemoval / 1_000_000.0,
                     timeSimpleRemoval / 1_000_000.0, timeFullRemoval / 1_000_000.0, javaLanguageFeatureNotSupported, cpgErrorException, runtimeError,
-                    tokensSound, simpleRemovalSound, removalSound));
+                    tokensSound, simpleRemovalSound, removalSound, removedDeadLines, pmdRemovedLines, timePmd / 1_000_000.0));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -708,9 +724,7 @@ class EvaluationEngineTest {
                 + timeSimpleRemoval / 1_000_000.0 + " ms)");
         System.out.println(
                 "Similarity between manual and automatic dead code removal: " + simFullRemoval + "% (took " + timeFullRemoval / 1_000_000.0 + " ms)");
-        // System.out.println(
-        // "Similarity between manual and PMD dead code removal: " + simPmdRemoval + "% (took " + timePmdRemoval / 1_000_000.0 +
-        // " ms)");
+        System.out.println("Pmd removed lines: " + pmdRemovedLines + " (took " + timePmd / 1_000_000.0 + " ms)");
         assertTrue(true);
     }
 

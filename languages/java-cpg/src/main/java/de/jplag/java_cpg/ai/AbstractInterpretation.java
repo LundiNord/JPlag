@@ -95,7 +95,7 @@ import de.jplag.java_cpg.transformation.operations.TransformationUtil;
  */
 public class AbstractInterpretation {
 
-    protected static int visitedNodesCounter = 0;
+    // protected static int visitedNodesCounter = 0;
     /**
      * Helper to detect recursive method calls.
      */
@@ -269,7 +269,7 @@ public class AbstractInterpretation {
                 variables.removeScope();
             }
         }
-        // ignore include declaration for now
+        // ignores include declaration
     }
 
     /**
@@ -423,8 +423,8 @@ public class AbstractInterpretation {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         visitedLinesRecorder.recordLinesVisited(node);
-        visitedNodesCounter++;
-        System.out.println(visitedNodesCounter + " " + node);
+        // visitedNodesCounter++;
+        // System.out.println(visitedNodesCounter + " " + node);
         switch (node) {
             case VariableDeclaration vd -> {
                 nodeStack.add(vd);
@@ -845,10 +845,9 @@ public class AbstractInterpretation {
     }
 
     private void walkDeclarationStatement(@NotNull DeclarationStatement ds) {
-        if (visitedNodesCounter == 15) {
-            System.out.println("Debug");
-        }
         for (int i = ds.getDeclarations().size() - 1; i >= 0; i--) {
+            de.jplag.java_cpg.ai.variables.Type expectedType = de.jplag.java_cpg.ai.variables.Type
+                    .fromCpgType(((VariableDeclaration) ds.getDeclarations().get(i)).getType());
             if (((VariableDeclaration) ds.getDeclarations().get(i)).getInitializer() == null) {
                 Variable newVar = new Variable(new VariableName((ds.getDeclarations().get(i)).getName().toString()),
                         de.jplag.java_cpg.ai.variables.Type.fromCpgType(((VariableDeclaration) ds.getDeclarations().get(i)).getType()));
@@ -859,6 +858,13 @@ public class AbstractInterpretation {
                 if (valueStack.isEmpty()) {
                     valueStack.add(new VoidValue());
                     nodeStack.addLast(new Node());
+                }
+                if (valueStack.getLast() instanceof IJavaObject javaObject && javaObject.isNull()
+                        && expectedType.getTypeEnum() != de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT) {
+                    // Fix for missing types in null literals
+                    valueStack.removeLast();
+                    valueStack.add(Value.valueFactory(expectedType));
+                    valueStack.getLast().setInitialValue();
                 }
                 assert !valueStack.isEmpty();
                 Variable variable = new Variable((ds.getDeclarations().get(i)).getName().toString(), valueStack.getLast());
@@ -1026,7 +1032,6 @@ public class AbstractInterpretation {
             if (condition.getValue()) {
                 runElseBranch = false;
                 if (ifStmt.getElseStatement() != null) {
-                    System.out.println("Dead code detected -> remove else branch");
                     visitedLinesRecorder.recordLinesVisited(ifStmt.getElseStatement());
                 }
                 if (ifStmt.getElseStatement() != null && removeDeadCode) {
@@ -1037,7 +1042,6 @@ public class AbstractInterpretation {
             } else {
                 runThenBranch = false;
                 // Dead code detected
-                System.out.println("Dead code detected -> remove then branch");
                 visitedLinesRecorder.recordDetectedDeadLines(ifStmt.getThenStatement());
                 if (ifStmt.getElseStatement() == null) {
                     visitedLinesRecorder.recordDetectedDeadLines(ifStmt);
@@ -1166,8 +1170,9 @@ public class AbstractInterpretation {
         } else {
             // merge other returns
             for (IValue value : returnStorage) {
-                if (result instanceof NullValue) {
-                    result = new JavaObject(new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.OBJECT));
+                if (result instanceof NullValue || result instanceof JavaObject javaObject && javaObject.isNull()) {
+                    result = Value.valueFactory(value.getType());
+                    result.setInitialValue();
                 }
                 result.merge(value);
             }
@@ -1246,9 +1251,6 @@ public class AbstractInterpretation {
     }
 
     private void walkNewExpression(@NotNull NewExpression ne) {
-        if (visitedNodesCounter == 14) {
-            System.out.println("Debug");
-        }
         ConstructExpression ce = (ConstructExpression) nodeStack.getLast();
         RecordDeclaration classNode = (RecordDeclaration) ce.getInstantiates();
         List<IValue> arguments = new ArrayList<>();
@@ -1346,7 +1348,7 @@ public class AbstractInterpretation {
                 this.variables = originalVariables;
                 for (Variable variable : changedVariables) {
                     if (variables.getVariable(variable.getName()) != null) {
-                        variables.getVariable(variable.getName()).setToUnknown();
+                        Objects.requireNonNull(variables.getVariable(variable.getName())).setToUnknown();
                     }
                 }
             }
@@ -1363,7 +1365,6 @@ public class AbstractInterpretation {
                 containingBlock.setStatements(statements);
             }
             visitedLinesRecorder.recordDetectedDeadLines(ws);
-            System.out.println("Dead code detected -> remove while");
         }
         // continue with the next node after the while loop
         lastVisitedLoopOrIf.removeLast();
@@ -1480,7 +1481,6 @@ public class AbstractInterpretation {
                 containingBlock.setStatements(statements);
             }
             visitedLinesRecorder.recordDetectedDeadLines(ws);
-            System.out.println("Dead code detected -> remove for");
         }
         // continue with the next node after the for loop
         lastVisitedLoopOrIf.removeLast();
@@ -1511,9 +1511,6 @@ public class AbstractInterpretation {
                         new de.jplag.java_cpg.ai.variables.Type(de.jplag.java_cpg.ai.variables.Type.TypeEnum.UNKNOWN))));
             }
         }
-        if (!(valueStack.getLast() instanceof IJavaArray)) {
-            System.out.println("Debug");
-        }
         assert valueStack.getLast() instanceof IJavaArray : "Expected array value in for each, but got: " + valueStack.getLast();
         IJavaArray collection = (IJavaArray) valueStack.getLast();
         // ToDo: set right variable value
@@ -1538,7 +1535,6 @@ public class AbstractInterpretation {
                     containingBlock.setStatements(statements);
                 }
                 visitedLinesRecorder.recordDetectedDeadLines(fes);
-                System.out.println("Dead code detected -> remove for each");
             }
         } else {
             if (recordingChanges.isRecording()) {     // higher level loop wants to know which variables change
@@ -1548,7 +1544,7 @@ public class AbstractInterpretation {
                 variables.removeScope();
                 Set<Variable> changedVariables = variables.stopRecordingChanges();
                 for (Variable variable : changedVariables) {
-                    variables.getVariable(variable.getName()).setToUnknown();
+                    Objects.requireNonNull(variables.getVariable(variable.getName())).setToUnknown();
                 }
             } else {
                 VariableStore originalVariables = this.variables;

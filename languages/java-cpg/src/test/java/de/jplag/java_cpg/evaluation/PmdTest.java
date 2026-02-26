@@ -5,7 +5,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,7 +35,8 @@ public class PmdTest {
     @Disabled("Only for testing the setup and PMD integration, not a real test")
     void singleTest() throws Exception {
         // File file = new File("src/test/resources/java/ai/deadCode5");
-        File file = new File("src/test/resources/java/aiGenerated/claude/Project10.java");
+        // File file = new File("src/test/resources/java/aiGenerated/claude/Project10.java");
+        File file = new File("src/test/resources/java/progpedia/00000022/ACCEPTED/00022_00003/infra_estrutura.java");
         int deadLines = getPmdDeadLinesInFile(file);
         // File virtFile = runPmdForFile(file);
         // assertNotNull(virtFile);

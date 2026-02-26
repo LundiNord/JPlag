@@ -59,9 +59,6 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
         } else if (other instanceof IStringValue stringValue) {
             return stringValue.binaryOperation(operator, this);
         }
-        if (!(other instanceof NumberSetValue<?, ?>)) {
-            System.out.println("Debug");
-        }
         NumberSetValue<T, I> otherValue = (NumberSetValue<T, I>) other;
         if (this.values.isEmpty() || otherValue.values.isEmpty()) {
             return new VoidValue();

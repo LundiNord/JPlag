@@ -349,9 +349,6 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 this.unknown = true;
                 return new StringRegexValue(null, true);
             }
-            if (this.contentRegex == null) {
-                System.out.println("Debug");
-            }
             assert this.contentRegex != null;
             List<RegexItem> newContentRegex = new ArrayList<>(contentRegex);
             appendAtPos(newContentRegex, doubleToRegex(inumbervalue.getValue()), contentRegex.size() - 1);

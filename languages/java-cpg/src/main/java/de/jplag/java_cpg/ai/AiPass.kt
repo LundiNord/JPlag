@@ -91,7 +91,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
         } catch (e: Exception) {
             log.error("Error while detecting dead classes and methods", e)
         }
-//        Debug
+//        Debug:
 //        val visitedLines: Set<Int> = visitedLinesRecorder.visitedLines.values.firstOrNull() ?: emptySet()
 //        val sortedVisitedLines = TreeSet(visitedLines)
         deadLinesCallback!!.accept(visitedLinesRecorder.deadLinesCount)

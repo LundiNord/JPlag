@@ -46,7 +46,6 @@ class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val abstractInterpretation = AbstractInterpretation(visitedLinesRecorder, removeDeadCode)
         AbstractInterpretation.setContinueOnError(continueOnError)
         abstractInterpretation.setMethodAnalysisMode()
-        AbstractInterpretation.visitedNodesCounter = 0
         val recordName: String = method.recordDeclaration?.name?.toString() ?: "Main"
         val javaObject = JavaObject(
             de.jplag.java_cpg.ai.variables.Type(

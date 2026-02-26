@@ -246,4 +246,5 @@ public class JavaCpgLanguage implements Language {
     public boolean requiresCoreNormalization() {
         return false;
     }
+
 }
