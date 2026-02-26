@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -116,7 +115,6 @@ public class VisitedLinesRecorder {
      * @return a map of URIs to sets of line numbers that have not been visited
      */
     @NotNull
-    @Pure
     @TestOnly
     public Map<URI, Set<Integer>> getNonVisitedLines() {
         Map<URI, Set<Integer>> nonVisitedLines = new HashMap<>();
@@ -138,7 +136,6 @@ public class VisitedLinesRecorder {
      * @param endLine the end line of the region (inclusive)
      * @return true if all lines in the given range are not visited, false otherwise
      */
-    @Pure
     public boolean checkIfCompletelyDead(@NotNull URI uri, int startLine, int endLine) {
         if (startLine == -1 || endLine == -1) {
             return false;

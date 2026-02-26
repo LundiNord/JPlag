@@ -35,7 +35,6 @@ import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
 import de.fraunhofer.aisec.cpg.passes.Pass;
 import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
-import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
 import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeResolver;
@@ -87,7 +86,7 @@ class DeadCodeDetectionTest {
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(
                     List.of(TypeResolver.class, TypeHierarchyResolver.class, JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class, FilenameMapper.class, ReplaceCallCastPass.class,
+                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class, FilenameMapper.class,
                             EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class, DFGPass.class));
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));

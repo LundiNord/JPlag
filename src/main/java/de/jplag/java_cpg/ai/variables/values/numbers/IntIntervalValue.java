@@ -2,7 +2,6 @@ package de.jplag.java_cpg.ai.variables.values.numbers;
 
 import java.util.Set;
 
-import org.checkerframework.dataflow.qual.Impure;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
@@ -129,7 +128,7 @@ public class IntIntervalValue extends Value implements INumberValue, IIntNumber 
     }
 
     @Override
-    @Impure
+
     public IValue unaryOperation(@NotNull String operator) {
         switch (operator) {
             case "++" -> {

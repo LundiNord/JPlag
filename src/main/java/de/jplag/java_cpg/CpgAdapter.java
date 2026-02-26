@@ -24,7 +24,6 @@ import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
 import de.fraunhofer.aisec.cpg.passes.Pass;
 import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
-import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
 import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeResolver;
@@ -87,7 +86,7 @@ public class CpgAdapter {
 
             List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(
                     List.of(TypeResolver.class, TypeHierarchyResolver.class, JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
-                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class, FilenameMapper.class, ReplaceCallCastPass.class,
+                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class, FilenameMapper.class,
                             EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class));
             if (methodAnalysisMode) {
                 passClasses.add(AiMethodPass.class);
