@@ -22,7 +22,6 @@ import de.fraunhofer.aisec.cpg.InferenceConfiguration;
 import de.fraunhofer.aisec.cpg.TranslationConfiguration;
 import de.fraunhofer.aisec.cpg.TranslationManager;
 import de.fraunhofer.aisec.cpg.TranslationResult;
-import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
 import de.fraunhofer.aisec.cpg.passes.ControlDependenceGraphPass;
@@ -30,7 +29,6 @@ import de.fraunhofer.aisec.cpg.passes.ControlFlowSensitiveDFGPass;
 import de.fraunhofer.aisec.cpg.passes.DFGPass;
 import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
 import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
-import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
 import de.fraunhofer.aisec.cpg.passes.ImportResolver;
 import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.JavaExtraPass;
@@ -87,12 +85,12 @@ class DeadCodeDetectionTest {
         TranslationResult translationResult;
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
-                    .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());
-            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(List.of(TypeResolver.class, TypeHierarchyResolver.class,
-                    JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class, ImportResolver.class, SymbolResolver.class,
-                    DynamicInvokeResolver.class, FilenameMapper.class, EvaluationOrderGraphPass.class, ControlDependenceGraphPass.class,
-                    ProgramDependenceGraphPass.class, DFGPass.class, JavaExtraPass.class, ControlFlowSensitiveDFGPass.class,
-                    ResolveCallExpressionAmbiguityPass.class, ResolveMemberExpressionAmbiguityPass.class));
+                    .sourceLocations(files.toArray(new File[] {})).registerLanguage("de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage");
+            List<Class<? extends Pass<?>>> passClasses = new ArrayList<>(
+                    List.of(TypeResolver.class, TypeHierarchyResolver.class, JavaExternalTypeHierarchyResolver.class, JavaImportResolver.class,
+                            ImportResolver.class, SymbolResolver.class, DynamicInvokeResolver.class, EvaluationOrderGraphPass.class,
+                            ControlDependenceGraphPass.class, ProgramDependenceGraphPass.class, DFGPass.class, JavaExtraPass.class,
+                            ControlFlowSensitiveDFGPass.class, ResolveCallExpressionAmbiguityPass.class, ResolveMemberExpressionAmbiguityPass.class));
             for (Class<? extends Pass<?>> passClass : passClasses) {
                 configBuilder.registerPass(getKClass(passClass));
             }

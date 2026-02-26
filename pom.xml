@@ -9,12 +9,13 @@
     <properties>
         <revision>2.0.0</revision>
         <maven.compiler.release>25</maven.compiler.release>
-        <cpg.version>9.1.7</cpg.version>
+        <cpg.version>10.8.2</cpg.version>
         <cpg.groupId>de.fraunhofer.aisec</cpg.groupId>
         <kotlin.version>2.3.0</kotlin.version>
         <slf4j.version>2.0.17</slf4j.version>
         <spotless.version>3.1.0</spotless.version>
         <checkerframework.version>3.49.0</checkerframework.version>
+        <maven.javadoc.plugin.version>3.12.0</maven.javadoc.plugin.version>
     </properties>
 
     <dependencies>
@@ -125,6 +126,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
                     <sourcepath>src/main/java</sourcepath>
                     <sourceFileIncludes>

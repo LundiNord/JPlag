@@ -60,16 +60,6 @@ public final class TransformationUtil {
         }
     }
 
-    /**
-     * Checks if the given {@link Node} {@code maybeChild} is contained in the sub-AST with root {@code astRoot}.
-     * @param astRoot the root of the sub-AST
-     * @param maybeChild the node to check
-     * @return true if {@code maybeChild} is contained in the sub-AST rooted at {@code astRoot}
-     */
-    private static boolean isAstChild(Node astRoot, Node maybeChild) {
-        return SubgraphWalker.INSTANCE.flattenAST(astRoot).contains(maybeChild);
-    }
-
     public static List<Node> disconnectFromPredecessor(@NotNull Node node) {
         Node entry = getEntry(node);
 
