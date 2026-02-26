@@ -9,7 +9,7 @@
     <properties>
         <revision>2.0.0</revision>
         <maven.compiler.release>25</maven.compiler.release>
-        <cpg.version>9.0.0</cpg.version>
+        <cpg.version>9.1.7</cpg.version>
         <cpg.groupId>de.fraunhofer.aisec</cpg.groupId>
         <kotlin.version>2.3.0</kotlin.version>
         <slf4j.version>2.0.17</slf4j.version>

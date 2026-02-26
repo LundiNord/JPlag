@@ -93,7 +93,7 @@ import de.jplag.java_cpg.cpgUtil.TransformationUtil;
  */
 public class AbstractInterpretation {
 
-    // protected static int visitedNodesCounter = 0;
+    protected static int visitedNodesCounter = 0;
     /**
      * Helper to detect recursive method calls.
      */
@@ -224,12 +224,18 @@ public class AbstractInterpretation {
     public void runMain(@NotNull TranslationUnitDeclaration tud) {
         RecordDeclaration mainClas;
         List<Declaration> declarations = new ArrayList<>();
-        for (Declaration declaration : tud.getDeclarations()) {
-            if (declaration instanceof NamespaceDeclaration namespaceDeclaration) {
-                declarations.addAll(namespaceDeclaration.getDeclarations());
+        List<Declaration> workList = new ArrayList<>(tud.getDeclarations());
+        while (!workList.isEmpty()) {
+            Declaration decl = workList.removeFirst();
+            declarations.add(decl);
+            if (decl instanceof NamespaceDeclaration ns) {
+                workList.addAll(ns.getDeclarations());
+            } else {
+                declarations.add(decl);
             }
         }
         declarations.addAll(tud.getDeclarations());
+        declarations = declarations.stream().distinct().toList();
         if (declarations.stream().map(Declaration::getClass).filter(x -> x.equals(NamespaceDeclaration.class)).count() == 1) {
             // Code in a package
             mainClas = declarations.stream().filter(NamespaceDeclaration.class::isInstance).map(NamespaceDeclaration.class::cast).findFirst()
@@ -426,8 +432,8 @@ public class AbstractInterpretation {
         List<Node> nextEOG = node.getNextEOG();
         Node nextNode;
         visitedLinesRecorder.recordLinesVisited(node);
-        // visitedNodesCounter++;
-        // System.out.println(visitedNodesCounter + " " + node);
+        visitedNodesCounter++;
+        System.out.println(visitedNodesCounter + " " + node);
         switch (node) {
             case VariableDeclaration vd -> {
                 nodeStack.add(vd);
@@ -723,7 +729,6 @@ public class AbstractInterpretation {
         }
         nodeStack.add(ref);
         assert ref.getNextEOG().size() == 1 || (ref.getNextEOG().size() == 2 && ref.getNextEOG().getLast() instanceof ShortCircuitOperator);
-
     }
 
     private Node walkSubscriptExpression(@NotNull SubscriptExpression se) { // adds its value to the value stack
