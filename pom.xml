@@ -809,14 +809,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>cli</module>
-                <module>core</module>
-                <module>coverage-report</module>
-                <module>endtoend-testing</module>
                 <module>languages</module>
-                <module>language-api</module>
-                <module>language-antlr-utils</module>
-                <module>language-testutils</module>
             </modules>
         </profile>
         <profile>
@@ -825,11 +818,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>core</module>
                 <module>languages</module>
-                <module>language-api</module>
-                <module>language-antlr-utils</module>
-                <module>language-testutils</module>
             </modules>
             <build>
                 <plugins>

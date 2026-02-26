@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.graph.Component;
-import de.jplag.ParsingException;
+import de.jplag.java_cpg.ParsingException;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.Value;
 

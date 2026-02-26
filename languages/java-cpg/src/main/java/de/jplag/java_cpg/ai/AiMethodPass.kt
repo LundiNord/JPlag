@@ -8,18 +8,15 @@ import de.fraunhofer.aisec.cpg.graph.methods
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.ConstructExpression
 import de.fraunhofer.aisec.cpg.graph.types.FunctionType
 import de.fraunhofer.aisec.cpg.graph.types.Type
+import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass
 import de.fraunhofer.aisec.cpg.passes.TranslationUnitPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
-import de.fraunhofer.aisec.cpg.passes.configuration.ExecuteBefore
 import de.jplag.java_cpg.ai.variables.values.IValue
 import de.jplag.java_cpg.ai.variables.values.JavaObject
 import de.jplag.java_cpg.ai.variables.values.Value
-import de.jplag.java_cpg.passes.CpgTransformationPass
-import de.jplag.java_cpg.passes.TokenizationPass
 import java.util.function.Consumer
 
-@DependsOn(CpgTransformationPass::class)
-@ExecuteBefore(TokenizationPass::class)
+@DependsOn(ProgramDependenceGraphPass::class)
 class AiMethodPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     //passes have to be in kotlin!
 

@@ -10,28 +10,7 @@
     <packaging>pom</packaging>
     <name>JPlag: Language Modules (Parent)</name>
     <modules>
-        <module>c</module>
-        <module>cpp</module>
-        <module>csharp</module>
-        <module>emf-metamodel</module>
-        <module>emf-metamodel-dynamic</module>
-        <module>emf-model</module>
-        <module>golang</module>
-        <module>java</module>
         <module>java-cpg</module>
-        <module>kotlin</module>
-        <module>python-3</module>
-        <module>rlang</module>
-        <module>rust</module>
-        <module>scala</module>
-        <module>scheme</module>
-        <module>scxml</module>
-        <module>swift</module>
-        <module>text</module>
-        <module>typescript</module>
-        <module>javascript</module>
-        <module>llvmir</module>
-        <module>multi-language</module>
     </modules>
     <dependencies>
         <dependency>

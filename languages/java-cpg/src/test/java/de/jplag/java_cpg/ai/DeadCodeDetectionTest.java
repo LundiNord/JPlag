@@ -39,7 +39,7 @@ import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
 import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
 import de.fraunhofer.aisec.cpg.passes.TypeResolver;
-import de.jplag.ParsingException;
+import de.jplag.java_cpg.ParsingException;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;

@@ -6,19 +6,16 @@ import de.fraunhofer.aisec.cpg.graph.Component
 import de.fraunhofer.aisec.cpg.graph.Node
 import de.fraunhofer.aisec.cpg.graph.declarations.NamespaceDeclaration
 import de.fraunhofer.aisec.cpg.graph.records
+import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass
 import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
-import de.fraunhofer.aisec.cpg.passes.configuration.ExecuteBefore
-import de.jplag.java_cpg.passes.CpgTransformationPass
-import de.jplag.java_cpg.passes.TokenizationPass
 import java.net.URI
 import java.util.function.Consumer
 
 /**
  * A CPG Pass performing Abstract Interpretation on the CPG Translation Result.
  */
-@DependsOn(CpgTransformationPass::class)
-@ExecuteBefore(TokenizationPass::class)
+@DependsOn(ProgramDependenceGraphPass::class)
 class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     //passes have to be in kotlin!
 

@@ -84,8 +84,8 @@ import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
-import de.jplag.java_cpg.transformation.operations.DummyNeighbor;
-import de.jplag.java_cpg.transformation.operations.TransformationUtil;
+import de.jplag.java_cpg.cpgUtil.DummyNeighbor;
+import de.jplag.java_cpg.cpgUtil.TransformationUtil;
 
 /**
  * Abstract Interpretation engine for Java programs. This class is the interface between the CPG Graph and the Abstract
