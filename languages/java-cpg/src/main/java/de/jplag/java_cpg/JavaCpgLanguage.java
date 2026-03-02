@@ -143,4 +143,9 @@ public class JavaCpgLanguage implements Language {
     public boolean supportsNormalization() {
         return true;
     }
+
+    @Override
+    public boolean hasPriority() {
+        return false;
+    }
 }
