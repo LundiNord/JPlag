@@ -26,17 +26,17 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import org.kohsuke.MetaInfServices;
-
 import de.jplag.Language;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
+import com.google.auto.service.AutoService;
+
 /**
  * This class represents the frond end of the CPG module of JPlag.
  */
-@MetaInfServices(de.jplag.Language.class)
+@AutoService(Language.class)
 public class JavaCpgLanguage implements Language {
     private static final int DEFAULT_MINIMUM_TOKEN_MATCH = 9;
     private static final List<String> FILE_EXTENSIONS = List.of(".java");

@@ -172,7 +172,7 @@ public class MethodOrderStrategy {
     }
 
     private void handleNode(Node node, List<MethodDeclaration> callGraphIndex, List<MethodDeclaration> newFunctions) {
-        if (!(node instanceof CallExpression call)) {
+        if (!(node instanceof CallExpression call) || call.getName().toString().startsWith("java")) {
             return;
         }
 
@@ -182,17 +182,15 @@ public class MethodOrderStrategy {
          */
         List<MethodDeclaration> invokes = getFunctionCandidatesByName(call);
 
-        invokes.forEach(methodDeclaration -> {
-            var candidates = getFunctionCandidates(methodDeclaration, call);
-            if (candidates.isEmpty()) {
-                logger.warn("No candidate for {}", call);
+        List<MethodDeclaration> candidates = invokes.stream().flatMap(it -> getFunctionCandidates(it, call).stream()).toList();
+        if (candidates.isEmpty()) {
+            // calls to supertype methods for custom implementations of Java API classes will not be found – that's fine.
+            logger.warn("No candidate for {}", call);
+        }
+        candidates.forEach(candidate -> {
+            if ((!callGraphIndex.contains(candidate) || callGraphIndex.indexOf(candidate) >= index) && !newFunctions.contains(candidate)) {
+                newFunctions.add(candidate);
             }
-            candidates.forEach(candidate -> {
-                if ((!callGraphIndex.contains(methodDeclaration) || callGraphIndex.indexOf(methodDeclaration) >= index)
-                        && !newFunctions.contains(methodDeclaration)) {
-                    newFunctions.add(methodDeclaration);
-                }
-            });
         });
 
     }

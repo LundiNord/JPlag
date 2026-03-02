@@ -40,29 +40,27 @@ import kotlin.reflect.KClass;
  */
 public class CpgAdapter {
 
-    private List<Token> tokenList;
     private boolean reorderingEnabled = true;
 
     /**
-     * Constructs a new CpgAdapter.
+     * Constructs a new {@link CpgAdapter}.
      * @param transformations a list of {@link GraphTransformation}s
      */
     public CpgAdapter(GraphTransformation... transformations) {
         addTransformations(transformations);
     }
 
+    @SuppressWarnings("unchecked")
     /* package-private */ List<Token> adapt(Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
         assert !files.isEmpty();
-        tokenList = null;
         if (!normalize) {
             clearTransformations();
             setReorderingEnabled(false);
         }
-        // TokenizationPass sets tokenList
 
-        translate(files);
+        TranslationResult translate = translate(files);
 
-        return tokenList;
+        return (List<Token>) translate.getScratch().getOrDefault("tokenList", List.of());
     }
 
     /**
@@ -105,15 +103,10 @@ public class CpgAdapter {
         this.reorderingEnabled = enabled;
     }
 
-    private void setTokenList(List<Token> tokenList) {
-        this.tokenList = tokenList;
-    }
-
     /* package-private */ TranslationResult translate(Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
 
         TranslationResult translationResult;
-        TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
         try {
             TranslationConfiguration.Builder configBuilder = new TranslationConfiguration.Builder().inferenceConfiguration(inferenceConfiguration)
                     .sourceLocations(files.toArray(new File[] {})).registerLanguage(new JavaLanguage());

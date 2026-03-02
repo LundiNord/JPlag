@@ -17,7 +17,7 @@ import de.jplag.java_cpg.visitor.NodeOrderStrategy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.function.Consumer
+import java.util.ArrayDeque;
 
 /**
  * This pass tokenizes the [TranslationResult].
@@ -38,27 +38,12 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
     private val strategy = NodeOrderStrategy()
 
-//    override fun accept(translationResult: TranslationResult) {
-//        tokenList.clear()
-//        val listener = CpgNodeListener(consumer)
-//        val walker: SubgraphWalker.IterativeGraphWalker = SubgraphWalker.IterativeGraphWalker()
-//        walker.strategy = { strategy.getIterator(it) }
-//        walker.registerOnNodeVisit {node, _ -> listener.visit(node) }
-//        walker.registerOnNodeExit { listener.exit(it) }
-//        walker.iterate(translationResult)
-//        callback!!.accept(tokenList)
-//    }
-
-    /**
-     * Updated for the new CPG version (https://github.com/Fraunhofer-AISEC/cpg/pull/1571/files),
-     * the old version commented out above.
-     */
     override fun accept(translationResult: TranslationResult) {
         tokenList.clear()
         val listener = CpgNodeListener(consumer)
         val walker: SubgraphWalker.IterativeGraphWalker = SubgraphWalker.IterativeGraphWalker()
         walker.strategy = { strategy.getIterator(it) }
-        val stack = java.util.ArrayDeque<Node>()
+        val stack = ArrayDeque<Node>()
         walker.registerOnNodeVisit { node, parent ->
             // pop and emit exits until the top of the stack matches the parent
             while (stack.isNotEmpty() && stack.peek() != parent) {
@@ -74,7 +59,7 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
             val exited = stack.pop()
             listener.exit(exited)
         }
-        callback!!.accept(tokenList)
+        translationResult.scratch["tokenList"] = tokenList
     }
 
     private inner class ConcreteCpgTokenConsumer : CpgTokenConsumer() {
@@ -91,7 +76,6 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     }
 
     companion object {
-        var callback: Consumer<List<Token>>? = null
         val logger: Logger = LoggerFactory.getLogger(TokenizationPass::class.java)
     }
 }

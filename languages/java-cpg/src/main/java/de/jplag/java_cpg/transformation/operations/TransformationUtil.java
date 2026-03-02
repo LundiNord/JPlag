@@ -1,8 +1,11 @@
 package de.jplag.java_cpg.transformation.operations;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -43,16 +46,12 @@ public final class TransformationUtil {
         } else {
             result = SubgraphWalker.INSTANCE.getEOGPathEdges(astRoot);
             if (result.getEntries().isEmpty()) {
-                Node entry = astRoot;
-                while (!entry.getPrevEOG().isEmpty())
-                    entry = entry.getPrevEOG().getFirst();
-                result.setEntries(List.of(entry));
+                List<Node> entries = worklist(List.of(astRoot), Node::getPrevEOG);
+                result.setEntries(entries);
             }
             if (result.getExits().isEmpty()) {
-                Node exit = astRoot;
-                while (!exit.getNextEOG().isEmpty())
-                    exit = exit.getNextEOG().getFirst();
-                result.setExits(List.of(exit));
+                List<Node> exits = worklist(List.of(astRoot), Node::getNextEOG);
+                result.setExits(exits);
             }
 
         }
@@ -359,5 +358,31 @@ public final class TransformationUtil {
         List<PropertyEdge<Node>> entryEdges = getEntryEdges(maybeSuccessor, entry, false);
 
         return entryEdges.stream().anyMatch(e -> exit == e.getStart());
+    }
+
+    /**
+     * Computes the iterative successors of a list of elements w.r.t. a successor function, collecting those elements with
+     * no successors.
+     * @param initialList the initial list of elements
+     * @param successorFunction the successor function
+     * @param <T> the element type
+     * @return the list of successors with no successors
+     */
+    private static <T> List<T> worklist(Collection<T> initialList, Function<T, ? extends List<T>> successorFunction) {
+        List<T> seen = new ArrayList<>(initialList);
+        List<T> worklist = new LinkedList<>(initialList);
+        List<T> result = new ArrayList<>();
+        while (!worklist.isEmpty()) {
+            T element = worklist.removeFirst();
+            List<T> successors = successorFunction.apply(element);
+            if (successors.isEmpty()) {
+                result.add(element);
+            } else {
+                successors.removeAll(seen);
+                worklist.addAll(successors);
+                seen.addAll(successors);
+            }
+        }
+        return result;
     }
 }
