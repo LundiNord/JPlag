@@ -27,7 +27,6 @@ public abstract class CpgTokenConsumer implements TokenConsumer {
      * length of any sensible line of code.
      */
     private static final int MULTILINE_TOKEN_LENGTH = 1024;
-    private File currentFile;
 
     private static int calculateLength(Region region) {
         if (region.getEndLine() == region.startLine) {
@@ -49,11 +48,10 @@ public abstract class CpgTokenConsumer implements TokenConsumer {
         File file;
         Region region;
         if (Objects.isNull(location)) {
-            file = currentFile;
-            region = new Region();
+            // implicit node, e.g., declaration of API classes - we do not want tokens for those.
+            return;
         } else {
             file = new File(location.getArtifactLocation().getUri());
-            currentFile = file;
             region = location.getRegion();
         }
 
@@ -62,6 +60,8 @@ public abstract class CpgTokenConsumer implements TokenConsumer {
             int line = isEndToken ? region.getEndLine() : region.startLine;
             int column = isEndToken ? region.getEndColumn() - 1 : region.startColumn;
             newRegion = new Region(line, column, line, column + 1);
+        } else if (node.getAstChildren().isEmpty()) {
+            newRegion = region;
         } else {
 
             List<Region> childRegions = node.getAstChildren().stream().map(Node::getLocation).filter(Objects::nonNull)
