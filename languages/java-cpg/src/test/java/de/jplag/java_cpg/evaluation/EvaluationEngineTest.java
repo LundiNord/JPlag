@@ -339,8 +339,6 @@ class EvaluationEngineTest {
         assert result.getAllComparisons().size() == 1;
         JPlagComparison comparison = result.getAllComparisons().getFirst();
         double similarity = comparison.similarity();
-        double maxSimilarity = comparison.maximalSimilarity();
-        int matchedTokens = comparison.getNumberOfMatchedTokens();
         return similarity;
     }
 
@@ -617,7 +615,6 @@ class EvaluationEngineTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void KitDeadCodeEvaluationSingle() throws ParsingException {
-        // String fileName = "kit_DONT_COMMIT/BoardGame/insert/insert-plag-subm223";
         String fileName = "kit_DONT_COMMIT/BoardGame/human/subm208/";
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -842,20 +839,20 @@ class EvaluationEngineTest {
         Set<String> files = kitTicTocToePlag();
         Set<File> fileSet = files.stream().skip(0).map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file)).collect(Collectors.toSet());
 
-        // JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
-        // File outDir = new File("outputTicTacToe.jplag.zip");
-        // ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
-        // reportObjectFactory.createAndSaveReport(resultJPlag);
-        //
+        JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
+        File outDir = new File("outputTicTacToe.jplag.zip");
+        ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
+        reportObjectFactory.createAndSaveReport(resultJPlag);
+
         JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
         File outDir2 = new File("outputTicTacToe.cpg.zip");
         ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
         reportObjectFactory2.createAndSaveReport(resultCPG);
 
-        // JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
-        // File outDir3 = new File("outputTicTacToe.ai.zip");
-        // ReportObjectFactory reportObjectFactory3 = new ReportObjectFactory(outDir3);
-        // reportObjectFactory3.createAndSaveReport(resultAI);
+        JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
+        File outDir3 = new File("outputTicTacToe.ai.zip");
+        ReportObjectFactory reportObjectFactory3 = new ReportObjectFactory(outDir3);
+        reportObjectFactory3.createAndSaveReport(resultAI);
 
         assertTrue(true);
     }
@@ -866,14 +863,14 @@ class EvaluationEngineTest {
         Set<File> fileSet = files.stream().sorted().skip(0).map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file))
                 .collect(Collectors.toSet());
 
-        // JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
-        // File outDir = new File("outputBoardGame.jplag.zip");
-        // ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
-        // reportObjectFactory.createAndSaveReport(resultJPlag);
-        //
-        // JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
-        // File outDir2 = new File("outputBoardGame.cpg.zip");
-        // ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
+        JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
+        File outDir = new File("outputBoardGame.jplag.zip");
+        ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
+        reportObjectFactory.createAndSaveReport(resultJPlag);
+
+        JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
+        File outDir2 = new File("outputBoardGame.cpg.zip");
+        ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
         // reportObjectFactory2.createAndSaveReport(resultCPG);
 
         JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
@@ -903,7 +900,7 @@ class EvaluationEngineTest {
         double similarityStandardCpg = StandardCpg.getAllComparisons().getFirst().similarity();
         System.out.println("Cpg standard transformations: " + similarityStandardCpg);
 
-        JPlagResult ai = getJPlagCpgPlagScore(fileSet, true, true, false, true, false);
+        JPlagResult ai = getJPlagCpgPlagScore(fileSet, true, true, false, false, false);
         double similarityAi = ai.getAllComparisons().getFirst().similarity();
         System.out.println("Cpg with AI dead code removal: " + similarityAi);
 

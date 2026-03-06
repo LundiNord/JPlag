@@ -253,7 +253,6 @@ public class AbstractInterpretation {
                 mainClas.getName().toString());
         JavaObject mainClassVar = new JavaObject(objectType);
         setupClass(mainClas, mainClassVar);
-        System.out.println("Starting abstract interpretation with main method in class " + tud.getName());
         assert mainClas.getMethods().stream().map(MethodDeclaration::getName).filter(x -> x.getLocalName().equals("main"))
                 .count() == 1 : "Unexpected number of main methods in class " + mainClas.getName() + ": "
                         + mainClas.getMethods().stream().filter(m -> m.getName().getLocalName().equals("main")).count();
