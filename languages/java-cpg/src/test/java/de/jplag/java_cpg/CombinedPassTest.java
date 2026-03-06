@@ -23,6 +23,7 @@ class CombinedPassTest extends AbstractJavaCpgLanguageTest {
 
     /**
      * @author Gemini 3 Flash
+     * @throws ParsingException if parsing fails.
      */
     @Test
     void testDeadCodeRemovalInTokens() throws ParsingException {

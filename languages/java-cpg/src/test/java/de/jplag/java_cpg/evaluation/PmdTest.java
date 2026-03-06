@@ -43,6 +43,12 @@ public class PmdTest {
         System.out.println("Dead lines: " + deadLines);
     }
 
+    /**
+     * Runs PMD on the given file or directory and counts the number of lines that PMD considers dead code.
+     * @param file The Java file or directory to analyze with PMD.
+     * @return The number of lines that PMD considers dead code.
+     * @throws IOException If there is an error running PMD or processing files.
+     */
     public static int getPmdDeadLinesInFile(@NotNull File file) throws IOException {
         if (!file.exists()) {
             throw new IOException("File does not exist: " + file.getAbsolutePath());
@@ -83,6 +89,12 @@ public class PmdTest {
         return javaFiles;
     }
 
+    /**
+     * Runs PMD on the given file or directory and returns a virtual file with violation lines removed.
+     * @param file The Java file or directory to analyze with PMD.
+     * @return A virtual file with PMD violation lines removed.
+     * @throws IOException If there is an error running PMD or processing files.
+     */
     public static @NotNull File runPmdForFile(@NotNull File file) throws IOException {
         String pmdPath = System.getProperty("user.home") + "/pmd-bin-7.21.0/bin/pmd";
         String folder = file.getAbsolutePath();
@@ -128,13 +140,13 @@ public class PmdTest {
      * @author GitHub Copilot (Claude Sonnet 4.5)
      */
     static class ViolationInfo {
-        String filePath;
-        int beginLine;
-        int endLine;
-        int beginColumn;
-        int endColumn;
-        String rule;
-        String message;
+        private String filePath;
+        private int beginLine;
+        private int endLine;
+        private int beginColumn;
+        private int endColumn;
+        private String rule;
+        private String message;
 
         @Override
         public String toString() {
@@ -143,7 +155,7 @@ public class PmdTest {
     }
 
     /**
-     * Extracts violation information from the PMD XML document
+     * Extracts violation information from the PMD XML document.
      */
     private static @NotNull List<ViolationInfo> extractViolations(@NotNull Document doc) {
         List<ViolationInfo> violations = new ArrayList<>();
@@ -174,7 +186,7 @@ public class PmdTest {
     }
 
     /**
-     * Creates a virtual file with violation lines removed
+     * Creates a virtual file with violation lines removed.
      */
     private static @NotNull File createVirtualFilesWithViolationsRemoved(@NotNull List<ViolationInfo> violations, @NotNull File originalFile)
             throws IOException {

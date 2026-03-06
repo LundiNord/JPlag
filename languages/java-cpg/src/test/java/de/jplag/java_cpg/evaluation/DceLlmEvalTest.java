@@ -24,9 +24,19 @@ import org.junit.jupiter.params.provider.MethodSource;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.JavaCpgLanguage;
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.CpgErrorException;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
+/**
+ * Evaluation on the DCE-LLM dataset, which contains Java files with manually annotated dead code. We compare the
+ * results of our dead code removal with the manual annotations and measure the similarity and runtime.
+ */
 public class DceLlmEvalTest {
 
     private static @NotNull Stream<String> dceLlmFiles() {
@@ -45,8 +55,8 @@ public class DceLlmEvalTest {
     }
 
     @NotNull
-    static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder, boolean normalize,
-            boolean removeSimpleDeadCode) throws ParsingException {
+    private static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
+            boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
         GraphTransformation[] transformations = JavaCpgLanguage.deadCodeRemovalTransformations();
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, transformations,
@@ -64,7 +74,7 @@ public class DceLlmEvalTest {
     }
 
     @NotNull
-    public static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
+    private static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
             throws ParsingException {
         try {
             File originalFile = new File(fileName);

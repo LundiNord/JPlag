@@ -323,7 +323,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple HashSet/TreeSet test
+     * simple HashSet/TreeSet test.
      */
     @Test
     void testSet() throws ParsingException, InterruptedException {
@@ -333,7 +333,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * Test the programming course final project: QueensFarming
+     * Test the programming course final project: QueensFarming.
      */
     @Test
     @Disabled("Disabled due to containing break statements not yet supported")
@@ -356,7 +356,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple break statement test
+     * simple break statement test.
      */
     @Disabled("Disabled due to containing break statements not yet supported")
     @Test
@@ -379,7 +379,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * a simple try /catch test with throw inside called method
+     * a simple try /catch test with throw inside called method.
      */
     @Test
     void testTryCatch2() throws ParsingException, InterruptedException {
@@ -391,7 +391,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple try/catch test with nothing thrown
+     * simple try/catch test with nothing thrown.
      */
     @Test
     void testTryCatch3() throws ParsingException, InterruptedException {
@@ -403,7 +403,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple stream test
+     * simple stream test.
      */
     @Test
     void testStream() throws ParsingException, InterruptedException {
@@ -414,7 +414,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple array test
+     * simple array test.
      */
     @Test
     void testArray() throws ParsingException, InterruptedException {
@@ -447,7 +447,7 @@ class DeadCodeDetectionTest {
     }
 
     /**
-     * simple test for while with variable assignment in the condition.
+     * a simple test for a while with variable assignment in the condition.
      */
     @Test
     void testWhileAssign() throws ParsingException, InterruptedException {

@@ -82,7 +82,7 @@ class DeadCodeDetectionIntervalTest {
     }
 
     /**
-     * Test the programming course final project: QueensFarming
+     * Test the programming course final project: QueensFarming.
      */
     @Test
     @Disabled("Disabled due to containing break statements not yet supported")

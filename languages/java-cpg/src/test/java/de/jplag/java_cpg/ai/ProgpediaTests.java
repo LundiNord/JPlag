@@ -46,6 +46,10 @@ public class ProgpediaTests {
         return interpretation;
     }
 
+    /**
+     * The Progpedia data set contains 15 problems, each with two categories of submissions (ACCEPTED and WRONG_ANSWER), and
+     * each category has multiple submissions. This method generates the resource directories for all these submissions.
+     */
     @NotNull
     public static Stream<String> progpediaResourceDirs() {
         return Stream
@@ -54,6 +58,9 @@ public class ProgpediaTests {
                 .flatMap(problemId -> Stream.of("ACCEPTED", "WRONG_ANSWER").flatMap(category -> getResourceDirsForProblem(problemId, category)));
     }
 
+    /**
+     * Generates the resource paths for all Java files in the Progpedia data set. This is used for the parameterized test.
+     */
     @NotNull
     public static Stream<String> progpediaFiles() {
         return progpediaResourceDirs().flatMap(dir -> {

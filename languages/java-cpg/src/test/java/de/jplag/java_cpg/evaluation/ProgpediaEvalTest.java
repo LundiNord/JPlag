@@ -1,7 +1,10 @@
 package de.jplag.java_cpg.evaluation;
 
 import static de.jplag.java_cpg.AbstractJavaCpgLanguageTest.BASE_PATH;
-import static de.jplag.java_cpg.evaluation.EvaluationEngineTest.*;
+import static de.jplag.java_cpg.evaluation.EvaluationEngineTest.checkNonDeadCodeNotRemoved;
+import static de.jplag.java_cpg.evaluation.EvaluationEngineTest.getTokensFromFileWithoutDeadCode;
+import static de.jplag.java_cpg.evaluation.EvaluationEngineTest.progpediaFiles;
+import static de.jplag.java_cpg.evaluation.EvaluationEngineTest.similarity;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -17,7 +20,13 @@ import org.junit.jupiter.api.Test;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.JavaCpgLanguage;
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.CpgErrorException;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
+import de.jplag.java_cpg.ai.StringAiType;
 
 class ProgpediaEvalTest {
 

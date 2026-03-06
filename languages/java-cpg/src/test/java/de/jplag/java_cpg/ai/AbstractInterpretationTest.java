@@ -60,7 +60,7 @@ import kotlin.reflect.KClass;
 class AbstractInterpretationTest {
 
     /**
-     * a simple test with the main function only
+     * a simple test with the main function only.
      */
     @Test
     void testSimple() throws ParsingException, InterruptedException {
@@ -161,7 +161,7 @@ class AbstractInterpretationTest {
     }
 
     /**
-     * test undetermined exception throw
+     * test undetermined exception throw.
      */
     @Test
     void testException() throws ParsingException, InterruptedException {
@@ -220,7 +220,7 @@ class AbstractInterpretationTest {
     }
 
     /**
-     * a simple try /catch test with throw inside called method
+     * a simple try /catch test with throw inside called method.
      */
     @Test
     void testTryCatch2() throws ParsingException, InterruptedException {
@@ -232,7 +232,7 @@ class AbstractInterpretationTest {
     }
 
     /**
-     * simple try/catch test with nothing thrown
+     * simple try/catch test with nothing thrown.
      */
     @Test
     void testTryCatch3() throws ParsingException, InterruptedException {
