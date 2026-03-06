@@ -96,6 +96,7 @@ class AiPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 //        val sortedVisitedLines = TreeSet(visitedLines)
         deadLinesCallback!!.accept(visitedLinesRecorder.deadLinesCount)
         deadCountCallback!!.accept(visitedLinesRecorder.deadCodeCount)
+        System.out.printf("Abstract Interpretation finished found %d dead lines and %d dead code elements.%n", visitedLinesRecorder.deadLinesCount, visitedLinesRecorder.deadCodeCount)
     }
 
     fun checkIfCompletelyDead(node: Node, visitedLinesRecorder: VisitedLinesRecorder): Boolean {
