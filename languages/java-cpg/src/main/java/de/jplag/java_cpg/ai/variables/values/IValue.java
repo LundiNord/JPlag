@@ -1,5 +1,8 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,6 +50,15 @@ public interface IValue {
     IValue copy();
 
     /**
+     * Creates and returns a deep copy of this value.
+     * @param copiedObjects map of already copied objects to handle cyclic references.
+     * @return a deep copy of this value.
+     */
+    default IValue copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy(); // default: ignore the map
+    }
+
+    /**
      * Merges the information of another instance of the same value into this one. Types should be the same. For example,
      * when a value has different content in different branches of an if statement.
      * @param other other value.
@@ -54,14 +66,40 @@ public interface IValue {
     void merge(@NotNull IValue other);
 
     /**
+     * Merges the information of another instance of the same value into this one. Types should be the same. For example,
+     * when a value has different content in different branches of an if statement.
+     * @param other other value.
+     * @param visited set of already visited JavaObjects to handle cyclic references.
+     */
+    default void merge(@NotNull IValue other, Set<JavaObject> visited) {
+        merge(other); // default: ignore visited set
+    }
+
+    /**
      * Delete all information in this value.
      */
     void setToUnknown();
 
     /**
+     * Delete all information in this value.
+     * @param visited set of already visited JavaObjects to handle cyclic references.
+     */
+    default void setToUnknown(Set<IJavaObject> visited) {
+        setToUnknown(); // default: ignore visited set
+    }
+
+    /**
      * Resets all information about this value except its type. The initial value depends on the specific value type.
      */
     void setInitialValue();
+
+    /**
+     * Resets all information about this value except its type. The initial value depends on the specific value type.
+     * @param visited set of already visited JavaObjects to handle cyclic references.
+     */
+    default void setInitialValue(Set<IJavaObject> visited) {
+        setInitialValue(); // default: ignore visited set
+    }
 
     /**
      * {@link #setParentObject(IJavaObject)} must be called before to use this method.

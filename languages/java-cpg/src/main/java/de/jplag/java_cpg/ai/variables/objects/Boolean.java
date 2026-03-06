@@ -1,11 +1,13 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -26,7 +28,7 @@ public class Boolean extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Boolean class.
      */
     public Boolean() {
-        super();
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -39,14 +41,14 @@ public class Boolean extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "parseBoolean" -> {
                 assert paramVars.size() == 1;
                 IValue value = paramVars.getFirst();
                 switch (value) {
                     case IStringValue str -> {
-                        return str.callMethod("parseBoolean", paramVars, null);
+                        return str.callMethod("parseBoolean", paramVars, null, expectedType);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
@@ -59,6 +61,12 @@ public class Boolean extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new Boolean();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

@@ -1,7 +1,9 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -11,6 +13,7 @@ import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
 import de.jplag.java_cpg.ai.variables.Type;
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
@@ -18,7 +21,8 @@ import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 
 /**
- * String representation using character inclusion sets.
+ * String representation using character inclusion sets. Uses BitSet for efficient character set representation and
+ * copying.
  * @author ujiqk
  * @version 1.0
  */
@@ -29,19 +33,19 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
      * Characters that are definitely contained in the string. Null if string is null.
      */
     @Nullable
-    Set<Character> certainContained;
+    private BitSet certainContained;
     /**
      * Characters that may be contained in the string.
      */
-    Set<Character> maybeContained;
+    private BitSet maybeContained;
 
     /**
      * A string value with no information.
      */
     public StringCharInclValue() {
-        super(Type.STRING);
-        certainContained = new HashSet<>();
-        maybeContained = allCharactersSet();
+        super(new Type(Type.TypeEnum.STRING));
+        certainContained = new BitSet();
+        maybeContained = allCharactersBitSet();
     }
 
     /**
@@ -49,15 +53,15 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
      * @param value the string value.
      */
     public StringCharInclValue(@Nullable String value) {
-        super(Type.STRING);
-        maybeContained = new HashSet<>();
+        super(new Type(Type.TypeEnum.STRING));
+        maybeContained = new BitSet();
         if (value == null) {
             certainContained = null;
             return;
         }
-        certainContained = new HashSet<>();
+        certainContained = new BitSet();
         for (char c : value.toCharArray()) {
-            certainContained.add(c);
+            certainContained.set(c);
         }
     }
 
@@ -66,43 +70,43 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
      * @param possibleValues the set of possible string values.
      */
     public StringCharInclValue(@NotNull Set<String> possibleValues) {
-        super(Type.STRING);
-        certainContained = new HashSet<>();
-        maybeContained = new HashSet<>();
+        super(new Type(Type.TypeEnum.STRING));
+        certainContained = new BitSet();
+        maybeContained = new BitSet();
         for (String value : possibleValues) {
             for (char c : value.toCharArray()) {
-                maybeContained.add(c);
+                maybeContained.set(c);
             }
         }
     }
 
-    private StringCharInclValue(@Nullable Set<Character> certainContained, Set<Character> maybeContained) {
-        super(Type.STRING);
+    private StringCharInclValue(@Nullable BitSet certainContained, BitSet maybeContained) {
+        super(new Type(Type.TypeEnum.STRING));
         this.certainContained = certainContained;
         this.maybeContained = maybeContained;
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "parseInt" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof IStringValue;
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "parseDouble" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof IStringValue;
-                return Value.valueFactory(Type.FLOAT);
+                return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
             }
             case "startsWith" -> {
                 assert paramVars.size() == 1;
                 assert paramVars.getFirst() instanceof IStringValue;
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             case "equals" -> {
                 assert paramVars.size() == 1;
@@ -114,36 +118,36 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
                         && other.maybeContained.isEmpty()) {
                     return Value.valueFactory(false);
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "toUpperCase" -> {
-                Set<Character> newCertain = new HashSet<>();
+                BitSet newCertain = new BitSet();
                 if (this.certainContained != null) {
-                    for (Character c : certainContained) {
-                        newCertain.add(Character.toUpperCase(c));
+                    for (int c = certainContained.nextSetBit(0); c >= 0; c = certainContained.nextSetBit(c + 1)) {
+                        newCertain.set(Character.toUpperCase((char) c));
                     }
                 }
-                Set<Character> newMaybe = new HashSet<>();
-                for (Character c : maybeContained) {
-                    newMaybe.add(Character.toUpperCase(c));
+                BitSet newMaybe = new BitSet();
+                for (int c = maybeContained.nextSetBit(0); c >= 0; c = maybeContained.nextSetBit(c + 1)) {
+                    newMaybe.set(Character.toUpperCase((char) c));
                 }
                 return new StringCharInclValue(newCertain, newMaybe);
             }
             case "charAt" -> {
                 assert paramVars.size() == 1;
-                assert paramVars.getFirst() instanceof INumberValue;
-                return Value.valueFactory(Type.CHAR);
+                assert paramVars.getFirst() instanceof INumberValue : "charAt parameter must be a number value but was "
+                        + paramVars.getFirst().getType();
+                return Value.valueFactory(new Type(Type.TypeEnum.CHAR));
             }
-            case "trim" -> {
-                return new StringCharInclValue();
+            default -> {
+                return Value.valueFactory(expectedType);
             }
-            default -> throw new UnsupportedOperationException(methodName);
         }
     }
 
     @Override
-    public Value accessField(@NotNull String fieldName) {
+    public Value accessField(@NotNull String fieldName, @NotNull Type expectedType) {
         throw new UnsupportedOperationException("Access field not supported in StringValue");
     }
 
@@ -153,83 +157,104 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
             return new StringCharInclValue();
         }
         if (operator.equals("+") && other instanceof INumberValue inumbervalue) {
-            if (inumbervalue.getInformation()) {        // ToDo: what to do with intervals?
-                Set<Character> newCertain = certainContained == null ? null : new HashSet<>(certainContained);
+            if (inumbervalue.getInformation()) {
+                BitSet newCertain = certainContained == null ? null : (BitSet) certainContained.clone();
                 assert newCertain != null;
-                newCertain.addAll(doubleToCharSet(inumbervalue.getValue()));
-                return new StringCharInclValue(newCertain, new HashSet<>(maybeContained));
+                newCertain.or(doubleToCharBitSet(inumbervalue.getValue()));
+                return new StringCharInclValue(newCertain, (BitSet) maybeContained.clone());
             } else {
                 return new StringCharInclValue();
             }
         } else if (operator.equals("+") && other instanceof StringCharInclValue stringValue) {
             assert !(this.certainContained == null || stringValue.certainContained == null);
-            Set<Character> newCertain = new HashSet<>(this.certainContained);
-            newCertain.addAll(stringValue.certainContained);
-            Set<Character> newMaybe = new HashSet<>(this.maybeContained);
-            newMaybe.addAll(stringValue.maybeContained);
+            BitSet newCertain = (BitSet) this.certainContained.clone();
+            newCertain.or(stringValue.certainContained);
+            BitSet newMaybe = (BitSet) this.maybeContained.clone();
+            newMaybe.or(stringValue.maybeContained);
             return new StringCharInclValue(newCertain, newMaybe);
         }
-        throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        return new VoidValue();
     }
 
     @NotNull
     @Override
     public JavaObject copy() {
-        return new StringCharInclValue(certainContained == null ? null : new HashSet<>(certainContained), new HashSet<>(maybeContained));
+        return new StringCharInclValue(certainContained == null ? null : (BitSet) certainContained.clone(), (BitSet) maybeContained.clone());
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
+    }
+
+    @Override
+    public void merge(@NotNull IValue other, Set<JavaObject> visited) {
+        merge(other);
     }
 
     @Override
     public void merge(@NotNull IValue other) {
         if (other instanceof VoidValue) {
-            this.certainContained = new HashSet<>();
-            this.maybeContained = allCharactersSet();
+            this.certainContained = new BitSet();
+            this.maybeContained = allCharactersBitSet();
             return;
         }
-        assert other instanceof StringCharInclValue;
+        assert other instanceof StringCharInclValue : "Cannot merge " + getType() + " with " + other.getType();
         StringCharInclValue otherString = (StringCharInclValue) other;
         if (this.certainContained == null || otherString.certainContained == null) {
             this.certainContained = null;
         } else {
-            Set<Character> removed = new HashSet<>(this.certainContained);
-            this.certainContained.retainAll(otherString.certainContained);
-            removed.removeAll(this.certainContained);
-            this.maybeContained.addAll(removed);
-            Set<Character> otherCertainNotInThis = new HashSet<>(otherString.certainContained);
-            otherCertainNotInThis.removeAll(this.certainContained);
-            this.maybeContained.addAll(otherCertainNotInThis);
-            this.maybeContained.addAll(otherString.maybeContained);
+            // Characters that were certain in this but not in both -> move to maybe
+            BitSet removed = (BitSet) this.certainContained.clone();
+            this.certainContained.and(otherString.certainContained); // Keep only common certain
+            removed.andNot(this.certainContained); // Characters removed from certain
+            this.maybeContained.or(removed);
+            // Characters certain in other but not in this -> add to maybe
+            BitSet otherCertainNotInThis = (BitSet) otherString.certainContained.clone();
+            otherCertainNotInThis.andNot(this.certainContained);
+            this.maybeContained.or(otherCertainNotInThis);
+            this.maybeContained.or(otherString.maybeContained);
         }
     }
 
     @Override
     public void setToUnknown() {
-        this.certainContained = new HashSet<>();
-        this.maybeContained = allCharactersSet();
+        this.certainContained = new BitSet();
+        this.maybeContained = allCharactersBitSet();
+    }
+
+    @Override
+    public void setToUnknown(Set<IJavaObject> visited) {
+        setToUnknown();
+    }
+
+    @Override
+    public void setInitialValue(Set<IJavaObject> visited) {
+        setInitialValue();
     }
 
     @Override
     public void setInitialValue() {
         this.certainContained = null;
-        this.maybeContained = new HashSet<>();
+        this.maybeContained = new BitSet();
     }
 
     @NotNull
-    private Set<Character> allCharactersSet() {
-        Set<Character> allChars = new HashSet<>();
-        for (char c = Character.MIN_VALUE; c < Character.MAX_VALUE; c++) {
-            allChars.add(c);
-        }
+    private BitSet allCharactersBitSet() {
+        BitSet allChars = new BitSet(Character.MAX_VALUE + 1);
+        allChars.set(0, Character.MAX_VALUE + 1);
         return allChars;
     }
 
     @NotNull
-    private Set<Character> doubleToCharSet(double value) {
-        Set<Character> charSet = new HashSet<>();
+    private BitSet doubleToCharBitSet(double value) {
+        BitSet charBitSet = new BitSet();
         String str = Double.toString(value);
         for (char c : str.toCharArray()) {
-            charSet.add(c);
+            charBitSet.set(c);
         }
-        return charSet;
+        return charBitSet;
     }
 
     /**
@@ -255,7 +280,10 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
     @Nullable
     @TestOnly
     public Set<Character> getCertainContained() {
-        return this.certainContained;
+        if (this.certainContained == null) {
+            return null;
+        }
+        return bitSetToCharSet(this.certainContained);
     }
 
     /**
@@ -264,7 +292,22 @@ public class StringCharInclValue extends JavaObject implements IStringValue {
      */
     @TestOnly
     public Set<Character> getMaybeContained() {
-        return this.maybeContained;
+        return bitSetToCharSet(this.maybeContained);
+    }
+
+    @NotNull
+    @TestOnly
+    private Set<Character> bitSetToCharSet(@NotNull BitSet bitSet) {
+        Set<Character> charSet = new HashSet<>();
+        for (int c = bitSet.nextSetBit(0); c >= 0; c = bitSet.nextSetBit(c + 1)) {
+            charSet.add((char) c);
+        }
+        return charSet;
+    }
+
+    @Override
+    public boolean isNull() {
+        return certainContained == null;
     }
 
 }

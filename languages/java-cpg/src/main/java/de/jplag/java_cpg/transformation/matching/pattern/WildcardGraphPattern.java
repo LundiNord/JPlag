@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.Role;
 import de.jplag.java_cpg.transformation.matching.edges.CpgEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgMultiEdge;
@@ -106,7 +107,7 @@ public class WildcardGraphPattern<R extends Node> extends SimpleGraphPattern<Nod
          * @param matches the current set of open matches
          */
         private <T extends Node> void wildCardMatch(IEdge<T, ? super R> e, Node parent, List<Match> matches) {
-            T from = (T) parent;
+            T from = Casting.castNode(parent);
             if (e instanceof CpgEdge<T, ? super R> singleEdge) {
                 Node target = singleEdge.getRelated(from);
                 if (Objects.isNull(target)) {
@@ -137,6 +138,10 @@ public class WildcardGraphPattern<R extends Node> extends SimpleGraphPattern<Nod
             return edgesToType.stream().map(IEdge::getSourceClass).collect(Collectors.toCollection(ArrayList::new));
         }
 
+        /**
+         * Gets the child pattern.
+         * @return the child pattern
+         */
         public NodePattern<R> getChildPattern() {
             return childPattern;
         }

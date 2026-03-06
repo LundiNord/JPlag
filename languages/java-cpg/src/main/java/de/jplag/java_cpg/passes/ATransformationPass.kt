@@ -21,6 +21,7 @@ abstract class ATransformationPass(ctx: TranslationContext) : TranslationResultP
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun accept(t: TranslationResult) {
+
         val detector = CpgIsomorphismDetector()
         val transformations = getPhaseSpecificTransformations()
         for (transformation: GraphTransformation in transformations) {
@@ -37,7 +38,7 @@ abstract class ATransformationPass(ctx: TranslationContext) : TranslationResultP
      * @param <T> The concrete node type of the target node/GraphTransformation/Match
      */
     private fun instantiate(transformation: GraphTransformation, detector: CpgIsomorphismDetector) {
-        val sourcePattern: GraphPattern = transformation.sourcePattern
+        val sourcePattern: GraphPattern = transformation.sourcePattern()
 
         var count = 0
         var invalidated: Boolean
@@ -45,8 +46,8 @@ abstract class ATransformationPass(ctx: TranslationContext) : TranslationResultP
             invalidated = false
             var matches: List<Match> = detector.getMatches(sourcePattern)
 
-            if (transformation.executionOrder == GraphTransformation.ExecutionOrder.DESCENDING_LOCATION) {
-                matches = matches.reversed();
+            if (transformation.executionOrder() == GraphTransformation.ExecutionOrder.DESCENDING_LOCATION) {
+                matches = matches.reversed()
             }
 
             for (match: Match in matches) {
@@ -60,7 +61,7 @@ abstract class ATransformationPass(ctx: TranslationContext) : TranslationResultP
             }
         } while (invalidated)
 
-        logger.info("%s: Found %d matches".format(transformation.name, count))
+        logger.info("%s: Found %d matches".format(transformation.name(), count))
     }
 
     override fun cleanup() {

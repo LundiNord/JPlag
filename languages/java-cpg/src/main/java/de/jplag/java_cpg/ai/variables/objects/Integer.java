@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,10 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
+import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IIntNumber;
+import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
@@ -28,7 +32,7 @@ public class Integer extends JavaObject implements ISpecialObject {
      * Representation of the static java.lang.Integer class.
      */
     public Integer() {
-        super();
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -41,22 +45,47 @@ public class Integer extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
-            case "parseInt" -> {
+            case "parseInt", "valueOf" -> {
                 assert paramVars.size() == 1;
                 IValue value = paramVars.getFirst();
                 switch (value) {
                     case IStringValue str -> {
-                        return str.callMethod("parseInt", paramVars, null);
+                        return str.callMethod("parseInt", paramVars, null, expectedType);
                     }
-                    case VoidValue ignored -> {
-                        return VoidValue.valueFactory(Type.INT);
+                    case VoidValue _ -> {
+                        return Value.valueFactory(new Type(Type.TypeEnum.INT));
+                    }
+                    case IIntNumber intNumber -> {
+                        return intNumber;
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + value);
                 }
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            case "toString" -> {
+                if (paramVars.size() == 2) {    // with radix
+                    return Value.valueFactory(new Type(Type.TypeEnum.STRING));
+                }
+                assert paramVars.size() == 1 : "toString method of Integer expects exactly one parameter but got " + paramVars.size();
+                IValue value = paramVars.getFirst();
+                switch (value) {
+                    case INumberValue intValue -> {
+                        if (intValue.getInformation()) {
+                            return Value.valueFactory(java.lang.Double.toString(intValue.getValue()));
+                        } else {
+                            return Value.valueFactory(new Type(Type.TypeEnum.STRING));
+                        }
+                    }
+                    case VoidValue _ -> {
+                        return Value.valueFactory(new Type(Type.TypeEnum.STRING));
+                    }
+                    default -> throw new IllegalStateException("Unexpected value: " + value);
+                }
+            }
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 
@@ -64,6 +93,12 @@ public class Integer extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new Integer();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

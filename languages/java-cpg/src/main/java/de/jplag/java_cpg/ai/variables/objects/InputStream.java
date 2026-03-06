@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +28,7 @@ public class InputStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.InputStream class.
      */
     public InputStream() {
-        super();
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -40,11 +41,11 @@ public class InputStream extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "read" -> {
                 if (paramVars == null || paramVars.isEmpty()) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 } else {
                     throw new UnsupportedOperationException("InputStream.read() with parameters is not supported");
                 }
@@ -57,6 +58,12 @@ public class InputStream extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new InputStream();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

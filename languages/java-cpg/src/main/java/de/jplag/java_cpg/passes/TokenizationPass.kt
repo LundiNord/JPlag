@@ -7,6 +7,7 @@ import de.fraunhofer.aisec.cpg.graph.Node
 import de.fraunhofer.aisec.cpg.helpers.SubgraphWalker
 import de.fraunhofer.aisec.cpg.passes.TranslationResultPass
 import de.fraunhofer.aisec.cpg.passes.configuration.DependsOn
+import de.fraunhofer.aisec.cpg.sarif.Region
 import de.jplag.Token
 import de.jplag.TokenType
 import de.jplag.java_cpg.token.CpgNodeListener
@@ -16,7 +17,7 @@ import de.jplag.java_cpg.visitor.NodeOrderStrategy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.function.Consumer
+import java.util.ArrayDeque
 
 /**
  * This pass tokenizes the [TranslationResult].
@@ -37,27 +38,14 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
 
     private val strategy = NodeOrderStrategy()
 
-//    override fun accept(translationResult: TranslationResult) {
-//        tokenList.clear()
-//        val listener = CpgNodeListener(consumer)
-//        val walker: SubgraphWalker.IterativeGraphWalker = SubgraphWalker.IterativeGraphWalker()
-//        walker.strategy = { strategy.getIterator(it) }
-//        walker.registerOnNodeVisit {node, _ -> listener.visit(node) }
-//        walker.registerOnNodeExit { listener.exit(it) }
-//        walker.iterate(translationResult)
-//        callback!!.accept(tokenList)
-//    }
-
-    /**
-     * Updated for the new CPG version (https://github.com/Fraunhofer-AISEC/cpg/pull/1571/files),
-     * the old version commented out above.
-     */
     override fun accept(translationResult: TranslationResult) {
+        print("Current File: " + translationResult.translationUnits.first().name)
+        logger.info("Current File: " + translationResult.translationUnits.first().name.toString())
         tokenList.clear()
         val listener = CpgNodeListener(consumer)
         val walker: SubgraphWalker.IterativeGraphWalker = SubgraphWalker.IterativeGraphWalker()
         walker.strategy = { strategy.getIterator(it) }
-        val stack = java.util.ArrayDeque<Node>()
+        val stack = ArrayDeque<Node>()
         walker.registerOnNodeVisit { node, parent ->
             // pop and emit exits until the top of the stack matches the parent
             while (stack.isNotEmpty() && stack.peek() != parent) {
@@ -73,25 +61,23 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
             val exited = stack.pop()
             listener.exit(exited)
         }
-        callback!!.accept(tokenList)
+        translationResult.scratch["tokenList"] = tokenList
     }
 
     private inner class ConcreteCpgTokenConsumer : CpgTokenConsumer() {
         override fun addToken(
             type: TokenType,
             file: File,
-            rowBegin: Int,
-            colBegin: Int,
+            region: Region,
             length: Int,
             name: Name
         ) {
-            val token = CpgToken(type, file, rowBegin, colBegin, length, name)
+            val token = CpgToken(type, file, region, length, name)
             tokenList.add(token)
         }
     }
 
     companion object {
-        var callback: Consumer<List<Token>>? = null
         val logger: Logger = LoggerFactory.getLogger(TokenizationPass::class.java)
     }
 }

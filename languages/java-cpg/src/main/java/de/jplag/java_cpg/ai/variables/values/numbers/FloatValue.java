@@ -10,11 +10,12 @@ import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Represents a floating point value with optional exact information.
  */
-public class FloatValue extends Value implements INumberValue {
+public class FloatValue extends Value implements INumberValue, IFloatNumber {
 
     private double value;
     private boolean information;    // whether exact information is available
@@ -23,7 +24,7 @@ public class FloatValue extends Value implements INumberValue {
      * a IntValue with no information.
      */
     public FloatValue() {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         information = false;
     }
 
@@ -32,7 +33,7 @@ public class FloatValue extends Value implements INumberValue {
      * @param value the float value.
      */
     public FloatValue(double value) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         this.value = value;
         information = true;
     }
@@ -43,7 +44,7 @@ public class FloatValue extends Value implements INumberValue {
      * @param upperBound the upper bound of the range.
      */
     public FloatValue(double lowerBound, double upperBound) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         assert lowerBound <= upperBound;
         if (lowerBound == upperBound) {
             this.value = lowerBound;
@@ -58,7 +59,7 @@ public class FloatValue extends Value implements INumberValue {
      * @param values the set of possible float values.
      */
     public FloatValue(@NotNull Set<Double> values) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         if (values.size() == 1) {
             this.value = values.iterator().next();
             this.information = true;
@@ -68,7 +69,7 @@ public class FloatValue extends Value implements INumberValue {
     }
 
     private FloatValue(double value, boolean information) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         this.value = value;
         this.information = information;
     }
@@ -93,7 +94,10 @@ public class FloatValue extends Value implements INumberValue {
         if (other instanceof VoidValue) {
             return new VoidValue();
         }
-        assert other instanceof INumberValue;
+        if (other instanceof IStringValue) {
+            return other.binaryOperation(operator, this);
+        }
+        assert other instanceof INumberValue : "Expected a number value for binary operation, but got " + other.getType();
         switch (operator) {
             case "+" -> {
                 if (information && ((INumberValue) other).getInformation()) {
@@ -172,6 +176,27 @@ public class FloatValue extends Value implements INumberValue {
                     return new BooleanValue();
                 }
             }
+            case "%" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    return new FloatValue(this.value % ((INumberValue) other).getValue());
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "compareTo" -> {
+                if (information && ((INumberValue) other).getInformation()) {
+                    double otherValue = ((INumberValue) other).getValue();
+                    if (this.value < otherValue) {
+                        return new FloatValue(-1);
+                    } else if (this.value > otherValue) {
+                        return new FloatValue(1);
+                    } else {
+                        return new FloatValue(0);
+                    }
+                } else {
+                    return new FloatValue();
+                }
+            }
             default -> throw new UnsupportedOperationException(
                     "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
         }
@@ -200,6 +225,27 @@ public class FloatValue extends Value implements INumberValue {
             case "sqrt" -> {
                 if (information) {
                     return new FloatValue(Math.sqrt(this.value));
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "abs" -> {
+                if (information) {
+                    return new FloatValue(Math.abs(this.value));
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "ceil" -> {
+                if (information) {
+                    return new FloatValue(Math.ceil(this.value));
+                } else {
+                    return new FloatValue();
+                }
+            }
+            case "floor" -> {
+                if (information) {
+                    return new FloatValue(Math.floor(this.value));
                 } else {
                     return new FloatValue();
                 }

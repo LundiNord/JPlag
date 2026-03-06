@@ -9,6 +9,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
 
 /**
@@ -16,7 +17,7 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
  * @author ujiqk
  * @version 1.0
  */
-public class IntIntervalValue extends Value implements INumberValue {
+public class IntIntervalValue extends Value implements INumberValue, IIntNumber {
 
     private final IntInterval interval;
 
@@ -24,7 +25,7 @@ public class IntIntervalValue extends Value implements INumberValue {
      * a IntIntervalValue with no information.
      */
     public IntIntervalValue() {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         interval = new IntInterval();
     }
 
@@ -34,7 +35,7 @@ public class IntIntervalValue extends Value implements INumberValue {
      * @param upperBound the upper bound.
      */
     public IntIntervalValue(int lowerBound, int upperBound) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         interval = new IntInterval(lowerBound, upperBound);
     }
 
@@ -43,7 +44,7 @@ public class IntIntervalValue extends Value implements INumberValue {
      * @param number the integer value.
      */
     public IntIntervalValue(int number) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         interval = new IntInterval(number);
     }
 
@@ -52,13 +53,13 @@ public class IntIntervalValue extends Value implements INumberValue {
      * @param possibleValues the set of possible integer values.
      */
     public IntIntervalValue(@NotNull Set<Integer> possibleValues) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         java.util.List<Integer> values = possibleValues.stream().toList();
         interval = new IntInterval(values.getFirst(), values.getLast());
     }
 
     private IntIntervalValue(IntInterval interval) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         this.interval = interval;
     }
 
@@ -77,7 +78,15 @@ public class IntIntervalValue extends Value implements INumberValue {
         if (!(other instanceof INumberValue)) {
             other = new IntIntervalValue();
         }
-        IntIntervalValue otherValue = (IntIntervalValue) other; // ToDo: what if other float?
+        if (other instanceof IFloatNumber || other instanceof ICharValue) {    // This could be better
+            INumberValue number = (INumberValue) other;
+            if (number.getInformation() && number.getValue() == (int) number.getValue()) {
+                other = new IntIntervalValue((int) number.getValue());
+            } else {
+                other = new IntIntervalValue();
+            }
+        }
+        IntIntervalValue otherValue = (IntIntervalValue) other;
         switch (operator) {
             case "+" -> {
                 IntInterval newInterval = this.interval.copy().plus(otherValue.interval);
@@ -113,8 +122,9 @@ public class IntIntervalValue extends Value implements INumberValue {
                 IntInterval newInterval = this.interval.copy().divided(otherValue.interval);
                 return new IntIntervalValue(newInterval);
             }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 
@@ -138,7 +148,9 @@ public class IntIntervalValue extends Value implements INumberValue {
                 IntInterval newInterval = this.interval.copy().abs();
                 return new IntIntervalValue(newInterval);
             }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 
@@ -153,7 +165,14 @@ public class IntIntervalValue extends Value implements INumberValue {
         if (other instanceof VoidValue) {
             other = new IntIntervalValue();
         }
-        assert other instanceof IntIntervalValue;
+        if (other instanceof IFloatNumber floatNumber) {    // can happen because some casts are not explicit in eog
+            if (floatNumber.getInformation()) {
+                other = new IntIntervalValue((int) floatNumber.getValue());
+            } else {
+                other = new IntIntervalValue();
+            }
+        }
+        assert other instanceof IntIntervalValue : "Cannot merge " + this.getClass() + " with " + other.getClass();
         this.interval.merge(((IntIntervalValue) other).interval);
     }
 

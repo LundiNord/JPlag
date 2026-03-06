@@ -1,13 +1,17 @@
 package de.jplag.java_cpg.token;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.fraunhofer.aisec.cpg.graph.declarations.Declaration;
+import de.fraunhofer.aisec.cpg.graph.statements.expressions.Block;
 import de.fraunhofer.aisec.cpg.sarif.PhysicalLocation;
 import de.fraunhofer.aisec.cpg.sarif.Region;
 import de.jplag.Token;
@@ -45,28 +49,54 @@ public abstract class CpgTokenConsumer implements TokenConsumer {
 
         File file;
         Region region;
-        int length;
-        if (Objects.isNull(location)) {
+        if (Objects.nonNull(location)) {
+            file = new File(location.getArtifactLocation().getUri());
+            region = location.getRegion();
+            currentFile = file;
+        } else if (node instanceof Declaration) {
+            // implicit node, e.g., declaration of API classes - we do not want tokens for those.
+            return;
+        } else {
+            // nodes created and _inserted_ during transformations (new nodes which _replace_ others get their location)
             file = currentFile;
             region = new Region();
-            length = 0;
-        } else {
-            file = new File(location.getArtifactLocation().getUri());
-            currentFile = file;
-            region = location.getRegion();
-            length = calculateLength(region);
         }
-        int line;
-        int column;
-        if (isEndToken) {
-            line = region.getEndLine();
-            column = region.getEndColumn();
+
+        Region newRegion;
+        if (node instanceof Block) {
+            int line = isEndToken ? region.getEndLine() : region.startLine;
+            int column = isEndToken ? region.getEndColumn() - 1 : region.startColumn;
+            newRegion = new Region(line, column, line, column + 1);
         } else {
-            line = region.startLine;
-            column = region.startColumn;
+
+            List<Region> childRegions = node.getAstChildren().stream().map(Node::getLocation).filter(Objects::nonNull)
+                    .map(PhysicalLocation::getRegion).filter(childRegion -> regionContains(region, childRegion)).sorted().toList();
+
+            if (childRegions.isEmpty()) {
+                newRegion = region;
+            } else if (!isEndToken) {
+                // location encompasses the whole node AND all child nodes, not the syntactic element that represents the node.
+                // As an approximation for the missing values, we use the beginning and end of the child nodes, respectively, which is
+                // not ideal.
+                Region nextTokenRegion = childRegions.getFirst();
+                newRegion = new Region(region.startLine, region.startColumn, nextTokenRegion.startLine,
+                        IntStream.of(1, nextTokenRegion.startColumn - 1, region.startColumn).max().getAsInt());
+            } else {
+                Region previousTokenRegion = childRegions.getLast();
+                newRegion = new Region(previousTokenRegion.getEndLine(), previousTokenRegion.getEndColumn(), region.getEndLine(),
+                        region.getEndColumn());
+            }
         }
+
         Name name = node.getName();
-        addToken(type, file, line, column, length, name);
+        addToken(type, file, newRegion, calculateLength(newRegion), name);
+    }
+
+    private boolean regionContains(Region outer, Region inner) {
+        boolean startContained = outer.startLine < inner.startLine || (outer.startLine == inner.startLine && outer.startColumn <= inner.startColumn);
+        boolean endContained = outer.getEndLine() > inner.getEndLine()
+                || (outer.getEndLine() == inner.getEndLine() && outer.getEndColumn() >= inner.getEndColumn());
+        return startContained && endContained;
     }
 
 }

@@ -4,52 +4,52 @@ import static de.jplag.java_cpg.transformation.GraphTransformation.ExecutionOrde
 import static de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase.AST_TRANSFORM;
 import static de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase.CPG_TRANSFORM;
 import static de.jplag.java_cpg.transformation.GraphTransformation.ExecutionPhase.OBLIGATORY;
-import static de.jplag.java_cpg.transformation.Role.ARGUMENT;
-import static de.jplag.java_cpg.transformation.Role.BODY;
-import static de.jplag.java_cpg.transformation.Role.CLASS_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.CONDITION;
-import static de.jplag.java_cpg.transformation.Role.CONSTRUCTOR_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.CONTAINING_FILE;
-import static de.jplag.java_cpg.transformation.Role.CONTAINING_RECORD;
-import static de.jplag.java_cpg.transformation.Role.CONTAINING_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.DECLARATION_CONTAINER;
-import static de.jplag.java_cpg.transformation.Role.DECLARATION_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.DEFINING_RECORD;
-import static de.jplag.java_cpg.transformation.Role.DEFINING_RECORD_REFERENCE;
-import static de.jplag.java_cpg.transformation.Role.DO_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.ELSE_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.EMPTY_RECORD;
-import static de.jplag.java_cpg.transformation.Role.FIELD_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.FIELD_USAGE;
-import static de.jplag.java_cpg.transformation.Role.FIELD_VALUE;
-import static de.jplag.java_cpg.transformation.Role.FIRST_CONSTANT_USAGE;
-import static de.jplag.java_cpg.transformation.Role.FOR_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.GETTER_METHOD_REFERENCE;
-import static de.jplag.java_cpg.transformation.Role.IF_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.INITIALIZATION_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.INNER_CONDITION;
-import static de.jplag.java_cpg.transformation.Role.ITERATION_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.MEMBER_CALL;
-import static de.jplag.java_cpg.transformation.Role.METHOD_BLOCK;
-import static de.jplag.java_cpg.transformation.Role.METHOD_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.METHOD_TYPE;
-import static de.jplag.java_cpg.transformation.Role.OPTIONAL_CLASS;
-import static de.jplag.java_cpg.transformation.Role.OPTIONAL_OBJECT;
-import static de.jplag.java_cpg.transformation.Role.RECORD_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.RETURN_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.RETURN_TYPE;
-import static de.jplag.java_cpg.transformation.Role.RETURN_VALUE;
-import static de.jplag.java_cpg.transformation.Role.SCOPE_BLOCK;
-import static de.jplag.java_cpg.transformation.Role.SURROUNDING_BLOCK;
-import static de.jplag.java_cpg.transformation.Role.THEN_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.THROW_EXCEPTION;
-import static de.jplag.java_cpg.transformation.Role.USING_RECORD;
-import static de.jplag.java_cpg.transformation.Role.VARIABLE_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.VARIABLE_USAGE;
-import static de.jplag.java_cpg.transformation.Role.VARIABLE_VALUE;
-import static de.jplag.java_cpg.transformation.Role.WHILE_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.WHILE_STATEMENT_BODY;
+import static de.jplag.java_cpg.transformation.StructuralRole.ARGUMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.BODY;
+import static de.jplag.java_cpg.transformation.StructuralRole.CLASS_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.CONDITION;
+import static de.jplag.java_cpg.transformation.StructuralRole.CONSTRUCTOR_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.CONTAINING_FILE;
+import static de.jplag.java_cpg.transformation.StructuralRole.CONTAINING_RECORD;
+import static de.jplag.java_cpg.transformation.StructuralRole.CONTAINING_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.DECLARATION_CONTAINER;
+import static de.jplag.java_cpg.transformation.StructuralRole.DECLARATION_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.DEFINING_RECORD;
+import static de.jplag.java_cpg.transformation.StructuralRole.DEFINING_RECORD_REFERENCE;
+import static de.jplag.java_cpg.transformation.StructuralRole.DO_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.ELSE_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.EMPTY_RECORD;
+import static de.jplag.java_cpg.transformation.StructuralRole.FIELD_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.FIELD_USAGE;
+import static de.jplag.java_cpg.transformation.StructuralRole.FIELD_VALUE;
+import static de.jplag.java_cpg.transformation.StructuralRole.FIRST_CONSTANT_USAGE;
+import static de.jplag.java_cpg.transformation.StructuralRole.FOR_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.GETTER_METHOD_REFERENCE;
+import static de.jplag.java_cpg.transformation.StructuralRole.IF_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.INITIALIZATION_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.INNER_CONDITION;
+import static de.jplag.java_cpg.transformation.StructuralRole.ITERATION_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.MEMBER_CALL;
+import static de.jplag.java_cpg.transformation.StructuralRole.METHOD_BLOCK;
+import static de.jplag.java_cpg.transformation.StructuralRole.METHOD_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.METHOD_TYPE;
+import static de.jplag.java_cpg.transformation.StructuralRole.OPTIONAL_CLASS;
+import static de.jplag.java_cpg.transformation.StructuralRole.OPTIONAL_OBJECT;
+import static de.jplag.java_cpg.transformation.StructuralRole.RECORD_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.RETURN_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.RETURN_TYPE;
+import static de.jplag.java_cpg.transformation.StructuralRole.RETURN_VALUE;
+import static de.jplag.java_cpg.transformation.StructuralRole.SCOPE_BLOCK;
+import static de.jplag.java_cpg.transformation.StructuralRole.SURROUNDING_BLOCK;
+import static de.jplag.java_cpg.transformation.StructuralRole.THEN_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.THROW_EXCEPTION;
+import static de.jplag.java_cpg.transformation.StructuralRole.USING_RECORD;
+import static de.jplag.java_cpg.transformation.StructuralRole.VARIABLE_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.VARIABLE_USAGE;
+import static de.jplag.java_cpg.transformation.StructuralRole.VARIABLE_VALUE;
+import static de.jplag.java_cpg.transformation.StructuralRole.WHILE_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.WHILE_STATEMENT_BODY;
 import static de.jplag.java_cpg.transformation.matching.edges.Edges.BLOCK__STATEMENTS;
 import static de.jplag.java_cpg.transformation.matching.edges.Edges.CALL_EXPRESSION__ARGUMENTS;
 import static de.jplag.java_cpg.transformation.matching.edges.Edges.CALL_EXPRESSION__CALLEE;
@@ -141,7 +141,7 @@ public class TransformationRepository {
      * Alternatively, all factory methods could be public and use private fields to create a kind-of singleton pattern.
      */
     /**
-     * Constant <code>ifWithNegatedConditionResolution</code>.
+     * Constant <code>ifWithNegatedConditionResolution</code>..
      */
     public static final GraphTransformation ifWithNegatedConditionResolution = ifWithNegatedConditionResolution();
     /**
@@ -709,7 +709,8 @@ public class TransformationRepository {
         return wrapInBlock(DoStatement.class, DO_STATEMENT, DO_STATEMENT__STATEMENT, "wrapDoWhileStatement");
     }
 
-    private static <T extends Node> GraphTransformation wrapInBlock(Class<T> tClass, Role role, final CpgEdge<T, Statement> blockEdge, String name) {
+    private static <T extends Node> GraphTransformation wrapInBlock(Class<T> tClass, StructuralRole role, final CpgEdge<T, Statement> blockEdge,
+            String name) {
         SimpleGraphPattern<T> sourcePattern = new GraphPatternBuilder() {
             @Override
             public SimpleGraphPattern<T> build() {
@@ -720,7 +721,7 @@ public class TransformationRepository {
         SimpleGraphPattern<T> targetPattern = new GraphPatternBuilder() {
             @Override
             public SimpleGraphPattern<T> build() {
-                return create(tClass, role, related(blockEdge, Block.class, Role.WRAPPING_BLOCK,
+                return create(tClass, role, related(blockEdge, Block.class, StructuralRole.WRAPPING_BLOCK,
                         related(nthElement(BLOCK__STATEMENTS, 0), Statement.class, THEN_STATEMENT)));
             }
         }.build();

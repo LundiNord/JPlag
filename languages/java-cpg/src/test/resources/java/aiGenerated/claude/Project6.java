@@ -47,17 +47,21 @@ class Employee {
         this.departmentId = departmentId;
     }
 
+    //DeadCodeStart
     public String getName() {
         return name;
     }
+    //DeadCodeEnd
 
     public int getAge() {
         return age;
     }
 
+    //DeadCodeStart
     public String getDepartmentId() {
         return departmentId;
     }
+    //DeadCodeEnd
 
     //DeadCodeStart
     // PLAGIARIZED from Student.setGrade() but modified slightly

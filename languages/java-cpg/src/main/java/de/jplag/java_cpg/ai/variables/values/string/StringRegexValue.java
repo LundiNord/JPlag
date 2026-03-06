@@ -1,8 +1,8 @@
 package de.jplag.java_cpg.ai.variables.values.string;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +38,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
      * A string value with no information.
      */
     public StringRegexValue() {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         unknown = true;
     }
 
@@ -47,9 +47,10 @@ public class StringRegexValue extends JavaObject implements IStringValue {
      * @param value The exact string value, null for null.
      */
     public StringRegexValue(@Nullable String value) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         if (value == null) {
             contentRegex = null;
+            unknown = false;
             return;
         }
         unknown = false;
@@ -64,7 +65,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
      * @param possibleValues The possible string values.
      */
     public StringRegexValue(@NotNull Set<String> possibleValues) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         unknown = false;
         contentRegex = new ArrayList<>();
         for (String possibleValue : possibleValues) {
@@ -77,7 +78,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     private StringRegexValue(@Nullable List<RegexItem> contentRegex, boolean unknown) {
-        super(Type.STRING);
+        super(new Type(Type.TypeEnum.STRING));
         this.contentRegex = contentRegex;
         this.unknown = unknown;
     }
@@ -98,27 +99,27 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "length" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 if (unknown || contentRegex == null) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
                 if ((contentRegex.getLast() instanceof RegexChars chars && chars.canBeEmpty())) {
-                    return Value.valueFactory(Type.INT); // ToDo could return int interval
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT)); // ToDo could return int interval
                 }
                 return Value.valueFactory(contentRegex.size());
             }
             case "parseInt" -> {
                 assert paramVars.size() == 1;
                 if (unknown || contentRegex == null) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
                 List<Character> possibleChars = new ArrayList<>();
                 for (RegexItem item : contentRegex) {
                     if (item instanceof RegexChars) {
-                        return Value.valueFactory(Type.INT);
+                        return Value.valueFactory(new Type(Type.TypeEnum.INT));
                     } else if (item instanceof RegexChar regexChar) {
                         possibleChars.add(regexChar.getContent());
                     }
@@ -129,12 +130,12 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             case "parseBoolean" -> {
                 assert paramVars.size() == 1;
                 if (unknown || contentRegex == null) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
                 List<Character> possibleChars = new ArrayList<>();
                 for (RegexItem item : contentRegex) {
                     if (item instanceof RegexChars) {
-                        return Value.valueFactory(Type.BOOLEAN);
+                        return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                     } else if (item instanceof RegexChar regexChar) {
                         possibleChars.add(regexChar.getContent());
                     }
@@ -145,18 +146,18 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 } else if (str.equals("false")) {
                     return Value.valueFactory(false);
                 } else {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
             }
             case "parseDouble" -> {
                 assert paramVars.size() == 1;
                 if (unknown || contentRegex == null) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
                 List<Character> possibleChars = new ArrayList<>();
                 for (RegexItem item : contentRegex) {
                     if (item instanceof RegexChars) {
-                        return Value.valueFactory(Type.INT);
+                        return Value.valueFactory(new Type(Type.TypeEnum.INT));
                     } else if (item instanceof RegexChar regexChar) {
                         possibleChars.add(regexChar.getContent());
                     }
@@ -168,7 +169,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 assert paramVars.size() == 1;
                 StringRegexValue other = (StringRegexValue) paramVars.getFirst();
                 if (this.unknown || other.unknown) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
                 assert this.contentRegex != null && other.contentRegex != null;
                 if (this.contentRegex.size() < other.contentRegex.size()) {
@@ -189,16 +190,19 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     }
                 }
                 if (unknownMatch) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 } else {
                     return Value.valueFactory(true);
                 }
             }
             case "equals" -> {
                 assert paramVars.size() == 1;
+                if (paramVars.getFirst() instanceof VoidValue) {
+                    paramVars.set(0, Value.valueFactory(new Type(Type.TypeEnum.STRING)));
+                }
                 StringRegexValue other = (StringRegexValue) paramVars.getFirst();
                 if (this.unknown || other.unknown) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
                 assert this.contentRegex != null && other.contentRegex != null;
                 if (this.contentRegex.size() != other.contentRegex.size()) {
@@ -219,7 +223,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     }
                 }
                 if (unknownMatch) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 } else {
                     return Value.valueFactory(true);
                 }
@@ -251,7 +255,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             }
             case "isBlank" -> { // all whitespace or empty or null
                 if (unknown) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 }
                 if (contentRegex == null) {
                     return Value.valueFactory(true);
@@ -271,14 +275,14 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     }
                 }
                 if (unknownMatch) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 } else {
                     return Value.valueFactory(true);
                 }
             }
             case "indexOf" -> { // Returns the index within this string of the first occurrence of the specified character. -1 if not found.
                 if (unknown) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
                 if (contentRegex == null) {
                     return Value.valueFactory(-1);
@@ -298,7 +302,7 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                     }
                 }
                 if (unknownMatch) {
-                    return Value.valueFactory(Type.BOOLEAN);
+                    return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
                 } else {
                     return Value.valueFactory(true);
                 }
@@ -324,12 +328,14 @@ public class StringRegexValue extends JavaObject implements IStringValue {
                 }
                 return new StringRegexValue(sub, false);
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            default -> {
+                return Value.valueFactory(expectedType);
+            }
         }
     }
 
     @Override
-    public Value accessField(@NotNull String fieldName) {
+    public Value accessField(@NotNull String fieldName, @NotNull Type expectedType) {
         throw new UnsupportedOperationException("Access field not supported in StringRegexValue");
     }
 
@@ -339,11 +345,11 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             return new StringRegexValue();
         }
         if (operator.equals("+") && other instanceof INumberValue inumbervalue) {
-            assert this.contentRegex != null;
             if (this.unknown || !inumbervalue.getInformation()) {
                 this.unknown = true;
                 return new StringRegexValue(null, true);
             }
+            assert this.contentRegex != null;
             List<RegexItem> newContentRegex = new ArrayList<>(contentRegex);
             appendAtPos(newContentRegex, doubleToRegex(inumbervalue.getValue()), contentRegex.size() - 1);
             for (int i = contentRegex.size() - 1; i >= 0; i--) {
@@ -355,11 +361,13 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             }
             return new StringRegexValue(newContentRegex, false);
         } else if (operator.equals("+") && other instanceof StringRegexValue stringValue) {
-            if (this.contentRegex == null || stringValue.contentRegex == null) {
-                return new StringRegexValue(null, false);
-            }
             if (this.unknown || stringValue.unknown) {
                 this.unknown = true;
+                return new StringRegexValue(null, true);
+            }
+            if (this.contentRegex == null && stringValue.contentRegex == null) {
+                return new StringRegexValue(null, false);
+            } else if (this.contentRegex == null || stringValue.contentRegex == null) {
                 return new StringRegexValue(null, true);
             }
             // put at the end of each possible list end (without empty chars)
@@ -377,16 +385,24 @@ public class StringRegexValue extends JavaObject implements IStringValue {
             if (!unknown) {
                 return Value.valueFactory(this.contentRegex == null);
             } else {
-                return Value.valueFactory(Type.BOOLEAN);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
         }
-        throw new UnsupportedOperationException("Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+        return new VoidValue();
     }
 
     @NotNull
     @Override
     public JavaObject copy() {
         return new StringRegexValue(contentRegex == null ? null : new ArrayList<>(contentRegex), unknown);
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        // StringValue doesn't have fields that could create cycles,
+        // so we can just return a simple copy
+        return copy();
     }
 
     @Override
@@ -439,18 +455,19 @@ public class StringRegexValue extends JavaObject implements IStringValue {
     }
 
     @Override
+    public void setToUnknown(Set<IJavaObject> visited) {
+        setToUnknown();
+    }
+
+    @Override
+    public void setInitialValue(Set<IJavaObject> visited) {
+        setInitialValue();
+    }
+
+    @Override
     public void setInitialValue() {
         this.contentRegex = null;
         unknown = false;
-    }
-
-    @NotNull
-    private Set<Character> allCharactersSet() {
-        Set<Character> allChars = new HashSet<>();
-        for (char c = Character.MIN_VALUE; c < Character.MAX_VALUE; c++) {
-            allChars.add(c);
-        }
-        return allChars;
     }
 
     @NotNull

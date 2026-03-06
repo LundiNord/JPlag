@@ -16,18 +16,18 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.IntInterval;
  * @author ujiqk
  * @version 1.0
  */
-public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
+public class IntSetValue extends NumberSetValue<Integer, IntInterval> implements IIntNumber {
 
     /**
      * Integer value represented as a set of intervals with no information.
      */
     public IntSetValue() {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values.add(new IntInterval());
     }
 
     private IntSetValue(TreeSet<IntInterval> values) {
-        super(Type.INT, values);
+        super(new Type(Type.TypeEnum.INT), values);
     }
 
     /**
@@ -35,7 +35,7 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
      * @param number the single integer number
      */
     public IntSetValue(int number) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values.add(new IntInterval(number));
     }
 
@@ -44,7 +44,7 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
      * @param possibleNumbers the possible integer numbers
      */
     public IntSetValue(@NotNull Set<Integer> possibleNumbers) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values = new TreeSet<>();
         // ToDo: slice into intervals
         values.add(new IntInterval());
@@ -56,7 +56,7 @@ public class IntSetValue extends NumberSetValue<Integer, IntInterval> {
      * @param upperBound the upper bound of the range
      */
     public IntSetValue(int lowerBound, int upperBound) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values.add(new IntInterval(lowerBound, upperBound));
     }
 

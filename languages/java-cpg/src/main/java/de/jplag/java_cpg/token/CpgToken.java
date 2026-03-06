@@ -2,9 +2,9 @@ package de.jplag.java_cpg.token;
 
 import java.io.File;
 import java.util.Objects;
-import java.util.Optional;
 
 import de.fraunhofer.aisec.cpg.graph.Name;
+import de.fraunhofer.aisec.cpg.sarif.Region;
 import de.jplag.Token;
 import de.jplag.TokenType;
 
@@ -18,13 +18,12 @@ public class CpgToken extends Token {
      * Creates a new {@link CpgToken}.
      * @param tokenType the {@link TokenType}
      * @param file the {@link File} that contains the represented piece of code
-     * @param startLine the starting line of the represented code
-     * @param startColumn the starting column of the represented code
+     * @param region the {@link Region} representing the Token location
      * @param length the length of the represented code
      * @param name the name of the represented CPG node
      */
-    public CpgToken(TokenType tokenType, File file, int startLine, int startColumn, int length, Name name) {
-        super(tokenType, file, startLine, startColumn, length);
+    public CpgToken(TokenType tokenType, File file, Region region, int length, Name name) {
+        super(tokenType, file, region.startLine, region.startColumn, region.getEndLine(), region.getEndColumn(), length);
         this.name = name;
     }
 
@@ -46,6 +45,6 @@ public class CpgToken extends Token {
 
     @Override
     public int hashCode() {
-        return Optional.of(name).map(Name::hashCode).orElse(1) * getType().hashCode();
+        return getType().hashCode();
     }
 }

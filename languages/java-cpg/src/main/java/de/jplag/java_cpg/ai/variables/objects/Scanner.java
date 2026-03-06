@@ -1,11 +1,13 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
@@ -28,7 +30,7 @@ public class Scanner extends JavaObject implements ISpecialObject {
      * Creates a new Scanner object representation.
      */
     public Scanner() {
-        super();
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -41,27 +43,28 @@ public class Scanner extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "nextLine", "next" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.STRING));
             }
             case "close" -> {
                 assert paramVars == null || paramVars.isEmpty();
                 return new VoidValue();
             }
-            case "nextInt", "nextLong" -> {
+            case "nextInt", "nextLong", "nextBigInteger" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
-            case "nextDouble", "nextFloat" -> {
+            case "nextDouble", "nextFloat", "nextBigDecimal" -> {
                 assert paramVars == null || paramVars.isEmpty();
-                return Value.valueFactory(Type.FLOAT);
+                return Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
             }
             case "hasNextInt", "hasNext", "hasNextLine" -> {
-                assert paramVars == null || paramVars.isEmpty() || (paramVars.size() == 1 && paramVars.get(0).getType() == Type.STRING);
-                return Value.valueFactory(Type.BOOLEAN);
+                assert paramVars == null || paramVars.isEmpty()
+                        || (paramVars.size() == 1 && paramVars.getFirst().getType().getTypeEnum() == Type.TypeEnum.STRING);
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
             }
             case "useLocale" -> {
                 assert paramVars.size() == 1;
@@ -73,12 +76,16 @@ public class Scanner extends JavaObject implements ISpecialObject {
                 // We don't model Pattern, so just return this
                 return this;
             }
+            case "nextByte" -> {
+                assert paramVars == null || paramVars.isEmpty();
+                throw new JavaLanguageFeatureNotSupportedException("byte is not supported");
+            }
             default -> throw new UnsupportedOperationException(methodName + " is not supported in Scanner.");
         }
     }
 
     @Override
-    public Value accessField(@NotNull java.lang.String fieldName) {
+    public Value accessField(@NotNull java.lang.String fieldName, @NotNull Type expectedType) {
         switch (fieldName) {
             default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported in Scanner.");
         }
@@ -88,6 +95,12 @@ public class Scanner extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new Scanner();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

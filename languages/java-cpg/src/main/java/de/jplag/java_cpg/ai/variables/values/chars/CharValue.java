@@ -8,6 +8,7 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
@@ -25,7 +26,7 @@ public class CharValue extends Value implements ICharValue {
      * an unknown char value.
      */
     public CharValue() {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = false;
     }
 
@@ -34,7 +35,7 @@ public class CharValue extends Value implements ICharValue {
      * @param value the known character
      */
     public CharValue(char value) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = true;
         this.value = value;
     }
@@ -44,7 +45,7 @@ public class CharValue extends Value implements ICharValue {
      * @param values the possible characters
      */
     public CharValue(@NotNull Set<Character> values) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         if (values.size() == 1) {
             this.information = true;
             this.value = values.iterator().next();
@@ -57,13 +58,16 @@ public class CharValue extends Value implements ICharValue {
      * Copy constructor.
      */
     private CharValue(char value, boolean information) {
-        super(Type.CHAR);
+        super(new Type(Type.TypeEnum.CHAR));
         this.information = information;
         this.value = value;
     }
 
     @Override
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            other = new CharValue();
+        }
         switch (operator) {
             case "==" -> {
                 CharValue otherCharValue = (CharValue) other;
@@ -88,20 +92,66 @@ public class CharValue extends Value implements ICharValue {
                     } else {
                         return new CharValue();
                     }
+                } else if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return Value.getNewIntValue((char) (this.value + (char) numberValue.getValue()));
+                    } else {
+                        return Value.valueFactory(new Type(Type.TypeEnum.INT));
+                    }
                 }
                 IStringValue otherStringValue = (IStringValue) other;
                 if (this.information && otherStringValue.getInformation()) {
                     return Value.valueFactory(this.value + otherStringValue.getValue());
                 } else {
-                    return Value.valueFactory(Type.STRING);
+                    return Value.valueFactory(new Type(Type.TypeEnum.STRING));
                 }
             }
             case "-" -> {
-                CharValue otherCharValue = (CharValue) other;
-                if (this.information && otherCharValue.information) {
-                    return new CharValue((char) (this.value - otherCharValue.value));
+                INumberValue otherCharValue = (INumberValue) other;
+                if (this.information && otherCharValue.getInformation()) {
+                    return new CharValue((char) (this.value - otherCharValue.getValue()));
                 } else {
                     return new CharValue();
+                }
+            }
+            case "<" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value < numberValue.getValue());
+                    }
+                }
+                return new BooleanValue();
+            }
+            case ">" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value > numberValue.getValue());
+                    }
+                }
+                return new BooleanValue();
+            }
+            case ">=" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value >= numberValue.getValue());
+                    }
+                }
+                return new BooleanValue();
+            }
+            case "<=" -> {
+                if (other instanceof INumberValue numberValue) {
+                    if (this.information && numberValue.getInformation()) {
+                        return new BooleanValue(this.value <= numberValue.getValue());
+                    }
+                }
+                return new BooleanValue();
+            }
+            case "*" -> {
+                INumberValue otherCharValue = (INumberValue) other;
+                if (this.information && otherCharValue.getInformation()) {
+                    return Value.valueFactory(this.value * otherCharValue.getValue());
+                } else {
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
             }
             default -> throw new IllegalArgumentException("Unknown binary operator: " + operator + " for " + getType());
@@ -142,9 +192,8 @@ public class CharValue extends Value implements ICharValue {
                     }
                 }
             }
-            default -> {
-                throw new IllegalArgumentException("Cannot merge " + getType() + " with " + other.getType());
-            }
+            case VoidValue _ -> this.information = false;
+            default -> throw new IllegalArgumentException("Cannot merge " + getType() + " with " + other.getType());
         }
     }
 

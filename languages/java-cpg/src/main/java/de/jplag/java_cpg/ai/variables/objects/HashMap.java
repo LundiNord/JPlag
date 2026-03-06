@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +12,6 @@ import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.Value;
-import de.jplag.java_cpg.ai.variables.values.VoidValue;
 
 /**
  * Representation of the java.util.HashMap class.
@@ -28,7 +28,7 @@ public class HashMap extends JavaObject implements ISpecialObject {
      * Representation of the java.util.HashMap class.
      */
     public HashMap() {
-        super();
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -41,40 +41,40 @@ public class HashMap extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         // ToDo: not yet implemented
         switch (methodName) {
             case "put" -> {
                 assert paramVars.size() == 2;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "get" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "containsKey" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "size" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return Value.valueFactory(Type.INT);
+                return Value.valueFactory(new Type(Type.TypeEnum.INT));
             }
             case "remove" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "putAll" -> {
                 assert paramVars.size() == 1;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "clear" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "keySet" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "clone" -> {
                 assert paramVars == null || paramVars.size() == 0;
@@ -82,13 +82,32 @@ public class HashMap extends JavaObject implements ISpecialObject {
             }
             case "entrySet" -> {
                 assert paramVars == null || paramVars.size() == 0;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
             case "getOrDefault" -> {
                 assert paramVars.size() == 2;
-                return new VoidValue();
+                return Value.valueFactory(expectedType);
             }
-            default -> throw new UnsupportedOperationException(methodName);
+            case "replace" -> {
+                assert paramVars.size() == 2 || paramVars.size() == 3;
+                return Value.valueFactory(expectedType);
+            }
+            case "replaceAll" -> {
+                assert paramVars.size() == 1;
+                return Value.valueFactory(expectedType);
+            }
+            case "putIfAbsent" -> {
+                assert paramVars.size() == 2;
+                return Value.valueFactory(expectedType);
+            }
+            case "isEmpty" -> {
+                assert paramVars == null || paramVars.size() == 0;
+                assert expectedType.getTypeEnum() == Type.TypeEnum.BOOLEAN || expectedType.getTypeEnum() == Type.TypeEnum.UNKNOWN;
+                return Value.valueFactory(new Type(Type.TypeEnum.BOOLEAN));
+            }
+            default -> {
+                return Value.valueFactory(expectedType);
+            }
         }
     }
 
@@ -96,6 +115,12 @@ public class HashMap extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new HashMap();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

@@ -1,6 +1,9 @@
 package de.jplag.java_cpg.ai;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,16 +17,37 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import de.fraunhofer.aisec.cpg.*;
+import de.fraunhofer.aisec.cpg.ConfigurationException;
+import de.fraunhofer.aisec.cpg.InferenceConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationConfiguration;
+import de.fraunhofer.aisec.cpg.TranslationManager;
+import de.fraunhofer.aisec.cpg.TranslationResult;
 import de.fraunhofer.aisec.cpg.frontends.java.JavaLanguage;
 import de.fraunhofer.aisec.cpg.graph.Component;
 import de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration;
-import de.fraunhofer.aisec.cpg.passes.*;
+import de.fraunhofer.aisec.cpg.passes.ControlDependenceGraphPass;
+import de.fraunhofer.aisec.cpg.passes.DynamicInvokeResolver;
+import de.fraunhofer.aisec.cpg.passes.EvaluationOrderGraphPass;
+import de.fraunhofer.aisec.cpg.passes.FilenameMapper;
+import de.fraunhofer.aisec.cpg.passes.ImportResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaExternalTypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.JavaImportResolver;
+import de.fraunhofer.aisec.cpg.passes.Pass;
+import de.fraunhofer.aisec.cpg.passes.ProgramDependenceGraphPass;
+import de.fraunhofer.aisec.cpg.passes.ReplaceCallCastPass;
+import de.fraunhofer.aisec.cpg.passes.SymbolResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeHierarchyResolver;
+import de.fraunhofer.aisec.cpg.passes.TypeResolver;
 import de.jplag.ParsingException;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableStore;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
-import de.jplag.java_cpg.passes.*;
+import de.jplag.java_cpg.passes.AstTransformationPass;
+import de.jplag.java_cpg.passes.CpgTransformationPass;
+import de.jplag.java_cpg.passes.DfgSortPass;
+import de.jplag.java_cpg.passes.FixAstPass;
+import de.jplag.java_cpg.passes.PrepareTransformationPass;
 
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
@@ -33,7 +57,6 @@ import kotlin.reflect.KClass;
  * @author ujiqk
  * @version 1.0
  */
-@Disabled
 class AbstractInterpretationTest {
 
     /**
@@ -43,8 +66,8 @@ class AbstractInterpretationTest {
     void testSimple() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue());
+        assertFalse(((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());
+        assertEquals(100, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue());
     }
 
     /**
@@ -54,8 +77,8 @@ class AbstractInterpretationTest {
     void testSimple2() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple2");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());
-        assertFalse(((IntValue) main.accessField("result2")).getInformation());
+        assertFalse(((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());
+        assertFalse(((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getInformation());
     }
 
     /**
@@ -65,20 +88,21 @@ class AbstractInterpretationTest {
     void testSimple3() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/simple3");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(1, ((IntValue) main.accessField("result")).getValue());
-        assertEquals(2, ((IntValue) main.accessField("result2")).getValue());
+        assertEquals(1, ((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());
+        assertEquals(2, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue());
     }
 
     /**
      * simple switch test
      */
     @Test
+    @Disabled("test contains a switch statement, which is currently not supported")
     void testSwitch() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/switch");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());          // z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertFalse(((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());          // z
+        assertEquals(100, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
@@ -89,8 +113,8 @@ class AbstractInterpretationTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/switch2");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());          // z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertFalse(((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());          // z
+        assertEquals(100, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
@@ -100,8 +124,8 @@ class AbstractInterpretationTest {
     void testLoop() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/loop");
         JavaObject main = getMainObject(interpretation);
-        assertTrue(((IntValue) main.accessField("result")).getInformation());
-        assertFalse(((IntValue) main.accessField("result2")).getInformation());
+        assertTrue(((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());
+        assertFalse(((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getInformation());
     }
 
     /**
@@ -111,12 +135,12 @@ class AbstractInterpretationTest {
     void testForEach() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/forEach");
         JavaObject main = getMainObject(interpretation);
-        assertFalse(((IntValue) main.accessField("result")).getInformation());          // z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertFalse(((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getInformation());          // z
+        assertEquals(100, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
-     * nondeterministic test! (completes sometimes in debug mode) test creating a new class instance
+     * test creating a new class instance
      */
     @Test
     void testNewClass() throws ParsingException, InterruptedException {
@@ -132,8 +156,8 @@ class AbstractInterpretationTest {
     void testIf() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/if");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  // z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertEquals(400, ((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());  // z
+        assertEquals(100, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
@@ -143,20 +167,19 @@ class AbstractInterpretationTest {
     void testException() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/exception");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  // z
-        assertEquals(100, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertEquals(400, ((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());  // z
+        assertEquals(100, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
      * simple enum test
      */
     @Test
-    @Disabled
     void testEnum() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/enum");
         JavaObject main = getMainObject(interpretation);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());
-        assertFalse(((IntValue) main.accessField("result2")).getInformation());
+        assertEquals(400, ((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());
+        assertFalse(((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getInformation());
     }
 
     /**
@@ -167,11 +190,10 @@ class AbstractInterpretationTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/map");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        // assertEquals(1, ((IntValue) main.accessField("result")).getValue()); //ToDo
-        // assertEquals(2, ((IntValue) main.accessField("result")).getValue());
     }
 
     @Test
+    @Disabled("error in the dfg sort pass")
     void testQueensFarming() throws ParsingException, InterruptedException {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/complex");
         JavaObject main = getMainObject(interpretation);
@@ -193,8 +215,8 @@ class AbstractInterpretationTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/try");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  // z
-        assertEquals(101, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertEquals(400, ((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());  // z
+        assertEquals(101, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
@@ -205,8 +227,8 @@ class AbstractInterpretationTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/try2");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertEquals(250, ((IntValue) main.accessField("result")).getValue());  // z
-        assertEquals(200, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertEquals(250, ((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());  // z
+        assertEquals(200, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     /**
@@ -217,8 +239,8 @@ class AbstractInterpretationTest {
         AbstractInterpretation interpretation = interpretFromResource("java/ai/try3");
         JavaObject main = getMainObject(interpretation);
         assertNotNull(main);
-        assertEquals(400, ((IntValue) main.accessField("result")).getValue());  // z
-        assertEquals(200, ((IntValue) main.accessField("result2")).getValue()); // y
+        assertEquals(400, ((IntValue) main.accessField("result", new Type(Type.TypeEnum.INT))).getValue());  // z
+        assertEquals(200, ((IntValue) main.accessField("result2", new Type(Type.TypeEnum.INT))).getValue()); // y
     }
 
     private TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {

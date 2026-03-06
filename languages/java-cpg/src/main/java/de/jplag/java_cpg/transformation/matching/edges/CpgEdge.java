@@ -62,7 +62,7 @@ public class CpgEdge<T extends Node, R extends Node> extends AEdge<T, R> {
     }
 
     /**
-     * Gets the getter function of this {@link CpgEdge}, used to get the relateds from a given source.
+     * Gets the getter function of this {@link CpgEdge}, used to get the related nodes from a given source.
      * @return the getter
      */
     public Function<T, R> getter() {
@@ -70,7 +70,7 @@ public class CpgEdge<T extends Node, R extends Node> extends AEdge<T, R> {
     }
 
     /**
-     * Gets the setter function of this {@link CpgEdge}, used to set the relateds for a given source.
+     * Gets the setter function of this {@link CpgEdge}, used to set the related nodes for a given source.
      * @return the setter
      */
     public BiConsumer<T, R> setter() {

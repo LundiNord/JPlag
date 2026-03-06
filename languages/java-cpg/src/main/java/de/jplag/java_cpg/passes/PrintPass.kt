@@ -20,7 +20,7 @@ class PrintPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             if (Objects.isNull(code)) {
                 code = "~no code~"
             } else if (code!!.length > 20) {
-                code = code.substring(0, 20) + "..."
+                code = code.take(20) + "..."
             }
             System.out.printf("%s[%s]%n", node.javaClass, code)
         }

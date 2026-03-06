@@ -25,8 +25,8 @@ import de.jplag.java_cpg.transformation.matching.pattern.NodePattern;
 public class CpgIsomorphismDetector {
 
     private static final Logger logger = LoggerFactory.getLogger(CpgIsomorphismDetector.class);
-    private final ClassComparator classComparator;
     private TreeMap<Class<? extends Node>, List<Node>> nodeMap;
+    private final ClassComparator classComparator;
 
     /**
      * Creates a new {@link CpgIsomorphismDetector}.
@@ -106,10 +106,10 @@ public class CpgIsomorphismDetector {
     }
 
     /**
-     * This comparator imposes a total order on classes by using their class hierarchy and name, where:
+     * This comparator imposes a total order on classes by using their class hierarchy and name. Specifically,
      * <ul>
-     * <li>different subclasses of a common superclass are ordered alphanumerically</li>.
-     * <li>the sublist of subclasses of a superclass comes directly after the superclass</li>.
+     * <li>different subclasses of a common superclass are ordered alphanumerically,</li>
+     * <li>the sublist of subclasses of a superclass comes directly after the superclass.</li>
      * </ul>
      */
     private static final class ClassComparator implements Comparator<Class<?>> {

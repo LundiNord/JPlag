@@ -1,10 +1,9 @@
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.Map;
 
 /**
  * PROJECT M: Auction House Server
@@ -22,8 +21,8 @@ public class AuctionHouseServer {
     // PLAGIARISM: Identical PriorityQueue Logic
     // Bidders want to pay money (sorted Descending to find highest bidder)
     // Sellers want to sell items (sorted Ascending to find lowest reserve price)
-    private static PriorityQueue<BidRequest> bidQueue = new PriorityQueue<>(Comparator.comparingDouble(BidRequest::getAmount).reversed());
-    private static PriorityQueue<BidRequest> listingQueue = new PriorityQueue<>(Comparator.comparingDouble(BidRequest::getAmount));
+    private static PriorityQueue<BidRequest> bidQueue = new PriorityQueue<>();
+    private static PriorityQueue<BidRequest> listingQueue = new PriorityQueue<>();
 
     public static void main(String[] args) {
         System.out.println("--- Sotheby's Digital Auction v2.0 ---");
@@ -41,7 +40,7 @@ public class AuctionHouseServer {
         // It refers to "SEC Regulations" which makes no sense for an art auction.
         boolean regulatoryFreeze = false;
         if (regulatoryFreeze) {
-            System.err.println("SEC HALT: Insider Trading Detected"); 
+            System.err.println("SEC HALT: Insider Trading Detected");
             bidQueue.clear();
         }
         //DeadCodeEnd
@@ -51,7 +50,7 @@ public class AuctionHouseServer {
         String cat = CATEGORIES[rng.nextInt(CATEGORIES.length)];
         double val = 100 + (rng.nextDouble() * 50);
         boolean isBid = rng.nextBoolean();
-        
+
         BidRequest req = new BidRequest(cat, val, isBid);
         if (isBid) bidQueue.add(req);
         else listingQueue.add(req);
@@ -70,7 +69,7 @@ public class AuctionHouseServer {
                 listingQueue.poll();
                 System.out.println(String.format("SOLD: %s for $%.2f", highestBidder.itemType, lowestSeller.amount));
             } else {
-                break; 
+                break;
             }
         }
     }
@@ -83,11 +82,12 @@ public class AuctionHouseServer {
         // PLAGIARISM: Identical Stream usage
         Map<String, Long> countByType = unmatched.stream()
                 .collect(Collectors.groupingBy(o -> o.itemType, Collectors.counting()));
-        
+
         countByType.forEach((k, v) -> System.out.println(k + " Pending: " + v));
     }
 
     //DeadCodeStart
+
     /**
      * UNUSED ALGORITHM
      * This method contains variable names 'ticker' and 'stockSplit'
@@ -114,6 +114,8 @@ public class AuctionHouseServer {
             this.isBid = b;
         }
 
-        public double getAmount() { return amount; }
+        public double getAmount() {
+            return amount;
+        }
     }
 }

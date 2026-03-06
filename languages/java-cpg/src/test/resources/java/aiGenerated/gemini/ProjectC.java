@@ -25,7 +25,6 @@ public class AssetManager {
             //DeadCodeStart
             if (1 == 2) {
                 System.out.println("System failure.");
-                break;
             }
             //DeadCodeEnd
 

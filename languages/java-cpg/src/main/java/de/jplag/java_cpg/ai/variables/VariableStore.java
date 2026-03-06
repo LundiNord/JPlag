@@ -7,7 +7,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import de.jplag.java_cpg.ai.variables.values.IJavaObject;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
 
@@ -18,9 +20,14 @@ import de.jplag.java_cpg.ai.variables.values.JavaObject;
  */
 public class VariableStore {
 
+    /**
+     * The name used for the "this" object in anonymous classes.
+     */
+    public static final VariableName ANONYMOUS_THIS_NAME = new VariableName("$this");
     private final ArrayList<Scope> scopes = new ArrayList<>();
     private int currentScopeIndex = 0;
     private VariableName thisObject;
+    private List<ChangeRecorder> changeRecorders = new ArrayList<>();
 
     /**
      * Copy constructor. Performs deep copy down the values.
@@ -32,6 +39,8 @@ public class VariableStore {
             this.scopes.add(new Scope(p));
         }
         thisObject = variableStore.thisObject;
+        assert thisObject != null;
+        this.changeRecorders = variableStore.changeRecorders; // no deep copy
     }
 
     /**
@@ -44,41 +53,45 @@ public class VariableStore {
     /**
      * @param variable the variable to add to the current scope.
      */
-    public void addVariable(Variable variable) {
+    public void addVariable(@NotNull Variable variable) {
         scopes.get(currentScopeIndex).addVariable(variable);
     }
 
     /**
      * @param thisName the name of the {@link JavaObject} this variable store is associated with.
      */
-    public void setThisName(VariableName thisName) {
+    public void setThisName(@NotNull VariableName thisName) {
         this.thisObject = thisName;
     }
 
     /**
-     * @return the {@link JavaObject} this variable store is associated with, or null if not set.
+     * @return the {@link IJavaObject} this variable store is associated with, or null if not set.
      */
-    public JavaObject getThisObject() {
-        if (thisObject == null) {
-            return null;
-        }
+    @NotNull
+    public IJavaObject getThisObject() {
+        assert thisObject != null;
         Variable variable = getVariable(thisObject);
-        if (variable == null) {
-            return null;
+        if (variable == null) {     // does not exist yet -> create it
+            assert thisObject == ANONYMOUS_THIS_NAME;
+            Variable thisClassVar = new Variable(thisObject, new JavaObject(new Type(Type.TypeEnum.OBJECT)));
+            for (ChangeRecorder recorder : changeRecorders) {
+                thisClassVar.addChangeRecorder(recorder);
+            }
+            scopes.getFirst().addVariable(thisClassVar);
+            variable = getVariable(thisObject);
+            assert variable != null;
         }
         IValue value = variable.getValue();
-        if (value instanceof JavaObject javaObject) {
-            return javaObject;
-        }
-        return null;
+        assert value instanceof IJavaObject;
+        return (JavaObject) value;
     }
 
     /**
      * @param name the name of the variable to retrieve.
      * @return the variable with the given name or null if it does not exist.
      */
-    public Variable getVariable(VariableName name) {
-        assert name != null;
+    @Nullable
+    public Variable getVariable(@NotNull VariableName name) {
         for (int i = currentScopeIndex; i >= 0; i--) {
             Variable variable = scopes.get(i).getVariable(name);
             if (variable != null) {
@@ -92,6 +105,7 @@ public class VariableStore {
      * @param name the name of the variable to retrieve.
      * @return the variable with the given name or null if it does not exist.
      */
+    @Nullable
     public Variable getVariable(String name) {
         return getVariable(new VariableName(name));
     }
@@ -155,6 +169,7 @@ public class VariableStore {
         for (Scope scope : scopes) {
             scope.addChangeRecorder(changeRecorder);
         }
+        this.changeRecorders.add(changeRecorder);
     }
 
     /**
@@ -164,6 +179,7 @@ public class VariableStore {
      */
     @NotNull
     public Set<Variable> stopRecordingChanges() {
+        this.changeRecorders.removeLast();
         List<ChangeRecorder> recorders = new ArrayList<>();
         for (Scope scope : scopes) {
             recorders.add(scope.removeLastChangeRecorder());

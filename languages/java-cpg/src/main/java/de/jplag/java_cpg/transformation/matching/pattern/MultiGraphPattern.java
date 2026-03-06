@@ -8,6 +8,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
 /**
@@ -33,8 +34,7 @@ public class MultiGraphPattern extends GraphPatternImpl {
 
     @Override
     public List<NodePattern<Node>> getRoots() {
-        return subgraphs.stream().map(SimpleGraphPattern::getRoot).map(root -> (NodePattern<Node>) root)
-                .collect(Collectors.toCollection(ArrayList::new));
+        return subgraphs.stream().map(SimpleGraphPattern::getRoot).map(Casting::castNodePattern).collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override

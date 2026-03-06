@@ -43,8 +43,8 @@ public class PlagiarismDetectionTest {
     private static JavaCpgLanguage language;
 
     @BeforeAll
-    public static void setUpOnce() {
-        language = new JavaCpgLanguage(false, false, true);
+    static void setUpOnce() {
+        language = new JavaCpgLanguage();
         baseDirectory = BASE_PATH.toFile();
     }
 
@@ -98,7 +98,7 @@ public class PlagiarismDetectionTest {
     }
 
     @AfterEach
-    public void resetTransformations() {
+    void resetTransformations() {
         language.resetTransformations();
     }
 }

@@ -61,6 +61,9 @@ public interface IEdge<T extends Node, R extends Node> {
      */
     boolean isReference();
 
+    /**
+     * Labels specifying the nature of edges.
+     */
     enum EdgeCategory {
         /**
          * An edge that represents the inherent structure of the code.

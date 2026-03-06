@@ -3,9 +3,9 @@ package de.jplag.java_cpg.ai.variables.values;
 import org.jetbrains.annotations.NotNull;
 
 import de.jplag.java_cpg.ai.variables.Type;
-import de.jplag.java_cpg.ai.variables.values.numbers.FloatValue;
-import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
+import de.jplag.java_cpg.ai.variables.values.numbers.IFloatNumber;
+import de.jplag.java_cpg.ai.variables.values.numbers.IIntNumber;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Void typed value. Represents no value or completely unknown value.
@@ -18,20 +18,20 @@ public class VoidValue extends Value {
      * Creates a new Void typed value. Represents no value or completely unknown value.
      */
     public VoidValue() {
-        super(Type.VOID);
+        super(new Type(Type.TypeEnum.VOID));
     }
 
     @Override
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
         switch (operator) {
-            case "==", ">", "<", ">=", "<=", "!=" -> {
+            case "==", ">", "<", ">=", "<=", "!=", "instanceof" -> {
                 return new BooleanValue();
             }
-            case "+", "-", "*", "/" -> {
+            case "+", "-", "*", "/", "%" -> {
                 return switch (other) {
-                    case IntValue ignored -> new IntValue();
-                    case FloatValue ignored -> new FloatValue();
-                    case StringValue ignored -> new StringValue();
+                    case IIntNumber _ -> Value.valueFactory(new Type(Type.TypeEnum.INT));
+                    case IFloatNumber _ -> Value.valueFactory(new Type(Type.TypeEnum.FLOAT));
+                    case IStringValue _ -> Value.valueFactory(new Type(Type.TypeEnum.STRING));
                     default -> new VoidValue();
                 };
             }
@@ -48,7 +48,7 @@ public class VoidValue extends Value {
             case "!" -> {
                 return new BooleanValue();
             }
-            case "--", "++", "abs", "+", "-" -> {
+            case "--", "++", "abs", "+", "-", "throw" -> {
                 return new VoidValue();
             }
             default -> throw new IllegalArgumentException("Unary operation " + operator + " not supported for " + getType());

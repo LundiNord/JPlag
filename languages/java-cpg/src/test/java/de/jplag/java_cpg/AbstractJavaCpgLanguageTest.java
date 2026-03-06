@@ -21,7 +21,7 @@ import de.jplag.TokenType;
  */
 public abstract class AbstractJavaCpgLanguageTest {
 
-    protected static final Path BASE_PATH = Path.of("src", "test", "resources", "java");
+    public static final Path BASE_PATH = Path.of("src", "test", "resources", "java");
     private static final String LOG_MESSAGE = "Tokens of {}: {}";
     private final Logger logger = LoggerFactory.getLogger(AbstractJavaCpgLanguageTest.class);
     private JavaCpgLanguage language;
@@ -40,6 +40,7 @@ public abstract class AbstractJavaCpgLanguageTest {
     /**
      * Parses a java file in the {@code baseDirectory} and returns the list of token types.
      * @param fileName is the name of the file to parse.
+     * @param transform activates the transformation steps of the cpg pipeline.
      * @return the token types.
      * @throws ParsingException if parsing fails.
      */

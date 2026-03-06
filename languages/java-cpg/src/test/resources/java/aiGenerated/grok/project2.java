@@ -33,7 +33,7 @@ class NumberGameLogic {
             int guess = sc.nextInt();
             if (guess == secret) {
                 System.out.println("Correct! You win.");
-                break;
+                return;
             } else if (guess < secret) {
                 System.out.println("Too low. Try again.");
             } else {

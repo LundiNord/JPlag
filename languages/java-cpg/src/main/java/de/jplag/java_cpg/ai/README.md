@@ -13,11 +13,10 @@ Maven: `mvn clean package`
 
 ## Code Structure
 
-ToDo
-
-## Supported language features
-
-see [ToDos](./ToDo.md) for supported and unsupported features.
+This module offers two passes for cpg.
+The AiPass analyzes the whole cpg translation result.
+The AiMethodPass analyzes every single method from a translation result independently.
+Both of them use the AbstractInterpretation class, which is the main class in this module.
 
 ## Explicitly not supported language features
 
@@ -25,8 +24,6 @@ see [ToDos](./ToDo.md) for supported and unsupported features.
 - System.exit calls are not supported
 - Continues and breaks in loops are not supported
 - Iterators are not supported
-
-see [ToDos](./ToDo.md) for supported and unsupported features.
 
 ## Usage Example
 

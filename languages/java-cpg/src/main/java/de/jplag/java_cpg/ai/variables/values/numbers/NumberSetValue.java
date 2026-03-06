@@ -10,7 +10,10 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.BooleanValue;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.Value;
+import de.jplag.java_cpg.ai.variables.values.VoidValue;
+import de.jplag.java_cpg.ai.variables.values.chars.ICharValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.helpers.Interval;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 
 /**
  * Abstract base class for numeric values represented as sets of intervals.
@@ -51,10 +54,15 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
     @Override
     @SuppressWarnings("unchecked")
     public IValue binaryOperation(@NotNull String operator, @NotNull IValue other) {
-        if (!(other instanceof NumberSetValue)) {
+        if (other instanceof VoidValue || other instanceof ICharValue) {
             other = createInstance(new TreeSet<>());
+        } else if (other instanceof IStringValue stringValue) {
+            return stringValue.binaryOperation(operator, this);
         }
         NumberSetValue<T, I> otherValue = (NumberSetValue<T, I>) other;
+        if (this.values.isEmpty() || otherValue.values.isEmpty()) {
+            return new VoidValue();
+        }
         switch (operator) {
             case "+" -> {
                 TreeSet<I> newValues = new TreeSet<>();
@@ -79,36 +87,36 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 return newValue;
             }
             case "<" -> {
-                if (values.getLast().getUpperBound().compareTo(otherValue.values.getFirst().getLowerBound()) < 0) {
+                if (values.getLast().getUpperBound().doubleValue() < otherValue.values.getFirst().getLowerBound().doubleValue()) {
                     return new BooleanValue(true);
-                } else if (values.getFirst().getLowerBound().compareTo(otherValue.values.getLast().getUpperBound()) >= 0) {
+                } else if (values.getFirst().getLowerBound().doubleValue() >= otherValue.values.getLast().getUpperBound().doubleValue()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">" -> {
-                if (values.getFirst().getLowerBound().compareTo(otherValue.values.getLast().getUpperBound()) > 0) {
+                if (values.getFirst().getLowerBound().doubleValue() > otherValue.values.getLast().getUpperBound().doubleValue()) {
                     return new BooleanValue(true);
-                } else if (values.getLast().getUpperBound().compareTo(otherValue.values.getFirst().getLowerBound()) <= 0) {
+                } else if (values.getLast().getUpperBound().doubleValue() <= otherValue.values.getFirst().getLowerBound().doubleValue()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
                 }
             }
             case "<=" -> {
-                if (values.getLast().getUpperBound().compareTo(otherValue.values.getFirst().getLowerBound()) <= 0) {
+                if (values.getLast().getUpperBound().doubleValue() <= otherValue.values.getFirst().getLowerBound().doubleValue()) {
                     return new BooleanValue(true);
-                } else if (values.getFirst().getLowerBound().compareTo(otherValue.values.getLast().getUpperBound()) > 0) {
+                } else if (values.getFirst().getLowerBound().doubleValue() > otherValue.values.getLast().getUpperBound().doubleValue()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
                 }
             }
             case ">=" -> {
-                if (values.getFirst().getLowerBound().compareTo(otherValue.values.getLast().getUpperBound()) >= 0) {
+                if (values.getFirst().getLowerBound().doubleValue() >= otherValue.values.getLast().getUpperBound().doubleValue()) {
                     return new BooleanValue(true);
-                } else if (values.getLast().getUpperBound().compareTo(otherValue.values.getFirst().getLowerBound()) < 0) {
+                } else if (values.getLast().getUpperBound().doubleValue() < otherValue.values.getFirst().getLowerBound().doubleValue()) {
                     return new BooleanValue(false);
                 } else {
                     return new BooleanValue();
@@ -206,24 +214,10 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 newValue.mergeOverlappingIntervals();
                 return newValue;
             }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> {
+                return new VoidValue();
+            }
         }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void merge(@NotNull IValue other) {
-        assert other.getClass().equals(this.getClass());
-        TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
-        this.values.addAll(otherValues);
-        mergeOverlappingIntervals();
-    }
-
-    @Override
-    public void setToUnknown() {
-        values = new TreeSet<>();
-        values.add(createFullInterval());
     }
 
     @Override
@@ -255,8 +249,49 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
                 newValue.mergeOverlappingIntervals();
                 return newValue;
             }
-            default -> throw new UnsupportedOperationException("Unary operation " + operator + " not supported for " + getType());
+            default -> {
+                return new VoidValue();
+            }
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void merge(@NotNull IValue other) {
+        if (other instanceof VoidValue) {
+            this.setToUnknown();
+            return;
+        }
+        if (other instanceof IFloatNumber floatNumber && !(this instanceof IFloatNumber)) { // can happen because some casts are not explicit in eog
+            if (floatNumber.getInformation()) {
+                int value = (int) floatNumber.getValue();
+                TreeSet<I> newValues = new TreeSet<>();
+                newValues.add(createInterval((T) Integer.valueOf(value), (T) Integer.valueOf(value)));
+                other = createInstance(newValues);
+            } else {
+                other = createInstance(new TreeSet<>());
+            }
+        } else if (other instanceof IIntNumber integerNumber && !(this instanceof IIntNumber)) { // can happen because some casts are not explicit in
+            // eog
+            if (integerNumber.getInformation()) {
+                double value = integerNumber.getValue();
+                TreeSet<I> newValues = new TreeSet<>();
+                newValues.add(createInterval((T) Double.valueOf(value), (T) Double.valueOf(value)));
+                other = createInstance(newValues);
+            } else {
+                other = createInstance(new TreeSet<>());
+            }
+        }
+        assert other.getClass().equals(this.getClass()) : "Cannot merge different value types" + this.getClass() + " and " + other.getClass();
+        TreeSet<I> otherValues = ((NumberSetValue<T, I>) other).values;
+        this.values.addAll(otherValues);
+        mergeOverlappingIntervals();
+    }
+
+    @Override
+    public void setToUnknown() {
+        values = new TreeSet<>();
+        values.add(createFullInterval());
     }
 
     protected void mergeOverlappingIntervals() {
@@ -268,8 +303,8 @@ public abstract class NumberSetValue<T extends Number & Comparable<T>, I extends
         values.remove(values.first());
         for (I interval : values) {
             I lastInterval = newValues.last();
-            if (lastInterval.getUpperBound().compareTo(interval.getLowerBound()) >= 0) {
-                T maxUpper = lastInterval.getUpperBound().compareTo(interval.getUpperBound()) > 0 ? lastInterval.getUpperBound()
+            if (lastInterval.getUpperBound().doubleValue() >= interval.getLowerBound().doubleValue()) {
+                T maxUpper = lastInterval.getUpperBound().doubleValue() > interval.getUpperBound().doubleValue() ? lastInterval.getUpperBound()
                         : interval.getUpperBound();
                 lastInterval.setUpperBound(maxUpper);
             } else {

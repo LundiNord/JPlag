@@ -1,6 +1,10 @@
 package de.jplag.java_cpg.ai.variables.values;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +16,6 @@ import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.Variable;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
-import de.jplag.java_cpg.ai.variables.values.string.StringValue;
 
 /**
  * A Java object instance in the abstract interpretation. All big data types are also objects (arrays, collections,
@@ -28,8 +31,8 @@ public class JavaObject extends Value implements IJavaObject {
     @Nullable
     private AbstractInterpretation abstractInterpretation;  // the abstract interpretation engine for this object
 
-    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation) {
-        super(Type.OBJECT);
+    private JavaObject(@Nullable Scope fields, @Nullable AbstractInterpretation abstractInterpretation, @NotNull Type type) {
+        super(new Type(Type.TypeEnum.OBJECT));
         this.fields = fields;
         this.abstractInterpretation = abstractInterpretation;
     }
@@ -37,27 +40,20 @@ public class JavaObject extends Value implements IJavaObject {
     /**
      * Constructor for a Java object with an abstract interpretation engine and no info.
      * @param abstractInterpretation the abstract interpretation engine where methods will be executed.
+     * @param type the type of the object; used for type checking.
      */
-    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation) {
-        super(Type.OBJECT);
+    public JavaObject(@NotNull AbstractInterpretation abstractInterpretation, @NotNull Type type) {
+        super(new Type(Type.TypeEnum.OBJECT));
         this.fields = new Scope();
         this.abstractInterpretation = abstractInterpretation;
         abstractInterpretation.setRelatedObject(this);
     }
 
     /**
-     * Default constructor for a Java object with no abstract interpretation engine and no info.
-     */
-    public JavaObject() {
-        super(Type.OBJECT);
-        this.fields = new Scope();
-    }
-
-    /**
      * Internal constructor for special classes like arrays.
      * @param type the type of the object.
      */
-    protected JavaObject(Type type) {
+    public JavaObject(@NotNull Type type) {
         super(type);
         this.fields = new Scope();
     }
@@ -66,23 +62,30 @@ public class JavaObject extends Value implements IJavaObject {
      * @param methodName the name of the method to call.
      * @param paramVars the parameters to pass to the method.
      * @param method the cpg method declaration of the method to call.
+     * @param expectedType the expected return type of the method; used for type checking and to determine the return type
+     * of this method.
      * @return null if the method is not known.
      */
-    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method) {
-        if (abstractInterpretation == null) {
-            return new VoidValue();
+    public IValue callMethod(@NotNull String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
+        if (abstractInterpretation == null || abstractInterpretation.isMethodAnalysisMode()) {
+            return Value.valueFactory(expectedType);
         }
-        return abstractInterpretation.runMethod(methodName, paramVars, method);
+        return abstractInterpretation.runMethod(methodName, paramVars, method, expectedType);
     }
 
     /**
      * @param fieldName the name of the field to access.
+     * @param expectedType the expected type of the field; used for type checking and to determine the return type of this
+     * method.
      * @return the value of the field or VoidValue if the field does not exist.
      */
-    public IValue accessField(@NotNull String fieldName) {
+    public IValue accessField(@NotNull String fieldName, @NotNull Type expectedType) {
+        if (fields == null) {
+            return Value.valueFactory(expectedType);
+        }
         Variable result = fields.getVariable(new VariableName(fieldName));
         if (result == null) {
-            return new VoidValue();
+            return Value.valueFactory(expectedType);
         }
         return result.getValue();
     }
@@ -93,6 +96,11 @@ public class JavaObject extends Value implements IJavaObject {
      * @param value the new value of the field.
      */
     public void changeField(@NotNull String fieldName, IValue value) {
+        if (fields == null) {
+            // reset information
+            fields = new Scope();
+            return;
+        }
         Variable variable = fields.getVariable(new VariableName(fieldName));
         if (variable == null) {
             fields.addVariable(new Variable(fieldName, value));
@@ -105,6 +113,7 @@ public class JavaObject extends Value implements IJavaObject {
      * @param field Sets a new field variable in this object.
      */
     public void setField(@NotNull Variable field) {
+        assert this.fields != null;
         this.fields.addVariable(field);
     }
 
@@ -115,6 +124,19 @@ public class JavaObject extends Value implements IJavaObject {
      */
     public void setAbstractInterpretation(@Nullable AbstractInterpretation abstractInterpretation) {
         this.abstractInterpretation = abstractInterpretation;
+        if (abstractInterpretation != null) {
+            abstractInterpretation.setRelatedObject(this);
+        }
+    }
+
+    @Override
+    public boolean hasAbstractInterpretation() {
+        return this.abstractInterpretation != null;
+    }
+
+    @Override
+    public boolean isNull() {
+        return fields == null;
     }
 
     @Override
@@ -137,12 +159,12 @@ public class JavaObject extends Value implements IJavaObject {
             case "+" -> {
                 if (other instanceof IStringValue stringValue) {
                     // case: JavaObject with toString method
-                    IValue toStringResult = this.callMethod("toString", List.of(), null);
+                    IValue toStringResult = this.callMethod("toString", List.of(), null, new Type(Type.TypeEnum.STRING));
                     if (toStringResult instanceof IStringValue stringFromObject && stringValue.getInformation()
                             && stringFromObject.getInformation()) {
-                        return new StringValue(stringValue.getValue() + stringFromObject.getValue());
+                        return Value.getNewStringValue(stringValue.getValue() + stringFromObject.getValue());
                     }
-                    return new StringValue();
+                    return Value.getNewStringValue();
                 } else {
                     throw new UnsupportedOperationException(
                             "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
@@ -151,44 +173,95 @@ public class JavaObject extends Value implements IJavaObject {
             case "instanceof" -> {
                 return new BooleanValue();
             }
-            default -> throw new UnsupportedOperationException(
-                    "Binary operation " + operator + " not supported between " + getType() + " and " + other.getType());
+            default -> {
+                return new VoidValue();
+            }
         }
     }
 
     @NotNull
     @Override
     public JavaObject copy() {
+        return copy(new IdentityHashMap<>());
+    }
+
+    /**
+     * Deep copy of this object.
+     * @param copiedObjects map of already copied objects to handle cyclic references.
+     * @return the copied object.
+     */
+    @Override
+    @NotNull
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
         if (fields == null) {
-            return new JavaObject(null, this.abstractInterpretation);
+            return new JavaObject(null, this.abstractInterpretation, this.getType());
         }
-        return new JavaObject(new Scope(this.fields), this.abstractInterpretation);
+        if (copiedObjects.containsKey(this)) {
+            return copiedObjects.get(this);
+        }
+        JavaObject newObject = new JavaObject(new Scope(), this.abstractInterpretation, this.getType());
+        copiedObjects.put(this, newObject);
+        newObject.fields = new Scope(this.fields, copiedObjects);
+        return newObject;
     }
 
     @Override
     public void merge(@NotNull IValue other) {
-        if (!(other instanceof JavaObject)) {   // cannot merge different types
+        merge(other, Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    @Override
+    public void merge(@NotNull IValue other, Set<JavaObject> visited) {
+        if (!(other instanceof JavaObject otherObj)) {
             setToUnknown();
             return;
         }
-        if (fields == null || ((JavaObject) other).fields == null) {
+        if (fields == null && otherObj.fields == null) {
+            return;
+        }
+        if (fields == null || otherObj.fields == null) {
             fields = new Scope();
             return;
         }
-        this.fields.merge(((JavaObject) other).fields);
+        // Cycle detection
+        if (visited.contains(this)) {
+            return;
+        }
+        visited.add(this);
+        this.fields.merge(otherObj.fields, visited);
     }
 
     @Override
     public void setToUnknown() {
+        setToUnknown(Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    @Override
+    public void setToUnknown(Set<IJavaObject> visited) {
+        if (visited.contains(this)) {
+            return;
+        }
+        visited.add(this);
         if (fields != null) {
-            fields.setEverythingUnknown();
+            fields.setEverythingUnknown(visited);
+        } else {
+            fields = new Scope();
         }
     }
 
     @Override
     public void setInitialValue() {
+        setInitialValue(Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    @Override
+    public void setInitialValue(Set<IJavaObject> visited) {
+        if (visited.contains(this)) {
+            return;
+        }
+        visited.add(this);
         if (fields != null) {
-            fields.setEverythingUnknown();
+            fields.setEverythingInitialValue(visited);
         }
         fields = null;
     }

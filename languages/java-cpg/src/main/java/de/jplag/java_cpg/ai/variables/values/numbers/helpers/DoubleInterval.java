@@ -45,9 +45,25 @@ public class DoubleInterval extends Interval<Double> {
      * @param upperBound the upper bound.
      */
     public DoubleInterval(double lowerBound, double upperBound) {
-        assert lowerBound <= upperBound;
+        assert lowerBound <= upperBound : "Lower bound must be less than or equal to upper bound: " + lowerBound + " > " + upperBound;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
+    }
+
+    /**
+     * Safely extracts the lower bound as a double value. Handles both Double and Integer intervals due to type erasure.
+     */
+    @Pure
+    private static double getLowerBound(@NotNull final Interval<Double> interval) {
+        return ((Number) interval.lowerBound).doubleValue();
+    }
+
+    /**
+     * Safely extracts the upper bound as a double value. Handles both Double and Integer intervals due to type erasure.
+     */
+    @Pure
+    private static double getUpperBound(@NotNull final Interval<Double> interval) {
+        return ((Number) interval.upperBound).doubleValue();
     }
 
     @Override
@@ -75,52 +91,61 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public DoubleInterval plus(@NotNull Interval<Double> other) {
-        double lo = lowerBound + other.lowerBound;
-        double hi = upperBound + other.upperBound;
+        double lo = lowerBound + getLowerBound(other);
+        double hi = upperBound + getUpperBound(other);
         return new DoubleInterval(lo, hi);
     }
 
     @Pure
     @Override
     public DoubleInterval minus(@NotNull Interval<Double> other) {
-        double lo = lowerBound - other.upperBound;
-        double hi = upperBound - other.lowerBound;
+        double lo = lowerBound - getUpperBound(other);
+        double hi = upperBound - getLowerBound(other);
         return new DoubleInterval(lo, hi);
     }
 
     @Pure
     @Override
     public DoubleInterval times(@NotNull Interval<Double> other) {
-        double p1 = lowerBound * other.lowerBound;
-        double p2 = lowerBound * other.upperBound;
-        double p3 = upperBound * other.lowerBound;
-        double p4 = upperBound * other.upperBound;
+        if (lowerBound == 0 && upperBound == MAX_VALUE && getLowerBound(other) == 0 && getUpperBound(other) == MAX_VALUE) {
+            return new DoubleInterval(0, MAX_VALUE);
+        }
+        double p1 = lowerBound * getLowerBound(other);
+        double p2 = lowerBound * getUpperBound(other);
+        double p3 = upperBound * getLowerBound(other);
+        double p4 = upperBound * getUpperBound(other);
         double lo = Math.min(Math.min(p1, p2), Math.min(p3, p4));
         double hi = Math.max(Math.max(p1, p2), Math.max(p3, p4));
+        if (Double.isNaN(lo) || Double.isNaN(hi)) {
+            return new DoubleInterval(MIN_VALUE, MAX_VALUE);
+        }
         return new DoubleInterval(lo, hi);
     }
 
     @Pure
     @Override
     public DoubleInterval divided(@NotNull Interval<Double> other) {
-        if (other.lowerBound <= 0 && other.upperBound >= 0) {
+        if (getLowerBound(other) <= 0 && getUpperBound(other) >= 0) {
             return new DoubleInterval(MIN_VALUE, MAX_VALUE);
         }
-        double p1 = lowerBound / other.lowerBound;
-        double p2 = lowerBound / other.upperBound;
-        double p3 = upperBound / other.lowerBound;
-        double p4 = upperBound / other.upperBound;
+        double p1 = lowerBound / getLowerBound(other);
+        double p2 = lowerBound / getUpperBound(other);
+        double p3 = upperBound / getLowerBound(other);
+        double p4 = upperBound / getUpperBound(other);
         double lo = Math.min(Math.min(p1, p2), Math.min(p3, p4));
         double hi = Math.max(Math.max(p1, p2), Math.max(p3, p4));
+        if (Double.isNaN(lo) || Double.isNaN(hi)) {
+            return new DoubleInterval(MIN_VALUE, MAX_VALUE);
+        }
         return new DoubleInterval(lo, hi);
     }
 
     @Pure
     @Override
     public BooleanValue equal(@NotNull Interval<Double> other) {
-        if (lowerBound.equals(upperBound) && other.lowerBound.equals(other.upperBound) && lowerBound.equals(other.lowerBound)) {
+        if (lowerBound.equals(upperBound) && getLowerBound(other) == getUpperBound(other) && lowerBound == getLowerBound(other)) {
             return new BooleanValue(true);
-        } else if (upperBound < other.lowerBound || lowerBound > other.upperBound) {
+        } else if (upperBound < getLowerBound(other) || lowerBound > getUpperBound(other)) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -130,9 +155,9 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public BooleanValue notEqual(@NotNull Interval<Double> other) {
-        if (upperBound < other.lowerBound || lowerBound > other.upperBound) {
+        if (upperBound < getLowerBound(other) || lowerBound > getUpperBound(other)) {
             return new BooleanValue(true);
-        } else if (lowerBound.equals(upperBound) && other.lowerBound.equals(other.upperBound) && lowerBound.equals(other.lowerBound)) {
+        } else if (lowerBound.equals(upperBound) && getLowerBound(other) == getUpperBound(other) && lowerBound == getLowerBound(other)) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -142,9 +167,9 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public BooleanValue smaller(@NotNull Interval<Double> other) {
-        if (upperBound < other.lowerBound) {
+        if (upperBound < getLowerBound(other)) {
             return new BooleanValue(true);
-        } else if (lowerBound >= other.upperBound) {
+        } else if (lowerBound >= getUpperBound(other)) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -154,9 +179,9 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public BooleanValue smallerEqual(@NotNull Interval<Double> other) {
-        if (upperBound <= other.lowerBound) {
+        if (upperBound <= getLowerBound(other)) {
             return new BooleanValue(true);
-        } else if (lowerBound > other.upperBound) {
+        } else if (lowerBound > getUpperBound(other)) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -166,9 +191,9 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public BooleanValue bigger(@NotNull Interval<Double> other) {
-        if (lowerBound > other.upperBound) {
+        if (lowerBound > getUpperBound(other)) {
             return new BooleanValue(true);
-        } else if (upperBound <= other.lowerBound) {
+        } else if (upperBound <= getLowerBound(other)) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -178,9 +203,9 @@ public class DoubleInterval extends Interval<Double> {
     @Pure
     @Override
     public BooleanValue biggerEqual(@NotNull Interval<Double> other) {
-        if (lowerBound >= other.upperBound) {
+        if (lowerBound >= getUpperBound(other)) {
             return new BooleanValue(true);
-        } else if (upperBound < other.lowerBound) {
+        } else if (upperBound < getLowerBound(other)) {
             return new BooleanValue(false);
         } else {
             return new BooleanValue();
@@ -235,9 +260,9 @@ public class DoubleInterval extends Interval<Double> {
     @Override
     public int compareTo(@NotNull Interval<Double> o) {
         if (!this.lowerBound.equals(o.lowerBound)) {
-            return Double.compare(this.lowerBound, o.lowerBound);
+            return Double.compare(this.lowerBound, getLowerBound(o));
         } else {
-            return Double.compare(this.upperBound, o.upperBound);
+            return Double.compare(this.upperBound, getUpperBound(o));
         }
     }
 

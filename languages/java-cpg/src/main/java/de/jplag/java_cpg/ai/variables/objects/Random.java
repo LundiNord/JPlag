@@ -1,6 +1,7 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +28,7 @@ public class Random extends JavaObject implements ISpecialObject {
      * Representation of the java.util.Random class.
      */
     public Random() {
-        super();
+        super(new Type(Type.TypeEnum.OBJECT, getName().toString()));
     }
 
     /**
@@ -40,11 +41,11 @@ public class Random extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "nextInt" -> {
                 if (paramVars == null || paramVars.isEmpty()) {
-                    return Value.valueFactory(Type.INT);
+                    return Value.valueFactory(new Type(Type.TypeEnum.INT));
                 }
                 assert paramVars.size() == 1;
                 return Value.valueFactory(Value.valueFactory(0), paramVars.getFirst());
@@ -54,7 +55,7 @@ public class Random extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public Value accessField(@NotNull java.lang.String fieldName) {
+    public Value accessField(@NotNull java.lang.String fieldName, @NotNull Type expectedType) {
         switch (fieldName) {
             default -> throw new UnsupportedOperationException("Field " + fieldName + " is not supported in " + PATH + "." + NAME);
         }
@@ -64,6 +65,12 @@ public class Random extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new Random();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

@@ -25,12 +25,16 @@ class BankAccount {
     }
 
     public void withdraw(double amount) {
+        //DeadCodeStart
         if (balance >= amount) {
+            //DeadCodeEnd
             balance -= amount;
             System.out.println("Withdrawn: $" + amount);
+            //DeadCodeStart
         } else {
             System.out.println("Insufficient funds");
         }
+        //DeadCodeEnd
     }
 
     public void displayBalance() {

@@ -1,11 +1,13 @@
 package de.jplag.java_cpg.ai.variables.objects;
 
 import java.util.List;
+import java.util.Map;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.declarations.MethodDeclaration;
+import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.VariableName;
 import de.jplag.java_cpg.ai.variables.values.IValue;
 import de.jplag.java_cpg.ai.variables.values.JavaObject;
@@ -26,7 +28,7 @@ public class PrintStream extends JavaObject implements ISpecialObject {
      * Representation of the java.io.PrintStream class.
      */
     public PrintStream() {
-        super();
+        super(new Type(Type.TypeEnum.OBJECT));
     }
 
     /**
@@ -39,13 +41,17 @@ public class PrintStream extends JavaObject implements ISpecialObject {
     }
 
     @Override
-    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method) {
+    public IValue callMethod(@NotNull java.lang.String methodName, List<IValue> paramVars, MethodDeclaration method, @NotNull Type expectedType) {
         switch (methodName) {
             case "println", "print", "printf" -> {
                 // do nothing
                 return new VoidValue();
             }
             case "format" -> {
+                // do nothing & return this
+                return this;
+            }
+            case "flush" -> {
                 // do nothing & return this
                 return this;
             }
@@ -57,6 +63,12 @@ public class PrintStream extends JavaObject implements ISpecialObject {
     @Override
     public JavaObject copy() {
         return new PrintStream();
+    }
+
+    @NotNull
+    @Override
+    public JavaObject copy(Map<JavaObject, JavaObject> copiedObjects) {
+        return copy();
     }
 
     @Override

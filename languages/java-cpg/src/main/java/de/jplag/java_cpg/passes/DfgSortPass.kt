@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 /**
- * This pass sorts independent statements, removes statement that can be (conservatively) determined as useless, and builds
+ * This pass sorts independent statements, removes statements that can be (conservatively) determined as useless, and builds
  * the DFG. The original DFG of the CPG library is reset.
  */
 @DependsOn(EvaluationOrderGraphPass::class)
@@ -71,8 +71,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val parentInfo = mutableMapOf<Node, ParentInfo>()
         val movableStatements = getMovableStatements(root, null, parentInfo)
 
-        val finalState = stateSafe[root]
-            ?: throw TransformationException("EOG traverse did not reach the start - cannot sort statements")
+        val finalState = stateSafe[root] ?: throw TransformationException("EOG traversion did not reach the start - cannot sort statements")
 
         /*
          * Sets DFG edges between statements
@@ -98,7 +97,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         // Restore map:
         parentInfo.entries.toList().forEach { parentInfo[it.key] = it.value }
 
-
         /*
          *  Sets DFG edges between statements that contain dfg-related statements in inner blocks
          *  e.g. DeclarationStatement --> WhileStatement using the declared variable
@@ -119,7 +117,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         }
 
         reorderStatements(essentialNodesOut, relevantStatements, parentInfo, root.body as Block)
-
     }
 
     private fun extractTransitiveDependencies(
@@ -283,7 +280,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val walker = SubgraphWalker.IterativeGraphWalker()
         walker.strategy = Strategy::EOG_FORWARD
         var found = false
-        walker.registerOnNodeVisit { node, _ -> if (node == b) found = true }
+        walker.registerOnNodeVisit{
+            node, _ -> if (node == b) found = true }
         walker.iterate(a)
         return found
     }
@@ -297,15 +295,12 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         statements: List<Statement>,
         parentInfo: MutableMap<Node, ParentInfo>,
     ) {
+        if (!removeDeadCode) return
         val irrelevantStatements = statements.filter { it !in relevantStatements }
             .filter { parentInfo[it]?.parent is Block }
             .distinct()
 
         irrelevantStatements.forEach {
-            if (parentInfo[it]?.parent == null) {
-                System.err.println("Parent info missing for ${desc(it)}, skipping removal of this irrelevant statement")
-                return
-            }
             val block = parentInfo[it]?.parent as Block
             val index = block.statements.indexOf(it)
             val cpgNthEdge: CpgNthEdge<Block, Statement> = CpgNthEdge(BLOCK__STATEMENTS, index)
@@ -399,7 +394,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     .map { it as Statement }
                     .toList()
             worklist.addAll(newElements)
-
         }
         assert(done.size == relevantStatementsInThisBlock.size && done.containsAll(relevantStatementsInThisBlock))
 
@@ -489,12 +483,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
             else -> false
         }
-
     }
 
     private fun isLocal(node: Node, reference: Node): Boolean {
         return node.location != null && node.location!!.artifactLocation == reference.location?.artifactLocation
-
     }
 
     private fun extractEssentialNodes(
@@ -714,8 +706,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val nodes1 = NodeOrderStrategy.flattenStatement(n1).iterator()
         val nodes2 = NodeOrderStrategy.flattenStatement(n2).iterator()
 
-        val tokens1 = CpgNodeListener.tokenIterator(nodes1);
-        val tokens2 = CpgNodeListener.tokenIterator(nodes2);
+        val tokens1 = CpgNodeListener.tokenIterator(nodes1)
+        val tokens2 = CpgNodeListener.tokenIterator(nodes2)
 
         while (tokens1.hasNext() && tokens2.hasNext()) {
             val next1 = tokens1.next().type.let { if (it is CpgTokenType) it.ordinal else 0 }
@@ -723,10 +715,9 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val compare = next1 - next2
             if (compare != 0) return compare
         }
-        return if (tokens1.hasNext()) 1;
-        else if (tokens2.hasNext()) -1;
+        return if (tokens1.hasNext()) 1
+        else if (tokens2.hasNext()) -1
         else 0
-
     }
 
 
@@ -750,7 +741,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     statement.statements.flatMap { getMovableStatements(it, statement, parentInfo, depth + 1) }
                         .toMutableList()
                 if (parent is Block) {
-                    // inner block without control statement that would enforce it
+                    // inner block without a control statement that would enforce it
                     result.add(statement)
                 }
                 result
@@ -827,10 +818,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                 listOf(statement)
             }
 
-
             // only here to create entry in parentInfo
             else -> listOf()
-
         }
         if (parent != null) {
             parentInfo[statement] = ParentInfo(parent, depth)
@@ -855,7 +844,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
             // NewExpression is AssignmentHolder, but not usable for this analysis
             is NewExpression -> {}
-
 
             is AssignmentHolder -> {
                 if (node is VariableDeclaration && node.initializer == null) {
@@ -908,7 +896,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         state.registerAssignment(assignment, node)
     }
 
-
     override fun cleanup() {
     }
 
@@ -919,7 +906,6 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         constructor()
 
         constructor(copyMap: Map<Declaration, VariableData>) : super(copyMap)
-
 
         override fun get(key: Declaration): VariableData {
             return super.computeIfAbsent(key) { VariableData() }
@@ -946,6 +932,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             // may be class or enum reference
             if (reference.refersTo !is ValueDeclaration || reference.refersTo is FunctionDeclaration) return false
             return this[reference.refersTo]?.register(reference) ?: false
+        }
+
+        companion object {
+            private const val serialVersionUID: Long = -6688414070734477497L
         }
 
     }
@@ -1017,6 +1007,10 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         override fun hashCode(): Int {
             return javaClass.hashCode()
         }
-
     }
+
+    companion object DfgSortPassCompanion {
+        var removeDeadCode: Boolean = true
+    }
+
 }

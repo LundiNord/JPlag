@@ -16,18 +16,18 @@ import de.jplag.java_cpg.ai.variables.values.numbers.helpers.DoubleInterval;
  * @author ujiqk
  * @version 1.0
  */
-public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
+public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> implements IFloatNumber {
 
     /**
      * Default constructor c Float value represented as a set of intervals with no information.
      */
     public FloatSetValue() {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         values.add(new DoubleInterval());
     }
 
     private FloatSetValue(TreeSet<DoubleInterval> values) {
-        super(Type.FLOAT, values);
+        super(new Type(Type.TypeEnum.FLOAT), values);
     }
 
     /**
@@ -35,7 +35,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
      * @param number the single float number
      */
     public FloatSetValue(double number) {
-        super(Type.FLOAT);
+        super(new Type(Type.TypeEnum.FLOAT));
         values.add(new DoubleInterval(number));
     }
 
@@ -44,7 +44,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
      * @param possibleNumbers the possible float numbers
      */
     public FloatSetValue(@NotNull Set<Double> possibleNumbers) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values = new TreeSet<>();
         // ToDo: slice into intervals
         values.add(new DoubleInterval());
@@ -56,7 +56,7 @@ public class FloatSetValue extends NumberSetValue<Double, DoubleInterval> {
      * @param upperBound the upper bound of the range
      */
     public FloatSetValue(double lowerBound, double upperBound) {
-        super(Type.INT);
+        super(new Type(Type.TypeEnum.INT));
         values.add(new DoubleInterval(lowerBound, upperBound));
     }
 

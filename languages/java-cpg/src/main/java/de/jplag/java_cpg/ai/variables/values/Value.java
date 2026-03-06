@@ -10,6 +10,7 @@ import de.jplag.java_cpg.ai.ArrayAiType;
 import de.jplag.java_cpg.ai.CharAiType;
 import de.jplag.java_cpg.ai.FloatAiType;
 import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
 import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.Type;
 import de.jplag.java_cpg.ai.variables.values.arrays.IJavaArray;
@@ -23,6 +24,7 @@ import de.jplag.java_cpg.ai.variables.values.numbers.INumberValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntIntervalValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntSetValue;
 import de.jplag.java_cpg.ai.variables.values.numbers.IntValue;
+import de.jplag.java_cpg.ai.variables.values.string.IStringValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringCharInclValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringRegexValue;
 import de.jplag.java_cpg.ai.variables.values.string.StringValue;
@@ -105,14 +107,18 @@ public abstract class Value implements IValue {
      */
     @NotNull
     public static IValue valueFactory(@NotNull Type type) {
-        return switch (type) {
+        return switch (type.getTypeEnum()) {
             case INT -> getNewIntValue();
             case STRING -> getNewStringValue();
             case BOOLEAN -> new BooleanValue();
-            case OBJECT -> new JavaObject();
-            case VOID -> new VoidValue();
-            case ARRAY, LIST -> getNewArayValue();
-            case NULL -> new NullValue();
+            case OBJECT -> new JavaObject(type);
+            case VOID, UNKNOWN -> new VoidValue();      // ToDo: split VOID and UNKNOWN
+            case ARRAY, LIST -> getNewArayValue(type.getInnerType());
+            case NULL -> {
+                JavaObject obj = new JavaObject(type);
+                obj.setInitialValue();
+                yield obj;
+            }
             case FLOAT -> getNewFloatValue();
             case FUNCTION -> new FunctionValue();
             case CHAR -> getNewCharValue();
@@ -125,11 +131,14 @@ public abstract class Value implements IValue {
      * @param value the known value.
      * @return a {@link Value} instance representing the known value.
      * @throws IllegalStateException if the value type is unsupported.
+     * @throws JavaLanguageFeatureNotSupportedException if the value type is not supported by the AI configuration.
      */
     @NotNull
     public static IValue valueFactory(@Nullable Object value) {
         if (value == null) {
-            return new NullValue();
+            IJavaObject obj = new JavaObject(new Type(Type.TypeEnum.OBJECT));
+            obj.setInitialValue();
+            return obj;
         }
         switch (value) {
             case String s -> {
@@ -145,7 +154,9 @@ public abstract class Value implements IValue {
                 return getNewFloatValue(d);
             }
             case Long l -> {    // all integer numbers are treated as int
-                assert l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE;
+                if (l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE) {
+                    throw new JavaLanguageFeatureNotSupportedException("Long values are not supported");
+                }
                 return getNewIntValue(l.intValue());
             }
             case Character c -> {
@@ -208,7 +219,7 @@ public abstract class Value implements IValue {
     }
 
     @NotNull
-    private static Value getNewIntValue(int number) {
+    protected static INumberValue getNewIntValue(int number) {
         return switch (usedIntAiType) {
             case INTERVALS -> new IntIntervalValue(number);
             case DEFAULT -> new IntValue(number);
@@ -271,8 +282,12 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new string value based on the configured AI type.
+     * @return a new string value instance without information.
+     */
     @NotNull
-    private static Value getNewStringValue() {
+    public static IStringValue getNewStringValue() {
         return switch (usedStringAiType) {
             case DEFAULT -> new StringValue();
             case CHAR_INCLUSION -> new StringCharInclValue();
@@ -280,8 +295,13 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new string value based on the configured AI type.
+     * @param value the string value.
+     * @return a new string value instance.
+     */
     @NotNull
-    private static Value getNewStringValue(String value) {
+    public static Value getNewStringValue(String value) {
         return switch (usedStringAiType) {
             case DEFAULT -> new StringValue(value);
             case CHAR_INCLUSION -> new StringCharInclValue(value);
@@ -322,11 +342,15 @@ public abstract class Value implements IValue {
         };
     }
 
+    /**
+     * Creates a new array value based on the configured AI type.
+     * @return a new array value instance.
+     */
     @NotNull
-    private static Value getNewArayValue() {
+    public static IJavaArray getNewArayValue() {
         return switch (usedArrayAiType) {
-            case DEFAULT -> new JavaArray();
-            case LENGTH -> new JavaLengthArray();
+            case DEFAULT -> new JavaArray(new Type(Type.TypeEnum.UNKNOWN));
+            case LENGTH -> new JavaLengthArray(new Type(Type.TypeEnum.UNKNOWN));
         };
     }
 
@@ -337,6 +361,9 @@ public abstract class Value implements IValue {
      */
     @NotNull
     public static IJavaArray getNewArayValue(Type innerType) {
+        if (innerType == null) {
+            innerType = new Type(Type.TypeEnum.UNKNOWN);
+        }
         return switch (usedArrayAiType) {
             case DEFAULT -> new JavaArray(innerType);
             case LENGTH -> new JavaLengthArray(innerType);

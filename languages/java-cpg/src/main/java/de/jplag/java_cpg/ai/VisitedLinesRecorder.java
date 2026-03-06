@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
@@ -23,6 +24,8 @@ public class VisitedLinesRecorder {
     private final Map<URI, Set<Integer>> visitedLines;
     private final Map<URI, Set<Integer>> possibleLines;
     private final Map<URI, Set<Integer>> detectedDeadLines;
+    private int deadLinesCount = 0;
+    private int deadCodeCount = 0;
 
     /**
      * Creates a new VisitedLinesRecorder.
@@ -54,9 +57,12 @@ public class VisitedLinesRecorder {
     }
 
     /**
-     * @param node record first line visited in the given node
+     * @param node record the first line visited in the given node
      */
-    public void recordFirstLineVisited(@NotNull Node node) {
+    public void recordFirstLineVisited(@Nullable Node node) {
+        if (node == null) {
+            return;
+        }
         PhysicalLocation location = node.getLocation();
         if (location == null) {
             return;
@@ -85,6 +91,8 @@ public class VisitedLinesRecorder {
         }
         Set<Integer> alreadyDeadLines = detectedDeadLines.computeIfAbsent(uri, _ -> new HashSet<>());
         alreadyDeadLines.addAll(deadLines);
+        deadLinesCount += (endLine - startLine + 1);
+        deadCodeCount++;
     }
 
     /**
@@ -166,6 +174,22 @@ public class VisitedLinesRecorder {
     @TestOnly
     public Map<URI, Set<Integer>> getVisitedLines() {
         return visitedLines;
+    }
+
+    /**
+     * @return the number of lines that have been detected to be dead code.
+     */
+    @TestOnly
+    public int getDeadLinesCount() {
+        return deadLinesCount;
+    }
+
+    /**
+     * @return the number of code regions that have been detected to be dead code.
+     */
+    @TestOnly
+    public int getDeadCodeCount() {
+        return deadCodeCount;
     }
 
 }
