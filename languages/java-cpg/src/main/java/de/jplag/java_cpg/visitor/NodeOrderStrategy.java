@@ -147,7 +147,10 @@ public class NodeOrderStrategy implements IStrategy<Node> {
 
     @NotNull
     private static Iterator<Node> walkBlock(Block block) {
-        return block.getStatements().stream().map(TransformationUtil::getEntry).iterator();
+        return block.getStatements().stream().<Node>map(s -> {
+            List<Node> entries = TransformationUtil.getEogBorders(s).getEntries();
+            return entries.isEmpty() ? s : entries.getFirst();
+        }).iterator();
     }
 
     /**
@@ -158,8 +161,12 @@ public class NodeOrderStrategy implements IStrategy<Node> {
      */
     public static List<Node> flattenStatement(Statement statement) {
         List<Node> astChildren = SubgraphWalker.INSTANCE.flattenAST(statement);
+        List<Node> entries = TransformationUtil.getEogBorders(statement).getEntries();
+        if (entries.isEmpty()) {
+            return astChildren;
+        }
         NodeOrderStrategy strategy = new NodeOrderStrategy();
-        Node entry = TransformationUtil.getEntry(statement);
+        Node entry = entries.getFirst();
 
         List<Node> nodes = new ArrayList<>(astChildren.size());
         SubgraphWalker.IterativeGraphWalker walker = new SubgraphWalker.IterativeGraphWalker();

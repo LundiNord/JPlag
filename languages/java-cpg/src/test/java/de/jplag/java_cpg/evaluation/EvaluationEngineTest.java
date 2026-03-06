@@ -839,10 +839,10 @@ class EvaluationEngineTest {
         Set<String> files = kitTicTocToePlag();
         Set<File> fileSet = files.stream().skip(0).map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file)).collect(Collectors.toSet());
 
-        JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
-        File outDir = new File("outputTicTacToe.jplag.zip");
-        ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
-        reportObjectFactory.createAndSaveReport(resultJPlag);
+        // JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
+        // File outDir = new File("outputTicTacToe.jplag.zip");
+        // ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
+        // reportObjectFactory.createAndSaveReport(resultJPlag);
 
         JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
         File outDir2 = new File("outputTicTacToe.cpg.zip");
@@ -871,7 +871,7 @@ class EvaluationEngineTest {
         JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
         File outDir2 = new File("outputBoardGame.cpg.zip");
         ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
-        // reportObjectFactory2.createAndSaveReport(resultCPG);
+        reportObjectFactory2.createAndSaveReport(resultCPG);
 
         JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
         File outDir3 = new File("outputBoardGame.ai.zip");
@@ -883,7 +883,7 @@ class EvaluationEngineTest {
 
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
-    void KitPlagEvaluationSingle() throws ExitException, IOException {
+    void KitPlagEvaluationSingle() throws ExitException {
         String folderA = "kit_DONT_COMMIT/BoardGame/human/subm208/";
         String folderB = "kit_DONT_COMMIT/TicTacToe/human/24229";
         Set<File> fileSet = Stream.of(folderA, folderB).map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file)).collect(Collectors.toSet());
@@ -904,7 +904,7 @@ class EvaluationEngineTest {
         double similarityAi = ai.getAllComparisons().getFirst().similarity();
         System.out.println("Cpg with AI dead code removal: " + similarityAi);
 
-        System.out.println("Plagiarism scores for " + folderA + " and " + folderB + ":");
+        System.out.println("Plagiarism scores for " + folderA + " and " + folderB);
         assertTrue(true);
     }
 

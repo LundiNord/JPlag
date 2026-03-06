@@ -96,6 +96,10 @@ public class MethodOrderStrategy {
     }
 
     private static boolean isTypeCompatible(Type type, Type target) {
+        return isTypeCompatible(type, target, new java.util.HashSet<>());
+    }
+
+    private static boolean isTypeCompatible(Type type, Type target, java.util.Set<String> visited) {
         if (type.isSimilar(target))
             return true;
         if (!(type instanceof ObjectType oType && target instanceof ObjectType oTarget && oType.getRecordDeclaration() != null
@@ -109,10 +113,15 @@ public class MethodOrderStrategy {
         if (targetName.toString().equals("java.lang.Object") || targetName.getParent() == null)
             return true;
 
+        String key = typeName + "->" + targetName;
+        if (!visited.add(key))
+            return false;
+
         List<Type> superTypes = oType.getRecordDeclaration().getSuperTypes();
         List<Type> superTargets = oTarget.getRecordDeclaration().getSuperTypes();
 
-        return superTypes.stream().anyMatch(t -> isTypeCompatible(t, target)) || superTargets.stream().anyMatch(t -> isTypeCompatible(type, t));
+        return superTypes.stream().anyMatch(t -> isTypeCompatible(t, target, visited))
+                || superTargets.stream().anyMatch(t -> isTypeCompatible(type, t, visited));
     }
 
     private static boolean isGeneric(Type type) {
@@ -152,9 +161,12 @@ public class MethodOrderStrategy {
             return List.of();
 
         List<RecordDeclaration> superClassDeclarations = new ArrayList<>();
+        Set<RecordDeclaration> visited = new java.util.HashSet<>();
         superClassDeclarations.add(recordDeclaration);
         do {
             RecordDeclaration superClassDeclaration = superClassDeclarations.removeFirst();
+            if (!visited.add(superClassDeclaration))
+                continue;
             List<MethodDeclaration> candidates = superClassDeclaration.getConstructors().stream()
                     .filter(constructor -> isImplicitStandardConstructor(constructor) || constructor.getLocation() != null)
                     .filter(constructor -> hasSignature(constructor, call)).map(MethodDeclaration.class::cast).toList();

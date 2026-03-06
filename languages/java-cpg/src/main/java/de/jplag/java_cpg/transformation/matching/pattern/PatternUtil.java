@@ -221,7 +221,7 @@ public class PatternUtil {
                 default -> workList.addAll(candidate.getPrevDFG());
             }
         }
-        return references.stream().flatMap(decl -> decl.getPrevDFG().stream()).collect(Collectors.toSet());
+        return references.stream().filter(Objects::nonNull).flatMap(decl -> decl.getPrevDFG().stream()).collect(Collectors.toSet());
     }
 
     /**

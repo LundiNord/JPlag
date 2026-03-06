@@ -17,7 +17,7 @@ import de.jplag.java_cpg.visitor.NodeOrderStrategy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.ArrayDeque
+import java.util.*
 
 /**
  * This pass tokenizes the [TranslationResult].
@@ -39,7 +39,6 @@ class TokenizationPass(ctx: TranslationContext) : TranslationResultPass(ctx) {
     private val strategy = NodeOrderStrategy()
 
     override fun accept(translationResult: TranslationResult) {
-        print("Current File: " + translationResult.translationUnits.first().name)
         logger.info("Current File: " + translationResult.translationUnits.first().name.toString())
         tokenList.clear()
         val listener = CpgNodeListener(consumer)

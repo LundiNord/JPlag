@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutionException;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.aisec.cpg.ConfigurationException;
 import de.fraunhofer.aisec.cpg.InferenceConfiguration;
@@ -51,6 +53,8 @@ import kotlin.reflect.KClass;
  * This class handles the transformation of files of code to a token list.
  */
 public class CpgAdapter {
+
+    private static final Logger logger = LoggerFactory.getLogger(CpgAdapter.class);
 
     private final boolean removeDeadCode;
     private final boolean removeSimpleDeadCode;
@@ -185,6 +189,9 @@ public class CpgAdapter {
             }
             translationResult = TranslationManager.builder().config(configBuilder.build()).build().analyze().get();
         } catch (ConfigurationException | ExecutionException e) {
+            Throwable cause = e instanceof ExecutionException ? e.getCause() : e;
+            logger.error("CPG translation failed. Root cause: {}", cause != null ? cause.getClass().getName() + ": " + cause.getMessage() : "null",
+                    cause);
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
         return translationResult;

@@ -53,8 +53,13 @@ abstract class ATransformationPass(ctx: TranslationContext) : TranslationResultP
             for (match: Match in matches) {
                 // transformations may lead to other matches being invalidated
                 if (detector.validateMatch(match, sourcePattern)) {
-                    count++
-                    transformation.apply(match, ctx)
+                    try {
+                        count++
+                        transformation.apply(match, ctx)
+                    } catch (e: NoSuchElementException) {
+                        // Node has no EOG entry/exit (e.g. inferred JDK nodes without source location) — skip
+                        logger.debug("Transformation ${transformation.name()} skipped match with missing EOG: ${e.message}")
+                    }
                 } else {
                     invalidated = true
                 }
