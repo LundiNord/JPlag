@@ -523,7 +523,6 @@ class EvaluationEngineTest {
     @Disabled("Only for evaluation purposes, not a real test")
     void AiGeneratedTestDataDeadCodeEvaluationSingle() throws ParsingException {
         String fileName = "aiGenerated/claude/Project1.java";
-        // String fileName = "aiGenerated/grok/project6.java";
 
         List<Token> tokensWithoutDeadCode = getTokensFromFile(fileName, true, true, false, true, false);
 
@@ -581,7 +580,7 @@ class EvaluationEngineTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>(tokens);
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -728,18 +727,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void ProgpediaDeadCodeEvaluationSingle() throws ParsingException {
-        // String fileName = "progpedia/00000021/WRONG_ANSWER/00168_00002"; //very long runtime <- big list init
-        // String fileName = "progpedia/00000043/ACCEPTED/00156_00001";
-        // String fileName = "progpedia/00000043/ACCEPTED/00154_00008";
-        // long runtime
-        // String fileName = "progpedia/00000016/ACCEPTED/00071_00001";
-        // String fileName = "progpedia/00000053/ACCEPTED/00104_00002";
-        // String fileName = "progpedia/00000053/WRONG_ANSWER/00104_00001/BFS.java";
-
-        // String fileName = "progpedia/00000019/WRONG_ANSWER/00109_00001/"; //for(i=resus.getPrimeiro(); i!=null;
-        // i=i.proximo())
-        String fileName = "progpedia/00000019/WRONG_ANSWER/00189_00001"; // Integer.intValue();
-        // String fileName = "progpedia/00000039/ACCEPTED/00139_00005"; //Dummy
+        String fileName = "progpedia/00000019/WRONG_ANSWER/00189_00001";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
@@ -871,7 +859,7 @@ class EvaluationEngineTest {
         JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
         File outDir2 = new File("outputBoardGame.cpg.zip");
         ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
-        // reportObjectFactory2.createAndSaveReport(resultCPG);
+        reportObjectFactory2.createAndSaveReport(resultCPG);
 
         JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
         File outDir3 = new File("outputBoardGame.ai.zip");
