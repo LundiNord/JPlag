@@ -10,6 +10,7 @@ import de.fraunhofer.aisec.cpg.TranslationContext;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.edge.Properties;
 import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.TransformationException;
 import de.jplag.java_cpg.transformation.matching.edges.AnyOfNEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgEdge;
@@ -32,6 +33,7 @@ public final class RemoveOperation<T extends Node, R extends Node> extends Graph
      * @param sourcePattern The source pattern of which a related node shall be removed
      * @param edge the edge
      * @param disconnectEog if true, the target node is disconnected in the EOG graph
+     * @throws TransformationException if the parent node to remove the node from is not specified
      */
     public RemoveOperation(NodePattern<? extends T> sourcePattern, CpgEdge<T, R> edge, boolean disconnectEog) {
         super(sourcePattern, edge);
@@ -104,11 +106,18 @@ public final class RemoveOperation<T extends Node, R extends Node> extends Graph
 
     @Override
     public GraphOperation instantiateWildcard(Match match) {
-        WildcardGraphPattern.ParentNodePattern<R> wcParent = (WildcardGraphPattern.ParentNodePattern<R>) this.parentPattern;
+        WildcardGraphPattern.ParentNodePattern<R> wcParent = Casting.castParentNodePattern(parentPattern);
         return match.instantiateGraphOperation(wcParent, this);
 
     }
 
+    /**
+     * Instantiates a concrete {@link RemoveOperation} realizing a transformation involving a wildcard match.
+     * @param pattern the parent node pattern
+     * @param edge the concrete edge
+     * @param <T2> the concrete node pattern type
+     * @return the remove operation
+     */
     public <T2 extends Node> RemoveOperation<T2, R> fromWildcardMatch(NodePattern<? extends T2> pattern, CpgEdge<T2, R> edge) {
         return new RemoveOperation<>(pattern, edge, this.disconnectEog);
     }

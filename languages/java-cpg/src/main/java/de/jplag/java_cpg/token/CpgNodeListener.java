@@ -95,6 +95,7 @@ import de.fraunhofer.aisec.cpg.graph.statements.expressions.LambdaExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.MemberCallExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.NewArrayExpression;
 import de.fraunhofer.aisec.cpg.graph.statements.expressions.UnaryOperator;
+import de.fraunhofer.aisec.cpg.sarif.Region;
 import de.jplag.Token;
 import de.jplag.TokenType;
 
@@ -128,8 +129,8 @@ public class CpgNodeListener extends ACpgNodeListener {
             Token next;
             final CpgTokenConsumer consumer = new CpgTokenConsumer() {
                 @Override
-                public void addToken(TokenType type, File file, int startLine, int startColumn, int length, Name name) {
-                    next = new CpgToken(type, file, startLine, startColumn, length, name);
+                public void addToken(TokenType type, File file, Region region, int length, Name name) {
+                    next = new CpgToken(type, file, region, length, name);
                 }
             };
 
@@ -156,22 +157,9 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
-    public void exit(Block block) {
-        TokenType blockEndToken = openBlocks.pop();
-        if (blockEndToken == BLOCK_END)
-            return;
-
-        tokenConsumer.addToken(blockEndToken, block, true);
-    }
-
-    @Override
-    public void exit(CatchClause catchclause) {
-        tokenConsumer.addToken(CATCH_CLAUSE_END, catchclause, true);
-    }
-
-    @Override
-    public void exit(DoStatement doStatement) {
-        tokenConsumer.addToken(DO_WHILE_BLOCK_END, doStatement, true);
+    public void exit(TranslationUnitDeclaration translationUnitDeclaration) {
+        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), new Region(-1, -1, -1, -1), -1,
+                translationUnitDeclaration.getName());
     }
 
     @Override
@@ -185,8 +173,79 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
-    public void exit(TranslationUnitDeclaration translationUnitDeclaration) {
-        tokenConsumer.addToken(FILE_END, new File(translationUnitDeclaration.getName().toString()), -1, -1, -1, translationUnitDeclaration.getName());
+    public void exit(CatchClause catchclause) {
+        tokenConsumer.addToken(CATCH_CLAUSE_END, catchclause, true);
+    }
+
+    @Override
+    public void exit(DoStatement doStatement) {
+        tokenConsumer.addToken(DO_WHILE_BLOCK_END, doStatement, true);
+    }
+
+    @Override
+    public void exit(Block block) {
+        TokenType blockEndToken = openBlocks.pop();
+        if (blockEndToken == BLOCK_END)
+            return;
+
+        tokenConsumer.addToken(blockEndToken, block, true);
+    }
+
+    private void expect(CpgTokenType opening, CpgTokenType closing) {
+        expectedBlocks.addFirst(new BlockTokens(opening, closing));
+    }
+
+    @Override
+    public void visit(ConstructorDeclaration constructorDeclaration) {
+        // Constructor may be implicit standard constructor
+        tokenConsumer.addToken(METHOD_DECL_BEGIN, constructorDeclaration, false);
+        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
+    }
+
+    @Override
+    public void visit(EnumConstantDeclaration enumConstantDeclaration) {
+        tokenConsumer.addToken(ENUM_ELEMENT, enumConstantDeclaration, false);
+    }
+
+    @Override
+    public void visit(EnumDeclaration enumDeclaration) {
+        tokenConsumer.addToken(ENUM_DECL_BEGIN, enumDeclaration, false);
+    }
+
+    @Override
+    public void visit(FieldDeclaration fieldDeclaration) {
+        tokenConsumer.addToken(FIELD_DECL, fieldDeclaration, false);
+    }
+
+    @Override
+    public void visit(IncludeDeclaration includeDeclaration) {
+        tokenConsumer.addToken(INCLUDE, includeDeclaration, false);
+    }
+
+    @Override
+    public void visit(MethodDeclaration methodDeclaration) {
+        tokenConsumer.addToken(METHOD_DECL_BEGIN, methodDeclaration, false);
+        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
+    }
+
+    @Override
+    public void visit(NewArrayExpression newArrayExpression) {
+        tokenConsumer.addToken(NEW_ARRAY, newArrayExpression, false);
+    }
+
+    @Override
+    public void visit(ParameterDeclaration parameterDeclaration) {
+        tokenConsumer.addToken(METHOD_PARAM, parameterDeclaration, false);
+    }
+
+    @Override
+    public void visit(RecordDeclaration recordDeclaration) {
+        tokenConsumer.addToken(RECORD_DECL_BEGIN, recordDeclaration, false);
+    }
+
+    @Override
+    public void visit(VariableDeclaration variableDeclaration) {
+        tokenConsumer.addToken(VARIABLE_DECL, variableDeclaration, false);
     }
 
     @Override
@@ -195,30 +254,8 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
-    public void visit(AssignExpression assignExpression) {
-        tokenConsumer.addToken(ASSIGNMENT, assignExpression, false);
-    }
-
-    @Override
-    public void visit(Block block) {
-        if (expectedBlocks.isEmpty()) {
-            // Do not add BLOCK_START and BLOCK_END, otherwise that is a vulnerability
-            openBlocks.addFirst(BLOCK_END);
-        } else {
-            BlockTokens blockTokens = expectedBlocks.pop();
-            tokenConsumer.addToken(blockTokens.opening, block, false);
-            openBlocks.addFirst(blockTokens.closing);
-        }
-    }
-
-    @Override
     public void visit(BreakStatement breakStatement) {
         tokenConsumer.addToken(BREAK, breakStatement, false);
-    }
-
-    @Override
-    public void visit(CallExpression callExpression) {
-        tokenConsumer.addToken(METHOD_CALL, callExpression, false);
     }
 
     @Override
@@ -229,18 +266,6 @@ public class CpgNodeListener extends ACpgNodeListener {
     @Override
     public void visit(CatchClause catchclause) {
         tokenConsumer.addToken(CATCH_CLAUSE_BEGIN, catchclause, false);
-    }
-
-    @Override
-    public void visit(ConstructExpression constructorCallExpression) {
-        tokenConsumer.addToken(CONSTRUCTOR_CALL, constructorCallExpression, false);
-    }
-
-    @Override
-    public void visit(ConstructorDeclaration constructorDeclaration) {
-        // Constructor may be the implicit standard constructor
-        tokenConsumer.addToken(METHOD_DECL_BEGIN, constructorDeclaration, false);
-        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
     }
 
     @Override
@@ -257,21 +282,6 @@ public class CpgNodeListener extends ACpgNodeListener {
     public void visit(DoStatement doStatement) {
         tokenConsumer.addToken(DO_WHILE_STATEMENT, doStatement, false);
         expect(DO_WHILE_BLOCK_START, DO_WHILE_BLOCK_END);
-    }
-
-    @Override
-    public void visit(EnumConstantDeclaration enumConstantDeclaration) {
-        tokenConsumer.addToken(ENUM_ELEMENT, enumConstantDeclaration, false);
-    }
-
-    @Override
-    public void visit(EnumDeclaration enumDeclaration) {
-        tokenConsumer.addToken(ENUM_DECL_BEGIN, enumDeclaration, false);
-    }
-
-    @Override
-    public void visit(FieldDeclaration fieldDeclaration) {
-        tokenConsumer.addToken(FIELD_DECL, fieldDeclaration, false);
     }
 
     @Override
@@ -307,39 +317,8 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
-    public void visit(IncludeDeclaration includeDeclaration) {
-        tokenConsumer.addToken(INCLUDE, includeDeclaration, false);
-    }
-
-    @Override
     public void visit(LambdaExpression lambdaExpression) {
         tokenConsumer.addToken(LAMBDA_EXPRESSION, lambdaExpression, false);
-    }
-
-    @Override
-    public void visit(MemberCallExpression memberCallExpression) {
-        tokenConsumer.addToken(METHOD_CALL, memberCallExpression, false);
-    }
-
-    @Override
-    public void visit(MethodDeclaration methodDeclaration) {
-        tokenConsumer.addToken(METHOD_DECL_BEGIN, methodDeclaration, false);
-        expect(METHOD_BODY_BEGIN, METHOD_BODY_END);
-    }
-
-    @Override
-    public void visit(NewArrayExpression newArrayExpression) {
-        tokenConsumer.addToken(NEW_ARRAY, newArrayExpression, false);
-    }
-
-    @Override
-    public void visit(ParameterDeclaration parameterDeclaration) {
-        tokenConsumer.addToken(METHOD_PARAM, parameterDeclaration, false);
-    }
-
-    @Override
-    public void visit(RecordDeclaration recordDeclaration) {
-        tokenConsumer.addToken(RECORD_DECL_BEGIN, recordDeclaration, false);
     }
 
     @Override
@@ -383,18 +362,41 @@ public class CpgNodeListener extends ACpgNodeListener {
     }
 
     @Override
-    public void visit(VariableDeclaration variableDeclaration) {
-        tokenConsumer.addToken(VARIABLE_DECL, variableDeclaration, false);
-    }
-
-    @Override
     public void visit(WhileStatement whileStatement) {
         tokenConsumer.addToken(WHILE_STATEMENT, whileStatement, false);
         expect(WHILE_BLOCK_START, WHILE_BLOCK_END);
     }
 
-    private void expect(CpgTokenType opening, CpgTokenType closing) {
-        expectedBlocks.addFirst(new BlockTokens(opening, closing));
+    @Override
+    public void visit(AssignExpression assignExpression) {
+        tokenConsumer.addToken(ASSIGNMENT, assignExpression, false);
+    }
+
+    @Override
+    public void visit(Block block) {
+        if (expectedBlocks.isEmpty()) {
+            // Do not add BLOCK_START and BLOCK_END, otherwise that is a vulnerability
+            openBlocks.addFirst(BLOCK_END);
+        } else {
+            BlockTokens blockTokens = expectedBlocks.pop();
+            tokenConsumer.addToken(blockTokens.opening, block, false);
+            openBlocks.addFirst(blockTokens.closing);
+        }
+    }
+
+    @Override
+    public void visit(CallExpression callExpression) {
+        tokenConsumer.addToken(METHOD_CALL, callExpression, false);
+    }
+
+    @Override
+    public void visit(ConstructExpression constructorCallExpression) {
+        tokenConsumer.addToken(CONSTRUCTOR_CALL, constructorCallExpression, false);
+    }
+
+    @Override
+    public void visit(MemberCallExpression memberCallExpression) {
+        tokenConsumer.addToken(METHOD_CALL, memberCallExpression, false);
     }
 
     private record BlockTokens(CpgTokenType opening, CpgTokenType closing) {

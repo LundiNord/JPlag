@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import de.fraunhofer.aisec.cpg.TranslationContext;
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.scopes.Scope;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.matching.edges.AnyOfNEdge;
 import de.jplag.java_cpg.transformation.matching.edges.CpgEdge;
 import de.jplag.java_cpg.transformation.matching.pattern.Match;
@@ -44,7 +45,6 @@ public final class ReplaceOperation<T extends Node, R extends Node> extends Grap
         this.disconnectEog = disconnectEog;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void resolveAndApply(Match match, TranslationContext ctx) {
         T parent = match.get(parentPattern);
@@ -76,10 +76,17 @@ public final class ReplaceOperation<T extends Node, R extends Node> extends Grap
 
     @Override
     public GraphOperation instantiateWildcard(Match match) {
-        WildcardGraphPattern.ParentNodePattern<R> wcParent = (WildcardGraphPattern.ParentNodePattern<R>) this.parentPattern;
+        WildcardGraphPattern.ParentNodePattern<R> wcParent = Casting.castParentNodePattern(parentPattern);
         return match.instantiateGraphOperation(wcParent, this);
     }
 
+    /**
+     * Instantiates a {@link ReplaceOperation} from the wildcard match.
+     * @param pattern the concrete parent pattern
+     * @param edge the concrete edge
+     * @param <T2> the concrete parent node type
+     * @return the replace operation
+     */
     public <T2 extends Node> ReplaceOperation<T2, R> fromWildcardMatch(NodePattern<? extends T2> pattern, CpgEdge<T2, R> edge) {
         return new ReplaceOperation<>(pattern, edge, this.newChildPattern, this.disconnectEog);
     }

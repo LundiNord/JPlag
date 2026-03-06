@@ -72,10 +72,18 @@ public abstract class AEdge<T extends Node, R extends Node> implements IEdge<T, 
         return category == REFERENCE;
     }
 
+    /**
+     * Sets the source node class of this {@link AEdge}.
+     * @param sourceClass the source class
+     */
     public void setSourceClass(Class<T> sourceClass) {
         this.sourceClass = sourceClass;
     }
 
+    /**
+     * Sets the related node class of this {@link AEdge}.
+     * @param relatedClass the source class
+     */
     public void setRelatedClass(Class<R> relatedClass) {
         this.relatedClass = relatedClass;
     }

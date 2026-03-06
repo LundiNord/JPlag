@@ -182,7 +182,7 @@ public class PatternUtil {
      * @param pattern the pattern
      * @param <R> the node pattern type
      * @return the new {@link Node}
-     * @throws TransformationException if instantiation fails
+     * @throws TransformationException if the node pattern cannot be instantiated
      */
     public static <R extends Node> R instantiate(NodePattern<R> pattern) {
         try {

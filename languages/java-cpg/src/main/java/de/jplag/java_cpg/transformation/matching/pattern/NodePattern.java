@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.GraphTransformation.Builder.RelationComparisonFunction;
 import de.jplag.java_cpg.transformation.Role;
 import de.jplag.java_cpg.transformation.matching.edges.CpgMultiEdge;
@@ -55,7 +56,12 @@ public interface NodePattern<T extends Node> {
      */
     void addProperty(Predicate<? super T> property);
 
-    <R extends Node> void addRelation(Relation<? super T, R, ?> trRelatedOneToNNode);
+    /**
+     * Adds a related node pattern to this node pattern.
+     * @param relation the relation
+     * @param <R> the concrete node (super-)type as defined by the relation edge.
+     */
+    <R extends Node> void addRelation(Relation<? super T, R, ?> relation);
 
     /**
      * Creates a copy of this {@link NodePattern} and all related nodes and properties.
@@ -69,8 +75,16 @@ public interface NodePattern<T extends Node> {
      */
     List<Class<? extends T>> getCandidateClasses();
 
+    /**
+     * Gets the assigned {@link Role} of this node pattern in the graph pattern.
+     * @return the role
+     */
     Role getRole();
 
+    /**
+     * Sets the assigned {@link Role} of this node pattern in the graph pattern.
+     * @param role the new role
+     */
     void setRole(Role role);
 
     /**
@@ -79,6 +93,11 @@ public interface NodePattern<T extends Node> {
      */
     Class<T> getRootClass();
 
+    /**
+     * Traverses the related nodes, comparing it to those of the given target graph node pattern using the given comparator.
+     * @param target the target graph node
+     * @param comparator the function performing the comparison
+     */
     void handleRelationships(NodePattern<T> target, RelationComparisonFunction comparator);
 
     /**
@@ -101,7 +120,7 @@ public interface NodePattern<T extends Node> {
 
     /**
      * Standard implementation of the {@link NodePattern}.
-     * @param <T> The {@link Node} type of a target node.
+     * @param <T> The {@link Node} the type of potential target nodes.
      */
     class NodePatternImpl<T extends Node> implements NodePattern<T> {
 
@@ -127,6 +146,10 @@ public interface NodePattern<T extends Node> {
         private final EnumSet<NodeAnnotation> annotations;
         private Role role;
 
+        /**
+         * The implementation of a graph node pattern.
+         * @param clazz the desired class of the concrete nodes that this node pattern represents.
+         */
         public NodePatternImpl(Class<T> clazz) {
             this.clazz = clazz;
             this.properties = new ArrayList<>();
@@ -139,10 +162,17 @@ public interface NodePattern<T extends Node> {
             candidateCounter++;
         }
 
+        /**
+         * Returns the current number of potential matching concrete subgraphs.
+         * @return the number
+         */
         public static long getCounter() {
             return candidateCounter;
         }
 
+        /**
+         * Resets the id of potential matching concrete subgraphs.
+         */
         public static void resetCounter() {
             candidateCounter = 0;
         }
@@ -182,6 +212,10 @@ public interface NodePattern<T extends Node> {
             return List.of(getRootClass());
         }
 
+        /**
+         * Returns the assigned {@link Role} of the graph node pattern.
+         * @return the role
+         */
         public Role getRole() {
             return role;
         }
@@ -250,7 +284,7 @@ public interface NodePattern<T extends Node> {
             }
 
             // if !localPropertiesMismatch, then this cast is valid
-            T tNode = (T) node;
+            T tNode = Casting.castNode(node);
             openMatches.forEach(match -> match.register(this, tNode));
 
             // all relations must match in a specific way according to their relation type
@@ -299,7 +333,7 @@ public interface NodePattern<T extends Node> {
 
         @Override
         public String toString() {
-            return "NodePattern{%s \"%s\"}".formatted(clazz.getSimpleName(), role.name());
+            return "NodePattern{%s \"%s\"}".formatted(clazz.getSimpleName(), role.getName());
         }
 
         /**

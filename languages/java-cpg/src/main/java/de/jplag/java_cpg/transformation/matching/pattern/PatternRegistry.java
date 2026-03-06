@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.aisec.cpg.graph.Node;
+import de.jplag.java_cpg.transformation.Casting;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 import de.jplag.java_cpg.transformation.Role;
 
@@ -40,16 +41,17 @@ public class PatternRegistry {
     /**
      * Gets the {@link NodePattern} with the given {@link Role}, cast to the given {@link Node} class.
      * @param role the role
+     * @param targetClass the target node pattern class
+     * @param <T> the target node pattern type
      * @return the node pattern associated to the role
+     * @throws ClassCastException if the pattern assigned to the role is incompatible with the given target class
      */
-    public <T extends Node> NodePattern<T> getPattern(Role role, Class<T> targetClass) {
+    public <T extends Node> NodePattern<T> getPattern(Role role, Class<T> targetClass) throws ClassCastException {
         NodePattern<?> nodePattern = patternByRole.get(role);
         if (!targetClass.isAssignableFrom(nodePattern.getRootClass())) {
             throw new ClassCastException("Pattern %s is incompatible with target class %s".formatted(role, targetClass));
         }
-        @SuppressWarnings("unchecked")
-        NodePattern<T> castNodePattern = (NodePattern<T>) nodePattern;
-        return castNodePattern;
+        return Casting.castNodePattern(nodePattern);
     }
 
     /**
@@ -76,7 +78,7 @@ public class PatternRegistry {
      */
     public void put(Role role, NodePattern<?> pattern) {
         if (patternByRole.containsKey(role)) {
-            logger.warn("A NodePattern with the role '{}' is already present in the PatternRegistry", role.name());
+            logger.warn("A NodePattern with the role '{}' is already present in the PatternRegistry", role.getName());
         }
         pattern.setRole(role);
         this.patternByRole.put(role, pattern);
@@ -88,7 +90,7 @@ public class PatternRegistry {
      * @param representingNode the representing node
      */
     public void setRepresentingNode(NodePattern<?> representingNode) {
-        this.representingNode = (NodePattern<Node>) representingNode;
+        this.representingNode = Casting.castNodePattern(representingNode);
     }
 
     /**
@@ -104,7 +106,7 @@ public class PatternRegistry {
      * @return the role
      */
     public Role createWildcardRole() {
-        return new Role(WILDCARD_PARENT_ID + wildcardCounter++);
+        return new WildcardParentRole(wildcardCounter++);
     }
 
     /**
@@ -115,4 +117,13 @@ public class PatternRegistry {
     public boolean containsPattern(Role role) {
         return patternByRole.containsKey(role);
     }
+
+    record WildcardParentRole(int id) implements Role {
+
+        @Override
+        public String getName() {
+            return WILDCARD_PARENT_ID + id;
+        }
+    }
+
 }

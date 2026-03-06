@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jetbrains.annotations.Nullable;
-
 import de.fraunhofer.aisec.cpg.graph.Node;
 import de.fraunhofer.aisec.cpg.graph.edge.PropertyEdge;
 
@@ -49,7 +47,7 @@ public class DummyNeighbor extends Node {
         if (edge.getEnd().equals(this)) {
             return;
         }
-        targetMap.computeIfAbsent(edge.getEnd(), n -> new ArrayList<>()).add(edge);
+        targetMap.computeIfAbsent(edge.getEnd(), _ -> new ArrayList<>()).add(edge);
     }
 
     /**
@@ -60,7 +58,7 @@ public class DummyNeighbor extends Node {
         if (edge.getStart().equals(this)) {
             return;
         }
-        sourceMap.computeIfAbsent(edge.getStart(), n -> new ArrayList<>()).add(edge);
+        sourceMap.computeIfAbsent(edge.getStart(), _ -> new ArrayList<>()).add(edge);
     }
 
     /**
@@ -100,13 +98,4 @@ public class DummyNeighbor extends Node {
         sourceMap.clear();
     }
 
-    @Override
-    public boolean equals(@Nullable Object other) {
-        return other == INSTANCE;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
 }

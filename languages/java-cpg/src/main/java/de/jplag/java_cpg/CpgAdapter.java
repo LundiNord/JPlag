@@ -1,5 +1,7 @@
 package de.jplag.java_cpg;
 
+import static de.jplag.java_cpg.JavaCpgLanguage.allTransformations;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +55,6 @@ public class CpgAdapter {
     private final boolean removeDeadCode;
     private final boolean removeSimpleDeadCode;
     private final boolean detectDeadCode;
-    private List<Token> tokenList;
     private int deadLinesCount;
     private int deadCodeCount;
     private boolean reorderingEnabled = true;
@@ -68,7 +69,7 @@ public class CpgAdapter {
     private static final boolean continueOnError = false;
 
     /**
-     * Constructs a new CpgAdapter.
+     * Constructs a new {@link CpgAdapter}.
      * @param transformations a list of {@link GraphTransformation}s
      * @param removeDeadCode whether dead code should be removed
      * @param detectDeadCode whether dead code should be detected
@@ -85,18 +86,25 @@ public class CpgAdapter {
         setReorderingEnabled(reorder);
     }
 
+    /**
+     * Constructs a new {@link CpgAdapter} with all transformations enabled and nor abstract interpretation..
+     */
+    @TestOnly
+    public CpgAdapter() {
+        this(false, false, true, true, allTransformations());
+    }
+
+    @SuppressWarnings("unchecked")
     List<Token> adapt(@NotNull Set<File> files, boolean normalize) throws ParsingException, InterruptedException {
         assert !files.isEmpty();
-        tokenList = null;
         deadLinesCount = 0;
         if (!normalize) {
             clearTransformations();
             addTransformations(JavaCpgLanguage.minimalTransformations());
             setReorderingEnabled(false);
         }
-        // TokenizationPass sets tokenList
-        translate(files);
-        return tokenList;
+        TranslationResult translate = translate(files);
+        return (List<Token>) translate.getScratch().getOrDefault("tokenList", List.of());
     }
 
     /**
@@ -104,7 +112,7 @@ public class CpgAdapter {
      * @param transformation a {@link GraphTransformation}
      */
     public void addTransformation(@NotNull GraphTransformation transformation) {
-        switch (transformation.getPhase()) {
+        switch (transformation.phase()) {
             case OBLIGATORY -> PrepareTransformationPass.registerTransformation(transformation);
             case AST_TRANSFORM -> AstTransformationPass.registerTransformation(transformation);
             case CPG_TRANSFORM -> CpgTransformationPass.registerTransformation(transformation);
@@ -127,8 +135,7 @@ public class CpgAdapter {
         CpgTransformationPass.clearTransformations();
     }
 
-    @NotNull
-    private <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
+    private @NotNull <T extends Pass<?>> KClass<T> getKClass(Class<T> javaPassClass) {
         return JvmClassMappingKt.getKotlinClass(javaPassClass);
     }
 
@@ -143,7 +150,6 @@ public class CpgAdapter {
     TranslationResult translate(@NotNull Set<File> files) throws ParsingException, InterruptedException {
         InferenceConfiguration inferenceConfiguration = InferenceConfiguration.builder().inferRecords(true).inferDfgForUnresolvedCalls(true).build();
         TranslationResult translationResult;
-        TokenizationPass.Companion.setCallback(CpgAdapter.this::setTokenList);
         AiPass.AiPassCompanion.setRemoveDeadCode(CpgAdapter.this.removeDeadCode);
         AiPass.AiPassCompanion.setContinueOnError(continueOnError);
         AiPass.AiPassCompanion.setDeadLinesCallback(CpgAdapter.this::setDeadLinesCount);
@@ -182,10 +188,6 @@ public class CpgAdapter {
             throw new ParsingException(List.copyOf(files).getFirst(), e);
         }
         return translationResult;
-    }
-
-    private void setTokenList(@NotNull List<Token> tokenList) {
-        this.tokenList = tokenList;
     }
 
     private void setDeadLinesCount(int count) {

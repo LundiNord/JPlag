@@ -71,8 +71,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val parentInfo = mutableMapOf<Node, ParentInfo>()
         val movableStatements = getMovableStatements(root, null, parentInfo)
 
-        val finalState = stateSafe[root]
-            ?: throw TransformationException("EOG traverse did not reach the start - cannot sort statements")
+        val finalState = stateSafe[root] ?: throw TransformationException("EOG traversion did not reach the start - cannot sort statements")
 
         /*
          * Sets DFG edges between statements
@@ -100,11 +99,11 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
         /*
          *  Sets DFG edges between statements that contain dfg-related statements in inner blocks
-         *  e.g., DeclarationStatement --> WhileStatement using the declared variable
+         *  e.g. DeclarationStatement --> WhileStatement using the declared variable
          */
         extractTransitiveDependencies(relevantStatements, parentInfo)
 
-        // loop dependencies are only needed to determine relevant statements but disturb the reordering
+        // loop dependencies are only needed to determine relevant statements, but disturb the reordering
         relevantStatements.forEach {
             it.prevDFGEdges.removeIf { edge ->
                 relevantStatements.indexOf(edge.start) == -1 || edge.getProperty(
@@ -121,8 +120,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     }
 
     private fun extractTransitiveDependencies(
-        relevantStatements: List<Node>,
-        parentInfo: Map<Node, ParentInfo>,
+        relevantStatements: MutableList<Node>,
+        parentInfo: MutableMap<Node, ParentInfo>,
     ) {
         val depth = { node: Node -> parentInfo[node]?.depth ?: 0 }
         val parent = { node: Node -> parentInfo[node]?.parent ?: node }
@@ -136,7 +135,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val dfgPredecessor = edge.start
             val statement = edge.end
 
-            var properties: Map<Properties, Any?>
+            var properties: MutableMap<Properties, Any?>
             val (predBlock, stmtBlock, name) = getSiblingAncestors(dfgPredecessor, statement, depth, parent)
 
             // no self-dependencies
@@ -145,7 +144,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             if (stmtBlock is ReturnStatement || locationBefore(predBlock, stmtBlock)) {
                 if (stmtBlock in predBlock.nextDFG) return@forEach
                 // write-read dependency
-                properties = mapOf(Pair(Properties.NAME, name))
+                properties = mutableMapOf(Pair(Properties.NAME, name))
                 predBlock.addNextDFG(stmtBlock)
             } else {
                 // the name is used to filter these edges out later
@@ -157,7 +156,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     predBlock.addNextDFG(stmtBlock)
                 }
                 // read-write dependency
-                properties = mapOf(Pair(Properties.NAME, name))
+                properties = mutableMapOf(Pair(Properties.NAME, name))
                 stmtBlock.addNextDFG(predBlock)
             }
         }
@@ -166,7 +165,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     private fun analyzeDfg(
         variableData: MutableMap<Declaration, VariableData>,
         movableStatements: List<Statement>,
-        parentInfo: Map<Node, ParentInfo>,
+        parentInfo: MutableMap<Node, ParentInfo>,
     ) {
 
         val depth = { node: Node -> parentInfo[node]?.depth ?: 0 }
@@ -178,7 +177,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
 
         val referenceParentStatement = allReferences
             .associateWith { ref ->
-                // find the parent statement with the greatest depth -> immediate parent statement
+                // find parent statement with the greatest depth -> immediate parent statement
                 val parentStatements = movableStatements.filter { subtreeNodes[it]?.contains(ref) ?: false }
                 val immediateParent = parentStatements.maxByOrNull { depth(it) }
                 immediateParent
@@ -281,7 +280,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val walker = SubgraphWalker.IterativeGraphWalker()
         walker.strategy = Strategy::EOG_FORWARD
         var found = false
-        walker.registerOnNodeVisit { node, _ -> if (node == b) found = true }
+        walker.registerOnNodeVisit{
+            node, _ -> if (node == b) found = true }
         walker.iterate(a)
         return found
     }
@@ -296,16 +296,11 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         parentInfo: MutableMap<Node, ParentInfo>,
     ) {
         if (!removeDeadCode) return
-
         val irrelevantStatements = statements.filter { it !in relevantStatements }
             .filter { parentInfo[it]?.parent is Block }
             .distinct()
 
         irrelevantStatements.forEach {
-            if (parentInfo[it]?.parent == null) {
-                System.err.println("Parent info missing for ${desc(it)}, skipping removal of this irrelevant statement")
-                return
-            }
             val block = parentInfo[it]?.parent as Block
             val index = block.statements.indexOf(it)
             val cpgNthEdge: CpgNthEdge<Block, Statement> = CpgNthEdge(BLOCK__STATEMENTS, index)
@@ -374,7 +369,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             // insert before last element
             if (done.isNotEmpty()) {
 
-                // Implicit return statement has no location but should remain the last element
+                // Implicit return statement has no location, but should remain the last element
                 val newSuccessor = done[0]
                 if (!TransformationUtil.isAstSuccessor(element, newSuccessor)) {
                     TransformationUtil.insertBefore(element, newSuccessor)
@@ -400,9 +395,7 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
                     .toList()
             worklist.addAll(newElements)
         }
-        assert(done.size == relevantStatementsInThisBlock.size && done.containsAll(relevantStatementsInThisBlock)) {
-            "Not all relevant statements were processed in reorderStatements: done=${done.size}, relevant=${relevantStatementsInThisBlock.size}"
-        }
+        assert(done.size == relevantStatementsInThisBlock.size && done.containsAll(relevantStatementsInThisBlock))
 
         parent.statementEdges.clear()
         done.forEach { parent.addStatement(it) }
@@ -441,8 +434,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
     }
 
     private fun extractRelevantStatements(
-        essentialNodesOut: List<Statement>,
-        parentInfo: Map<Node, ParentInfo>,
+        essentialNodesOut: MutableList<Statement>,
+        parentInfo: MutableMap<Node, ParentInfo>,
     ): MutableList<Node> {
         val relevantNodes: MutableSet<Node> = mutableSetOf()
 
@@ -713,8 +706,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
         val nodes1 = NodeOrderStrategy.flattenStatement(n1).iterator()
         val nodes2 = NodeOrderStrategy.flattenStatement(n2).iterator()
 
-        val tokens1 = CpgNodeListener.tokenIterator(nodes1);
-        val tokens2 = CpgNodeListener.tokenIterator(nodes2);
+        val tokens1 = CpgNodeListener.tokenIterator(nodes1)
+        val tokens2 = CpgNodeListener.tokenIterator(nodes2)
 
         while (tokens1.hasNext() && tokens2.hasNext()) {
             val next1 = tokens1.next().type.let { if (it is CpgTokenType) it.ordinal else 0 }
@@ -722,8 +715,8 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             val compare = next1 - next2
             if (compare != 0) return compare
         }
-        return if (tokens1.hasNext()) 1;
-        else if (tokens2.hasNext()) -1;
+        return if (tokens1.hasNext()) 1
+        else if (tokens2.hasNext()) -1
         else 0
     }
 
@@ -940,6 +933,11 @@ class DfgSortPass(ctx: TranslationContext) : TranslationUnitPass(ctx) {
             if (reference.refersTo !is ValueDeclaration || reference.refersTo is FunctionDeclaration) return false
             return this[reference.refersTo]?.register(reference) ?: false
         }
+
+        companion object {
+            private const val serialVersionUID: Long = -6688414070734477497L
+        }
+
     }
 
     /**

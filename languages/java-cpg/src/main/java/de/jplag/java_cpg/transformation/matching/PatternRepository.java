@@ -1,22 +1,22 @@
 package de.jplag.java_cpg.transformation.matching;
 
-import static de.jplag.java_cpg.transformation.Role.ASSIGN_EXPRESSION;
-import static de.jplag.java_cpg.transformation.Role.CLASS_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.CONDITION;
-import static de.jplag.java_cpg.transformation.Role.ELSE_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.FIELD_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.FIELD_REFERENCE;
-import static de.jplag.java_cpg.transformation.Role.FIELD_TYPE;
-import static de.jplag.java_cpg.transformation.Role.IF_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.INNER_CONDITION;
-import static de.jplag.java_cpg.transformation.Role.METHOD_BODY;
-import static de.jplag.java_cpg.transformation.Role.METHOD_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.METHOD_TYPE;
-import static de.jplag.java_cpg.transformation.Role.PARAMETER_DECLARATION;
-import static de.jplag.java_cpg.transformation.Role.PARAMETER_REFERENCE;
-import static de.jplag.java_cpg.transformation.Role.RETURN_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.THEN_STATEMENT;
-import static de.jplag.java_cpg.transformation.Role.VOID_TYPE;
+import static de.jplag.java_cpg.transformation.StructuralRole.ASSIGN_EXPRESSION;
+import static de.jplag.java_cpg.transformation.StructuralRole.CLASS_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.CONDITION;
+import static de.jplag.java_cpg.transformation.StructuralRole.ELSE_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.FIELD_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.FIELD_REFERENCE;
+import static de.jplag.java_cpg.transformation.StructuralRole.FIELD_TYPE;
+import static de.jplag.java_cpg.transformation.StructuralRole.IF_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.INNER_CONDITION;
+import static de.jplag.java_cpg.transformation.StructuralRole.METHOD_BODY;
+import static de.jplag.java_cpg.transformation.StructuralRole.METHOD_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.METHOD_TYPE;
+import static de.jplag.java_cpg.transformation.StructuralRole.PARAMETER_DECLARATION;
+import static de.jplag.java_cpg.transformation.StructuralRole.PARAMETER_REFERENCE;
+import static de.jplag.java_cpg.transformation.StructuralRole.RETURN_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.THEN_STATEMENT;
+import static de.jplag.java_cpg.transformation.StructuralRole.VOID_TYPE;
 import static de.jplag.java_cpg.transformation.matching.edges.Edges.ASSIGN_EXPRESSION__LHS;
 import static de.jplag.java_cpg.transformation.matching.edges.Edges.ASSIGN_EXPRESSION__RHS;
 import static de.jplag.java_cpg.transformation.matching.edges.Edges.BLOCK__STATEMENTS;
@@ -60,13 +60,12 @@ import de.jplag.java_cpg.transformation.matching.pattern.GraphPatternBuilder;
 import de.jplag.java_cpg.transformation.matching.pattern.PatternUtil;
 
 /**
- * This class is used to collect sub-patterns that may appear repetitively or used in tests.
+ * This class is used to collect sub-patterns that may appear repetitively, or used in tests.
  */
 public final class PatternRepository {
 
     private PatternRepository() {
-        /* should not be instantiated */
-    }
+        /* should not be instantiated */}
 
     /**
      * Creates a {@link GraphPatternBuilder} for an {@link IfStatement} with an else statement.
@@ -97,26 +96,36 @@ public final class PatternRepository {
             @Override
             public GraphPattern build() {
                 return create(MethodDeclaration.class, METHOD_DECLARATION,
-                        related(METHOD_DECLARATION__RECORD_DECLARATION, RecordDeclaration.class, CLASS_DECLARATION,
-                                related1ToN(RECORD_DECLARATION__FIELDS, FieldDeclaration.class, FIELD_DECLARATION,
-                                        related(VALUE_DECLARATION__TYPE, ObjectType.class, FIELD_TYPE)),
-                                relatedExisting1ToN(RECORD_DECLARATION__METHODS, MethodDeclaration.class, METHOD_DECLARATION)),
-                        related(VALUE_DECLARATION__TYPE, FunctionType.class, METHOD_TYPE, property(nElements(FUNCTION_TYPE__PARAMETERS, 1)),
-                                relatedExisting(nthElement(FUNCTION_TYPE__PARAMETERS, 0), ObjectType.class, FIELD_TYPE),
-                                property(nElements(FUNCTION_TYPE__RETURN_TYPES, 1)),
-                                related(nthElement(FUNCTION_TYPE__RETURN_TYPES, 0), IncompleteType.class, VOID_TYPE,
-                                        property(PatternUtil.attributeEquals(TYPE__TYPE_NAME, "void")))),
-                        property(notEmpty(METHOD_DECLARATION__PARAMETERS)),
-                        related(nthElement(METHOD_DECLARATION__PARAMETERS, 0), ParameterDeclaration.class, PARAMETER_DECLARATION),
-                        property(MethodDeclaration::hasBody),
-                        related(METHOD_DECLARATION__BODY, Block.class, METHOD_BODY, property(nElements(BLOCK__STATEMENTS, 2)),
-                                related(nthElement(BLOCK__STATEMENTS, 0), AssignExpression.class, ASSIGN_EXPRESSION,
-                                        related(ASSIGN_EXPRESSION__LHS, Reference.class, FIELD_REFERENCE),
-
-                                        related(ASSIGN_EXPRESSION__RHS, Reference.class, PARAMETER_REFERENCE,
-                                                relatedExisting(REFERENCE__REFERS_TO, ParameterDeclaration.class, PARAMETER_DECLARATION))),
+                        related(METHOD_DECLARATION__RECORD_DECLARATION, RecordDeclaration.class, CLASS_DECLARATION, //
+                                related1ToN(RECORD_DECLARATION__FIELDS, FieldDeclaration.class, FIELD_DECLARATION,  //
+                                        related(VALUE_DECLARATION__TYPE, ObjectType.class, FIELD_TYPE) //
+                ), //
+                                relatedExisting1ToN(RECORD_DECLARATION__METHODS, MethodDeclaration.class, METHOD_DECLARATION)//
+                ),//
+                        related(VALUE_DECLARATION__TYPE, FunctionType.class, METHOD_TYPE, //
+                                property(nElements(FUNCTION_TYPE__PARAMETERS, 1)), //
+                                relatedExisting(nthElement(FUNCTION_TYPE__PARAMETERS, 0), ObjectType.class, FIELD_TYPE), //
+                                property(nElements(FUNCTION_TYPE__RETURN_TYPES, 1)), //
+                                related(nthElement(FUNCTION_TYPE__RETURN_TYPES, 0), IncompleteType.class, VOID_TYPE, //
+                                        property(PatternUtil.attributeEquals(TYPE__TYPE_NAME, "void")) //
+                ) //
+                ), //
+                        property(notEmpty(METHOD_DECLARATION__PARAMETERS)), //
+                        related(nthElement(METHOD_DECLARATION__PARAMETERS, 0), ParameterDeclaration.class, PARAMETER_DECLARATION), //
+                        property(MethodDeclaration::hasBody), //
+                        related(METHOD_DECLARATION__BODY, Block.class, METHOD_BODY, //
+                                property(nElements(BLOCK__STATEMENTS, 2)), //
+                                related(nthElement(BLOCK__STATEMENTS, 0), AssignExpression.class, ASSIGN_EXPRESSION, //
+                                        related(ASSIGN_EXPRESSION__LHS, Reference.class, FIELD_REFERENCE), //
+                                        related(ASSIGN_EXPRESSION__RHS, Reference.class, PARAMETER_REFERENCE, //
+                                                relatedExisting(REFERENCE__REFERS_TO, ParameterDeclaration.class, PARAMETER_DECLARATION) //
+                ) //
+                ), //
                                 related(nthElement(BLOCK__STATEMENTS, 1), ReturnStatement.class, RETURN_STATEMENT,
-                                        property(nElements(RETURN_STATEMENT__RETURN_VALUES, 0)))));
+                                        property(nElements(RETURN_STATEMENT__RETURN_VALUES, 0)) //
+                ) //
+                ) //
+                );
             }
         };
 

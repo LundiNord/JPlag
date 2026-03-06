@@ -14,7 +14,7 @@ import de.jplag.java_cpg.transformation.GraphTransformation
 class PrepareTransformationPass(ctx: TranslationContext) : ATransformationPass(ctx) {
 
     override fun getPhaseSpecificTransformations(): List<GraphTransformation> {
-        return transformations.toList();
+        return transformations.toList()
     }
 
     companion object {

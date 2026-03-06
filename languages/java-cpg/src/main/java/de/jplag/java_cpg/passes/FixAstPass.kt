@@ -59,7 +59,7 @@ class FixAstPass(ctx: TranslationContext) : ComponentPass(ctx) {
         method: T,
         getCandidates: (Type) -> List<T>
     ): Boolean {
-        val subClassType = ref.base.type;
+        val subClassType = ref.base.type
         val superTypes = mutableListOf<Type>()
         superTypes.add(subClassType)
 

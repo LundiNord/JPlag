@@ -24,11 +24,14 @@ import de.jplag.java_cpg.transformation.matching.PatternRepository;
 import de.jplag.java_cpg.transformation.matching.pattern.Match;
 import de.jplag.java_cpg.transformation.matching.pattern.SimpleGraphPattern;
 
-public class MatchingTest extends AbstractJavaCpgLanguageTest {
+/**
+ * Tests matching of graph patterns to CPGs.
+ */
+class MatchingTest extends AbstractJavaCpgLanguageTest {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(MatchingTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MatchingTest.class);
 
-    public static Stream<Arguments> providePairs() {
+    private static Stream<Arguments> providePairs() {
         return Stream.of(Arguments.of("IfElseWithNegatedCondition.java", IfStatement.class, PatternRepository.ifElseWithNegatedCondition().build()),
                 Arguments.of("GetterSetter.java", MethodDeclaration.class, PatternRepository.setterMethod().build()));
     }

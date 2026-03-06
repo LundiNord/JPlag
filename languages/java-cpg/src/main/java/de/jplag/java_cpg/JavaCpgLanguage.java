@@ -8,6 +8,8 @@ import static de.jplag.java_cpg.transformation.TransformationRepository.moveCons
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyConstructor;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyDeclarationStatement;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeEmptyRecord;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeGetterMethod;
+import static de.jplag.java_cpg.transformation.TransformationRepository.removeImplicitStandardConstructor;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryField;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeLibraryRecord;
 import static de.jplag.java_cpg.transformation.TransformationRepository.removeOptionalGetCall;
@@ -21,13 +23,11 @@ import static de.jplag.java_cpg.transformation.TransformationRepository.wrapThen
 import static de.jplag.java_cpg.transformation.TransformationRepository.wrapWhileStatement;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
-import org.kohsuke.MetaInfServices;
 
 import de.jplag.Language;
 import de.jplag.ParsingException;
@@ -40,15 +40,16 @@ import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.ai.variables.values.Value;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
+import com.google.auto.service.AutoService;
 import kotlin.Pair;
 
 /**
  * This class represents the front end of the CPG module of JPlag.
  */
-@MetaInfServices(de.jplag.Language.class)
+@AutoService(Language.class)
 public class JavaCpgLanguage implements Language {
     private static final int DEFAULT_MINIMUM_TOKEN_MATCH = 9;
-    private static final String[] FILE_EXTENSIONS = {".java"};
+    private static final List<String> FILE_EXTENSIONS = List.of(".java");
     private static final String NAME = "Java Code Property Graph module";
     private static final String IDENTIFIER = "java-cpg";
     private final CpgAdapter cpgAdapter;
@@ -132,11 +133,11 @@ public class JavaCpgLanguage implements Language {
      * Returns a set of all transformations.
      * @return the array of all transformations
      */
-    @NotNull
     public static GraphTransformation[] allTransformations() {
         return new GraphTransformation[] {ifWithNegatedConditionResolution, forStatementToWhileStatement, removeOptionalOfCall, removeOptionalGetCall,
-                moveConstantToOnlyUsingClass, inlineSingleUseConstant, inlineSingleUseVariable, removeLibraryRecord, removeLibraryField,
-                removeEmptyConstructor, removeUnsupportedConstructor, removeUnsupportedMethod, removeEmptyRecord,};
+                removeGetterMethod, moveConstantToOnlyUsingClass, inlineSingleUseConstant, inlineSingleUseVariable, removeEmptyDeclarationStatement,
+                removeImplicitStandardConstructor, removeLibraryRecord, removeLibraryField, removeEmptyConstructor, removeUnsupportedConstructor,
+                removeUnsupportedMethod, removeEmptyRecord,};
     }
 
     /**
@@ -182,8 +183,13 @@ public class JavaCpgLanguage implements Language {
     }
 
     @Override
+    public boolean requiresCoreNormalization() {
+        return false;
+    }
+
+    @Override
     public List<String> fileExtensions() {
-        return Arrays.asList(FILE_EXTENSIONS);
+        return FILE_EXTENSIONS;
     }
 
     @Override
@@ -243,7 +249,7 @@ public class JavaCpgLanguage implements Language {
     }
 
     @Override
-    public boolean requiresCoreNormalization() {
+    public boolean hasPriority() {
         return false;
     }
 
