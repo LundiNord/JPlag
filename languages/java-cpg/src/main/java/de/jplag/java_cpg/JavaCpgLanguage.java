@@ -248,9 +248,4 @@ public class JavaCpgLanguage implements Language {
         return true;
     }
 
-    @Override
-    public boolean hasPriority() {
-        return false;
-    }
-
 }

@@ -88,7 +88,7 @@ class EvaluationEngineTest {
     }
 
     private static @NotNull Stream<Pair<String, String>> testPlagFiles() {
-        return Stream.of(
+        return Stream.of(   // 32 pairs
                 // JVM Warmup:
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project1.java"),
                 new Pair<>("aiGenerated/claude/Project4.java", "aiGenerated/claude/Project3.java"),
@@ -844,10 +844,10 @@ class EvaluationEngineTest {
         // ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
         // reportObjectFactory.createAndSaveReport(resultJPlag);
 
-        JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
-        File outDir2 = new File("outputTicTacToe.cpg.zip");
-        ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
-        reportObjectFactory2.createAndSaveReport(resultCPG);
+        // JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
+        // File outDir2 = new File("outputTicTacToe.cpg.zip");
+        // ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
+        // reportObjectFactory2.createAndSaveReport(resultCPG);
 
         JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
         File outDir3 = new File("outputTicTacToe.ai.zip");
@@ -863,20 +863,20 @@ class EvaluationEngineTest {
         Set<File> fileSet = files.stream().sorted().skip(0).map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file))
                 .collect(Collectors.toSet());
 
-        JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
-        File outDir = new File("outputBoardGame.jplag.zip");
-        ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
-        reportObjectFactory.createAndSaveReport(resultJPlag);
+        // JPlagResult resultJPlag = getJPlagPlagScore(fileSet, false);
+        // File outDir = new File("outputBoardGame.jplag.zip");
+        // ReportObjectFactory reportObjectFactory = new ReportObjectFactory(outDir);
+        // reportObjectFactory.createAndSaveReport(resultJPlag);
 
         JPlagResult resultCPG = getJPlagCpgPlagScore(fileSet, false, false, false, true, true);
         File outDir2 = new File("outputBoardGame.cpg.zip");
         ReportObjectFactory reportObjectFactory2 = new ReportObjectFactory(outDir2);
         reportObjectFactory2.createAndSaveReport(resultCPG);
 
-        JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
-        File outDir3 = new File("outputBoardGame.ai.zip");
-        ReportObjectFactory reportObjectFactory3 = new ReportObjectFactory(outDir3);
-        reportObjectFactory3.createAndSaveReport(resultAI);
+        // JPlagResult resultAI = getJPlagCpgPlagScore(fileSet, true, true, false, true, true);
+        // File outDir3 = new File("outputBoardGame.ai.zip");
+        // ReportObjectFactory reportObjectFactory3 = new ReportObjectFactory(outDir3);
+        // reportObjectFactory3.createAndSaveReport(resultAI);
 
         assertTrue(true);
     }
@@ -884,7 +884,7 @@ class EvaluationEngineTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void KitPlagEvaluationSingle() throws ExitException {
-        String folderA = "kit_DONT_COMMIT/BoardGame/human/subm208/";
+        String folderA = "kit_DONT_COMMIT/TicTacToe/human/24788/";
         String folderB = "kit_DONT_COMMIT/TicTacToe/human/24229";
         Set<File> fileSet = Stream.of(folderA, folderB).map(file -> new File(BASE_PATH.toFile().getAbsolutePath(), file)).collect(Collectors.toSet());
 
