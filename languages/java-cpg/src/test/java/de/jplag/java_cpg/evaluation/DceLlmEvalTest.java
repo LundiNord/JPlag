@@ -24,10 +24,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import de.jplag.ParsingException;
 import de.jplag.Token;
 import de.jplag.java_cpg.JavaCpgLanguage;
-import de.jplag.java_cpg.ai.*;
+import de.jplag.java_cpg.ai.ArrayAiType;
+import de.jplag.java_cpg.ai.CharAiType;
+import de.jplag.java_cpg.ai.CpgErrorException;
+import de.jplag.java_cpg.ai.FloatAiType;
+import de.jplag.java_cpg.ai.IntAiType;
+import de.jplag.java_cpg.ai.JavaLanguageFeatureNotSupportedException;
+import de.jplag.java_cpg.ai.StringAiType;
 import de.jplag.java_cpg.transformation.GraphTransformation;
 
-public class DceLlmEvalTest {
+class DceLlmEvalTest {
 
     private static @NotNull Stream<String> dceLlmFiles() {
         // String basePath = "/home/alpaka/PycharmProjects/baplots/testFiles";
@@ -45,8 +51,8 @@ public class DceLlmEvalTest {
     }
 
     @NotNull
-    static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder, boolean normalize,
-            boolean removeSimpleDeadCode) throws ParsingException {
+    private static List<Token> getTokensFromFile(@NotNull String fileName, boolean removeDeadCode, boolean detectDeadCode, boolean reorder,
+            boolean normalize, boolean removeSimpleDeadCode) throws ParsingException {
         assert normalize || !reorder;
         GraphTransformation[] transformations = JavaCpgLanguage.deadCodeRemovalTransformations();
         JavaCpgLanguage language = new JavaCpgLanguage(removeDeadCode, detectDeadCode, reorder, removeSimpleDeadCode, transformations,
@@ -64,7 +70,7 @@ public class DceLlmEvalTest {
     }
 
     @NotNull
-    public static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
+    private static List<Token> getTokensFromFileWithoutDeadCode(@NotNull String fileName, boolean reorder, boolean removeSimpleDeadCode)
             throws ParsingException {
         try {
             File originalFile = new File(fileName);
@@ -143,7 +149,7 @@ public class DceLlmEvalTest {
             } else {
                 runtimeError = true;
                 tokensWithoutDeadCode = new ArrayList<>(tokens);
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
         }
         long timeFullRemoval = System.nanoTime() - startTime;
@@ -191,8 +197,7 @@ public class DceLlmEvalTest {
     @Test
     @Disabled("Only for evaluation purposes, not a real test")
     void DceLlmDeadCodeEvaluationSingle() throws ParsingException {
-        // String fileName = "/home/alpaka/PycharmProjects/baplots/testFiles/p02723/s919988520.java";
-        String fileName = "/home/alpaka/PycharmProjects/baplots/testFiles/p02766/s036883984.java";
+        String fileName = "/home/alpaka/IdeaProjects/DCE-LLM/testFiles/p00011/s899605869.java";
 
         long startTime = System.nanoTime();
         List<Token> tokens = getTokensFromFile(fileName, false, false, false, false, false);
